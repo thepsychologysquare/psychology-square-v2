@@ -1,0 +1,98 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const featuredArticles = [
+  {
+    category: "ADHD",
+    title: "What ADHD Actually Looks Like in Adults",
+    excerpt: "Beyond the childhood stereotype — how attention, emotion regulation, and self-image show up differently once you're grown.",
+    slug: "/articles/adhd-in-adults",
+  },
+  {
+    category: "Addiction & Recovery",
+    title: "CBT in Addiction Recovery: What the Work Actually Involves",
+    excerpt: "A grounded look at how cognitive behavioral therapy supports motivation and self-control during recovery.",
+    slug: "/articles/cbt-addiction-recovery",
+  },
+  {
+    category: "Relationships",
+    title: "Why Couples Have the Same Fight, Over and Over",
+    excerpt: "The pattern underneath the argument is usually more useful to look at than the argument itself.",
+    slug: "/articles/repeating-conflict-couples",
+  },
+];
+---
+<Layout title="Home">
+
+  <section class="hero">
+    <div class="wrap hero-inner">
+      <div>
+        <p class="eyebrow">Online &amp; In-Person — Johar Town, Lahore, Pakistan</p>
+        <h1 class="hero-title">A steady space<br>to think things<br>through.</h1>
+        <p class="hero-sub">Individual and couples therapy, led by two licensed clinical psychologists — plus articles and worksheets grounded in real clinical training, not generic advice.</p>
+        <div class="hero-actions">
+          <a href="/#contact" class="btn btn--primary">Book a session</a>
+          <a href="/articles" class="btn btn--text">Read the articles →</a>
+        </div>
+      </div>
+      <div class="hero-signature" aria-hidden="true" id="heroSignature"></div>
+    </div>
+  </section>
+
+  <section class="section" id="articles-preview">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow" style="color: var(--sage-500); margin-bottom: 10px;">From the Practice</p>
+          <h2 class="section-title">Recent articles</h2>
+        </div>
+        <a href="/articles" class="section-link">Browse all articles →</a>
+      </div>
+      <div class="card-grid">
+        {featuredArticles.map((a) => (
+          <a class="article-card" href={a.slug}>
+            <span class="article-meta">{a.category}</span>
+            <h3>{a.title}</h3>
+            <p>{a.excerpt}</p>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="quote-block">
+    <div class="wrap quote-inner">
+      <p class="quote-text">"Therapy works best when it stays collaborative — you're not handed a worksheet before you've been heard."</p>
+      <p class="quote-attribution">Muhammad Sohail, Clinical Psychologist</p>
+    </div>
+  </section>
+
+  <section class="section section--alt">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow" style="color: var(--sage-500); margin-bottom: 10px;">Worksheets &amp; Guides</p>
+          <h2 class="section-title">Resources you can use between sessions</h2>
+        </div>
+        <a href="/resources" class="section-link">View all resources →</a>
+      </div>
+      <p style="color: var(--ink-600); max-width: 560px;">Placeholder — this section will pull real worksheet cards once the Resources collection is wired in.</p>
+    </div>
+  </section>
+
+</Layout>
+
+<script>
+  const grid = document.getElementById('heroSignature');
+  if (grid) {
+    const total = 36;
+    const filledGold = new Set([2, 9, 14, 21, 27, 30]);
+    const filledSage = new Set([7, 16, 24]);
+    for (let i = 0; i < total; i++) {
+      const cell = document.createElement('span');
+      if (filledGold.has(i)) cell.classList.add('filled');
+      if (filledSage.has(i)) cell.classList.add('filled-sage');
+      grid.appendChild(cell);
+    }
+  }
+</script>

@@ -1,0 +1,73 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+
+const allArticles = await getCollection('articles', ({ data }) => !data.draft);
+const sorted = allArticles.sort(
+  (a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf()
+);
+
+const categoryMeta: Record<string, string> = {
+  'anxiety': 'Anxiety',
+  'depression': 'Depression',
+  'adhd': 'ADHD',
+  'addiction-recovery': 'Addiction & Recovery',
+  'trauma': 'Trauma',
+  'relationships': 'Relationships',
+  'stress-burnout': 'Stress & Burnout',
+};
+---
+
+<Layout title="Articles" description="Articles on anxiety, depression, ADHD, trauma, relationships, and more — written and reviewed by licensed clinical psychologists.">
+  <section class="hero article-index-hero">
+    <div class="wrap">
+      <p class="eyebrow">From the Practice</p>
+      <h1 class="hero-title" style="font-size: clamp(32px, 4vw, 48px); margin-bottom: 16px;">Articles</h1>
+      <p class="hero-sub">Grounded, clinically-reviewed writing on anxiety, depression, ADHD, trauma, relationships, and more — no generic advice.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <div class="category-pills">
+        {Object.entries(categoryMeta).map(([slug, name]) => (
+          <a href={`/articles/category/${slug}`} class="category-pill">{name}</a>
+        ))}
+      </div>
+
+      <div class="card-grid" style="margin-top: 48px;">
+        {sorted.map((article) => (
+          <a class="article-card" href={`/articles/${article.id}`}>
+            <span class="article-meta">{categoryMeta[article.data.category]}</span>
+            <h3>{article.data.title}</h3>
+            <p>{article.data.description}</p>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .article-index-hero{ padding: 72px 0 56px; }
+  .category-pills{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+  }
+  .category-pill{
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--navy-700);
+    border: 1px solid var(--line);
+    padding: 9px 16px;
+    border-radius: 999px;
+    transition: all .2s var(--ease);
+  }
+  .category-pill:hover{
+    border-color: var(--gold-500);
+    background: var(--paper-50);
+  }
+</style>

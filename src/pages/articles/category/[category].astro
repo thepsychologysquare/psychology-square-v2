@@ -1,0 +1,60 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../../../layouts/Layout.astro';
+
+const categoryMeta: Record<string, { name: string; blurb: string }> = {
+  'anxiety': { name: 'Anxiety', blurb: 'Understanding anxiety and practical, evidence-informed ways to manage it day to day.' },
+  'depression': { name: 'Depression', blurb: 'What depression actually looks like, and paths toward feeling more like yourself.' },
+  'adhd': { name: 'ADHD', blurb: 'ADHD across childhood and adulthood — attention, emotion regulation, and daily life.' },
+  'addiction-recovery': { name: 'Addiction & Recovery', blurb: 'Grounded, non-judgmental writing on addiction, motivation, and recovery.' },
+  'trauma': { name: 'Trauma', blurb: 'How trauma shows up in the body and mind, and what healing tends to actually involve.' },
+  'relationships': { name: 'Relationships', blurb: 'Couples and relationship patterns — conflict, communication, repair.' },
+  'stress-burnout': { name: 'Stress & Burnout', blurb: 'Recognizing burnout early, and building a more sustainable relationship with stress.' },
+};
+
+export async function getStaticPaths() {
+  return Object.keys(categoryMeta).map((category) => ({ params: { category } }));
+}
+
+const { category } = Astro.params;
+const meta = categoryMeta[category as string];
+
+const allArticles = await getCollection('articles', ({ data }) => !data.draft);
+const categoryArticles = allArticles
+  .filter((a) => a.data.category === category)
+  .sort((a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf());
+---
+
+<Layout title={meta.name} description={meta.blurb}>
+  <section class="hero article-index-hero">
+    <div class="wrap">
+      <p class="eyebrow">
+        <a href="/articles" style="color: var(--gold-500);">Articles</a> / {meta.name}
+      </p>
+      <h1 class="hero-title" style="font-size: clamp(32px, 4vw, 48px); margin-bottom: 16px;">{meta.name}</h1>
+      <p class="hero-sub">{meta.blurb}</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      {categoryArticles.length === 0 ? (
+        <p style="color: var(--ink-600);">No articles in this category yet — check back soon.</p>
+      ) : (
+        <div class="card-grid">
+          {categoryArticles.map((article) => (
+            <a class="article-card" href={`/articles/${article.id}`}>
+              {article.data.subcategory && <span class="article-meta">{article.data.subcategory}</span>}
+              <h3>{article.data.title}</h3>
+              <p>{article.data.description}</p>
+            </a>
+          ))}
+        </div>
+      )}
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .article-index-hero{ padding: 72px 0 56px; }
+</style>

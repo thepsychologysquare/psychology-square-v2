@@ -1,0 +1,173 @@
+---
+import { getCollection, render } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+
+const categoryMeta: Record<string, string> = {
+  'anxiety': 'Anxiety',
+  'depression': 'Depression',
+  'adhd': 'ADHD',
+  'addiction-recovery': 'Addiction & Recovery',
+  'trauma': 'Trauma',
+  'relationships': 'Relationships',
+  'stress-burnout': 'Stress & Burnout',
+};
+
+export async function getStaticPaths() {
+  const articles = await getCollection('articles', ({ data }) => !data.draft);
+  return articles.map((article) => ({
+    params: { slug: article.id },
+    props: { article, allArticles: articles },
+  }));
+}
+
+const { article, allArticles } = Astro.props;
+const { Content } = await render(article);
+
+const related = allArticles
+  .filter((a) => a.id !== article.id)
+  .map((a) => ({
+    entry: a,
+    score:
+      a.data.tags.filter((t: string) => article.data.tags.includes(t)).length +
+      (a.data.category === article.data.category ? 1 : 0),
+  }))
+  .filter((a) => a.score > 0)
+  .sort((a, b) => b.score - a.score)
+  .slice(0, 3)
+  .map((a) => a.entry);
+
+const formattedDate = article.data.publishDate.toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+---
+
+<Layout title={article.data.title} description={article.data.description}>
+  <article class="article-page">
+    <div class="wrap">
+      <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <a href="/">Home</a>
+        <span class="crumb-sep">/</span>
+        <a href="/articles">Articles</a>
+        <span class="crumb-sep">/</span>
+        <a href={`/articles/category/${article.data.category}`}>{categoryMeta[article.data.category]}</a>
+        <span class="crumb-sep">/</span>
+        <span class="crumb-current">{article.data.title}</span>
+      </nav>
+
+      <span class="article-meta" style="display:block; margin-bottom: 14px;">
+        {categoryMeta[article.data.category]}{article.data.subcategory && <> / {article.data.subcategory}</>}
+      </span>
+      <h1 class="article-title">{article.data.title}</h1>
+
+      <div class="byline">
+        <span>By {article.data.author}</span>
+        {article.data.reviewedBy && <span> · Reviewed by {article.data.reviewedBy}</span>}
+        <span> · {formattedDate}</span>
+      </div>
+
+      <div class="prose">
+        <Content />
+      </div>
+
+      {article.data.tags.length > 0 && (
+        <div class="tag-row">
+          {article.data.tags.map((tag: string) => (
+            <span class="tag-pill">{tag}</span>
+          ))}
+        </div>
+      )}
+    </div>
+  </article>
+
+  {related.length > 0 && (
+    <section class="section section--alt">
+      <div class="wrap">
+        <div class="section-head">
+          <h2 class="section-title">Related articles</h2>
+        </div>
+        <div class="card-grid">
+          {related.map((a) => (
+            <a class="article-card" href={`/articles/${a.id}`}>
+              <span class="article-meta">{categoryMeta[a.data.category]}</span>
+              <h3>{a.data.title}</h3>
+              <p>{a.data.description}</p>
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+</Layout>
+
+<style>
+  .article-page{ padding: 56px 0 80px; max-width: 100%; }
+  .article-page .wrap{ max-width: 760px; }
+
+  .breadcrumbs{
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.02em;
+    color: var(--ink-600);
+    margin-bottom: 28px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    align-items:center;
+  }
+  .breadcrumbs a:hover{ color: var(--gold-500); }
+  .crumb-sep{ color: var(--line); }
+  .crumb-current{ color: var(--ink-900); }
+
+  .article-title{
+    font-size: clamp(30px, 4vw, 44px);
+    line-height: 1.15;
+    margin-bottom: 18px;
+  }
+  .byline{
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    color: var(--ink-600);
+    margin-bottom: 40px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .prose{
+    font-size: 17px;
+    line-height: 1.75;
+    color: var(--ink-900);
+  }
+  .prose :global(h2){
+    font-size: 24px;
+    margin: 40px 0 16px;
+  }
+  .prose :global(p){
+    margin-bottom: 18px;
+  }
+  .prose :global(ul), .prose :global(ol){
+    margin: 0 0 18px;
+    padding-left: 22px;
+  }
+  .prose :global(li){ margin-bottom: 8px; }
+
+  .tag-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top: 44px;
+    padding-top: 24px;
+    border-top: 1px solid var(--line);
+  }
+  .tag-pill{
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--sage-500);
+    border: 1px solid var(--line);
+    padding: 6px 12px;
+    border-radius: 999px;
+  }
+</style>
