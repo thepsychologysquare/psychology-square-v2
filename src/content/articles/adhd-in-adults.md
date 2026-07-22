@@ -13,7 +13,7 @@ reviewedBy: Sehar Waheed
 publishDate: 2026-07-22T10:26:00.000+05:00
 draft: false
 ---
-![](https://unsplash.com/photos/man-in-black-and-white-crew-neck-t-shirt-d0cGoNnaMsQ "Person with ADHD")
+![]( "Person with ADHD")
 
 Adult ADHD rarely looks like the hyperactive-child stereotype most people picture. It's more often internal — restlessness of thought rather than restlessness of body, along with a pattern that gets misread as a personal failing rather than a neurological difference.
 
