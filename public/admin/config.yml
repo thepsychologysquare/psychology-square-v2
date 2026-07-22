@@ -42,3 +42,40 @@ collections:
       - {label: "Publish Date", name: "publishDate", widget: "datetime"}
       - {label: "Draft", name: "draft", widget: "boolean", default: false, hint: "Turn ON to hide this article from the live site until it's ready."}
       - {label: "Body", name: "body", widget: "markdown"}
+
+  - name: "worksheets"
+    label: "Worksheets"
+    folder: "src/content/worksheets"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - {label: "Title", name: "title", widget: "string"}
+      - {label: "Description", name: "description", widget: "text", hint: "One or two sentences shown on the card."}
+      - label: "Tier"
+        name: "tier"
+        widget: "select"
+        options:
+          - {label: "Free", value: "free"}
+          - {label: "Paid", value: "paid"}
+      - label: "Category"
+        name: "category"
+        widget: "select"
+        default: "general"
+        options:
+          - {label: "General", value: "general"}
+          - {label: "Anxiety", value: "anxiety"}
+          - {label: "Depression", value: "depression"}
+          - {label: "ADHD", value: "adhd"}
+          - {label: "Addiction & Recovery", value: "addiction-recovery"}
+          - {label: "Trauma", value: "trauma"}
+          - {label: "Relationships", value: "relationships"}
+          - {label: "Stress & Burnout", value: "stress-burnout"}
+      - label: "PDF File"
+        name: "fileUrl"
+        widget: "file"
+        required: false
+        media_folder: "/worksheets"
+        public_folder: "/worksheets"
+        hint: "Only needed for Free worksheets — this is what visitors download directly. Leave blank for Paid worksheets."
+      - {label: "Order", name: "order", widget: "number", default: 0, required: false, hint: "Lower numbers show first. Leave as 0 if you don't care about order."}
+      - {label: "Draft", name: "draft", widget: "boolean", default: false, hint: "Turn ON to hide this worksheet from the live site until it's ready."}

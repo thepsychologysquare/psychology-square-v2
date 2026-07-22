@@ -24,4 +24,26 @@ const articles = defineCollection({
   }),
 });
 
-export const collections = { articles };
+const worksheets = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/worksheets' }),
+  schema: z.object({
+    title: z.string(),
+    description: z.string(),
+    tier: z.enum(['free', 'paid']),
+    category: z.enum([
+      'anxiety',
+      'depression',
+      'addiction-recovery',
+      'trauma',
+      'relationships',
+      'stress-burnout',
+      'adhd',
+      'general',
+    ]).default('general'),
+    fileUrl: z.string().optional(),
+    order: z.number().default(0),
+    draft: z.boolean().default(false),
+  }),
+});
+
+export const collections = { articles, worksheets };
