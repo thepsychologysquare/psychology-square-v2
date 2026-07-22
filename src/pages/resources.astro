@@ -155,18 +155,25 @@ const categoryMeta: Record<string, string> = {
   const filterButtons = document.querySelectorAll<HTMLButtonElement>('.filter-pill');
   const cards = document.querySelectorAll<HTMLElement>('.worksheet-card');
 
+  function applyFilter(filter: string) {
+    filterButtons.forEach((b) => b.classList.toggle('is-active', b.dataset.filter === filter));
+    cards.forEach((card) => {
+      const tier = card.dataset.tier;
+      const show = filter === 'all' || tier === filter;
+      card.classList.toggle('is-hidden', !show);
+    });
+  }
+
   filterButtons.forEach((btn) => {
     btn.addEventListener('click', () => {
-      filterButtons.forEach((b) => b.classList.remove('is-active'));
-      btn.classList.add('is-active');
-      const filter = btn.dataset.filter;
-      cards.forEach((card) => {
-        const tier = card.dataset.tier;
-        const show = filter === 'all' || tier === filter;
-        card.classList.toggle('is-hidden', !show);
-      });
+      applyFilter(btn.dataset.filter || 'all');
     });
   });
+
+  const urlFilter = new URLSearchParams(window.location.search).get('filter');
+  if (urlFilter === 'free' || urlFilter === 'paid') {
+    applyFilter(urlFilter);
+  }
 
   const requestButtons = document.querySelectorAll<HTMLButtonElement>('.request-btn');
   const worksheetField = document.getElementById('worksheet-field') as HTMLInputElement | null;
