@@ -10,7 +10,7 @@ tags:
   - emotion-regulation
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
-publishDate: 2026-07-18
+publishDate: 2026-07-22T10:26:00.000+05:00
 draft: false
 ---
 ![](https://unsplash.com/photos/man-in-black-and-white-crew-neck-t-shirt-d0cGoNnaMsQ "Person with ADHD")
