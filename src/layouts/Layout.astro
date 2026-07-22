@@ -1,4 +1,6 @@
 ---
+import '../styles/global.css';
+
 export interface Props {
   title: string;
   description?: string;
@@ -16,10 +18,8 @@ const { title, description = "The Psychology Square — individual and couples t
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/src/styles/global.css" />
 </head>
 <body>
-
 <header class="site-header">
   <div class="wrap header-inner">
     <a href="/" class="wordmark">
@@ -29,7 +29,6 @@ const { title, description = "The Psychology Square — individual and couples t
       </span>
       The Psychology&nbsp;Square
     </a>
-
     <nav class="site-nav" aria-label="Primary">
       <div class="nav-item">
         <a href="/articles">Articles</a>
@@ -48,21 +47,17 @@ const { title, description = "The Psychology Square — individual and couples t
       <div class="nav-item"><a href="/#team">Our Team</a></div>
       <div class="nav-item"><a href="/#contact">Contact</a></div>
     </nav>
-
     <a href="/#contact" class="header-cta">Book a session</a>
   </div>
 </header>
-
 <main>
   <slot />
 </main>
-
 <footer class="site-footer">
   <div class="wrap footer-inner">
     <span>© {new Date().getFullYear()} The Psychology Square</span>
     <span>Johar Town, Lahore, Pakistan — Online &amp; in-person sessions</span>
   </div>
 </footer>
-
 </body>
 </html>
