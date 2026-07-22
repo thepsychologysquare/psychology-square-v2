@@ -1,23 +1,28 @@
 ---
-title: "What ADHD Actually Looks Like in Adults"
-description: "Beyond the childhood stereotype — how attention, emotion regulation, and self-image show up differently once you're grown."
-category: "adhd"
-subcategory: "adult-adhd"
-tags: ["adhd", "attention", "emotion-regulation"]
-author: "Muhammad Sohail"
-reviewedBy: "Sehar Waheed"
-publishDate: 2026-07-18
+title: What ADHD Actually Looks Like in Adults
+description: Beyond the childhood stereotype — how attention, emotion
+  regulation, and self-image show up differently once you're grown.
+category: adhd
+subcategory: adult-adhd
+tags:
+  - adhd
+  - attention
+  - emotion-regulation
+author: Muhammad Sohail
+reviewedBy: Sehar Waheed
+publishDate: 2026-07-22T10:26:00.000+05:00
 draft: false
 ---
+![](https://unsplash.com/photos/man-in-black-and-white-crew-neck-t-shirt-d0cGoNnaMsQ "Person with ADHD")
 
 Adult ADHD rarely looks like the hyperactive-child stereotype most people picture. It's more often internal — restlessness of thought rather than restlessness of body, along with a pattern that gets misread as a personal failing rather than a neurological difference.
 
 ## What it commonly looks like
 
-- Difficulty starting tasks, even ones you genuinely want to do
-- Losing track of time, appointments, or where you put things
-- Emotional reactions that feel bigger or faster than the situation seems to call for
-- A long history of being told you're "not living up to potential"
+* Difficulty starting tasks, even ones you genuinely want to do
+* Losing track of time, appointments, or where you put things
+* Emotional reactions that feel bigger or faster than the situation seems to call for
+* A long history of being told you're "not living up to potential"
 
 ## Why it's often missed until adulthood
 
