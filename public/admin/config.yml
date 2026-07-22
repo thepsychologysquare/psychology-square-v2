@@ -1,0 +1,44 @@
+backend:
+  name: github
+  repo: thepsychologysquare/psychology-square-v2
+  branch: main
+  base_url: https://decap-proxy.thepsychologysquare.workers.dev
+  auth_endpoint: auth
+
+media_folder: "public/images"
+public_folder: "/images"
+
+collections:
+  - name: "articles"
+    label: "Articles"
+    folder: "src/content/articles"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - {label: "Title", name: "title", widget: "string"}
+      - {label: "Description", name: "description", widget: "text", hint: "One or two sentences — shows on article cards and in search results."}
+      - label: "Category"
+        name: "category"
+        widget: "select"
+        options:
+          - {label: "Anxiety", value: "anxiety"}
+          - {label: "Depression", value: "depression"}
+          - {label: "ADHD", value: "adhd"}
+          - {label: "Addiction & Recovery", value: "addiction-recovery"}
+          - {label: "Trauma", value: "trauma"}
+          - {label: "Relationships", value: "relationships"}
+          - {label: "Stress & Burnout", value: "stress-burnout"}
+      - {label: "Subcategory", name: "subcategory", widget: "string", required: false, hint: "Optional — a more specific label, e.g. 'coping-skills' or 'couples-conflict'."}
+      - {label: "Tags", name: "tags", widget: "list", default: []}
+      - label: "Author"
+        name: "author"
+        widget: "select"
+        options: ["Muhammad Sohail", "Sehar Waheed"]
+      - label: "Reviewed By"
+        name: "reviewedBy"
+        widget: "select"
+        options: ["Muhammad Sohail", "Sehar Waheed"]
+        required: false
+      - {label: "Publish Date", name: "publishDate", widget: "datetime"}
+      - {label: "Draft", name: "draft", widget: "boolean", default: false, hint: "Turn ON to hide this article from the live site until it's ready."}
+      - {label: "Body", name: "body", widget: "markdown"}

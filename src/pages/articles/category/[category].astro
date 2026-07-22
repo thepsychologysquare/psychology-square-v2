@@ -2,6 +2,19 @@
 import { getCollection } from 'astro:content';
 import Layout from '../../../layouts/Layout.astro';
 
+export async function getStaticPaths() {
+  const categories = [
+    'anxiety',
+    'depression',
+    'adhd',
+    'addiction-recovery',
+    'trauma',
+    'relationships',
+    'stress-burnout',
+  ];
+  return categories.map((category) => ({ params: { category } }));
+}
+
 const categoryMeta: Record<string, { name: string; blurb: string }> = {
   'anxiety': { name: 'Anxiety', blurb: 'Understanding anxiety and practical, evidence-informed ways to manage it day to day.' },
   'depression': { name: 'Depression', blurb: 'What depression actually looks like, and paths toward feeling more like yourself.' },
@@ -11,10 +24,6 @@ const categoryMeta: Record<string, { name: string; blurb: string }> = {
   'relationships': { name: 'Relationships', blurb: 'Couples and relationship patterns — conflict, communication, repair.' },
   'stress-burnout': { name: 'Stress & Burnout', blurb: 'Recognizing burnout early, and building a more sustainable relationship with stress.' },
 };
-
-export async function getStaticPaths() {
-  return Object.keys(categoryMeta).map((category) => ({ params: { category } }));
-}
 
 const { category } = Astro.params;
 const meta = categoryMeta[category as string];
