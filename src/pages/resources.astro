@@ -16,7 +16,6 @@ const categoryMeta: Record<string, string> = {
   'stress-burnout': 'Stress & Burnout',
 };
 
-// Auto-derived from actual content, so new categories need zero page edits.
 const categoriesPresent = [...new Set(sorted.map((w) => w.data.category))].sort();
 ---
 
@@ -31,70 +30,76 @@ const categoriesPresent = [...new Set(sorted.map((w) => w.data.category))].sort(
 
   <section class="section">
     <div class="wrap">
-      <div class="search-layout">
-        <aside class="filter-panel">
-          <div class="filter-block">
-            <input type="text" id="search-input" class="search-input" placeholder="Search worksheets…" autocomplete="off" />
-          </div>
+      <div class="toolbar">
+        <input type="text" id="search-input" class="search-input" placeholder="Search worksheets…" autocomplete="off" />
 
-          <div class="filter-block">
-            <h3 class="filter-heading">Tier</h3>
-            <div class="checkbox-list">
-              <label class="checkbox-row">
-                <input type="checkbox" value="free" class="tier-checkbox" />
-                <span>Free</span>
-              </label>
-              <label class="checkbox-row">
-                <input type="checkbox" value="paid" class="tier-checkbox" />
-                <span>Paid</span>
-              </label>
-            </div>
-          </div>
-
-          <div class="filter-block">
-            <h3 class="filter-heading">Category</h3>
-            <div class="checkbox-list">
-              {categoriesPresent.map((cat) => (
+        <details class="filter-dropdown" id="filter-dropdown">
+          <summary class="filter-toggle">
+            Filters <span class="filter-badge" id="filter-badge" hidden>0</span>
+          </summary>
+          <div class="filter-panel">
+            <div class="filter-group">
+              <h3 class="filter-heading">Tier</h3>
+              <div class="checkbox-list" id="tier-filters">
                 <label class="checkbox-row">
-                  <input type="checkbox" value={cat} class="category-checkbox" />
-                  <span>{categoryMeta[cat] || cat}</span>
+                  <input type="checkbox" value="free" class="tier-checkbox" data-label="Free" />
+                  <span>Free</span>
                 </label>
-              ))}
+                <label class="checkbox-row">
+                  <input type="checkbox" value="paid" class="tier-checkbox" data-label="Paid" />
+                  <span>Paid</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="filter-group">
+              <h3 class="filter-heading">Category</h3>
+              <div class="checkbox-list" id="category-filters">
+                {categoriesPresent.map((cat) => (
+                  <label class="checkbox-row">
+                    <input type="checkbox" value={cat} class="category-checkbox" data-label={categoryMeta[cat] || cat} />
+                    <span>{categoryMeta[cat] || cat}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div class="filter-panel-actions">
+              <button type="button" id="clear-filters" class="clear-filters-btn">Clear all</button>
+              <button type="button" class="btn btn--primary filter-done-btn" id="filter-done">Show results</button>
             </div>
           </div>
-
-          <button type="button" id="clear-filters" class="clear-filters-btn">Clear all filters</button>
-        </aside>
-
-        <div class="results-area">
-          <p class="results-count" id="results-count"></p>
-
-          <div class="card-grid worksheet-grid" id="worksheet-grid">
-            {sorted.map((w) => (
-              <div
-                class="article-card worksheet-card"
-                data-tier={w.data.tier}
-                data-category={w.data.category}
-                data-title={w.data.title.toLowerCase()}
-                data-description={w.data.description.toLowerCase()}
-              >
-                <span class="article-meta">
-                  {w.data.tier === 'free' ? 'Free' : 'Paid'} · {categoryMeta[w.data.category]}
-                </span>
-                <h3>{w.data.title}</h3>
-                <p>{w.data.description}</p>
-                {w.data.tier === 'free' ? (
-                  <a class="btn btn--text worksheet-action" href={w.data.fileUrl} target="_blank" rel="noopener">Download PDF →</a>
-                ) : (
-                  <button class="btn btn--text worksheet-action request-btn" data-title={w.data.title} type="button">Request this worksheet →</button>
-                )}
-              </div>
-            ))}
-          </div>
-
-          <p class="no-results" id="no-results" hidden>No worksheets match your filters. Try clearing some, or search a different term.</p>
-        </div>
+        </details>
       </div>
+
+      <div class="active-chips" id="active-chips"></div>
+
+      <p class="results-count" id="results-count"></p>
+
+      <div class="card-grid worksheet-grid" id="worksheet-grid">
+        {sorted.map((w) => (
+          <div
+            class="article-card worksheet-card"
+            data-tier={w.data.tier}
+            data-category={w.data.category}
+            data-title={w.data.title.toLowerCase()}
+            data-description={w.data.description.toLowerCase()}
+          >
+            <span class="article-meta">
+              {w.data.tier === 'free' ? 'Free' : 'Paid'} · {categoryMeta[w.data.category]}
+            </span>
+            <h3>{w.data.title}</h3>
+            <p>{w.data.description}</p>
+            {w.data.tier === 'free' ? (
+              <a class="btn btn--text worksheet-action" href={w.data.fileUrl} target="_blank" rel="noopener">Download PDF →</a>
+            ) : (
+              <button class="btn btn--text worksheet-action request-btn" data-title={w.data.title} type="button">Request this worksheet →</button>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <p class="no-results" id="no-results" hidden>No worksheets match your filters. Try clearing some, or search a different term.</p>
     </div>
   </section>
 
@@ -131,37 +136,71 @@ const categoriesPresent = [...new Set(sorted.map((w) => w.data.category))].sort(
 <style>
   .article-index-hero{ padding: 72px 0 56px; }
 
-  .search-layout{
-    display:grid;
-    grid-template-columns: 240px 1fr;
-    gap: 44px;
-    align-items: start;
-  }
-
-  .filter-panel{
-    position: sticky;
-    top: 96px;
-    display:flex;
-    flex-direction:column;
-    gap:28px;
-  }
-  .filter-block{ display:flex; flex-direction:column; gap:10px; }
-
+  .toolbar{ display:flex; gap:12px; position: relative; z-index: 20; }
   .search-input{
+    flex: 1;
     font-family: var(--font-body);
     font-size: 14.5px;
-    padding: 12px 14px;
+    padding: 12px 16px;
     border: 1px solid var(--line);
     border-radius: 3px;
     background: var(--paper-0);
     color: var(--ink-900);
-    width: 100%;
   }
-  .search-input:focus{
-    outline: 2px solid var(--gold-500);
-    outline-offset: 1px;
+  .search-input:focus{ outline: 2px solid var(--gold-500); outline-offset: 1px; }
+
+  .filter-dropdown{ position: relative; }
+  .filter-toggle{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--navy-950);
+    background: var(--paper-0);
+    border: 1px solid var(--line);
+    padding: 12px 20px;
+    border-radius: 3px;
+    cursor: pointer;
+    white-space: nowrap;
+    list-style: none;
+    user-select: none;
+  }
+  .filter-toggle::-webkit-details-marker{ display:none; }
+  .filter-toggle:hover{ border-color: var(--gold-500); }
+  .filter-dropdown[open] .filter-toggle{ border-color: var(--navy-950); background: var(--navy-950); color: var(--paper-0); }
+
+  .filter-badge{
+    background: var(--gold-500);
+    color: var(--navy-950);
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 999px;
+    padding: 1px 7px;
+    min-width: 18px;
+    text-align: center;
   }
 
+  .filter-panel{
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: min(360px, calc(100vw - 64px));
+    max-height: 60vh;
+    overflow-y: auto;
+    background: var(--paper-0);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    box-shadow: 0 12px 32px rgba(19,26,34,0.14);
+    padding: 22px;
+    display:flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+
+  .filter-group{ display:flex; flex-direction:column; gap:10px; }
   .filter-heading{
     font-family: var(--font-mono);
     font-size: 11.5px;
@@ -169,7 +208,6 @@ const categoriesPresent = [...new Set(sorted.map((w) => w.data.category))].sort(
     text-transform: uppercase;
     color: var(--ink-600);
   }
-
   .checkbox-list{ display:flex; flex-direction:column; gap:10px; }
   .checkbox-row{
     display:flex;
@@ -179,8 +217,30 @@ const categoriesPresent = [...new Set(sorted.map((w) => w.data.category))].sort(
     color: var(--ink-900);
     cursor: pointer;
   }
-  .checkbox-row input{ accent-color: var(--gold-500); width:15px; height:15px; }
+  .checkbox-row input{ accent-color: var(--gold-500); width:15px; height:15px; flex:none; }
+  .checkbox-row.is-extra{ display: none; }
+  .checkbox-row.is-extra.is-shown{ display: flex; }
 
+  .show-more-btn{
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--sage-500);
+    background: none;
+    border: none;
+    text-align: left;
+    padding: 0;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .filter-panel-actions{
+    display:flex;
+    justify-content: space-between;
+    align-items:center;
+    padding-top: 6px;
+    border-top: 1px solid var(--line);
+  }
   .clear-filters-btn{
     font-family: var(--font-mono);
     font-size: 12px;
@@ -192,43 +252,47 @@ const categoriesPresent = [...new Set(sorted.map((w) => w.data.category))].sort(
     text-decoration: underline;
     text-underline-offset: 3px;
     cursor: pointer;
-    text-align: left;
     padding: 0;
   }
   .clear-filters-btn:hover{ color: var(--gold-500); }
+  .filter-done-btn{ font-size: 13px; padding: 10px 20px; }
+
+  .active-chips{ display:flex; flex-wrap:wrap; gap:8px; margin-top: 18px; }
+  .active-chips:empty{ margin-top: 0; }
+  .active-chip{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.02em;
+    color: var(--navy-950);
+    background: var(--paper-50);
+    border: 1px solid var(--line);
+    padding: 6px 10px 6px 14px;
+    border-radius: 999px;
+  }
+  .active-chip button{
+    background: none; border: none; color: var(--ink-600);
+    cursor: pointer; font-size: 14px; line-height: 1; padding: 2px;
+  }
+  .active-chip button:hover{ color: var(--gold-500); }
 
   .results-count{
     font-family: var(--font-mono);
     font-size: 12.5px;
     color: var(--ink-600);
-    margin-bottom: 24px;
+    margin: 24px 0;
   }
-
   .no-results{ color: var(--ink-600); padding: 40px 0; }
 
   .worksheet-card{ justify-content: flex-start; }
   .worksheet-card.is-hidden{ display: none; }
   .worksheet-action{ margin-top: auto; align-self: flex-start; }
-  .request-btn{
-    background: none;
-    border: none;
-    font-family: inherit;
-    padding: 13px 4px;
-  }
+  .request-btn{ background: none; border: none; font-family: inherit; padding: 13px 4px; }
 
-  .request-form{
-    display:flex;
-    flex-direction:column;
-    gap:18px;
-  }
-  .request-form label{
-    display:flex;
-    flex-direction:column;
-    gap:6px;
-    font-size: 14px;
-    color: var(--ink-600);
-    font-weight: 500;
-  }
+  .request-form{ display:flex; flex-direction:column; gap:18px; }
+  .request-form label{ display:flex; flex-direction:column; gap:6px; font-size: 14px; color: var(--ink-600); font-weight: 500; }
   .request-form input,
   .request-form textarea{
     font-family: var(--font-body);
@@ -240,26 +304,79 @@ const categoriesPresent = [...new Set(sorted.map((w) => w.data.category))].sort(
     color: var(--ink-900);
   }
   .request-form input:focus,
-  .request-form textarea:focus{
-    outline: 2px solid var(--gold-500);
-    outline-offset: 1px;
-  }
+  .request-form textarea:focus{ outline: 2px solid var(--gold-500); outline-offset: 1px; }
   .request-form button{ align-self: flex-start; border: none; cursor: pointer; }
 
-  @media (max-width: 860px){
-    .search-layout{ grid-template-columns: 1fr; }
-    .filter-panel{ position: static; }
+  @media (max-width: 600px){
+    .toolbar{ flex-direction: column; }
+    .filter-panel{ right: 0; left: 0; width: auto; }
   }
 </style>
 
 <script>
+  type FilterEntry = { type: 'tier' | 'category'; value: string; label: string };
+
   const searchInput = document.getElementById('search-input') as HTMLInputElement;
+  const filterDropdown = document.getElementById('filter-dropdown') as HTMLDetailsElement;
+  const filterBadge = document.getElementById('filter-badge') as HTMLElement;
   const tierCheckboxes = document.querySelectorAll<HTMLInputElement>('.tier-checkbox');
   const categoryCheckboxes = document.querySelectorAll<HTMLInputElement>('.category-checkbox');
   const clearBtn = document.getElementById('clear-filters');
+  const doneBtn = document.getElementById('filter-done');
   const cards = document.querySelectorAll<HTMLElement>('#worksheet-grid .worksheet-card');
   const resultsCount = document.getElementById('results-count');
   const noResults = document.getElementById('no-results');
+  const activeChipsContainer = document.getElementById('active-chips');
+
+  function setupShowMore(containerId: string, threshold = 8) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    const rows = [...container.querySelectorAll('.checkbox-row')];
+    if (rows.length <= threshold) return;
+    rows.slice(threshold).forEach((row) => row.classList.add('is-extra'));
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'show-more-btn';
+    btn.textContent = `+ Show ${rows.length - threshold} more`;
+    btn.addEventListener('click', () => {
+      const nowShown = container.querySelectorAll('.checkbox-row.is-extra.is-shown').length === 0;
+      rows.slice(threshold).forEach((row) => row.classList.toggle('is-shown', nowShown));
+      btn.textContent = nowShown ? 'Show less' : `+ Show ${rows.length - threshold} more`;
+    });
+    container.after(btn);
+  }
+  setupShowMore('category-filters');
+
+  function getActiveFilters(): FilterEntry[] {
+    const tiers = [...tierCheckboxes]
+      .filter((c) => c.checked)
+      .map((c) => ({ type: 'tier' as const, value: c.value, label: c.dataset.label || c.value }));
+    const cats = [...categoryCheckboxes]
+      .filter((c) => c.checked)
+      .map((c) => ({ type: 'category' as const, value: c.value, label: c.dataset.label || c.value }));
+    return [...tiers, ...cats];
+  }
+
+  function renderChips() {
+    if (!activeChipsContainer) return;
+    const active = getActiveFilters();
+    activeChipsContainer.innerHTML = '';
+    active.forEach((f) => {
+      const chip = document.createElement('span');
+      chip.className = 'active-chip';
+      chip.innerHTML = `${f.label} <button type="button" aria-label="Remove filter">✕</button>`;
+      chip.querySelector('button')?.addEventListener('click', () => {
+        const source = f.type === 'tier' ? tierCheckboxes : categoryCheckboxes;
+        source.forEach((c) => { if (c.value === f.value) c.checked = false; });
+        applyFilters();
+      });
+      activeChipsContainer.appendChild(chip);
+    });
+    if (filterBadge) {
+      filterBadge.hidden = active.length === 0;
+      filterBadge.textContent = String(active.length);
+    }
+  }
 
   function applyFilters() {
     const query = searchInput.value.trim().toLowerCase();
@@ -286,9 +403,9 @@ const categoriesPresent = [...new Set(sorted.map((w) => w.data.category))].sort(
     if (resultsCount) {
       resultsCount.textContent = `Showing ${visibleCount} of ${cards.length} worksheet${cards.length === 1 ? '' : 's'}`;
     }
-    if (noResults) {
-      noResults.hidden = visibleCount !== 0;
-    }
+    if (noResults) noResults.hidden = visibleCount !== 0;
+
+    renderChips();
   }
 
   searchInput.addEventListener('input', applyFilters);
@@ -302,7 +419,14 @@ const categoriesPresent = [...new Set(sorted.map((w) => w.data.category))].sort(
     applyFilters();
   });
 
-  // Support ?filter=free / ?filter=paid links from the nav mega-menu
+  doneBtn?.addEventListener('click', () => { filterDropdown.open = false; });
+
+  document.addEventListener('click', (e) => {
+    if (filterDropdown.open && !filterDropdown.contains(e.target as Node)) {
+      filterDropdown.open = false;
+    }
+  });
+
   const urlFilter = new URLSearchParams(window.location.search).get('filter');
   if (urlFilter === 'free' || urlFilter === 'paid') {
     const match = [...tierCheckboxes].find((c) => c.value === urlFilter);
@@ -316,9 +440,7 @@ const categoriesPresent = [...new Set(sorted.map((w) => w.data.category))].sort(
 
   requestButtons.forEach((btn) => {
     btn.addEventListener('click', () => {
-      if (worksheetField) {
-        worksheetField.value = btn.dataset.title || '';
-      }
+      if (worksheetField) worksheetField.value = btn.dataset.title || '';
       document.getElementById('request-form')?.scrollIntoView({ behavior: 'smooth' });
     });
   });
