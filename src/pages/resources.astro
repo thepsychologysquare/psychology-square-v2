@@ -15,6 +15,9 @@ const categoryMeta: Record<string, string> = {
   'relationships': 'Relationships',
   'stress-burnout': 'Stress & Burnout',
 };
+
+// Auto-derived from actual content, so new categories need zero page edits.
+const categoriesPresent = [...new Set(sorted.map((w) => w.data.category))].sort();
 ---
 
 <Layout title="Resources" description="Free and paid worksheets to use between therapy sessions.">
@@ -28,27 +31,69 @@ const categoryMeta: Record<string, string> = {
 
   <section class="section">
     <div class="wrap">
-      <div class="filter-row" role="tablist" aria-label="Filter worksheets">
-        <button class="filter-pill is-active" data-filter="all">All</button>
-        <button class="filter-pill" data-filter="free">Free</button>
-        <button class="filter-pill" data-filter="paid">Paid</button>
-      </div>
-
-      <div class="card-grid worksheet-grid" style="margin-top: 40px;">
-        {sorted.map((w) => (
-          <div class="article-card worksheet-card" data-tier={w.data.tier}>
-            <span class="article-meta">
-              {w.data.tier === 'free' ? 'Free' : 'Paid'} · {categoryMeta[w.data.category]}
-            </span>
-            <h3>{w.data.title}</h3>
-            <p>{w.data.description}</p>
-            {w.data.tier === 'free' ? (
-              <a class="btn btn--text worksheet-action" href={w.data.fileUrl} target="_blank" rel="noopener">Download PDF →</a>
-            ) : (
-              <button class="btn btn--text worksheet-action request-btn" data-title={w.data.title} type="button">Request this worksheet →</button>
-            )}
+      <div class="search-layout">
+        <aside class="filter-panel">
+          <div class="filter-block">
+            <input type="text" id="search-input" class="search-input" placeholder="Search worksheets…" autocomplete="off" />
           </div>
-        ))}
+
+          <div class="filter-block">
+            <h3 class="filter-heading">Tier</h3>
+            <div class="checkbox-list">
+              <label class="checkbox-row">
+                <input type="checkbox" value="free" class="tier-checkbox" />
+                <span>Free</span>
+              </label>
+              <label class="checkbox-row">
+                <input type="checkbox" value="paid" class="tier-checkbox" />
+                <span>Paid</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="filter-block">
+            <h3 class="filter-heading">Category</h3>
+            <div class="checkbox-list">
+              {categoriesPresent.map((cat) => (
+                <label class="checkbox-row">
+                  <input type="checkbox" value={cat} class="category-checkbox" />
+                  <span>{categoryMeta[cat] || cat}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <button type="button" id="clear-filters" class="clear-filters-btn">Clear all filters</button>
+        </aside>
+
+        <div class="results-area">
+          <p class="results-count" id="results-count"></p>
+
+          <div class="card-grid worksheet-grid" id="worksheet-grid">
+            {sorted.map((w) => (
+              <div
+                class="article-card worksheet-card"
+                data-tier={w.data.tier}
+                data-category={w.data.category}
+                data-title={w.data.title.toLowerCase()}
+                data-description={w.data.description.toLowerCase()}
+              >
+                <span class="article-meta">
+                  {w.data.tier === 'free' ? 'Free' : 'Paid'} · {categoryMeta[w.data.category]}
+                </span>
+                <h3>{w.data.title}</h3>
+                <p>{w.data.description}</p>
+                {w.data.tier === 'free' ? (
+                  <a class="btn btn--text worksheet-action" href={w.data.fileUrl} target="_blank" rel="noopener">Download PDF →</a>
+                ) : (
+                  <button class="btn btn--text worksheet-action request-btn" data-title={w.data.title} type="button">Request this worksheet →</button>
+                )}
+              </div>
+            ))}
+          </div>
+
+          <p class="no-results" id="no-results" hidden>No worksheets match your filters. Try clearing some, or search a different term.</p>
+        </div>
       </div>
     </div>
   </section>
@@ -86,29 +131,80 @@ const categoryMeta: Record<string, string> = {
 <style>
   .article-index-hero{ padding: 72px 0 56px; }
 
-  .filter-row{
-    display:flex;
-    gap:10px;
+  .search-layout{
+    display:grid;
+    grid-template-columns: 240px 1fr;
+    gap: 44px;
+    align-items: start;
   }
-  .filter-pill{
+
+  .filter-panel{
+    position: sticky;
+    top: 96px;
+    display:flex;
+    flex-direction:column;
+    gap:28px;
+  }
+  .filter-block{ display:flex; flex-direction:column; gap:10px; }
+
+  .search-input{
+    font-family: var(--font-body);
+    font-size: 14.5px;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    background: var(--paper-0);
+    color: var(--ink-900);
+    width: 100%;
+  }
+  .search-input:focus{
+    outline: 2px solid var(--gold-500);
+    outline-offset: 1px;
+  }
+
+  .filter-heading{
     font-family: var(--font-mono);
-    font-size: 13px;
+    font-size: 11.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-600);
+  }
+
+  .checkbox-list{ display:flex; flex-direction:column; gap:10px; }
+  .checkbox-row{
+    display:flex;
+    align-items:center;
+    gap:9px;
+    font-size: 14px;
+    color: var(--ink-900);
+    cursor: pointer;
+  }
+  .checkbox-row input{ accent-color: var(--gold-500); width:15px; height:15px; }
+
+  .clear-filters-btn{
+    font-family: var(--font-mono);
+    font-size: 12px;
     letter-spacing: 0.04em;
     text-transform: uppercase;
-    color: var(--navy-700);
-    background: transparent;
-    border: 1px solid var(--line);
-    padding: 9px 20px;
-    border-radius: 999px;
+    color: var(--ink-600);
+    background: none;
+    border: none;
+    text-decoration: underline;
+    text-underline-offset: 3px;
     cursor: pointer;
-    transition: all .2s var(--ease);
+    text-align: left;
+    padding: 0;
   }
-  .filter-pill:hover{ border-color: var(--gold-500); }
-  .filter-pill.is-active{
-    background: var(--navy-950);
-    color: var(--paper-0);
-    border-color: var(--navy-950);
+  .clear-filters-btn:hover{ color: var(--gold-500); }
+
+  .results-count{
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    color: var(--ink-600);
+    margin-bottom: 24px;
   }
+
+  .no-results{ color: var(--ink-600); padding: 40px 0; }
 
   .worksheet-card{ justify-content: flex-start; }
   .worksheet-card.is-hidden{ display: none; }
@@ -149,31 +245,71 @@ const categoryMeta: Record<string, string> = {
     outline-offset: 1px;
   }
   .request-form button{ align-self: flex-start; border: none; cursor: pointer; }
+
+  @media (max-width: 860px){
+    .search-layout{ grid-template-columns: 1fr; }
+    .filter-panel{ position: static; }
+  }
 </style>
 
 <script>
-  const filterButtons = document.querySelectorAll<HTMLButtonElement>('.filter-pill');
-  const cards = document.querySelectorAll<HTMLElement>('.worksheet-card');
+  const searchInput = document.getElementById('search-input') as HTMLInputElement;
+  const tierCheckboxes = document.querySelectorAll<HTMLInputElement>('.tier-checkbox');
+  const categoryCheckboxes = document.querySelectorAll<HTMLInputElement>('.category-checkbox');
+  const clearBtn = document.getElementById('clear-filters');
+  const cards = document.querySelectorAll<HTMLElement>('#worksheet-grid .worksheet-card');
+  const resultsCount = document.getElementById('results-count');
+  const noResults = document.getElementById('no-results');
 
-  function applyFilter(filter: string) {
-    filterButtons.forEach((b) => b.classList.toggle('is-active', b.dataset.filter === filter));
+  function applyFilters() {
+    const query = searchInput.value.trim().toLowerCase();
+    const activeTiers = [...tierCheckboxes].filter((c) => c.checked).map((c) => c.value);
+    const activeCategories = [...categoryCheckboxes].filter((c) => c.checked).map((c) => c.value);
+
+    let visibleCount = 0;
+
     cards.forEach((card) => {
-      const tier = card.dataset.tier;
-      const show = filter === 'all' || tier === filter;
+      const title = card.dataset.title || '';
+      const description = card.dataset.description || '';
+      const tier = card.dataset.tier || '';
+      const category = card.dataset.category || '';
+
+      const matchesSearch = !query || title.includes(query) || description.includes(query);
+      const matchesTier = activeTiers.length === 0 || activeTiers.includes(tier);
+      const matchesCategory = activeCategories.length === 0 || activeCategories.includes(category);
+
+      const show = matchesSearch && matchesTier && matchesCategory;
       card.classList.toggle('is-hidden', !show);
+      if (show) visibleCount++;
     });
+
+    if (resultsCount) {
+      resultsCount.textContent = `Showing ${visibleCount} of ${cards.length} worksheet${cards.length === 1 ? '' : 's'}`;
+    }
+    if (noResults) {
+      noResults.hidden = visibleCount !== 0;
+    }
   }
 
-  filterButtons.forEach((btn) => {
-    btn.addEventListener('click', () => {
-      applyFilter(btn.dataset.filter || 'all');
-    });
+  searchInput.addEventListener('input', applyFilters);
+  tierCheckboxes.forEach((cb) => cb.addEventListener('change', applyFilters));
+  categoryCheckboxes.forEach((cb) => cb.addEventListener('change', applyFilters));
+
+  clearBtn?.addEventListener('click', () => {
+    searchInput.value = '';
+    tierCheckboxes.forEach((cb) => (cb.checked = false));
+    categoryCheckboxes.forEach((cb) => (cb.checked = false));
+    applyFilters();
   });
 
+  // Support ?filter=free / ?filter=paid links from the nav mega-menu
   const urlFilter = new URLSearchParams(window.location.search).get('filter');
   if (urlFilter === 'free' || urlFilter === 'paid') {
-    applyFilter(urlFilter);
+    const match = [...tierCheckboxes].find((c) => c.value === urlFilter);
+    if (match) match.checked = true;
   }
+
+  applyFilters();
 
   const requestButtons = document.querySelectorAll<HTMLButtonElement>('.request-btn');
   const worksheetField = document.getElementById('worksheet-field') as HTMLInputElement | null;
