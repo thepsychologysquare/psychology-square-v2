@@ -16,6 +16,11 @@ const categoryMeta: Record<string, string> = {
   'relationships': 'Relationships',
   'stress-burnout': 'Stress & Burnout',
 };
+
+// Build filter option lists dynamically from whatever actually exists in the content —
+// so adding a new category or tag later needs zero changes to this page.
+const categoriesPresent = [...new Set(sorted.map((a) => a.data.category))].sort();
+const tagsPresent = [...new Set(sorted.flatMap((a) => a.data.tags))].sort();
 ---
 
 <Layout title="Articles" description="Articles on anxiety, depression, ADHD, trauma, relationships, and more — written and reviewed by licensed clinical psychologists.">
@@ -29,20 +34,60 @@ const categoryMeta: Record<string, string> = {
 
   <section class="section">
     <div class="wrap">
-      <div class="category-pills">
-        {Object.entries(categoryMeta).map(([slug, name]) => (
-          <a href={`/articles/category/${slug}`} class="category-pill">{name}</a>
-        ))}
-      </div>
+      <div class="search-layout">
+        <aside class="filter-panel">
+          <div class="filter-block">
+            <input type="text" id="search-input" class="search-input" placeholder="Search articles…" autocomplete="off" />
+          </div>
 
-      <div class="card-grid" style="margin-top: 48px;">
-        {sorted.map((article) => (
-          <a class="article-card" href={`/articles/${article.id}`}>
-            <span class="article-meta">{categoryMeta[article.data.category]}</span>
-            <h3>{article.data.title}</h3>
-            <p>{article.data.description}</p>
-          </a>
-        ))}
+          <div class="filter-block">
+            <h3 class="filter-heading">Category</h3>
+            <div class="checkbox-list" id="category-filters">
+              {categoriesPresent.map((cat) => (
+                <label class="checkbox-row">
+                  <input type="checkbox" value={cat} class="category-checkbox" />
+                  <span>{categoryMeta[cat] || cat}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {tagsPresent.length > 0 && (
+            <div class="filter-block">
+              <h3 class="filter-heading">Tags</h3>
+              <div class="tag-chip-list" id="tag-filters">
+                {tagsPresent.map((tag) => (
+                  <button type="button" class="tag-chip" data-tag={tag}>{tag}</button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <button type="button" id="clear-filters" class="clear-filters-btn">Clear all filters</button>
+        </aside>
+
+        <div class="results-area">
+          <p class="results-count" id="results-count"></p>
+
+          <div class="card-grid" id="article-grid">
+            {sorted.map((article) => (
+              <a
+                class="article-card"
+                href={`/articles/${article.id}`}
+                data-title={article.data.title.toLowerCase()}
+                data-description={article.data.description.toLowerCase()}
+                data-category={article.data.category}
+                data-tags={article.data.tags.join(',')}
+              >
+                <span class="article-meta">{categoryMeta[article.data.category] || article.data.category}</span>
+                <h3>{article.data.title}</h3>
+                <p>{article.data.description}</p>
+              </a>
+            ))}
+          </div>
+
+          <p class="no-results" id="no-results" hidden>No articles match your filters. Try clearing some, or search a different term.</p>
+        </div>
       </div>
     </div>
   </section>
@@ -50,24 +95,177 @@ const categoryMeta: Record<string, string> = {
 
 <style>
   .article-index-hero{ padding: 72px 0 56px; }
-  .category-pills{
-    display:flex;
-    flex-wrap:wrap;
-    gap:10px;
+
+  .search-layout{
+    display:grid;
+    grid-template-columns: 240px 1fr;
+    gap: 44px;
+    align-items: start;
   }
-  .category-pill{
-    font-family: var(--font-mono);
-    font-size: 12.5px;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--navy-700);
+
+  .filter-panel{
+    position: sticky;
+    top: 96px;
+    display:flex;
+    flex-direction:column;
+    gap:28px;
+  }
+  .filter-block{ display:flex; flex-direction:column; gap:10px; }
+
+  .search-input{
+    font-family: var(--font-body);
+    font-size: 14.5px;
+    padding: 12px 14px;
     border: 1px solid var(--line);
-    padding: 9px 16px;
+    border-radius: 3px;
+    background: var(--paper-0);
+    color: var(--ink-900);
+    width: 100%;
+  }
+  .search-input:focus{
+    outline: 2px solid var(--gold-500);
+    outline-offset: 1px;
+  }
+
+  .filter-heading{
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-600);
+  }
+
+  .checkbox-list{ display:flex; flex-direction:column; gap:10px; }
+  .checkbox-row{
+    display:flex;
+    align-items:center;
+    gap:9px;
+    font-size: 14px;
+    color: var(--ink-900);
+    cursor: pointer;
+  }
+  .checkbox-row input{ accent-color: var(--gold-500); width:15px; height:15px; }
+
+  .tag-chip-list{ display:flex; flex-wrap:wrap; gap:8px; }
+  .tag-chip{
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--sage-500);
+    background: transparent;
+    border: 1px solid var(--line);
+    padding: 6px 12px;
     border-radius: 999px;
+    cursor: pointer;
     transition: all .2s var(--ease);
   }
-  .category-pill:hover{
-    border-color: var(--gold-500);
-    background: var(--paper-50);
+  .tag-chip:hover{ border-color: var(--sage-500); }
+  .tag-chip.is-active{
+    background: var(--sage-500);
+    border-color: var(--sage-500);
+    color: var(--paper-0);
+  }
+
+  .clear-filters-btn{
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--ink-600);
+    background: none;
+    border: none;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+    text-align: left;
+    padding: 0;
+  }
+  .clear-filters-btn:hover{ color: var(--gold-500); }
+
+  .results-count{
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    color: var(--ink-600);
+    margin-bottom: 24px;
+  }
+
+  .no-results{
+    color: var(--ink-600);
+    padding: 40px 0;
+  }
+
+  .article-card.is-hidden{ display:none; }
+
+  @media (max-width: 860px){
+    .search-layout{ grid-template-columns: 1fr; }
+    .filter-panel{ position: static; }
   }
 </style>
+
+<script>
+  const searchInput = document.getElementById('search-input') as HTMLInputElement;
+  const categoryCheckboxes = document.querySelectorAll<HTMLInputElement>('.category-checkbox');
+  const tagChips = document.querySelectorAll<HTMLButtonElement>('.tag-chip');
+  const clearBtn = document.getElementById('clear-filters');
+  const cards = document.querySelectorAll<HTMLElement>('#article-grid .article-card');
+  const resultsCount = document.getElementById('results-count');
+  const noResults = document.getElementById('no-results');
+
+  const activeTags = new Set<string>();
+
+  function applyFilters() {
+    const query = searchInput.value.trim().toLowerCase();
+    const activeCategories = [...categoryCheckboxes].filter((c) => c.checked).map((c) => c.value);
+
+    let visibleCount = 0;
+
+    cards.forEach((card) => {
+      const title = card.dataset.title || '';
+      const description = card.dataset.description || '';
+      const category = card.dataset.category || '';
+      const tags = (card.dataset.tags || '').split(',').filter(Boolean);
+
+      const matchesSearch = !query || title.includes(query) || description.includes(query);
+      const matchesCategory = activeCategories.length === 0 || activeCategories.includes(category);
+      const matchesTags = activeTags.size === 0 || [...activeTags].every((t) => tags.includes(t));
+
+      const show = matchesSearch && matchesCategory && matchesTags;
+      card.classList.toggle('is-hidden', !show);
+      if (show) visibleCount++;
+    });
+
+    if (resultsCount) {
+      resultsCount.textContent = `Showing ${visibleCount} of ${cards.length} article${cards.length === 1 ? '' : 's'}`;
+    }
+    if (noResults) {
+      noResults.hidden = visibleCount !== 0;
+    }
+  }
+
+  searchInput.addEventListener('input', applyFilters);
+  categoryCheckboxes.forEach((cb) => cb.addEventListener('change', applyFilters));
+  tagChips.forEach((chip) => {
+    chip.addEventListener('click', () => {
+      const tag = chip.dataset.tag || '';
+      if (activeTags.has(tag)) {
+        activeTags.delete(tag);
+        chip.classList.remove('is-active');
+      } else {
+        activeTags.add(tag);
+        chip.classList.add('is-active');
+      }
+      applyFilters();
+    });
+  });
+
+  clearBtn?.addEventListener('click', () => {
+    searchInput.value = '';
+    categoryCheckboxes.forEach((cb) => (cb.checked = false));
+    activeTags.clear();
+    tagChips.forEach((chip) => chip.classList.remove('is-active'));
+    applyFilters();
+  });
+
+  applyFilters();
+</script>
