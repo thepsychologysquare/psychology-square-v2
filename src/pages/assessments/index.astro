@@ -1,6 +1,6 @@
 ---
 import { getCollection } from 'astro:content';
-import Layout from '../layouts/Layout.astro';
+import Layout from '../../layouts/Layout.astro';
 
 const allAssessments = await getCollection('assessments', ({ data }) => !data.draft);
 const sorted = allAssessments.sort((a, b) => a.data.order - b.data.order);
