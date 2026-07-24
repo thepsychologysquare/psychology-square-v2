@@ -1,0 +1,134 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+<Layout title="Services" description="Individual and couples therapy, plus research and statistical analysis consulting.">
+
+  <section class="hero article-index-hero">
+    <div class="wrap">
+      <p class="eyebrow">What We Offer</p>
+      <h1 class="hero-title" style="font-size: clamp(32px, 4vw, 48px); margin-bottom: 16px;">Services</h1>
+      <p class="hero-sub">Two formats, one practice — therapy sessions, and research/statistical analysis support for students and researchers.</p>
+    </div>
+  </section>
+
+  <section class="section" id="therapy">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow" style="color: var(--sage-500); margin-bottom: 10px;">Therapy</p>
+          <h2 class="section-title">Two formats. One space.</h2>
+        </div>
+      </div>
+
+      <div class="card-grid" style="margin-bottom: 56px;">
+        <div class="article-card" style="cursor:default;">
+          <span class="article-meta">Individual Therapy</span>
+          <h3>One-to-one sessions</h3>
+          <p>Online or in person, for working through what's weighing on you — patterns, symptoms, or simply a season that feels heavier than it should.</p>
+          <p style="font-family: var(--font-mono); font-size: 13px; color: var(--gold-500); margin-top: 8px;">PKR 5,000 / session</p>
+        </div>
+        <div class="article-card" style="cursor:default;">
+          <span class="article-meta">Couples Therapy</span>
+          <h3>Joint sessions</h3>
+          <p>Online or in person, for partners working through communication, conflict, or disconnection — with both people's experience given equal room.</p>
+          <p style="font-family: var(--font-mono); font-size: 13px; color: var(--gold-500); margin-top: 8px;">PKR 7,000 / session</p>
+        </div>
+      </div>
+
+      <h3 style="font-size: 18px; margin-bottom: 16px;">Commonly addressed</h3>
+      <div class="category-pills" style="margin-bottom: 56px;">
+        {['Anxiety', 'Depression', 'Addiction & Recovery', 'Trauma & Distress', 'Relationship Conflict', 'Stress & Burnout'].map((t) => (
+          <span class="topic-pill">{t}</span>
+        ))}
+      </div>
+
+      <div class="approach-grid">
+        <div class="approach-item">
+          <span class="approach-num">01</span>
+          <h3>Structured, not clinical-cold</h3>
+          <p>Sessions follow an evidence-based framework, but conversation comes first. You won't be handed a worksheet before you've been heard.</p>
+        </div>
+        <div class="approach-item">
+          <span class="approach-num">02</span>
+          <h3>Online or in person, your choice</h3>
+          <p>Join over video call from anywhere, or come in person to the Johar Town, Lahore office. Either way — a quiet, confidential hour.</p>
+        </div>
+        <div class="approach-item">
+          <span class="approach-num">03</span>
+          <h3>Rooted in real training</h3>
+          <p>Grounded in supervised clinical experience across hospital and addiction-treatment settings, not theory alone.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--alt" id="research-analysis">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow" style="color: var(--sage-500); margin-bottom: 10px;">Research Analysis</p>
+          <h2 class="section-title">Statistical &amp; research support for psychology work.</h2>
+        </div>
+      </div>
+      <p style="color: var(--ink-600); max-width: 640px; margin-bottom: 40px;">For students and researchers who need help with the numbers side of psychology — from a first thesis analysis to advanced psychometric work. Support in both R and SPSS, tailored to your level.</p>
+
+      <div class="card-grid">
+        <div class="article-card" style="cursor:default;">
+          <span class="article-meta">Beginners</span>
+          <h3>Getting started with analysis</h3>
+          <p>Help setting up your dataset, choosing the right test, running it in R or SPSS, and understanding what the output actually means for your write-up.</p>
+        </div>
+        <div class="article-card" style="cursor:default;">
+          <span class="article-meta">Psychometrics</span>
+          <h3>Scale development &amp; validation</h3>
+          <p>Reliability (Cronbach's alpha), factor analysis (EFA/CFA), and validity testing for researchers building or adapting a psychological scale.</p>
+        </div>
+        <div class="article-card" style="cursor:default;">
+          <span class="article-meta">Advanced</span>
+          <h3>R programming &amp; modeling</h3>
+          <p>Regression, mediation/moderation analysis, mixed models, and general R scripting support for advanced thesis or publication-level work.</p>
+        </div>
+      </div>
+
+      <div class="request-cta-banner" style="margin-top: 48px;">
+        <p>Have a specific analysis or dataset in mind?</p>
+        <a href="/#contact" class="btn btn--primary">Get in touch →</a>
+      </div>
+    </div>
+  </section>
+
+</Layout>
+
+<style>
+  .article-index-hero{ padding: 72px 0 56px; }
+
+  .category-pills{ display:flex; flex-wrap:wrap; gap:10px; }
+  .topic-pill{
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--navy-700);
+    border: 1px solid var(--line);
+    padding: 9px 16px;
+    border-radius: 999px;
+  }
+
+  .approach-grid{
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+  }
+  .approach-item{ display:flex; flex-direction:column; gap:10px; }
+  .approach-num{
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--gold-500);
+  }
+  .approach-item h3{ font-size: 17px; }
+  .approach-item p{ color: var(--ink-600); font-size: 14.5px; }
+
+  @media (max-width: 860px){
+    .approach-grid{ grid-template-columns: 1fr; }
+  }
+</style>
