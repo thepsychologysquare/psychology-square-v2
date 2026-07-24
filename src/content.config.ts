@@ -61,5 +61,4 @@ const assessments = defineCollection({
   }),
 });
 
-export const collections = { articles, worksheets, assessents };
-
+export const collections = { articles, worksheets, assessments };
