@@ -1,0 +1,323 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="Our Team">
+
+  <section class="team-hero">
+    <div class="wrap">
+      <p class="eyebrow eyebrow--dark">Who we are</p>
+      <h1>Two clinicians. One practice.</h1>
+      <p class="hero-sub">Led by licensed clinical psychologists with clinical training across hospital, addiction treatment, and academic settings.</p>
+    </div>
+  </section>
+
+  <section class="team-full">
+    <div class="wrap">
+      <div class="team-grid-full">
+        <article class="team-card-full">
+          <div class="avatar-large">
+            <img src="/images/sohail.jpg" alt="Muhammad Sohail" onerror="this.classList.add('img-error')">
+            <span class="avatar-fallback">MS</span>
+          </div>
+          <h2>Muhammad Sohail</h2>
+          <span class="team-role-large">Founder &amp; CEO</span>
+          <span class="team-role-large">Lecturer of Psychology &amp; Clinical Psychologist</span>
+          
+          <ul class="team-credentials-full">
+            <li>Lecturer of Psychology, Rashid Latif Khan University (RLKU)</li>
+            <li>M.S. in Clinical Psychology, University of Central Punjab (CGPA 3.71)</li>
+            <li>B.S. in Psychology, University of Peshawar (CGPA 3.34)</li>
+            <li>Member, American Psychological Association (APA)</li>
+          </ul>
+
+          <div class="credential-section">
+            <h3>Clinical Experience</h3>
+            <ul class="exp-list">
+              <li><strong>May 2024 – Present:</strong> Lecturer, Psychology — Rashid Latif Khan University (RLKU)</li>
+              <li><strong>2019 – Present:</strong> Founder &amp; CEO | Clinical Psychologist — The Psychology Square</li>
+              <li><strong>Feb – Jul 2022:</strong> Trainee Clinical Psychologist — SIMS / Services Hospital</li>
+              <li><strong>Oct 2022 – Feb 2023:</strong> Trainee Clinical Psychologist — Lahore Institute of Special Care and Attention (LISCA)</li>
+              <li><strong>Feb – Jul 2023:</strong> Trainee Clinical Psychologist — Ehsas Clinic: Addiction and Psychological Treatment Center</li>
+            </ul>
+          </div>
+
+          <div class="credential-section">
+            <h3>Research Interests</h3>
+            <ul class="skill-tags">
+              <li>Psychometrics</li>
+              <li>ADHD</li>
+              <li>Artificial Intelligence</li>
+            </ul>
+          </div>
+
+          <a href="/team/sohail" class="btn btn--primary" style="margin-top: 32px;">View full profile</a>
+        </article>
+
+        <article class="team-card-full">
+          <div class="avatar-large">
+            <img src="/images/sehar.jpg" alt="Sehar Waheed" onerror="this.classList.add('img-error')">
+            <span class="avatar-fallback">SW</span>
+          </div>
+          <h2>Sehar Waheed</h2>
+          <span class="team-role-large">Co-CEO</span>
+          <span class="team-role-large">Clinical Psychologist &amp; Counselor</span>
+          
+          <ul class="team-credentials-full">
+            <li>Clinical Psychologist / Counselor, University of Management and Technology (UMT)</li>
+            <li>M.S. in Clinical Psychology, University of Central Punjab (CGPA 3.69)</li>
+            <li>B.S. in Psychology — Gold Medalist, COMSATS University (CGPA 3.68)</li>
+            <li>Member, American Psychological Association (APA)</li>
+          </ul>
+
+          <div class="credential-section">
+            <h3>Clinical Experience</h3>
+            <ul class="exp-list">
+              <li><strong>Feb 2026 – Present:</strong> Clinical Psychologist / Clinical Counsellor — Happiness Center, University of Management and Technology (UMT)</li>
+              <li><strong>2019 – Present:</strong> Clinical Psychologist — The Psychology Square</li>
+              <li><strong>Oct 2023 – Feb 2026:</strong> Research Associate &amp; Campus Counsellor — University of Central Punjab (UCP)</li>
+              <li><strong>Feb 2023 – Jul 2023:</strong> Trainee Clinical Psychologist — Focus Rehab: Addiction and Psychological Treatment Centre</li>
+              <li><strong>Oct 2022 – Feb 2023:</strong> Trainee Clinical Psychologist — Lahore Institute of Special Care and Attention (LISCA)</li>
+            </ul>
+          </div>
+
+          <div class="credential-section">
+            <h3>Teaching Experience</h3>
+            <ul class="exp-list">
+              <li><strong>Spring 2025 – Present:</strong> Visiting Lecturer, Psychology — COMSATS University</li>
+              <li><strong>Fall 2024:</strong> Visiting Lecturer, Psychology — FAST University</li>
+              <li><strong>Spring 2024:</strong> Visiting Lecturer, Psychology — Lahore Leads University</li>
+            </ul>
+          </div>
+
+          <a href="/team/sehar" class="btn btn--primary" style="margin-top: 32px;">View full profile</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="approach-section">
+    <div class="wrap approach-inner">
+      <p class="eyebrow eyebrow--dark">The Approach</p>
+      <h2 class="section-title">Therapy that stays grounded in evidence, not slogans.</h2>
+      <div class="approach-grid">
+        <div class="approach-block">
+          <span class="block-index">01</span>
+          <h3>Structured, not clinical-cold</h3>
+          <p>Sessions follow an evidence-based framework, but conversation comes first. You won't be handed a worksheet before you've been heard.</p>
+        </div>
+        <div class="approach-block">
+          <span class="block-index">02</span>
+          <h3>Online or in person, your choice</h3>
+          <p>Join over video call from anywhere, or come in person to the Johar Town, Lahore office. Either way — a quiet, confidential hour.</p>
+        </div>
+        <div class="approach-block">
+          <span class="block-index">03</span>
+          <h3>Rooted in real training</h3>
+          <p>Grounded in supervised clinical experience across hospital and addiction-treatment settings, not theory alone.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</Layout>
+
+<style>
+  .team-hero {
+    padding: 80px 0 60px;
+    background: linear-gradient(135deg, var(--sage-50) 0%, transparent 100%);
+  }
+
+  .team-hero p:first-child {
+    color: var(--sage-500);
+    margin-bottom: 16px;
+  }
+
+  .team-hero h1 {
+    font-size: 48px;
+    font-weight: 700;
+    color: var(--ink-900);
+    margin: 0 0 24px;
+    line-height: 1.2;
+  }
+
+  .hero-sub {
+    font-size: 18px;
+    color: var(--ink-600);
+    max-width: 600px;
+    line-height: 1.6;
+  }
+
+  .team-full {
+    padding: 60px 0 80px;
+  }
+
+  .team-grid-full {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 60px;
+  }
+
+  .team-card-full {
+    background: white;
+    border: 1px solid var(--sage-200);
+    border-radius: 8px;
+    padding: 40px;
+    transition: all 0.3s ease;
+  }
+
+  .team-card-full:hover {
+    border-color: var(--gold-300);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+  }
+
+  .avatar-large {
+    position: relative;
+    width: 140px;
+    height: 140px;
+    margin: 0 auto 24px;
+    border-radius: 50%;
+    overflow: hidden;
+    background-color: var(--sage-100);
+  }
+
+  .avatar-large img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .team-card-full h2 {
+    font-size: 24px;
+    font-weight: 600;
+    margin: 16px 0 8px;
+    color: var(--ink-900);
+    text-align: center;
+  }
+
+  .team-role-large {
+    display: block;
+    font-size: 14px;
+    color: var(--ink-600);
+    text-align: center;
+    margin: 6px 0;
+    font-weight: 500;
+  }
+
+  .team-credentials-full {
+    list-style: none;
+    padding: 24px 0;
+    margin: 24px 0;
+    border-top: 1px solid var(--sage-200);
+    border-bottom: 1px solid var(--sage-200);
+  }
+
+  .team-credentials-full li {
+    font-size: 14px;
+    color: var(--ink-600);
+    margin: 10px 0;
+    line-height: 1.5;
+  }
+
+  .credential-section {
+    margin: 28px 0;
+  }
+
+  .credential-section h3 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink-900);
+    margin: 0 0 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .exp-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .exp-list li {
+    font-size: 13px;
+    color: var(--ink-600);
+    margin: 10px 0;
+    line-height: 1.6;
+  }
+
+  .skill-tags {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 0;
+    margin: 0;
+  }
+
+  .skill-tags li {
+    background-color: var(--sage-100);
+    color: var(--ink-700);
+    padding: 8px 12px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .approach-section {
+    padding: 80px 0;
+    background: linear-gradient(135deg, var(--sage-50) 0%, transparent 100%);
+  }
+
+  .approach-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 40px;
+    margin-top: 40px;
+  }
+
+  .approach-block {
+    position: relative;
+    padding-left: 64px;
+  }
+
+  .block-index {
+    position: absolute;
+    left: 0;
+    top: 0;
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--gold-100);
+  }
+
+  .approach-block h3 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: var(--ink-900);
+  }
+
+  .approach-block p {
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--ink-600);
+  }
+
+  @media (max-width: 768px) {
+    .team-hero h1 {
+      font-size: 36px;
+    }
+
+    .hero-sub {
+      font-size: 16px;
+    }
+
+    .team-grid-full {
+      grid-template-columns: 1fr;
+      gap: 40px;
+    }
+
+    .approach-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

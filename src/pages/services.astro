@@ -1,98 +1,203 @@
 ---
 import Layout from '../layouts/Layout.astro';
 ---
-<Layout title="Services" description="Individual and couples therapy, plus research and statistical analysis consulting.">
 
-  <section class="hero article-index-hero">
+<Layout title="Services">
+
+  <section class="services-hero">
     <div class="wrap">
-      <p class="eyebrow">What We Offer</p>
-      <h1 class="hero-title" style="font-size: clamp(32px, 4vw, 48px); margin-bottom: 16px;">Services</h1>
-      <p class="hero-sub">Two formats, one practice — therapy sessions, and research/statistical analysis support for students and researchers.</p>
+      <p class="eyebrow eyebrow--dark">What we offer</p>
+      <h1>Two formats. One space.</h1>
+      <p class="hero-sub">Individual and couples therapy grounded in evidence, plus comprehensive research analysis for psychology professionals and students.</p>
     </div>
   </section>
 
-  <section class="section" id="therapy">
+  <!-- THERAPY SECTION -->
+  <section class="service-section" id="therapy">
     <div class="wrap">
-      <div class="section-head">
-        <div>
-          <p class="eyebrow" style="color: var(--sage-500); margin-bottom: 10px;">Therapy</p>
-          <h2 class="section-title">Two formats. One space.</h2>
+      <div class="service-header">
+        <h2>Individual &amp; Couples Therapy</h2>
+        <p class="service-intro">One-to-one and joint sessions, online or in person, using evidence-based frameworks to address what's weighing on you.</p>
+      </div>
+
+      <div class="service-cards">
+        <article class="service-card-large">
+          <div class="service-icon">🧑</div>
+          <h3>Individual Therapy</h3>
+          <p class="service-desc">One-to-one sessions for working through patterns, symptoms, or seasons that feel heavier than they should. Whether it's anxiety, depression, trauma, relationship stress, or addiction recovery — a structured hour focused on your experience.</p>
+          <div class="service-details">
+            <span class="detail-item">
+              <strong>Duration:</strong> 50 minutes
+            </span>
+            <span class="detail-item">
+              <strong>Format:</strong> Online (video) or in-person
+            </span>
+            <span class="detail-item">
+              <strong>Rate:</strong> PKR 5,000 / session
+            </span>
+          </div>
+          <a href="https://calendly.com/mohdsohail0399/online-session" target="_blank" rel="noopener" class="btn btn--primary">Book with Muhammad</a>
+          <a href="https://calendly.com/shs-counseling1-umt/30min" target="_blank" rel="noopener" class="btn btn--primary">Book with Sehar</a>
+        </article>
+
+        <article class="service-card-large">
+          <div class="service-icon">👥</div>
+          <h3>Couples Therapy</h3>
+          <p class="service-desc">Joint sessions for partners working through communication, conflict, disconnection, or life transitions — with both people's experience given equal room. Grounded in evidence-based couples work and pragmatic problem-solving.</p>
+          <div class="service-details">
+            <span class="detail-item">
+              <strong>Duration:</strong> 50 minutes
+            </span>
+            <span class="detail-item">
+              <strong>Format:</strong> Online (video) or in-person
+            </span>
+            <span class="detail-item">
+              <strong>Rate:</strong> PKR 7,000 / session
+            </span>
+          </div>
+          <a href="https://calendly.com/mohdsohail0399/online-session" target="_blank" rel="noopener" class="btn btn--primary">Book with Muhammad</a>
+          <a href="https://calendly.com/shs-counseling1-umt/30min" target="_blank" rel="noopener" class="btn btn--primary">Book with Sehar</a>
+        </article>
+      </div>
+
+      <div class="therapy-approach">
+        <h3>The Therapeutic Approach</h3>
+        <div class="approach-points">
+          <div class="approach-point">
+            <strong>Evidence-based frameworks</strong>
+            <p>CBT, psychoeducation, trauma-informed care, and solution-focused work tailored to your specific concerns.</p>
+          </div>
+          <div class="approach-point">
+            <strong>Collaborative from day one</strong>
+            <p>We listen first. Sessions aren't about handing you a worksheet before you've been heard — they're about understanding what's actually going on, then building a plan together.</p>
+          </div>
+          <div class="approach-point">
+            <strong>Grounded in clinical training</strong>
+            <p>Both clinicians bring supervised experience across hospital, addiction treatment, campus counseling, and academic settings — not theory alone.</p>
+          </div>
+          <div class="approach-point">
+            <strong>Your choice: online or in person</strong>
+            <p>Secure video call from anywhere, or a quiet office hour in Johar Town, Lahore.</p>
+          </div>
         </div>
       </div>
 
-      <div class="card-grid" style="margin-bottom: 56px;">
-        <div class="article-card" style="cursor:default;">
-          <span class="article-meta">Individual Therapy</span>
-          <h3>One-to-one sessions</h3>
-          <p>Online or in person, for working through what's weighing on you — patterns, symptoms, or simply a season that feels heavier than it should.</p>
-          <p style="font-family: var(--font-mono); font-size: 13px; color: var(--gold-500); margin-top: 8px;">PKR 5,000 / session</p>
-        </div>
-        <div class="article-card" style="cursor:default;">
-          <span class="article-meta">Couples Therapy</span>
-          <h3>Joint sessions</h3>
-          <p>Online or in person, for partners working through communication, conflict, or disconnection — with both people's experience given equal room.</p>
-          <p style="font-family: var(--font-mono); font-size: 13px; color: var(--gold-500); margin-top: 8px;">PKR 7,000 / session</p>
-        </div>
+      <div class="commonly-addressed">
+        <h3>Commonly addressed concerns</h3>
+        <ul class="concern-tags">
+          <li>Anxiety &amp; Panic</li>
+          <li>Depression</li>
+          <li>ADHD &amp; Executive Function</li>
+          <li>Addiction &amp; Recovery</li>
+          <li>Trauma &amp; Distress</li>
+          <li>Relationship Conflict</li>
+          <li>Couples Communication</li>
+          <li>Stress &amp; Burnout</li>
+          <li>Life Transitions</li>
+          <li>Self-Esteem &amp; Identity</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- RESEARCH ANALYSIS SECTION -->
+  <section class="service-section" id="research">
+    <div class="wrap">
+      <div class="service-header">
+        <h2>Research Analysis &amp; Statistical Support</h2>
+        <p class="service-intro">Comprehensive statistical and psychometric support for psychology research, from design through publication.</p>
       </div>
 
-      <h3 style="font-size: 18px; margin-bottom: 16px;">Commonly addressed</h3>
-      <div class="category-pills" style="margin-bottom: 56px;">
-        {['Anxiety', 'Depression', 'Addiction & Recovery', 'Trauma & Distress', 'Relationship Conflict', 'Stress & Burnout'].map((t) => (
-          <span class="topic-pill">{t}</span>
-        ))}
-      </div>
+      <article class="service-card-large">
+        <div class="service-icon">📊</div>
+        <h3>Research Analysis Services</h3>
+        <p class="service-desc">Whether you're a graduate student building your thesis, an academic preparing a publication, or a researcher designing a new study — we provide end-to-end statistical expertise grounded in psychological research methodology.</p>
+        
+        <div class="research-offerings">
+          <h4>Beginner Level</h4>
+          <ul class="offering-list">
+            <li>Study design consultation</li>
+            <li>Data management &amp; cleaning</li>
+            <li>Descriptive statistics &amp; visualizations</li>
+            <li>Basic inferential testing (t-tests, ANOVA, chi-square)</li>
+            <li>Cronbach's alpha &amp; reliability analysis</li>
+            <li>Interpretation guidance for reports</li>
+          </ul>
 
-      <div class="approach-grid">
-        <div class="approach-item">
-          <span class="approach-num">01</span>
-          <h3>Structured, not clinical-cold</h3>
-          <p>Sessions follow an evidence-based framework, but conversation comes first. You won't be handed a worksheet before you've been heard.</p>
+          <h4>Advanced Level</h4>
+          <ul class="offering-list">
+            <li>Factor analysis &amp; psychometric validation</li>
+            <li>Structural equation modeling (SEM) &amp; path analysis</li>
+            <li>Hierarchical regression &amp; multilevel modeling</li>
+            <li>Mediation &amp; moderation analysis</li>
+            <li>Longitudinal data analysis</li>
+            <li>Mixed-effects modeling</li>
+          </ul>
+
+          <h4>Tools &amp; Technologies</h4>
+          <ul class="offering-list">
+            <li><strong>SPSS:</strong> Exploratory data analysis, descriptive &amp; inferential stats</li>
+            <li><strong>R:</strong> Advanced statistical modeling, custom analyses, reproducible workflows</li>
+            <li><strong>SmartPLS:</strong> Partial least squares (PLS) SEM for complex path models</li>
+            <li><strong>Qualitative coding:</strong> Thematic analysis, coding frameworks, inter-rater reliability</li>
+          </ul>
         </div>
-        <div class="approach-item">
-          <span class="approach-num">02</span>
-          <h3>Online or in person, your choice</h3>
-          <p>Join over video call from anywhere, or come in person to the Johar Town, Lahore office. Either way — a quiet, confidential hour.</p>
+
+        <div class="service-details" style="margin-top: 24px;">
+          <span class="detail-item">
+            <strong>Scope:</strong> Project-based or hourly
+          </span>
+          <span class="detail-item">
+            <strong>Format:</strong> Consultation, training, or hands-on analysis
+          </span>
+          <span class="detail-item">
+            <strong>Rate:</strong> Custom pricing based on scope
+          </span>
         </div>
-        <div class="approach-item">
-          <span class="approach-num">03</span>
-          <h3>Rooted in real training</h3>
-          <p>Grounded in supervised clinical experience across hospital and addiction-treatment settings, not theory alone.</p>
+
+        <a href="/contact" class="btn btn--primary">Request a consultation</a>
+      </article>
+
+      <div class="research-faq">
+        <h3>Common questions about research analysis</h3>
+        <div class="faq-items">
+          <div class="faq-card">
+            <strong>Do I need to have data already collected?</strong>
+            <p>No. We can help with study design before you collect data, which often saves time and prevents statistical problems later.</p>
+          </div>
+          <div class="faq-card">
+            <strong>What if I don't know which statistical test to use?</strong>
+            <p>That's exactly what we help with. We'll review your research question, data structure, and assumptions to recommend the best approach.</p>
+          </div>
+          <div class="faq-card">
+            <strong>Can you help me understand the results?</strong>
+            <p>Yes. We'll explain what the numbers mean in plain language and help you interpret them for your thesis or paper.</p>
+          </div>
+          <div class="faq-card">
+            <strong>Do you offer training on these tools?</strong>
+            <p>Yes. We can teach you SPSS, R, or SmartPLS so you can run analyses independently or understand the code we provide.</p>
+          </div>
+          <div class="faq-card">
+            <strong>How long does a typical project take?</strong>
+            <p>Depends on scope — from a single consultation (1–2 hours) to ongoing support over several months for a thesis or publication.</p>
+          </div>
+          <div class="faq-card">
+            <strong>Is everything confidential?</strong>
+            <p>Absolutely. All data and analyses are treated with full confidentiality.</p>
+          </div>
         </div>
       </div>
     </div>
   </section>
 
-  <section class="section section--alt" id="research-analysis">
+  <!-- CTA SECTION -->
+  <section class="services-cta">
     <div class="wrap">
-      <div class="section-head">
-        <div>
-          <p class="eyebrow" style="color: var(--sage-500); margin-bottom: 10px;">Research Analysis</p>
-          <h2 class="section-title">Statistical &amp; research support for psychology work.</h2>
-        </div>
-      </div>
-      <p style="color: var(--ink-600); max-width: 640px; margin-bottom: 40px;">For students and researchers who need help with the numbers side of psychology — from a first thesis analysis to advanced psychometric work. Support in both R and SPSS, tailored to your level.</p>
-
-      <div class="card-grid">
-        <div class="article-card" style="cursor:default;">
-          <span class="article-meta">Beginners</span>
-          <h3>Getting started with analysis</h3>
-          <p>Help setting up your dataset, choosing the right test, running it in R or SPSS, and understanding what the output actually means for your write-up.</p>
-        </div>
-        <div class="article-card" style="cursor:default;">
-          <span class="article-meta">Psychometrics</span>
-          <h3>Scale development &amp; validation</h3>
-          <p>Reliability (Cronbach's alpha), factor analysis (EFA/CFA), and validity testing for researchers building or adapting a psychological scale.</p>
-        </div>
-        <div class="article-card" style="cursor:default;">
-          <span class="article-meta">Advanced</span>
-          <h3>R programming &amp; modeling</h3>
-          <p>Regression, mediation/moderation analysis, mixed models, and general R scripting support for advanced thesis or publication-level work.</p>
-        </div>
-      </div>
-
-      <div class="request-cta-banner" style="margin-top: 48px;">
-        <p>Have a specific analysis or dataset in mind?</p>
-        <a href="/#contact" class="btn btn--primary">Get in touch →</a>
+      <h2>Ready to get started?</h2>
+      <div class="cta-buttons">
+        <a href="https://calendly.com/mohdsohail0399/online-session" target="_blank" rel="noopener" class="btn btn--primary">Book therapy with Muhammad</a>
+        <a href="https://calendly.com/shs-counseling1-umt/30min" target="_blank" rel="noopener" class="btn btn--primary">Book therapy with Sehar</a>
+        <a href="/contact" class="btn btn--secondary">Inquire about research services</a>
       </div>
     </div>
   </section>
@@ -100,35 +205,321 @@ import Layout from '../layouts/Layout.astro';
 </Layout>
 
 <style>
-  .article-index-hero{ padding: 72px 0 56px; }
-
-  .category-pills{ display:flex; flex-wrap:wrap; gap:10px; }
-  .topic-pill{
-    font-family: var(--font-mono);
-    font-size: 12.5px;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--navy-700);
-    border: 1px solid var(--line);
-    padding: 9px 16px;
-    border-radius: 999px;
+  .services-hero {
+    padding: 80px 0 60px;
+    background: linear-gradient(135deg, var(--sage-50) 0%, transparent 100%);
   }
 
-  .approach-grid{
-    display:grid;
-    grid-template-columns: repeat(3, 1fr);
+  .services-hero p:first-child {
+    color: var(--sage-500);
+    margin-bottom: 16px;
+  }
+
+  .services-hero h1 {
+    font-size: 48px;
+    font-weight: 700;
+    color: var(--ink-900);
+    margin: 0 0 24px;
+    line-height: 1.2;
+  }
+
+  .hero-sub {
+    font-size: 18px;
+    color: var(--ink-600);
+    max-width: 700px;
+    line-height: 1.6;
+  }
+
+  .service-section {
+    padding: 80px 0;
+    border-bottom: 1px solid var(--sage-200);
+  }
+
+  .service-section:last-of-type {
+    border-bottom: none;
+  }
+
+  .service-header {
+    margin-bottom: 48px;
+    text-align: center;
+  }
+
+  .service-header h2 {
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--ink-900);
+    margin: 0 0 16px;
+  }
+
+  .service-intro {
+    font-size: 18px;
+    color: var(--ink-600);
+    max-width: 700px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  .service-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 40px;
+    margin-bottom: 60px;
+  }
+
+  .service-card-large {
+    background: white;
+    border: 1px solid var(--sage-200);
+    border-radius: 8px;
+    padding: 40px;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .service-card-large:hover {
+    border-color: var(--gold-300);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+  }
+
+  .service-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+  }
+
+  .service-card-large h3 {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--ink-900);
+    margin: 0 0 16px;
+  }
+
+  .service-desc {
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--ink-600);
+    margin: 0 0 24px;
+    flex-grow: 1;
+  }
+
+  .service-details {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin: 24px 0;
+    padding: 20px;
+    background-color: var(--sage-50);
+    border-radius: 6px;
+  }
+
+  .detail-item {
+    font-size: 14px;
+    color: var(--ink-700);
+    line-height: 1.5;
+  }
+
+  .detail-item strong {
+    display: inline-block;
+    min-width: 100px;
+    font-weight: 600;
+    color: var(--ink-900);
+  }
+
+  .service-card-large .btn {
+    margin-top: 12px;
+  }
+
+  .service-card-large .btn:first-of-type {
+    margin-top: 24px;
+  }
+
+  .therapy-approach {
+    background: linear-gradient(135deg, var(--sage-50) 0%, rgba(212, 163, 77, 0.03) 100%);
+    border-radius: 8px;
+    padding: 40px;
+    margin: 60px 0;
+  }
+
+  .therapy-approach h3 {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--ink-900);
+    margin: 0 0 32px;
+  }
+
+  .approach-points {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
     gap: 32px;
   }
-  .approach-item{ display:flex; flex-direction:column; gap:10px; }
-  .approach-num{
-    font-family: var(--font-mono);
-    font-size: 13px;
-    color: var(--gold-500);
-  }
-  .approach-item h3{ font-size: 17px; }
-  .approach-item p{ color: var(--ink-600); font-size: 14.5px; }
 
-  @media (max-width: 860px){
-    .approach-grid{ grid-template-columns: 1fr; }
+  .approach-point strong {
+    display: block;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink-900);
+    margin-bottom: 8px;
+  }
+
+  .approach-point p {
+    font-size: 14px;
+    color: var(--ink-600);
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  .commonly-addressed {
+    margin-top: 60px;
+  }
+
+  .commonly-addressed h3 {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--ink-900);
+    margin: 0 0 20px;
+  }
+
+  .concern-tags {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 0;
+    margin: 0;
+  }
+
+  .concern-tags li {
+    background-color: var(--sage-100);
+    color: var(--ink-700);
+    padding: 10px 14px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .research-offerings {
+    margin: 32px 0;
+  }
+
+  .research-offerings h4 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink-900);
+    margin: 24px 0 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .research-offerings h4:first-child {
+    margin-top: 0;
+  }
+
+  .offering-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 12px;
+  }
+
+  .offering-list li {
+    font-size: 14px;
+    color: var(--ink-600);
+    padding: 6px 0;
+    padding-left: 20px;
+    position: relative;
+  }
+
+  .offering-list li:before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: var(--gold-600);
+    font-weight: bold;
+  }
+
+  .research-faq {
+    margin-top: 60px;
+  }
+
+  .research-faq h3 {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--ink-900);
+    margin: 0 0 32px;
+  }
+
+  .faq-items {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+  }
+
+  .faq-card {
+    background: white;
+    padding: 24px;
+    border-radius: 8px;
+    border: 1px solid var(--sage-200);
+  }
+
+  .faq-card strong {
+    display: block;
+    font-size: 15px;
+    color: var(--ink-900);
+    margin-bottom: 10px;
+  }
+
+  .faq-card p {
+    font-size: 14px;
+    color: var(--ink-600);
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  .services-cta {
+    padding: 80px 0;
+    background: linear-gradient(135deg, var(--sage-50) 0%, transparent 100%);
+    text-align: center;
+  }
+
+  .services-cta h2 {
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--ink-900);
+    margin: 0 0 40px;
+  }
+
+  .cta-buttons {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  @media (max-width: 768px) {
+    .services-hero h1 {
+      font-size: 36px;
+    }
+
+    .service-header h2 {
+      font-size: 28px;
+    }
+
+    .service-intro {
+      font-size: 16px;
+    }
+
+    .therapy-approach {
+      padding: 32px;
+    }
+
+    .approach-points {
+      grid-template-columns: 1fr;
+    }
+
+    .cta-buttons {
+      flex-direction: column;
+    }
+
+    .cta-buttons .btn {
+      width: 100%;
+    }
   }
 </style>
