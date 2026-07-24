@@ -15,6 +15,7 @@ const categoryMeta: Record<string, string> = {
   'relationships': 'Relationships',
   'stress-burnout': 'Stress & Burnout',
 };
+const ageMeta: Record<string, string> = { 'children': 'Children', 'adults': 'Adults' };
 
 const categoriesPresent = [...new Set(sorted.map((w) => w.data.category))].sort();
 ---
@@ -53,7 +54,7 @@ const categoriesPresent = [...new Set(sorted.map((w) => w.data.category))].sort(
             </div>
 
             <div class="filter-group">
-              <h3 class="filter-heading">Category</h3>
+              <h3 class="filter-heading">Topics</h3>
               <div class="checkbox-list" id="category-filters">
                 {categoriesPresent.map((cat) => (
                   <label class="checkbox-row">
@@ -61,6 +62,20 @@ const categoriesPresent = [...new Set(sorted.map((w) => w.data.category))].sort(
                     <span>{categoryMeta[cat] || cat}</span>
                   </label>
                 ))}
+              </div>
+            </div>
+
+            <div class="filter-group">
+              <h3 class="filter-heading">Age</h3>
+              <div class="checkbox-list" id="age-filters">
+                <label class="checkbox-row">
+                  <input type="checkbox" value="children" class="age-checkbox" data-label="Children" />
+                  <span>Children</span>
+                </label>
+                <label class="checkbox-row">
+                  <input type="checkbox" value="adults" class="age-checkbox" data-label="Adults" />
+                  <span>Adults</span>
+                </label>
               </div>
             </div>
 
@@ -82,38 +97,43 @@ const categoriesPresent = [...new Set(sorted.map((w) => w.data.category))].sort(
             class="article-card worksheet-card"
             data-tier={w.data.tier}
             data-category={w.data.category}
+            data-age={w.data.age.join(',')}
             data-title={w.data.title.toLowerCase()}
             data-description={w.data.description.toLowerCase()}
           >
             <span class="article-meta">
-              {w.data.tier === 'free' ? 'Free' : 'Paid'} · {categoryMeta[w.data.category]}
+              {w.data.tier === 'free' ? 'Free' : 'Paid'} · {categoryMeta[w.data.category]} · {w.data.age.map((a) => ageMeta[a]).join(' & ')}
             </span>
             <h3>{w.data.title}</h3>
             <p>{w.data.description}</p>
             {w.data.tier === 'free' ? (
-              <a class="btn btn--text worksheet-action" href={w.data.fileUrl} target="_blank" rel="noopener">Download PDF →</a>
+              <a class="worksheet-btn worksheet-btn--download" href={w.data.fileUrl} target="_blank" rel="noopener">Download PDF →</a>
             ) : (
-              <button class="btn btn--text worksheet-action request-btn" data-title={w.data.title} type="button">Request this worksheet →</button>
+              <button class="worksheet-btn worksheet-btn--request request-btn" data-title={w.data.title} type="button">Request this worksheet →</button>
             )}
           </div>
         ))}
       </div>
 
       <p class="no-results" id="no-results" hidden>No worksheets match your filters. Try clearing some, or search a different term.</p>
+
+      <div class="request-cta-banner">
+        <p>Can't find what you're looking for?</p>
+        <button type="button" class="btn btn--primary" id="openGeneralRequest">Request a worksheet →</button>
+      </div>
     </div>
   </section>
 
-  <section class="section section--alt" id="request-form">
-    <div class="wrap" style="max-width: 560px;">
-      <div class="section-head" style="margin-bottom: 24px;">
-        <h2 class="section-title">Request a worksheet</h2>
-      </div>
-      <p style="color: var(--ink-600); margin-bottom: 28px;">Fill this in and we'll follow up by email to arrange payment and send the file.</p>
+  <div class="modal-overlay" id="requestModalOverlay">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <button class="modal-close" id="modalClose" aria-label="Close">✕</button>
+      <h2 id="modalTitle" class="section-title" style="font-size:22px; margin-bottom:8px;">Request a worksheet</h2>
+      <p style="color: var(--ink-600); margin-bottom: 24px; font-size:14px;">Fill this in and we'll follow up by email to arrange payment (for paid items) or the file itself.</p>
 
       <form action="https://formspree.io/f/mdaqlngp" method="POST" class="request-form">
         <label>
           Worksheet
-          <input type="text" name="worksheet" id="worksheet-field" readonly />
+          <input type="text" name="worksheet" id="worksheet-field" placeholder="e.g. Anger Management Workbook — or describe what you're looking for" />
         </label>
         <label>
           Your name
@@ -130,7 +150,7 @@ const categoriesPresent = [...new Set(sorted.map((w) => w.data.category))].sort(
         <button type="submit" class="btn btn--primary">Send request</button>
       </form>
     </div>
-  </section>
+  </div>
 </Layout>
 
 <style>
@@ -218,21 +238,6 @@ const categoriesPresent = [...new Set(sorted.map((w) => w.data.category))].sort(
     cursor: pointer;
   }
   .checkbox-row input{ accent-color: var(--gold-500); width:15px; height:15px; flex:none; }
-  .checkbox-row.is-extra{ display: none; }
-  .checkbox-row.is-extra.is-shown{ display: flex; }
-
-  .show-more-btn{
-    font-family: var(--font-mono);
-    font-size: 12px;
-    color: var(--sage-500);
-    background: none;
-    border: none;
-    text-align: left;
-    padding: 0;
-    cursor: pointer;
-    text-decoration: underline;
-    text-underline-offset: 3px;
-  }
 
   .filter-panel-actions{
     display:flex;
@@ -288,8 +293,6 @@ const categoriesPresent = [...new Set(sorted.map((w) => w.data.category))].sort(
 
   .worksheet-card{ justify-content: flex-start; }
   .worksheet-card.is-hidden{ display: none; }
-  .worksheet-action{ margin-top: auto; align-self: flex-start; }
-  .request-btn{ background: none; border: none; font-family: inherit; padding: 13px 4px; }
 
   .request-form{ display:flex; flex-direction:column; gap:18px; }
   .request-form label{ display:flex; flex-direction:column; gap:6px; font-size: 14px; color: var(--ink-600); font-weight: 500; }
@@ -310,17 +313,19 @@ const categoriesPresent = [...new Set(sorted.map((w) => w.data.category))].sort(
   @media (max-width: 600px){
     .toolbar{ flex-direction: column; }
     .filter-panel{ right: 0; left: 0; width: auto; }
+    .request-cta-banner{ flex-direction: column; align-items: flex-start; }
   }
 </style>
 
 <script>
-  type FilterEntry = { type: 'tier' | 'category'; value: string; label: string };
+  type FilterEntry = { type: 'tier' | 'category' | 'age'; value: string; label: string };
 
   const searchInput = document.getElementById('search-input') as HTMLInputElement;
   const filterDropdown = document.getElementById('filter-dropdown') as HTMLDetailsElement;
   const filterBadge = document.getElementById('filter-badge') as HTMLElement;
   const tierCheckboxes = document.querySelectorAll<HTMLInputElement>('.tier-checkbox');
   const categoryCheckboxes = document.querySelectorAll<HTMLInputElement>('.category-checkbox');
+  const ageCheckboxes = document.querySelectorAll<HTMLInputElement>('.age-checkbox');
   const clearBtn = document.getElementById('clear-filters');
   const doneBtn = document.getElementById('filter-done');
   const cards = document.querySelectorAll<HTMLElement>('#worksheet-grid .worksheet-card');
@@ -328,33 +333,11 @@ const categoriesPresent = [...new Set(sorted.map((w) => w.data.category))].sort(
   const noResults = document.getElementById('no-results');
   const activeChipsContainer = document.getElementById('active-chips');
 
-  function setupShowMore(containerId: string, threshold = 8) {
-    const container = document.getElementById(containerId);
-    if (!container) return;
-    const rows = [...container.querySelectorAll('.checkbox-row')];
-    if (rows.length <= threshold) return;
-    rows.slice(threshold).forEach((row) => row.classList.add('is-extra'));
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'show-more-btn';
-    btn.textContent = `+ Show ${rows.length - threshold} more`;
-    btn.addEventListener('click', () => {
-      const nowShown = container.querySelectorAll('.checkbox-row.is-extra.is-shown').length === 0;
-      rows.slice(threshold).forEach((row) => row.classList.toggle('is-shown', nowShown));
-      btn.textContent = nowShown ? 'Show less' : `+ Show ${rows.length - threshold} more`;
-    });
-    container.after(btn);
-  }
-  setupShowMore('category-filters');
-
   function getActiveFilters(): FilterEntry[] {
-    const tiers = [...tierCheckboxes]
-      .filter((c) => c.checked)
-      .map((c) => ({ type: 'tier' as const, value: c.value, label: c.dataset.label || c.value }));
-    const cats = [...categoryCheckboxes]
-      .filter((c) => c.checked)
-      .map((c) => ({ type: 'category' as const, value: c.value, label: c.dataset.label || c.value }));
-    return [...tiers, ...cats];
+    const tiers = [...tierCheckboxes].filter((c) => c.checked).map((c) => ({ type: 'tier' as const, value: c.value, label: c.dataset.label || c.value }));
+    const cats = [...categoryCheckboxes].filter((c) => c.checked).map((c) => ({ type: 'category' as const, value: c.value, label: c.dataset.label || c.value }));
+    const ages = [...ageCheckboxes].filter((c) => c.checked).map((c) => ({ type: 'age' as const, value: c.value, label: c.dataset.label || c.value }));
+    return [...tiers, ...cats, ...ages];
   }
 
   function renderChips() {
@@ -366,7 +349,7 @@ const categoriesPresent = [...new Set(sorted.map((w) => w.data.category))].sort(
       chip.className = 'active-chip';
       chip.innerHTML = `${f.label} <button type="button" aria-label="Remove filter">✕</button>`;
       chip.querySelector('button')?.addEventListener('click', () => {
-        const source = f.type === 'tier' ? tierCheckboxes : categoryCheckboxes;
+        const source = f.type === 'tier' ? tierCheckboxes : f.type === 'category' ? categoryCheckboxes : ageCheckboxes;
         source.forEach((c) => { if (c.value === f.value) c.checked = false; });
         applyFilters();
       });
@@ -382,6 +365,7 @@ const categoriesPresent = [...new Set(sorted.map((w) => w.data.category))].sort(
     const query = searchInput.value.trim().toLowerCase();
     const activeTiers = [...tierCheckboxes].filter((c) => c.checked).map((c) => c.value);
     const activeCategories = [...categoryCheckboxes].filter((c) => c.checked).map((c) => c.value);
+    const activeAges = [...ageCheckboxes].filter((c) => c.checked).map((c) => c.value);
 
     let visibleCount = 0;
 
@@ -390,12 +374,14 @@ const categoriesPresent = [...new Set(sorted.map((w) => w.data.category))].sort(
       const description = card.dataset.description || '';
       const tier = card.dataset.tier || '';
       const category = card.dataset.category || '';
+      const ages = (card.dataset.age || '').split(',').filter(Boolean);
 
       const matchesSearch = !query || title.includes(query) || description.includes(query);
       const matchesTier = activeTiers.length === 0 || activeTiers.includes(tier);
       const matchesCategory = activeCategories.length === 0 || activeCategories.includes(category);
+      const matchesAge = activeAges.length === 0 || activeAges.some((a) => ages.includes(a));
 
-      const show = matchesSearch && matchesTier && matchesCategory;
+      const show = matchesSearch && matchesTier && matchesCategory && matchesAge;
       card.classList.toggle('is-hidden', !show);
       if (show) visibleCount++;
     });
@@ -411,20 +397,19 @@ const categoriesPresent = [...new Set(sorted.map((w) => w.data.category))].sort(
   searchInput.addEventListener('input', applyFilters);
   tierCheckboxes.forEach((cb) => cb.addEventListener('change', applyFilters));
   categoryCheckboxes.forEach((cb) => cb.addEventListener('change', applyFilters));
+  ageCheckboxes.forEach((cb) => cb.addEventListener('change', applyFilters));
 
   clearBtn?.addEventListener('click', () => {
     searchInput.value = '';
     tierCheckboxes.forEach((cb) => (cb.checked = false));
     categoryCheckboxes.forEach((cb) => (cb.checked = false));
+    ageCheckboxes.forEach((cb) => (cb.checked = false));
     applyFilters();
   });
 
   doneBtn?.addEventListener('click', () => { filterDropdown.open = false; });
-
   document.addEventListener('click', (e) => {
-    if (filterDropdown.open && !filterDropdown.contains(e.target as Node)) {
-      filterDropdown.open = false;
-    }
+    if (filterDropdown.open && !filterDropdown.contains(e.target as Node)) filterDropdown.open = false;
   });
 
   const urlFilter = new URLSearchParams(window.location.search).get('filter');
@@ -432,16 +417,27 @@ const categoriesPresent = [...new Set(sorted.map((w) => w.data.category))].sort(
     const match = [...tierCheckboxes].find((c) => c.value === urlFilter);
     if (match) match.checked = true;
   }
-
   applyFilters();
 
-  const requestButtons = document.querySelectorAll<HTMLButtonElement>('.request-btn');
+  // Modal
+  const modalOverlay = document.getElementById('requestModalOverlay');
+  const modalClose = document.getElementById('modalClose');
   const worksheetField = document.getElementById('worksheet-field') as HTMLInputElement | null;
 
-  requestButtons.forEach((btn) => {
-    btn.addEventListener('click', () => {
-      if (worksheetField) worksheetField.value = btn.dataset.title || '';
-      document.getElementById('request-form')?.scrollIntoView({ behavior: 'smooth' });
-    });
+  function openModal(prefill = '') {
+    if (worksheetField) worksheetField.value = prefill;
+    modalOverlay?.classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeModal() {
+    modalOverlay?.classList.remove('is-open');
+    document.body.style.overflow = '';
+  }
+
+  document.querySelectorAll<HTMLButtonElement>('.request-btn').forEach((btn) => {
+    btn.addEventListener('click', () => openModal(btn.dataset.title || ''));
   });
+  document.getElementById('openGeneralRequest')?.addEventListener('click', () => openModal(''));
+  modalClose?.addEventListener('click', closeModal);
+  modalOverlay?.addEventListener('click', (e) => { if (e.target === modalOverlay) closeModal(); });
 </script>
