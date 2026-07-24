@@ -29,34 +29,136 @@ const { title, description = "The Psychology Square — individual and couples t
       </span>
       The Psychology&nbsp;Square
     </a>
+
     <nav class="site-nav" aria-label="Primary">
       <div class="nav-item">
         <a href="/articles">Articles</a>
         <div class="mega-panel">
-          <a href="/articles/category/anxiety">Anxiety</a>
-          <a href="/articles/category/depression">Depression</a>
-          <a href="/articles/category/adhd">ADHD</a>
-          <a href="/articles/category/addiction-recovery">Addiction &amp; Recovery</a>
-          <a href="/articles/category/trauma">Trauma</a>
-          <a href="/articles/category/relationships">Relationships</a>
-          <a href="/articles/category/stress-burnout">Stress &amp; Burnout</a>
-          <a href="/articles">View all articles →</a>
+          <div class="mega-panel-grid">
+            <a class="mega-card" href="/articles/category/anxiety">
+              <span class="mega-card-title">Anxiety</span>
+              <span class="mega-card-blurb">Practical tools for managing worry and panic.</span>
+            </a>
+            <a class="mega-card" href="/articles/category/depression">
+              <span class="mega-card-title">Depression</span>
+              <span class="mega-card-blurb">Understanding low mood and paths forward.</span>
+            </a>
+            <a class="mega-card" href="/articles/category/adhd">
+              <span class="mega-card-title">ADHD</span>
+              <span class="mega-card-blurb">Attention, focus, and daily life strategies.</span>
+            </a>
+            <a class="mega-card" href="/articles/category/addiction-recovery">
+              <span class="mega-card-title">Addiction &amp; Recovery</span>
+              <span class="mega-card-blurb">Grounded guidance through recovery.</span>
+            </a>
+            <a class="mega-card" href="/articles/category/trauma">
+              <span class="mega-card-title">Trauma</span>
+              <span class="mega-card-blurb">How trauma shows up, and what helps.</span>
+            </a>
+            <a class="mega-card" href="/articles/category/relationships">
+              <span class="mega-card-title">Relationships</span>
+              <span class="mega-card-blurb">Conflict, communication, and repair.</span>
+            </a>
+            <a class="mega-card" href="/articles/category/stress-burnout">
+              <span class="mega-card-title">Stress &amp; Burnout</span>
+              <span class="mega-card-blurb">Recognizing and recovering from burnout.</span>
+            </a>
+            <a class="mega-card mega-card--all" href="/articles">
+              <span class="mega-card-title">View all articles →</span>
+            </a>
+          </div>
         </div>
       </div>
+
       <div class="nav-item">
         <a href="/resources">Resources</a>
-        <div class="mega-panel">
-          <a href="/resources">All Resources</a>
-          <a href="/resources?filter=free">Free Worksheets</a>
-          <a href="/resources?filter=paid">Paid Worksheets</a>
+        <div class="mega-panel mega-panel--narrow">
+          <div class="mega-panel-grid mega-panel-grid--single">
+            <a class="mega-card" href="/resources">
+              <span class="mega-card-title">All Resources</span>
+              <span class="mega-card-blurb">Browse everything we offer.</span>
+            </a>
+            <a class="mega-card" href="/resources">
+              <span class="mega-card-title">Worksheets</span>
+              <span class="mega-card-blurb">Printable tools for between sessions.</span>
+            </a>
+            <a class="mega-card" href="/assessments">
+              <span class="mega-card-title">Assessments</span>
+              <span class="mega-card-blurb">Public scales and how to score them.</span>
+            </a>
+          </div>
         </div>
       </div>
+
+      <div class="nav-item">
+        <a href="/services">Services</a>
+        <div class="mega-panel mega-panel--narrow">
+          <div class="mega-panel-grid mega-panel-grid--single">
+            <a class="mega-card" href="/services#therapy">
+              <span class="mega-card-title">Therapy</span>
+              <span class="mega-card-blurb">Individual &amp; couples sessions.</span>
+            </a>
+            <a class="mega-card" href="/services#research-analysis">
+              <span class="mega-card-title">Research Analysis</span>
+              <span class="mega-card-blurb">Stats, psychometrics &amp; R support.</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
       <div class="nav-item"><a href="/#team">Our Team</a></div>
       <div class="nav-item"><a href="/#contact">Contact</a></div>
     </nav>
+
     <a href="/#contact" class="header-cta">Book a session</a>
+
+    <button class="hamburger-btn" id="hamburgerBtn" aria-label="Open menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
   </div>
 </header>
+
+<button class="drawer-overlay" id="drawerOverlay" aria-hidden="true"></button>
+<div class="mobile-drawer" id="mobileDrawer">
+  <div class="mobile-drawer-header">
+    <span class="wordmark-mini">The Psychology&nbsp;Square</span>
+    <button class="drawer-close-btn" id="drawerCloseBtn" aria-label="Close menu">✕</button>
+  </div>
+  <nav class="mobile-nav">
+    <details class="mobile-nav-group">
+      <summary>Articles</summary>
+      <div class="mobile-nav-links">
+        <a href="/articles/category/anxiety">Anxiety</a>
+        <a href="/articles/category/depression">Depression</a>
+        <a href="/articles/category/adhd">ADHD</a>
+        <a href="/articles/category/addiction-recovery">Addiction &amp; Recovery</a>
+        <a href="/articles/category/trauma">Trauma</a>
+        <a href="/articles/category/relationships">Relationships</a>
+        <a href="/articles/category/stress-burnout">Stress &amp; Burnout</a>
+        <a href="/articles">View all articles →</a>
+      </div>
+    </details>
+    <details class="mobile-nav-group">
+      <summary>Resources</summary>
+      <div class="mobile-nav-links">
+        <a href="/resources">All Resources</a>
+        <a href="/resources">Worksheets</a>
+        <a href="/assessments">Assessments</a>
+      </div>
+    </details>
+    <details class="mobile-nav-group">
+      <summary>Services</summary>
+      <div class="mobile-nav-links">
+        <a href="/services#therapy">Therapy</a>
+        <a href="/services#research-analysis">Research Analysis</a>
+      </div>
+    </details>
+    <a href="/#team" class="mobile-nav-link">Our Team</a>
+    <a href="/#contact" class="mobile-nav-link">Contact</a>
+  </nav>
+  <a href="/#contact" class="btn btn--primary mobile-drawer-cta">Book a session</a>
+</div>
+
 <main>
   <slot />
 </main>
@@ -66,5 +168,29 @@ const { title, description = "The Psychology Square — individual and couples t
     <span>Johar Town, Lahore, Pakistan — Online &amp; in-person sessions</span>
   </div>
 </footer>
+
+<script>
+  const hamburgerBtn = document.getElementById('hamburgerBtn');
+  const drawer = document.getElementById('mobileDrawer');
+  const overlay = document.getElementById('drawerOverlay');
+  const closeBtn = document.getElementById('drawerCloseBtn');
+
+  function openDrawer() {
+    drawer?.classList.add('is-open');
+    overlay?.classList.add('is-open');
+    hamburgerBtn?.setAttribute('aria-expanded', 'true');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeDrawer() {
+    drawer?.classList.remove('is-open');
+    overlay?.classList.remove('is-open');
+    hamburgerBtn?.setAttribute('aria-expanded', 'false');
+    document.body.style.overflow = '';
+  }
+
+  hamburgerBtn?.addEventListener('click', openDrawer);
+  closeBtn?.addEventListener('click', closeDrawer);
+  overlay?.addEventListener('click', closeDrawer);
+</script>
 </body>
 </html>
