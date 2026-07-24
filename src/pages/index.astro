@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
 
 const featuredArticles = [
   {
@@ -21,6 +22,10 @@ const featuredArticles = [
     slug: "/articles/repeating-conflict-couples",
   },
 ];
+
+const worksheets = (await getCollection('worksheets', ({ data }) => !data.draft))
+  .sort((a, b) => a.data.order - b.data.order)
+  .slice(0, 3);
 ---
 <Layout title="Home">
 
@@ -29,13 +34,70 @@ const featuredArticles = [
       <div>
         <p class="eyebrow">Online &amp; In-Person — Johar Town, Lahore, Pakistan</p>
         <h1 class="hero-title">A steady space<br>to think things<br>through.</h1>
-        <p class="hero-sub">Individual and couples therapy, led by two licensed clinical psychologists — plus articles and worksheets grounded in real clinical training, not generic advice.</p>
+        <p class="hero-sub">Individual and couples therapy, held online over video call or in person in Johar Town, Lahore. Evidence-based, unhurried, and built around what you're actually carrying.</p>
         <div class="hero-actions">
           <a href="/#contact" class="btn btn--primary">Book a session</a>
-          <a href="/articles" class="btn btn--text">Read the articles →</a>
+          <a href="/services#therapy" class="btn btn--text">See how sessions work →</a>
         </div>
       </div>
       <div class="hero-signature" aria-hidden="true" id="heroSignature"></div>
+    </div>
+  </section>
+
+  <section class="section" id="approach">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow" style="color: var(--sage-500); margin-bottom: 10px;">The Approach</p>
+          <h2 class="section-title">Therapy that stays grounded in evidence, not slogans.</h2>
+        </div>
+      </div>
+      <div class="approach-grid">
+        <div class="approach-item">
+          <span class="approach-num">01</span>
+          <h3>Structured, not clinical-cold</h3>
+          <p>Sessions follow an evidence-based framework, but conversation comes first. You won't be handed a worksheet before you've been heard.</p>
+        </div>
+        <div class="approach-item">
+          <span class="approach-num">02</span>
+          <h3>Online or in person, your choice</h3>
+          <p>Join over video call from anywhere, or come in person to the Johar Town, Lahore office. Either way — a quiet, confidential hour.</p>
+        </div>
+        <div class="approach-item">
+          <span class="approach-num">03</span>
+          <h3>Rooted in real training</h3>
+          <p>Grounded in supervised clinical experience across hospital and addiction-treatment settings, not theory alone.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--alt" id="services-teaser">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow" style="color: var(--sage-500); margin-bottom: 10px;">Services</p>
+          <h2 class="section-title">Two formats. One space.</h2>
+        </div>
+        <a href="/services" class="section-link">View all services →</a>
+      </div>
+      <div class="card-grid">
+        <a class="article-card" href="/services#therapy">
+          <span class="article-meta">Individual Therapy</span>
+          <h3>One-to-one sessions</h3>
+          <p>Working through what's weighing on you — patterns, symptoms, or simply a season that feels heavier than it should.</p>
+        </a>
+        <a class="article-card" href="/services#therapy">
+          <span class="article-meta">Couples Therapy</span>
+          <h3>Joint sessions</h3>
+          <p>For partners working through communication, conflict, or disconnection — with both people's experience given equal room.</p>
+        </a>
+        <a class="article-card" href="/services#research-analysis">
+          <span class="article-meta">Research Analysis</span>
+          <h3>Stats &amp; psychometrics support</h3>
+          <p>R and SPSS help for students and researchers — from a first analysis to advanced scale validation work.</p>
+        </a>
+      </div>
     </div>
   </section>
 
@@ -67,7 +129,7 @@ const featuredArticles = [
     </div>
   </section>
 
-  <section class="section section--alt">
+  <section class="section section--alt" id="resources-preview">
     <div class="wrap">
       <div class="section-head">
         <div>
@@ -76,11 +138,93 @@ const featuredArticles = [
         </div>
         <a href="/resources" class="section-link">View all resources →</a>
       </div>
-      <p style="color: var(--ink-600); max-width: 560px;">Placeholder — this section will pull real worksheet cards once the Resources collection is wired in.</p>
+      <div class="card-grid">
+        {worksheets.map((w) => (
+          <a class="article-card" href="/resources">
+            <span class="article-meta">{w.data.tier === 'free' ? 'Free' : 'Paid'}</span>
+            <h3>{w.data.title}</h3>
+            <p>{w.data.description}</p>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="team">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow" style="color: var(--sage-500); margin-bottom: 10px;">Who You'll Work With</p>
+          <h2 class="section-title">Two clinicians. One practice.</h2>
+        </div>
+      </div>
+      <div class="card-grid">
+        <div class="article-card" style="cursor:default;">
+          <span class="article-meta">Founder &amp; CEO</span>
+          <h3>Muhammad Sohail</h3>
+          <p>Lecturer of Psychology &amp; Clinical Psychologist — Lecturer at Rashid Latif Khan University (RLKU), M.S. in Clinical Psychology, Member APA.</p>
+          <a href="https://thepsychologysquare.com/sohail.html" class="btn btn--text" style="margin-top:auto; padding-top:8px;" target="_blank" rel="noopener">View full profile →</a>
+        </div>
+        <div class="article-card" style="cursor:default;">
+          <span class="article-meta">Co-CEO</span>
+          <h3>Sehar Waheed</h3>
+          <p>Clinical Psychologist &amp; Counselor — University of Management and Technology (UMT), M.S. in Clinical Psychology, Member APA.</p>
+          <a href="https://thepsychologysquare.com/sehar.html" class="btn btn--text" style="margin-top:auto; padding-top:8px;" target="_blank" rel="noopener">View full profile →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--alt" id="contact">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow" style="color: var(--sage-500); margin-bottom: 10px;">Get In Touch</p>
+          <h2 class="section-title">Book a session.</h2>
+        </div>
+      </div>
+      <p style="color: var(--ink-600); max-width: 560px; margin-bottom: 32px;">Available online (video call) and in person — Johar Town, Lahore, Pakistan. Payment is arranged directly by email and confirmed before the session.</p>
+
+      <div class="contact-notes">
+        <div class="contact-note">
+          <h3>Informed Consent</h3>
+          <p>We work collaboratively toward your goals. You're welcome to ask about the process or approach at any time.</p>
+        </div>
+        <div class="contact-note">
+          <h3>Confidentiality</h3>
+          <p>What's shared in session is private and protected, with standard legal exceptions such as risk of serious harm to yourself or others.</p>
+        </div>
+        <div class="contact-note">
+          <h3>Environment</h3>
+          <p>For online sessions, please join from a quiet, private, and secure location.</p>
+        </div>
+      </div>
+
+      <div class="hero-actions" style="margin-top: 40px;">
+        <a href="mailto:thepsychologysquare@gmail.com" class="btn btn--primary">Email to book or enquire</a>
+        <a href="https://calendly.com/mohdsohail0399/online-session" class="btn btn--text" target="_blank" rel="noopener">Book with Muhammad Sohail →</a>
+        <a href="https://calendly.com/shs-counseling1-umt/30min" class="btn btn--text" target="_blank" rel="noopener">Book with Sehar Waheed →</a>
+      </div>
     </div>
   </section>
 
 </Layout>
+
+<style>
+  .approach-grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap: 32px; }
+  .approach-item{ display:flex; flex-direction:column; gap:10px; }
+  .approach-num{ font-family: var(--font-mono); font-size: 13px; color: var(--gold-500); }
+  .approach-item h3{ font-size: 17px; }
+  .approach-item p{ color: var(--ink-600); font-size: 14.5px; }
+
+  .contact-notes{ display:grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
+  .contact-note h3{ font-size: 15px; margin-bottom: 8px; }
+  .contact-note p{ color: var(--ink-600); font-size: 13.5px; line-height: 1.6; }
+
+  @media (max-width: 860px){
+    .approach-grid, .contact-notes{ grid-template-columns: 1fr; }
+  }
+</style>
 
 <script>
   const grid = document.getElementById('heroSignature');
