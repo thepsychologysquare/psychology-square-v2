@@ -57,7 +57,7 @@ collections:
         options:
           - {label: "Free", value: "free"}
           - {label: "Paid", value: "paid"}
-      - label: "Category"
+      - label: "Topic"
         name: "category"
         widget: "select"
         default: "general"
@@ -70,6 +70,15 @@ collections:
           - {label: "Trauma", value: "trauma"}
           - {label: "Relationships", value: "relationships"}
           - {label: "Stress & Burnout", value: "stress-burnout"}
+      - label: "Age"
+        name: "age"
+        widget: "select"
+        multiple: true
+        default: ["adults"]
+        options:
+          - {label: "Children", value: "children"}
+          - {label: "Adults", value: "adults"}
+        hint: "Select both if the worksheet suits either age group."
       - label: "PDF File"
         name: "fileUrl"
         widget: "file"
@@ -79,3 +88,38 @@ collections:
         hint: "Only needed for Free worksheets — this is what visitors download directly. Leave blank for Paid worksheets."
       - {label: "Order", name: "order", widget: "number", default: 0, required: false, hint: "Lower numbers show first. Leave as 0 if you don't care about order."}
       - {label: "Draft", name: "draft", widget: "boolean", default: false, hint: "Turn ON to hide this worksheet from the live site until it's ready."}
+
+  - name: "assessments"
+    label: "Assessments"
+    folder: "src/content/assessments"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - {label: "Title", name: "title", widget: "string"}
+      - {label: "Description", name: "description", widget: "text", hint: "What the scale measures, in one or two sentences."}
+      - label: "Topic"
+        name: "category"
+        widget: "select"
+        default: "general"
+        options:
+          - {label: "General", value: "general"}
+          - {label: "Anxiety", value: "anxiety"}
+          - {label: "Depression", value: "depression"}
+          - {label: "ADHD", value: "adhd"}
+          - {label: "Addiction & Recovery", value: "addiction-recovery"}
+          - {label: "Trauma", value: "trauma"}
+          - {label: "Relationships", value: "relationships"}
+          - {label: "Stress & Burnout", value: "stress-burnout"}
+      - label: "Age"
+        name: "age"
+        widget: "select"
+        multiple: true
+        default: ["adults"]
+        options:
+          - {label: "Children", value: "children"}
+          - {label: "Adults", value: "adults"}
+      - {label: "Public PDF Link", name: "pdfUrl", widget: "string", hint: "Link to the official, publicly available PDF of the scale — do not upload a copy, link to the original publisher/source."}
+      - {label: "How to Score", name: "scoringSummary", widget: "text", hint: "A short, clear summary of how scoring works and what the score ranges mean."}
+      - {label: "Source / Citation", name: "sourceNote", widget: "string", required: false, hint: "Optional — e.g. 'Spitzer et al., 2006' or the publisher name."}
+      - {label: "Order", name: "order", widget: "number", default: 0, required: false}
+      - {label: "Draft", name: "draft", widget: "boolean", default: false}
