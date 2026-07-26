@@ -36,3 +36,22 @@ CREATE INDEX IF NOT EXISTS idx_slots_clinician_date ON availability_slots (clini
 CREATE INDEX IF NOT EXISTS idx_slots_status ON availability_slots (status);
 
 ALTER TABLE bookings ADD COLUMN slot_id INTEGER;
+
+-- One recurring weekly schedule per clinician. Saved once; the availability
+-- API keeps generating open slots from it automatically going forward.
+CREATE TABLE IF NOT EXISTS weekly_templates (
+  clinician TEXT PRIMARY KEY,        -- 'sohail' | 'sehar'
+  days TEXT NOT NULL,                -- JSON array of working weekdays, 0=Sun..6=Sat
+  start_time TEXT NOT NULL,          -- 'HH:MM' (24h)
+  end_time TEXT NOT NULL,            -- 'HH:MM' (24h)
+  slot_minutes INTEGER NOT NULL DEFAULT 60,
+  updated_at TEXT NOT NULL
+);
+
+-- One-off dates marked off even though they'd normally be a working day
+-- per the weekly template (e.g. a single Friday off for a holiday).
+CREATE TABLE IF NOT EXISTS availability_exceptions (
+  clinician TEXT NOT NULL,
+  date TEXT NOT NULL,                -- 'YYYY-MM-DD'
+  PRIMARY KEY (clinician, date)
+);

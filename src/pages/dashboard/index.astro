@@ -45,29 +45,75 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
 
       <!-- ===== AVAILABILITY TAB ===== -->
       <div id="tabAvailability" class="tab-panel" hidden>
-        <div class="avail-form">
-          {role === 'admin' && (
+        {role === 'admin' && (
+          <div class="field" style="max-width:280px; margin-bottom:20px;">
+            <label for="availClinician">Clinician</label>
+            <select id="availClinician">
+              <option value="sohail">Muhammad Sohail</option>
+              <option value="sehar">Sehar Waheed</option>
+            </select>
+          </div>
+        )}
+
+        <div class="avail-template">
+          <h3 class="avail-template-title">Weekly schedule</h3>
+          <p class="avail-hint">Set this once — it keeps generating open slots for the weeks ahead automatically, using whatever you pick below. Change it anytime and it updates going forward (already-booked sessions are never touched).</p>
+
+          <div class="avail-days-row" id="availDaysRow">
+            <button type="button" class="day-toggle" data-day="1">Mon</button>
+            <button type="button" class="day-toggle" data-day="2">Tue</button>
+            <button type="button" class="day-toggle" data-day="3">Wed</button>
+            <button type="button" class="day-toggle" data-day="4">Thu</button>
+            <button type="button" class="day-toggle" data-day="5">Fri</button>
+            <button type="button" class="day-toggle" data-day="6">Sat</button>
+            <button type="button" class="day-toggle" data-day="0">Sun</button>
+          </div>
+
+          <div class="avail-time-row">
             <div class="field">
-              <label for="availClinician">Clinician</label>
-              <select id="availClinician">
-                <option value="sohail">Muhammad Sohail</option>
-                <option value="sehar">Sehar Waheed</option>
+              <label for="availStart">Start time</label>
+              <input type="time" id="availStart" value="09:00" />
+            </div>
+            <div class="field">
+              <label for="availEnd">End time</label>
+              <input type="time" id="availEnd" value="17:00" />
+            </div>
+            <div class="field">
+              <label for="availSlotLen">Session length</label>
+              <select id="availSlotLen">
+                <option value="30">30 min</option>
+                <option value="45">45 min</option>
+                <option value="60" selected>60 min</option>
+                <option value="90">90 min</option>
+                <option value="120">120 min</option>
               </select>
             </div>
-          )}
-          <div class="field">
-            <label for="availDates">Dates (one per line, YYYY-MM-DD)</label>
-            <textarea id="availDates" rows="4" placeholder="2026-08-01&#10;2026-08-02"></textarea>
           </div>
-          <div class="field">
-            <label for="availTimes">Times (one per line, 24h HH:MM)</label>
-            <textarea id="availTimes" rows="4" placeholder="09:00&#10;10:00&#10;14:00"></textarea>
-          </div>
-          <button id="addSlotsBtn" class="btn btn--primary" style="align-self:flex-start; border:none; cursor:pointer;">Add slots</button>
-          <p class="avail-hint">Going on vacation? Just don't add slots for those dates — nothing is open unless you add it. You can also remove any slot below before it's booked.</p>
+
+          <button id="saveTemplateBtn" class="btn btn--primary" style="border:none; cursor:pointer; align-self:flex-start;">Save weekly schedule</button>
+          <p id="templateSavedMsg" class="avail-saved-msg" hidden>Saved — upcoming weeks updated ✓</p>
         </div>
 
-        <div id="availList" class="avail-list"></div>
+        <div class="avail-calendar">
+          <div class="cal-nav">
+            <button id="calPrev" class="cal-nav-btn" type="button">← Prev</button>
+            <span id="calMonthLabel" class="cal-month-label"></span>
+            <button id="calNext" class="cal-nav-btn" type="button">Next →</button>
+          </div>
+          <div class="cal-weekdays">
+            <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+          </div>
+          <div class="cal-grid" id="calGrid"></div>
+          <p class="avail-hint" style="margin-top:12px;">Click any date to see or adjust that day's sessions — or mark a single day off without changing the weekly schedule.</p>
+        </div>
+
+        <div id="calDayPanel" class="cal-day-panel" hidden>
+          <div class="cal-day-panel-head">
+            <span id="calDayPanelTitle"></span>
+            <button id="calDayOffToggle" class="btn btn--text" type="button"></button>
+          </div>
+          <div id="calDaySlots" class="avail-slots-row"></div>
+        </div>
       </div>
     </div>
   </section>
@@ -140,15 +186,49 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
 
   @media (max-width:560px){ .booking-card{ grid-template-columns:1fr; } .booking-actions{ align-items:flex-start; } }
 
-  .avail-form{ display:flex; flex-direction:column; gap:16px; max-width:480px; margin-bottom:36px; padding:22px; border:1px solid var(--line); border-radius:2px; background:var(--paper-50); }
   .field{ display:flex; flex-direction:column; gap:6px; }
   label{ font-size:14px; font-weight:500; }
-  select, textarea{ font-family:var(--font-body); font-size:14.5px; padding:10px 12px; border:1px solid var(--line); border-radius:2px; }
+  select, textarea, input[type="time"]{ font-family:var(--font-body); font-size:14.5px; padding:10px 12px; border:1px solid var(--line); border-radius:2px; }
   .avail-hint{ font-size:13px; color:var(--ink-600); }
 
-  .avail-list{ display:flex; flex-direction:column; gap:10px; }
-  .avail-day{ border:1px solid var(--line); border-radius:2px; padding:14px 18px; }
-  .avail-day-title{ font-family:var(--font-mono); font-size:13px; color:var(--ink-600); margin-bottom:8px; }
+  .avail-template{ display:flex; flex-direction:column; gap:16px; max-width:560px; margin-bottom:32px; padding:22px; border:1px solid var(--line); border-radius:2px; background:var(--paper-50); }
+  .avail-template-title{ font-size:17px; margin:0; }
+  .avail-days-row{ display:flex; gap:8px; flex-wrap:wrap; }
+  .day-toggle{
+    font-family:var(--font-mono); font-size:12.5px; letter-spacing:0.04em; text-transform:uppercase;
+    padding:8px 14px; border:1px solid var(--line); border-radius:20px; background:transparent; cursor:pointer; color:var(--ink-600);
+  }
+  .day-toggle.is-on{ border-color:var(--gold-500); color:var(--ink-900); background:rgba(199,164,74,0.12); }
+  .avail-time-row{ display:flex; gap:16px; flex-wrap:wrap; }
+  .avail-time-row .field{ flex:1; min-width:130px; }
+  .avail-saved-msg{ font-size:13px; color:#3f5c47; }
+
+  .avail-calendar{ max-width:560px; margin-bottom:24px; border:1px solid var(--line); border-radius:2px; padding:20px; }
+  .cal-nav{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .cal-nav-btn{ font-family:var(--font-mono); font-size:12px; background:none; border:none; color:var(--ink-600); cursor:pointer; padding:4px; }
+  .cal-nav-btn:hover{ color:var(--ink-900); }
+  .cal-month-label{ font-weight:600; font-size:15px; }
+  .cal-weekdays{ display:grid; grid-template-columns:repeat(7,1fr); font-family:var(--font-mono); font-size:11px; color:var(--ink-600); text-align:center; margin-bottom:6px; }
+  .cal-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+  .cal-cell{
+    position:relative; aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    border:1px solid var(--line); border-radius:2px; background:transparent; cursor:pointer; font-size:13px; color:var(--ink-900); padding:2px;
+  }
+  .cal-cell:hover{ border-color:var(--gold-500); }
+  .cal-cell.is-blank{ visibility:hidden; cursor:default; }
+  .cal-cell.is-past{ opacity:0.35; cursor:default; }
+  .cal-cell.is-past:hover{ border-color:var(--line); }
+  .cal-cell.is-off{ background:rgba(180,67,46,0.06); color:var(--ink-600); }
+  .cal-cell.is-selected{ border-color:var(--gold-500); border-width:2px; }
+  .cal-dot-row{ display:flex; gap:3px; margin-top:3px; }
+  .cal-dot{ width:5px; height:5px; border-radius:50%; }
+  .cal-dot.open{ background:#3f5c47; }
+  .cal-dot.booked{ background:var(--gold-500); }
+
+  .cal-day-panel{ max-width:560px; border:1px solid var(--line); border-radius:2px; padding:18px 20px; margin-bottom:36px; }
+  .cal-day-panel-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+  .cal-day-panel-head span{ font-weight:600; }
+
   .avail-slots-row{ display:flex; gap:8px; flex-wrap:wrap; }
   .avail-slot-chip{
     display:flex; align-items:center; gap:8px; font-size:13.5px; padding:6px 10px;
@@ -325,75 +405,186 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
 
   // ===== Availability =====
   const availClinicianSelect = document.getElementById('availClinician');
-  const availDates = document.getElementById('availDates');
-  const availTimes = document.getElementById('availTimes');
-  const addSlotsBtn = document.getElementById('addSlotsBtn');
-  const availList = document.getElementById('availList');
+  const availDaysRow = document.getElementById('availDaysRow');
+  const availStart = document.getElementById('availStart');
+  const availEnd = document.getElementById('availEnd');
+  const availSlotLen = document.getElementById('availSlotLen');
+  const saveTemplateBtn = document.getElementById('saveTemplateBtn');
+  const templateSavedMsg = document.getElementById('templateSavedMsg');
+  const calPrev = document.getElementById('calPrev');
+  const calNext = document.getElementById('calNext');
+  const calMonthLabel = document.getElementById('calMonthLabel');
+  const calGrid = document.getElementById('calGrid');
+  const calDayPanel = document.getElementById('calDayPanel');
+  const calDayPanelTitle = document.getElementById('calDayPanelTitle');
+  const calDayOffToggle = document.getElementById('calDayOffToggle');
+  const calDaySlots = document.getElementById('calDaySlots');
+
+  let availSlots = [];
+  let availExceptions = new Set();
+  let calMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+  let selectedDate = null;
 
   function currentClinicianForAvail() {
     return role === 'admin' ? availClinicianSelect.value : role;
+  }
+
+  function todayStr() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   }
 
   async function loadAvailability() {
     const clinician = currentClinicianForAvail();
     const res = await fetch(`/api/admin/availability?clinician=${clinician}`);
     const data = await res.json();
-    const slots = data.slots || [];
-    const byDate = {};
-    for (const s of slots) { (byDate[s.date] ||= []).push(s); }
+    availSlots = data.slots || [];
+    availExceptions = new Set(data.exceptions || []);
 
-    availList.innerHTML = '';
-    const dates = Object.keys(byDate).sort();
-    if (!dates.length) {
-      availList.innerHTML = '<p class="dash-empty">No slots added yet.</p>';
-      return;
+    availDaysRow.querySelectorAll('.day-toggle').forEach((btn) => {
+      const on = data.template ? data.template.days.includes(Number(btn.dataset.day)) : false;
+      btn.classList.toggle('is-on', on);
+    });
+    if (data.template) {
+      availStart.value = data.template.start_time;
+      availEnd.value = data.template.end_time;
+      availSlotLen.value = String(data.template.slot_minutes);
     }
-    for (const date of dates) {
-      const day = document.createElement('div');
-      day.className = 'avail-day';
-      const title = document.createElement('div');
-      title.className = 'avail-day-title';
-      title.textContent = new Date(date + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-      day.appendChild(title);
 
-      const row = document.createElement('div');
-      row.className = 'avail-slots-row';
-      for (const s of byDate[date].sort((a, b) => a.time.localeCompare(b.time))) {
-        const chip = document.createElement('span');
-        chip.className = 'avail-slot-chip' + (s.status === 'booked' ? ' booked' : '');
-        chip.innerHTML = `${s.time}${s.status === 'booked' ? ' (booked)' : ''} ${s.status === 'open' ? `<button class="avail-slot-remove" data-id="${s.id}">✕</button>` : ''}`;
-        row.appendChild(chip);
+    renderCalendar();
+    if (selectedDate) renderDayPanel(selectedDate);
+  }
+
+  availDaysRow.addEventListener('click', (e) => {
+    const btn = e.target.closest('.day-toggle');
+    if (!btn) return;
+    btn.classList.toggle('is-on');
+  });
+
+  saveTemplateBtn.addEventListener('click', async () => {
+    const days = [...availDaysRow.querySelectorAll('.day-toggle.is-on')].map((b) => Number(b.dataset.day));
+    if (!days.length) { alert('Pick at least one working day.'); return; }
+    if (!availStart.value || !availEnd.value || availStart.value >= availEnd.value) {
+      alert('Pick a valid start and end time.'); return;
+    }
+    saveTemplateBtn.disabled = true;
+    saveTemplateBtn.textContent = 'Saving…';
+    templateSavedMsg.hidden = true;
+    await fetch('/api/admin/availability', {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        mode: 'generate',
+        clinician: currentClinicianForAvail(),
+        days,
+        start_time: availStart.value,
+        end_time: availEnd.value,
+        slot_minutes: Number(availSlotLen.value),
+      }),
+    });
+    saveTemplateBtn.disabled = false;
+    saveTemplateBtn.textContent = 'Save weekly schedule';
+    templateSavedMsg.hidden = false;
+    await loadAvailability();
+  });
+
+  if (availClinicianSelect) {
+    availClinicianSelect.addEventListener('change', () => {
+      selectedDate = null;
+      calDayPanel.hidden = true;
+      loadAvailability();
+    });
+  }
+
+  function renderCalendar() {
+    const year = calMonth.getFullYear();
+    const month = calMonth.getMonth();
+    calMonthLabel.textContent = calMonth.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+
+    const byDate = {};
+    for (const s of availSlots) { (byDate[s.date] ||= []).push(s); }
+
+    const firstWeekday = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const today = todayStr();
+
+    calGrid.innerHTML = '';
+    for (let i = 0; i < firstWeekday; i++) {
+      const blank = document.createElement('div');
+      blank.className = 'cal-cell is-blank';
+      calGrid.appendChild(blank);
+    }
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      const cell = document.createElement('button');
+      cell.type = 'button';
+      cell.className = 'cal-cell';
+      const isPast = dateStr < today;
+      if (isPast) cell.classList.add('is-past');
+      if (dateStr === selectedDate) cell.classList.add('is-selected');
+
+      const daySlots = byDate[dateStr] || [];
+      const hasOpen = daySlots.some((s) => s.status === 'open');
+      const hasBooked = daySlots.some((s) => s.status === 'booked');
+      const isOff = availExceptions.has(dateStr) || (!daySlots.length && !isPast);
+      if (!daySlots.length) cell.classList.add('is-off');
+
+      cell.innerHTML = `<span>${day}</span>`;
+      if (hasOpen || hasBooked) {
+        const dotRow = document.createElement('div');
+        dotRow.className = 'cal-dot-row';
+        if (hasOpen) dotRow.innerHTML += '<span class="cal-dot open"></span>';
+        if (hasBooked) dotRow.innerHTML += '<span class="cal-dot booked"></span>';
+        cell.appendChild(dotRow);
       }
-      day.appendChild(row);
-      availList.appendChild(day);
+
+      cell.dataset.date = dateStr;
+      if (!isPast) cell.addEventListener('click', () => { selectedDate = dateStr; renderCalendar(); renderDayPanel(dateStr); });
+      calGrid.appendChild(cell);
     }
   }
 
-  availList.addEventListener('click', async (e) => {
+  function renderDayPanel(dateStr) {
+    calDayPanel.hidden = false;
+    calDayPanelTitle.textContent = new Date(dateStr + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+    const isOff = availExceptions.has(dateStr);
+    calDayOffToggle.textContent = isOff ? 'Make this a working day' : 'Mark this day off';
+    calDayOffToggle.onclick = async () => {
+      const clinician = currentClinicianForAvail();
+      if (isOff) {
+        await fetch('/api/admin/availability', {
+          method: 'PATCH', headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ clinician, date: dateStr }),
+        });
+      } else {
+        await fetch(`/api/admin/availability?clinician=${clinician}&date=${dateStr}`, { method: 'DELETE' });
+      }
+      await loadAvailability();
+    };
+
+    const daySlots = availSlots.filter((s) => s.date === dateStr).sort((a, b) => a.time.localeCompare(b.time));
+    calDaySlots.innerHTML = '';
+    if (!daySlots.length) {
+      calDaySlots.innerHTML = '<p class="dash-empty" style="padding:8px 0;">No sessions this day.</p>';
+      return;
+    }
+    for (const s of daySlots) {
+      const chip = document.createElement('span');
+      chip.className = 'avail-slot-chip' + (s.status === 'booked' ? ' booked' : '');
+      chip.innerHTML = `${s.time}${s.status === 'booked' ? ' (booked)' : ''} ${s.status === 'open' ? `<button class="avail-slot-remove" data-id="${s.id}">✕</button>` : ''}`;
+      calDaySlots.appendChild(chip);
+    }
+  }
+
+  calDaySlots.addEventListener('click', async (e) => {
     const btn = e.target.closest('.avail-slot-remove');
     if (!btn) return;
     await fetch(`/api/admin/availability?id=${btn.dataset.id}`, { method: 'DELETE' });
     loadAvailability();
   });
 
-  if (availClinicianSelect) availClinicianSelect.addEventListener('change', loadAvailability);
-
-  addSlotsBtn.addEventListener('click', async () => {
-    const dates = availDates.value.split('\n').map((s) => s.trim()).filter(Boolean);
-    const times = availTimes.value.split('\n').map((s) => s.trim()).filter(Boolean);
-    if (!dates.length || !times.length) return;
-    addSlotsBtn.disabled = true;
-    addSlotsBtn.textContent = 'Adding…';
-    await fetch('/api/admin/availability', {
-      method: 'POST', headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ clinician: currentClinicianForAvail(), dates, times }),
-    });
-    addSlotsBtn.disabled = false;
-    addSlotsBtn.textContent = 'Add slots';
-    availDates.value = '';
-    availTimes.value = '';
-    loadAvailability();
-  });
+  calPrev.addEventListener('click', () => { calMonth.setMonth(calMonth.getMonth() - 1); renderCalendar(); });
+  calNext.addEventListener('click', () => { calMonth.setMonth(calMonth.getMonth() + 1); renderCalendar(); });
 
   loadBookings();
 </script>
