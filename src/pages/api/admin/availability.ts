@@ -209,6 +209,61 @@ export const POST: APIRoute = async ({ request }) => {
   return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { 'content-type': 'application/json' } });
 };
 
+// Bulk exclude/include — used for "exclude this week" and multi-day selection:
+//   { mode: 'exclude', clinician, dates: [...] }  -- mark all given dates off
+//   { mode: 'include', clinician, dates: [...] }  -- undo the above
+export const PUT: APIRoute = async ({ request }) => {
+  const session = await getSession(request.headers.get('cookie'), env?.ADMIN_SESSION_SECRET || '');
+  if (!session) return new Response(JSON.stringify({ error: 'Not signed in.' }), { status: 401 });
+
+  const body = await request.json().catch(() => null);
+  const clinician = body?.clinician;
+  const mode = body?.mode;
+  const dates: string[] = Array.isArray(body?.dates)
+    ? body.dates.filter((d: any) => typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d))
+    : [];
+
+  if (!canManage(session.role, clinician)) {
+    return new Response(JSON.stringify({ error: 'Not authorized.' }), { status: 403 });
+  }
+  if ((mode !== 'exclude' && mode !== 'include') || !dates.length) {
+    return new Response(JSON.stringify({ error: 'Missing dates.' }), { status: 400 });
+  }
+
+  const statements = [];
+  if (mode === 'exclude') {
+    for (const date of dates) {
+      statements.push(
+        env.DB.prepare(
+          `INSERT INTO availability_exceptions (clinician, date) VALUES (?, ?)
+           ON CONFLICT(clinician, date) DO NOTHING`
+        ).bind(clinician, date)
+      );
+      statements.push(
+        env.DB.prepare(
+          `DELETE FROM availability_slots WHERE clinician = ? AND date = ? AND status != 'booked'`
+        ).bind(clinician, date)
+      );
+    }
+  } else {
+    for (const date of dates) {
+      statements.push(
+        env.DB.prepare(`DELETE FROM availability_exceptions WHERE clinician = ? AND date = ?`).bind(clinician, date)
+      );
+    }
+  }
+  if (statements.length) await env.DB.batch(statements);
+
+  if (mode === 'include') {
+    const template = await getTemplate(clinician);
+    if (template) {
+      await syncTemplate(clinician, template.days, template.start_time, template.end_time, template.slot_minutes);
+    }
+  }
+
+  return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { 'content-type': 'application/json' } });
+};
+
 // Two supported uses:
 //  A) Remove a single slot:               ?id=123
 //  B) Mark an entire date off (exception): ?clinician=sohail&date=2026-08-10

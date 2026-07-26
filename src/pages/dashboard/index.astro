@@ -100,11 +100,20 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
             <span id="calMonthLabel" class="cal-month-label"></span>
             <button id="calNext" class="cal-nav-btn" type="button">Next →</button>
           </div>
+          <div class="cal-toolbar">
+            <button id="calSelectModeBtn" class="btn btn--text cal-select-mode-btn" type="button">Select multiple days</button>
+          </div>
           <div class="cal-weekdays">
-            <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+            <span></span><span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
           </div>
           <div class="cal-grid" id="calGrid"></div>
-          <p class="avail-hint" style="margin-top:12px;">Click any date to see or adjust that day's sessions — or mark a single day off without changing the weekly schedule.</p>
+          <div id="calSelectBar" class="cal-select-bar" hidden>
+            <span id="calSelectCount"></span>
+            <button id="calExcludeSelected" class="btn btn--text" type="button">Exclude selected</button>
+            <button id="calIncludeSelected" class="btn btn--text" type="button">Make available</button>
+            <button id="calClearSelected" class="btn btn--text" type="button">Clear</button>
+          </div>
+          <p class="avail-hint" style="margin-top:12px;">Click any date to see or adjust that day's sessions. Click the circle at the start of a week to exclude or restore the whole week in one click — or use "Select multiple days" to exclude a specific set of dates at once.</p>
         </div>
 
         <div id="calDayPanel" class="cal-day-panel" hidden>
@@ -117,15 +126,6 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
       </div>
     </div>
   </section>
-
-  <!-- Screenshot modal -->
-  <div id="screenshotModal" class="modal" hidden>
-    <div class="modal-backdrop"></div>
-    <div class="modal-body">
-      <button id="modalClose" class="modal-close">Close ✕</button>
-      <img id="modalImg" src="" alt="Payment screenshot" />
-    </div>
-  </div>
 </Layout>
 
 <style>
@@ -237,13 +237,23 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
   .avail-slot-chip.booked{ opacity:0.55; }
   .avail-slot-remove{ background:none; border:none; color:#B4432E; cursor:pointer; font-size:14px; padding:0; }
 
-  .modal{ position:fixed; inset:0; z-index:100; display:flex; align-items:center; justify-content:center; }
-  .modal-backdrop{ position:absolute; inset:0; background:rgba(10,14,20,0.82); }
-  .modal-body{ position:relative; max-width:90vw; max-height:85vh; }
-  .modal-body img{ max-width:90vw; max-height:85vh; border-radius:2px; display:block; }
-  .modal-close{
-    position:absolute; top:-38px; right:0; background:none; border:none; color:var(--paper-0);
-    font-family:var(--font-mono); font-size:13px; cursor:pointer;
+  .cal-toolbar{ display:flex; justify-content:flex-end; margin-bottom:10px; }
+  .cal-select-mode-btn.is-active{ border-color:var(--gold-500); color:var(--ink-900); background:rgba(199,164,74,0.12); }
+
+  .cal-weekdays{ display:grid; grid-template-columns:30px repeat(7,1fr); }
+  .cal-grid{ display:flex; flex-direction:column; gap:4px; }
+  .cal-week-row{ display:grid; grid-template-columns:30px repeat(7,1fr); gap:4px; align-items:center; }
+  .cal-week-btn{
+    font-size:13px; width:26px; height:26px; border:1px solid var(--line); border-radius:50%;
+    background:transparent; cursor:pointer; color:var(--ink-600); display:flex; align-items:center; justify-content:center; padding:0;
+  }
+  .cal-week-btn:hover{ border-color:var(--gold-500); color:var(--ink-900); }
+  .cal-cell.is-other-month{ opacity:0.32; }
+  .cal-cell.is-picked{ border-color:var(--gold-500); border-width:2px; background:rgba(199,164,74,0.14); }
+
+  .cal-select-bar{
+    display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-top:12px; padding:12px 16px;
+    border:1px solid var(--gold-500); border-radius:2px; background:rgba(199,164,74,0.08); font-size:13.5px;
   }
 </style>
 
@@ -258,9 +268,6 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
   const tabs = document.getElementById('dashTabs');
   const tabBookings = document.getElementById('tabBookings');
   const tabAvailability = document.getElementById('tabAvailability');
-  const modal = document.getElementById('screenshotModal');
-  const modalImg = document.getElementById('modalImg');
-  const modalClose = document.getElementById('modalClose');
 
   let allBookings = [];
   let activeFilter = 'all';
@@ -310,7 +317,7 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
           ${b.notes ? `<span class="booking-notes">"${escapeHtml(b.notes)}"</span>` : ''}
         </div>
         <div class="booking-actions">
-          <button class="view-shot-btn" data-id="${b.id}">View screenshot →</button>
+          <a class="view-shot-btn" href="/api/admin/screenshot/${b.id}" target="_blank" rel="noopener">View screenshot →</a>
           <div class="action-row">
             <button class="action-btn confirm" data-id="${b.id}" data-status="confirmed">Confirm</button>
             <button class="action-btn decline" data-id="${b.id}" data-status="declined">Decline</button>
@@ -343,16 +350,6 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
   searchBox.addEventListener('input', () => { searchTerm = searchBox.value; render(); });
 
   dashList.addEventListener('click', async (e) => {
-    const viewBtn = e.target.closest('.view-shot-btn');
-    if (viewBtn) {
-      const res = await fetch(`/api/admin/screenshot/${viewBtn.dataset.id}`);
-      if (res.ok) {
-        const blob = await res.blob();
-        modalImg.src = URL.createObjectURL(blob);
-        modal.hidden = false;
-      }
-      return;
-    }
     const btn = e.target.closest('.action-btn');
     if (!btn) return;
     const id = btn.dataset.id, status = btn.dataset.status;
@@ -365,9 +362,6 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
     if (booking) booking.status = status;
     render();
   });
-
-  modalClose.addEventListener('click', () => { modal.hidden = true; modalImg.src = ''; });
-  modal.querySelector('.modal-backdrop').addEventListener('click', () => { modal.hidden = true; modalImg.src = ''; });
 
   exportBtn.addEventListener('click', () => {
     const cols = ['id', 'created_at', 'client_name', 'contact', 'service', 'clinician', 'preferred_time', 'amount_pkr', 'payment_method', 'status', 'notes'];
@@ -419,20 +413,71 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
   const calDayPanelTitle = document.getElementById('calDayPanelTitle');
   const calDayOffToggle = document.getElementById('calDayOffToggle');
   const calDaySlots = document.getElementById('calDaySlots');
+  const calSelectModeBtn = document.getElementById('calSelectModeBtn');
+  const calSelectBar = document.getElementById('calSelectBar');
+  const calSelectCount = document.getElementById('calSelectCount');
+  const calExcludeSelected = document.getElementById('calExcludeSelected');
+  const calIncludeSelected = document.getElementById('calIncludeSelected');
+  const calClearSelected = document.getElementById('calClearSelected');
 
   let availSlots = [];
   let availExceptions = new Set();
   let calMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
   let selectedDate = null;
+  let selectMode = false;
+  let selectedDates = new Set();
 
   function currentClinicianForAvail() {
     return role === 'admin' ? availClinicianSelect.value : role;
   }
 
   function todayStr() {
-    const d = new Date();
+    return fmtDate(new Date());
+  }
+
+  function fmtDate(d) {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   }
+
+  function updateSelectBar() {
+    calSelectBar.hidden = selectedDates.size === 0;
+    calSelectCount.textContent = `${selectedDates.size} day${selectedDates.size === 1 ? '' : 's'} selected`;
+  }
+
+  async function applyBulk(mode, dates) {
+    const clinician = currentClinicianForAvail();
+    await fetch('/api/admin/availability', {
+      method: 'PUT', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ mode, clinician, dates }),
+    });
+    await loadAvailability();
+  }
+
+  calSelectModeBtn.addEventListener('click', () => {
+    selectMode = !selectMode;
+    calSelectModeBtn.classList.toggle('is-active', selectMode);
+    calSelectModeBtn.textContent = selectMode ? 'Done selecting' : 'Select multiple days';
+    if (!selectMode) { selectedDates.clear(); updateSelectBar(); }
+    calDayPanel.hidden = true;
+    selectedDate = null;
+    renderCalendar();
+  });
+
+  calExcludeSelected.addEventListener('click', async () => {
+    await applyBulk('exclude', [...selectedDates]);
+    selectedDates.clear();
+    updateSelectBar();
+  });
+  calIncludeSelected.addEventListener('click', async () => {
+    await applyBulk('include', [...selectedDates]);
+    selectedDates.clear();
+    updateSelectBar();
+  });
+  calClearSelected.addEventListener('click', () => {
+    selectedDates.clear();
+    updateSelectBar();
+    renderCalendar();
+  });
 
   async function loadAvailability() {
     const clinician = currentClinicianForAvail();
@@ -503,43 +548,82 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
     const byDate = {};
     for (const s of availSlots) { (byDate[s.date] ||= []).push(s); }
 
-    const firstWeekday = new Date(year, month, 1).getDay();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
     const today = todayStr();
+    const firstOfMonth = new Date(year, month, 1);
+    const lastOfMonth = new Date(year, month + 1, 0);
+    const gridStart = new Date(firstOfMonth);
+    gridStart.setDate(gridStart.getDate() - gridStart.getDay());
+    const gridEnd = new Date(lastOfMonth);
+    gridEnd.setDate(gridEnd.getDate() + (6 - gridEnd.getDay()));
 
     calGrid.innerHTML = '';
-    for (let i = 0; i < firstWeekday; i++) {
-      const blank = document.createElement('div');
-      blank.className = 'cal-cell is-blank';
-      calGrid.appendChild(blank);
-    }
-    for (let day = 1; day <= daysInMonth; day++) {
-      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-      const cell = document.createElement('button');
-      cell.type = 'button';
-      cell.className = 'cal-cell';
-      const isPast = dateStr < today;
-      if (isPast) cell.classList.add('is-past');
-      if (dateStr === selectedDate) cell.classList.add('is-selected');
+    const cursor = new Date(gridStart);
 
-      const daySlots = byDate[dateStr] || [];
-      const hasOpen = daySlots.some((s) => s.status === 'open');
-      const hasBooked = daySlots.some((s) => s.status === 'booked');
-      const isOff = availExceptions.has(dateStr) || (!daySlots.length && !isPast);
-      if (!daySlots.length) cell.classList.add('is-off');
+    while (cursor <= gridEnd) {
+      const weekRow = document.createElement('div');
+      weekRow.className = 'cal-week-row';
 
-      cell.innerHTML = `<span>${day}</span>`;
-      if (hasOpen || hasBooked) {
-        const dotRow = document.createElement('div');
-        dotRow.className = 'cal-dot-row';
-        if (hasOpen) dotRow.innerHTML += '<span class="cal-dot open"></span>';
-        if (hasBooked) dotRow.innerHTML += '<span class="cal-dot booked"></span>';
-        cell.appendChild(dotRow);
+      const weekDates = [];
+      for (let i = 0; i < 7; i++) {
+        weekDates.push(fmtDate(cursor));
+        cursor.setDate(cursor.getDate() + 1);
       }
 
-      cell.dataset.date = dateStr;
-      if (!isPast) cell.addEventListener('click', () => { selectedDate = dateStr; renderCalendar(); renderDayPanel(dateStr); });
-      calGrid.appendChild(cell);
+      const weekBtn = document.createElement('button');
+      weekBtn.type = 'button';
+      weekBtn.className = 'cal-week-btn';
+      const allFuture = weekDates.every((d) => d >= today);
+      const allOff = weekDates.every((d) => availExceptions.has(d) || !(byDate[d] && byDate[d].length));
+      weekBtn.textContent = allOff ? '↺' : '⊘';
+      weekBtn.title = allFuture ? (allOff ? 'Make this week available' : 'Exclude this whole week') : 'This week has already passed';
+      weekBtn.disabled = !allFuture;
+      weekBtn.addEventListener('click', () => applyBulk(allOff ? 'include' : 'exclude', weekDates));
+      weekRow.appendChild(weekBtn);
+
+      for (const dateStr of weekDates) {
+        const d = new Date(dateStr + 'T00:00:00');
+        const inMonth = d.getMonth() === month;
+        const cell = document.createElement('button');
+        cell.type = 'button';
+        cell.className = 'cal-cell';
+        if (!inMonth) cell.classList.add('is-other-month');
+        const isPast = dateStr < today;
+        if (isPast) cell.classList.add('is-past');
+        if (dateStr === selectedDate) cell.classList.add('is-selected');
+        if (selectedDates.has(dateStr)) cell.classList.add('is-picked');
+
+        const daySlots = byDate[dateStr] || [];
+        const hasOpen = daySlots.some((s) => s.status === 'open');
+        const hasBooked = daySlots.some((s) => s.status === 'booked');
+        if (!daySlots.length) cell.classList.add('is-off');
+
+        cell.innerHTML = `<span>${d.getDate()}</span>`;
+        if (hasOpen || hasBooked) {
+          const dotRow = document.createElement('div');
+          dotRow.className = 'cal-dot-row';
+          if (hasOpen) dotRow.innerHTML += '<span class="cal-dot open"></span>';
+          if (hasBooked) dotRow.innerHTML += '<span class="cal-dot booked"></span>';
+          cell.appendChild(dotRow);
+        }
+
+        cell.dataset.date = dateStr;
+        if (!isPast) {
+          cell.addEventListener('click', () => {
+            if (selectMode) {
+              if (selectedDates.has(dateStr)) selectedDates.delete(dateStr);
+              else selectedDates.add(dateStr);
+              renderCalendar();
+              updateSelectBar();
+            } else {
+              selectedDate = dateStr;
+              renderCalendar();
+              renderDayPanel(dateStr);
+            }
+          });
+        }
+        weekRow.appendChild(cell);
+      }
+      calGrid.appendChild(weekRow);
     }
   }
 

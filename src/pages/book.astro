@@ -48,8 +48,21 @@ import Layout from '../layouts/Layout.astro';
 
         <div class="form-block">
           <span class="form-step">03 — Pick a time</span>
-          <div id="slotPicker" class="slot-picker">
-            <p class="slot-status" id="slotStatus">Loading available times…</p>
+          <p class="slot-status" id="slotStatus">Loading available times…</p>
+          <div id="bookCalendar" class="book-calendar" hidden>
+            <div class="cal-nav">
+              <button id="bookCalPrev" class="cal-nav-btn" type="button">← Prev</button>
+              <span id="bookCalMonthLabel" class="cal-month-label"></span>
+              <button id="bookCalNext" class="cal-nav-btn" type="button">Next →</button>
+            </div>
+            <div class="cal-weekdays">
+              <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+            </div>
+            <div class="cal-grid" id="bookCalGrid"></div>
+            <div id="bookDayPanel" class="book-day-panel" hidden>
+              <p class="book-day-panel-title" id="bookDayPanelTitle"></p>
+              <div id="bookSlotTimes" class="slot-times"></div>
+            </div>
           </div>
         </div>
 
@@ -162,14 +175,29 @@ import Layout from '../layouts/Layout.astro';
   .payment-amount{ font-size:15px; margin-bottom:10px; }
   .payment-instructions{ font-family:var(--font-mono); font-size:14px; line-height:1.8; color:var(--ink-900); white-space:pre-line; }
 
-  .slot-picker{ display:flex; flex-direction:column; gap:14px; }
   .slot-status{ color:var(--ink-600); font-size:14px; }
-  .slot-dates{ display:flex; gap:8px; flex-wrap:wrap; }
-  .slot-date-btn{
-    font-family:var(--font-mono); font-size:13px; padding:8px 14px;
-    border:1px solid var(--line); border-radius:2px; background:transparent; cursor:pointer;
+
+  .book-calendar{ max-width:420px; border:1px solid var(--line); border-radius:2px; padding:20px; }
+  .cal-nav{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .cal-nav-btn{ font-family:var(--font-mono); font-size:12px; background:none; border:none; color:var(--ink-600); cursor:pointer; padding:4px; }
+  .cal-nav-btn:hover:not(:disabled){ color:var(--ink-900); }
+  .cal-nav-btn:disabled{ opacity:0.3; cursor:not-allowed; }
+  .cal-month-label{ font-weight:600; font-size:15px; }
+  .cal-weekdays{ display:grid; grid-template-columns:repeat(7,1fr); font-family:var(--font-mono); font-size:11px; color:var(--ink-600); text-align:center; margin-bottom:6px; }
+  .cal-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+  .cal-cell{
+    position:relative; aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    border:1px solid var(--line); border-radius:2px; background:transparent; font-size:13px; color:var(--ink-900); padding:2px;
   }
-  .slot-date-btn.is-active{ border-color:var(--gold-500); background:rgba(199,164,74,0.1); }
+  .cal-cell.is-bookable{ cursor:pointer; }
+  .cal-cell.is-bookable:hover{ border-color:var(--gold-500); }
+  .cal-cell.is-other-month{ visibility:hidden; }
+  .cal-cell.is-past, .cal-cell.is-off{ opacity:0.3; cursor:default; color:var(--ink-600); }
+  .cal-cell.is-selected{ border-color:var(--gold-500); border-width:2px; }
+  .cal-dot{ width:5px; height:5px; border-radius:50%; background:var(--gold-500); margin-top:3px; }
+
+  .book-day-panel{ margin-top:18px; padding-top:16px; border-top:1px solid var(--line); }
+  .book-day-panel-title{ font-weight:600; font-size:14.5px; margin-bottom:10px; }
   .slot-times{ display:flex; gap:8px; flex-wrap:wrap; }
   .slot-time-btn{
     font-family:var(--font-body); font-size:14px; padding:9px 16px;
@@ -203,12 +231,28 @@ import Layout from '../layouts/Layout.astro';
   const confirmationPanel = document.getElementById('confirmationPanel')!;
   const confirmationRef = document.getElementById('confirmationRef')!;
   const clinicianFilter = document.getElementById('clinicianFilter') as HTMLSelectElement;
-  const slotPicker = document.getElementById('slotPicker')!;
   const slotStatus = document.getElementById('slotStatus')!;
+  const bookCalendar = document.getElementById('bookCalendar')!;
+  const bookCalPrev = document.getElementById('bookCalPrev') as HTMLButtonElement;
+  const bookCalNext = document.getElementById('bookCalNext') as HTMLButtonElement;
+  const bookCalMonthLabel = document.getElementById('bookCalMonthLabel')!;
+  const bookCalGrid = document.getElementById('bookCalGrid')!;
+  const bookDayPanel = document.getElementById('bookDayPanel')!;
+  const bookDayPanelTitle = document.getElementById('bookDayPanelTitle')!;
+  const bookSlotTimes = document.getElementById('bookSlotTimes')!;
 
   let slots: { id: number; clinician: string; date: string; time: string }[] = [];
   let selectedSlotId: number | null = null;
   let selectedDate: string | null = null;
+  let calMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+
+  function todayStr() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+  function fmtDate(d: Date) {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
 
   function currentService(): string {
     return (form.querySelector('input[name="service"]:checked') as HTMLInputElement)?.value ?? 'individual';
@@ -226,49 +270,126 @@ import Layout from '../layouts/Layout.astro';
   });
   updateSummary();
 
-  function formatDate(d: string) {
-    return new Date(d + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+  function renderCalendar() {
+    const byDate: Record<string, typeof slots> = {};
+    for (const s of slots) { (byDate[s.date] ||= []).push(s); }
+    const availableDates = Object.keys(byDate).sort();
+
+    const today = todayStr();
+    const year = calMonth.getFullYear();
+    const month = calMonth.getMonth();
+    bookCalMonthLabel.textContent = calMonth.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+
+    // Bound navigation to the actual booking horizon — can't go before this month,
+    // and can't go past the last month that has any open slot.
+    const isCurrentMonth = year === new Date().getFullYear() && month === new Date().getMonth();
+    bookCalPrev.disabled = isCurrentMonth;
+    const lastAvailable = availableDates.length ? availableDates[availableDates.length - 1] : null;
+    const lastAvailableMonth = lastAvailable ? new Date(lastAvailable + 'T00:00:00') : null;
+    bookCalNext.disabled = !lastAvailableMonth
+      || (year > lastAvailableMonth.getFullYear())
+      || (year === lastAvailableMonth.getFullYear() && month >= lastAvailableMonth.getMonth());
+
+    const firstWeekday = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    bookCalGrid.innerHTML = '';
+    for (let i = 0; i < firstWeekday; i++) {
+      const blank = document.createElement('div');
+      blank.className = 'cal-cell is-other-month';
+      bookCalGrid.appendChild(blank);
+    }
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      const cell = document.createElement('button');
+      cell.type = 'button';
+      cell.className = 'cal-cell';
+      const daySlots = byDate[dateStr] || [];
+      const isPast = dateStr < today;
+      const bookable = daySlots.length > 0 && !isPast;
+
+      if (isPast) cell.classList.add('is-past');
+      else if (!daySlots.length) cell.classList.add('is-off');
+      else cell.classList.add('is-bookable');
+      if (dateStr === selectedDate) cell.classList.add('is-selected');
+
+      cell.innerHTML = `<span>${day}</span>`;
+      if (bookable) {
+        const dot = document.createElement('span');
+        dot.className = 'cal-dot';
+        cell.appendChild(dot);
+      }
+      cell.disabled = !bookable;
+      if (bookable) {
+        cell.addEventListener('click', () => {
+          selectedDate = dateStr;
+          selectedSlotId = null;
+          renderCalendar();
+          renderDayPanel(dateStr);
+          updateSubmitState();
+        });
+      }
+      bookCalGrid.appendChild(cell);
+    }
   }
 
-  function renderSlots() {
-    if (!slots.length) {
-      slotStatus.textContent = 'No available times right now — please check back soon or email us.';
-      slotPicker.innerHTML = '';
-      slotPicker.appendChild(slotStatus);
-      return;
-    }
+  function renderDayPanel(dateStr: string) {
+    bookDayPanel.hidden = false;
+    bookDayPanelTitle.textContent = new Date(dateStr + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
 
-    const dates = [...new Set(slots.map((s) => s.date))];
-    if (!selectedDate || !dates.includes(selectedDate)) selectedDate = dates[0];
-
-    slotPicker.innerHTML = '';
-
-    const dateRow = document.createElement('div');
-    dateRow.className = 'slot-dates';
-    for (const date of dates) {
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'slot-date-btn' + (date === selectedDate ? ' is-active' : '');
-      btn.textContent = formatDate(date);
-      btn.addEventListener('click', () => { selectedDate = date; selectedSlotId = null; renderSlots(); updateSubmitState(); });
-      dateRow.appendChild(btn);
-    }
-    slotPicker.appendChild(dateRow);
-
-    const timeRow = document.createElement('div');
-    timeRow.className = 'slot-times';
-    const todaysSlots = slots.filter((s) => s.date === selectedDate);
-    for (const slot of todaysSlots) {
+    const daySlots = (slots.filter((s) => s.date === dateStr)).sort((a, b) => a.time.localeCompare(b.time));
+    bookSlotTimes.innerHTML = '';
+    for (const slot of daySlots) {
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'slot-time-btn' + (slot.id === selectedSlotId ? ' is-selected' : '');
       const label = clinicianFilter.value ? slot.time : `${slot.time} — ${CLINICIAN_NAMES[slot.clinician]}`;
       btn.textContent = label;
-      btn.addEventListener('click', () => { selectedSlotId = slot.id; renderSlots(); updateSubmitState(); });
-      timeRow.appendChild(btn);
+      btn.addEventListener('click', () => { selectedSlotId = slot.id; renderDayPanel(dateStr); updateSubmitState(); });
+      bookSlotTimes.appendChild(btn);
     }
-    slotPicker.appendChild(timeRow);
   }
+
+  function renderSlots() {
+    if (!slots.length) {
+      slotStatus.textContent = 'No available times right now — please check back soon or email us.';
+      slotStatus.hidden = false;
+      bookCalendar.hidden = true;
+      return;
+    }
+    slotStatus.hidden = true;
+    bookCalendar.hidden = false;
+
+    const availableDates = [...new Set(slots.map((s) => s.date))].sort();
+    // Jump the visible month to the first month that actually has something open.
+    const firstAvailable = new Date(availableDates[0] + 'T00:00:00');
+    const now = new Date();
+    const currentlyShownIsEmpty = !availableDates.some((d) => {
+      const dd = new Date(d + 'T00:00:00');
+      return dd.getFullYear() === calMonth.getFullYear() && dd.getMonth() === calMonth.getMonth();
+    });
+    if (currentlyShownIsEmpty) {
+      const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+      const target = firstAvailable >= currentMonthStart ? firstAvailable : currentMonthStart;
+      calMonth = new Date(target.getFullYear(), target.getMonth(), 1);
+    }
+    if (selectedDate && !availableDates.includes(selectedDate)) {
+      selectedDate = null;
+      selectedSlotId = null;
+      bookDayPanel.hidden = true;
+    }
+    renderCalendar();
+    if (selectedDate) renderDayPanel(selectedDate);
+  }
+
+  bookCalPrev.addEventListener('click', () => {
+    calMonth.setMonth(calMonth.getMonth() - 1);
+    renderCalendar();
+  });
+  bookCalNext.addEventListener('click', () => {
+    calMonth.setMonth(calMonth.getMonth() + 1);
+    renderCalendar();
+  });
 
   function updateSubmitState() {
     submitBtn.disabled = !selectedSlotId;
