@@ -10,5 +10,21 @@
 	},
 	"observability": {
 		"enabled": true
+	},
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "psychology-square-bookings",
+			"database_id": "REPLACE_WITH_YOUR_D1_DATABASE_ID"
+		}
+	],
+	"r2_buckets": [
+		{
+			"binding": "SCREENSHOTS",
+			"bucket_name": "psychology-square-payment-proofs"
+		}
+	],
+	"vars": {
+		"BOOKING_ADMIN_EMAIL": "thepsychologysquare@gmail.com"
 	}
 }

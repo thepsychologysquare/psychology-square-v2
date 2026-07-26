@@ -1,0 +1,321 @@
+---
+export const prerender = false;
+import Layout from '../layouts/Layout.astro';
+---
+<Layout title="Book a session" description="Book an individual or couples therapy session with The Psychology Square.">
+  <section class="book-hero">
+    <div class="wrap">
+      <span class="eyebrow">Get in touch</span>
+      <h1>Book a session.</h1>
+      <p class="book-hero-sub">Pick an available time, send payment, and attach your receipt — we'll confirm your slot by email.</p>
+    </div>
+  </section>
+
+  <section class="book-section">
+    <div class="wrap book-layout">
+      <form id="bookingForm" class="booking-form" novalidate>
+
+        <div class="form-block">
+          <span class="form-step">01 — Choose a service</span>
+          <div class="service-options" role="radiogroup" aria-label="Service type">
+            <label class="service-option">
+              <input type="radio" name="service" value="individual" checked />
+              <span class="service-option-body">
+                <span class="service-option-title">Individual Therapy</span>
+                <span class="service-option-price">PKR 5,000 / session</span>
+              </span>
+            </label>
+            <label class="service-option">
+              <input type="radio" name="service" value="couples" />
+              <span class="service-option-body">
+                <span class="service-option-title">Couples Therapy</span>
+                <span class="service-option-price">PKR 7,000 / session</span>
+              </span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-block">
+          <span class="form-step">02 — Choose a clinician</span>
+          <div class="field">
+            <select id="clinicianFilter">
+              <option value="">No preference — show all available times</option>
+              <option value="sohail">Muhammad Sohail</option>
+              <option value="sehar">Sehar Waheed</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-block">
+          <span class="form-step">03 — Pick a time</span>
+          <div id="slotPicker" class="slot-picker">
+            <p class="slot-status" id="slotStatus">Loading available times…</p>
+          </div>
+        </div>
+
+        <div class="form-block">
+          <span class="form-step">04 — Your details</span>
+          <div class="field-grid">
+            <div class="field">
+              <label for="client_name">Full name</label>
+              <input type="text" id="client_name" name="client_name" required autocomplete="name" />
+            </div>
+            <div class="field">
+              <label for="contact">Email or phone</label>
+              <input type="text" id="contact" name="contact" required placeholder="you@email.com or 03XX-XXXXXXX" />
+            </div>
+          </div>
+          <div class="field">
+            <label for="notes">Anything you'd like us to know <span class="optional">(optional)</span></label>
+            <textarea id="notes" name="notes" rows="3"></textarea>
+          </div>
+        </div>
+
+        <div class="form-block">
+          <span class="form-step">05 — Send payment</span>
+          <div class="payment-methods" role="radiogroup" aria-label="Payment method">
+            <label class="payment-option">
+              <input type="radio" name="payment_method" value="easypaisa" checked />
+              <span>EasyPaisa</span>
+            </label>
+            <label class="payment-option">
+              <input type="radio" name="payment_method" value="jazzcash" />
+              <span>JazzCash</span>
+            </label>
+            <label class="payment-option">
+              <input type="radio" name="payment_method" value="bank" />
+              <span>Bank transfer (UBL)</span>
+            </label>
+          </div>
+
+          <div class="payment-details">
+            <p class="payment-amount">Amount to send: <strong id="amountDisplay">PKR 5,000</strong></p>
+            <div class="payment-instructions" id="paymentInstructions"></div>
+          </div>
+        </div>
+
+        <div class="form-block">
+          <span class="form-step">06 — Attach your receipt</span>
+          <div class="field">
+            <label for="screenshot">Upload a screenshot of the payment</label>
+            <input type="file" id="screenshot" name="screenshot" accept="image/*" required />
+            <p class="field-hint">A clear screenshot of the transaction confirmation is all we need.</p>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn--primary submit-btn" id="submitBtn" disabled>Pick a time slot first</button>
+        <p class="form-error" id="formError" role="alert" hidden></p>
+      </form>
+
+      <aside class="book-confirmation" id="confirmationPanel" hidden>
+        <span class="eyebrow">Booking received</span>
+        <h2>We've got it.</h2>
+        <p>Your reference number is</p>
+        <p class="confirmation-ref" id="confirmationRef"></p>
+        <p>We'll confirm your slot by email once we've checked the payment — usually within a few hours.</p>
+      </aside>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .book-hero{ background:var(--navy-950); color:var(--paper-0); padding:64px 0 48px; }
+  .book-hero h1{ font-size:clamp(32px,4vw,44px); color:var(--paper-0); margin-top:10px; }
+  .book-hero-sub{ color:rgba(248,249,246,0.72); font-size:16px; max-width:520px; margin-top:14px; }
+
+  .book-section{ padding:56px 0 96px; }
+  .book-layout{ display:grid; grid-template-columns:1fr 320px; gap:48px; align-items:start; }
+  @media (max-width:900px){ .book-layout{ grid-template-columns:1fr; } }
+
+  .booking-form{ display:flex; flex-direction:column; gap:36px; }
+  .form-block{ display:flex; flex-direction:column; gap:14px; }
+  .form-step{ font-family:var(--font-mono); font-size:12px; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-600); }
+
+  .field{ display:flex; flex-direction:column; gap:6px; }
+  .field-grid{ display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
+  @media (max-width:520px){ .field-grid{ grid-template-columns:1fr; } }
+
+  label{ font-size:14px; font-weight:500; color:var(--ink-900); }
+  .optional{ font-weight:400; color:var(--ink-600); }
+
+  input[type="text"], input[type="file"], select, textarea{
+    font-family:var(--font-body); font-size:15px; padding:12px 14px;
+    border:1px solid var(--line); border-radius:2px; background:var(--paper-0); color:var(--ink-900);
+  }
+  input:focus-visible, select:focus-visible, textarea:focus-visible{ outline:2px solid var(--gold-500); outline-offset:1px; }
+  textarea{ resize:vertical; font-family:var(--font-body); }
+  .field-hint{ font-size:13px; color:var(--ink-600); }
+
+  .service-options, .payment-methods{ display:flex; flex-direction:column; gap:10px; }
+  .service-option{ display:flex; border:1px solid var(--line); border-radius:2px; padding:16px; cursor:pointer; transition:border-color .2s var(--ease); }
+  .service-option:has(input:checked){ border-color:var(--gold-500); background:rgba(199,164,74,0.06); }
+  .service-option input{ margin-right:14px; margin-top:3px; accent-color:var(--gold-500); }
+  .service-option-body{ display:flex; flex-direction:column; gap:4px; }
+  .service-option-title{ font-weight:600; }
+  .service-option-price{ font-family:var(--font-mono); font-size:13px; color:var(--gold-500); }
+
+  .payment-option{ display:flex; align-items:center; gap:10px; border:1px solid var(--line); border-radius:2px; padding:12px 16px; cursor:pointer; }
+  .payment-option:has(input:checked){ border-color:var(--gold-500); background:rgba(199,164,74,0.06); }
+  .payment-option input{ accent-color:var(--gold-500); }
+
+  .payment-details{ margin-top:6px; padding:18px; background:var(--paper-50); border-radius:2px; }
+  .payment-amount{ font-size:15px; margin-bottom:10px; }
+  .payment-instructions{ font-family:var(--font-mono); font-size:14px; line-height:1.8; color:var(--ink-900); white-space:pre-line; }
+
+  .slot-picker{ display:flex; flex-direction:column; gap:14px; }
+  .slot-status{ color:var(--ink-600); font-size:14px; }
+  .slot-dates{ display:flex; gap:8px; flex-wrap:wrap; }
+  .slot-date-btn{
+    font-family:var(--font-mono); font-size:13px; padding:8px 14px;
+    border:1px solid var(--line); border-radius:2px; background:transparent; cursor:pointer;
+  }
+  .slot-date-btn.is-active{ border-color:var(--gold-500); background:rgba(199,164,74,0.1); }
+  .slot-times{ display:flex; gap:8px; flex-wrap:wrap; }
+  .slot-time-btn{
+    font-family:var(--font-body); font-size:14px; padding:9px 16px;
+    border:1px solid var(--line); border-radius:2px; background:var(--paper-0); cursor:pointer;
+  }
+  .slot-time-btn.is-selected{ border-color:var(--gold-500); background:var(--gold-500); color:var(--navy-950); font-weight:600; }
+
+  .submit-btn{ align-self:flex-start; border:none; cursor:pointer; font-family:var(--font-body); }
+  .submit-btn:disabled{ opacity:0.5; cursor:not-allowed; }
+  .form-error{ color:#B4432E; font-size:14px; }
+
+  .book-confirmation{ position:sticky; top:100px; border:1px solid var(--line); border-radius:2px; padding:28px; background:var(--paper-50); }
+  .book-confirmation h2{ font-size:24px; margin-top:8px; margin-bottom:16px; }
+  .confirmation-ref{ font-family:var(--font-mono); font-size:20px; color:var(--gold-500); letter-spacing:0.04em; margin-bottom:16px; }
+</style>
+
+<script>
+  const PRICES: Record<string, number> = { individual: 5000, couples: 7000 };
+  const PAYMENT_DETAILS: Record<string, string> = {
+    easypaisa: `EasyPaisa: 03XX-XXXXXXX\nAccount title: The Psychology Square`,
+    jazzcash: `JazzCash: 03XX-XXXXXXX\nAccount title: The Psychology Square`,
+    bank: `UBL Bank\nAccount title: The Psychology Square\nAccount number: XXXXXXXXXXXX\nIBAN: PKXX UNIL XXXXXXXXXXXXXXXX`,
+  };
+  const CLINICIAN_NAMES: Record<string, string> = { sohail: 'Muhammad Sohail', sehar: 'Sehar Waheed' };
+
+  const form = document.getElementById('bookingForm') as HTMLFormElement;
+  const amountDisplay = document.getElementById('amountDisplay')!;
+  const paymentInstructions = document.getElementById('paymentInstructions')!;
+  const submitBtn = document.getElementById('submitBtn') as HTMLButtonElement;
+  const formError = document.getElementById('formError') as HTMLParagraphElement;
+  const confirmationPanel = document.getElementById('confirmationPanel')!;
+  const confirmationRef = document.getElementById('confirmationRef')!;
+  const clinicianFilter = document.getElementById('clinicianFilter') as HTMLSelectElement;
+  const slotPicker = document.getElementById('slotPicker')!;
+  const slotStatus = document.getElementById('slotStatus')!;
+
+  let slots: { id: number; clinician: string; date: string; time: string }[] = [];
+  let selectedSlotId: number | null = null;
+  let selectedDate: string | null = null;
+
+  function currentService(): string {
+    return (form.querySelector('input[name="service"]:checked') as HTMLInputElement)?.value ?? 'individual';
+  }
+  function currentPaymentMethod(): string {
+    return (form.querySelector('input[name="payment_method"]:checked') as HTMLInputElement)?.value ?? 'easypaisa';
+  }
+  function updateSummary() {
+    const price = PRICES[currentService()] ?? 5000;
+    amountDisplay.textContent = `PKR ${price.toLocaleString('en-US')}`;
+    paymentInstructions.textContent = PAYMENT_DETAILS[currentPaymentMethod()];
+  }
+  form.querySelectorAll('input[name="service"], input[name="payment_method"]').forEach((el) => {
+    el.addEventListener('change', updateSummary);
+  });
+  updateSummary();
+
+  function formatDate(d: string) {
+    return new Date(d + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+  }
+
+  function renderSlots() {
+    if (!slots.length) {
+      slotStatus.textContent = 'No available times right now — please check back soon or email us.';
+      slotPicker.innerHTML = '';
+      slotPicker.appendChild(slotStatus);
+      return;
+    }
+
+    const dates = [...new Set(slots.map((s) => s.date))];
+    if (!selectedDate || !dates.includes(selectedDate)) selectedDate = dates[0];
+
+    slotPicker.innerHTML = '';
+
+    const dateRow = document.createElement('div');
+    dateRow.className = 'slot-dates';
+    for (const date of dates) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'slot-date-btn' + (date === selectedDate ? ' is-active' : '');
+      btn.textContent = formatDate(date);
+      btn.addEventListener('click', () => { selectedDate = date; selectedSlotId = null; renderSlots(); updateSubmitState(); });
+      dateRow.appendChild(btn);
+    }
+    slotPicker.appendChild(dateRow);
+
+    const timeRow = document.createElement('div');
+    timeRow.className = 'slot-times';
+    const todaysSlots = slots.filter((s) => s.date === selectedDate);
+    for (const slot of todaysSlots) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'slot-time-btn' + (slot.id === selectedSlotId ? ' is-selected' : '');
+      const label = clinicianFilter.value ? slot.time : `${slot.time} — ${CLINICIAN_NAMES[slot.clinician]}`;
+      btn.textContent = label;
+      btn.addEventListener('click', () => { selectedSlotId = slot.id; renderSlots(); updateSubmitState(); });
+      timeRow.appendChild(btn);
+    }
+    slotPicker.appendChild(timeRow);
+  }
+
+  function updateSubmitState() {
+    submitBtn.disabled = !selectedSlotId;
+    submitBtn.textContent = selectedSlotId ? 'Submit booking' : 'Pick a time slot first';
+  }
+
+  async function loadSlots() {
+    slotStatus.textContent = 'Loading available times…';
+    selectedSlotId = null;
+    selectedDate = null;
+    const qs = clinicianFilter.value ? `?clinician=${clinicianFilter.value}` : '';
+    const res = await fetch(`/api/availability${qs}`);
+    const data = await res.json();
+    slots = data.slots || [];
+    renderSlots();
+    updateSubmitState();
+  }
+  clinicianFilter.addEventListener('change', loadSlots);
+  loadSlots();
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!selectedSlotId) return;
+    formError.hidden = true;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Submitting…';
+
+    try {
+      const formData = new FormData(form);
+      formData.set('slot_id', String(selectedSlotId));
+      const res = await fetch('/api/bookings', { method: 'POST', body: formData });
+
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}));
+        if (res.status === 409) await loadSlots(); // slot taken — refresh options
+        throw new Error(errBody.error || 'Something went wrong. Please try again.');
+      }
+
+      const data = await res.json();
+      confirmationRef.textContent = data.reference;
+      form.hidden = true;
+      confirmationPanel.hidden = false;
+      confirmationPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (err: any) {
+      formError.textContent = err.message || 'Something went wrong. Please try again.';
+      formError.hidden = false;
+      updateSubmitState();
+    }
+  });
+</script>

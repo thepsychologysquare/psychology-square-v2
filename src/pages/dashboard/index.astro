@@ -1,0 +1,399 @@
+---
+export const prerender = false;
+import Layout from '../../layouts/Layout.astro';
+import { env } from 'cloudflare:workers';
+import { getSession } from '../../lib/adminAuth';
+
+const session = await getSession(Astro.request.headers.get('cookie'), env?.ADMIN_SESSION_SECRET || '');
+if (!session) return Astro.redirect('/dashboard/login');
+const role = session.role;
+const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Sohail' : 'Sehar Waheed';
+---
+<Layout title="Dashboard" description="The Psychology Square — staff dashboard.">
+  <section class="dash-section">
+    <div class="wrap">
+      <div class="dash-header">
+        <div>
+          <span class="eyebrow">Signed in as {roleLabel}</span>
+          <h1>Dashboard</h1>
+        </div>
+        <button id="logoutBtn" class="btn btn--text dash-logout">Sign out</button>
+      </div>
+
+      <div class="dash-tabs" id="dashTabs">
+        <button class="tab-btn is-active" data-tab="bookings">Bookings</button>
+        <button class="tab-btn" data-tab="availability">Availability</button>
+      </div>
+
+      <!-- ===== BOOKINGS TAB ===== -->
+      <div id="tabBookings" class="tab-panel">
+        <div class="dash-toolbar">
+          <input type="text" id="searchBox" placeholder="Search by name, email, phone, or reference (e.g. TPS-4F9A2)" />
+          <div class="dash-filters" id="dashFilters">
+            <button class="filter-btn is-active" data-status="all">All</button>
+            <button class="filter-btn" data-status="pending">Pending</button>
+            <button class="filter-btn" data-status="confirmed">Confirmed</button>
+            <button class="filter-btn" data-status="declined">Declined</button>
+          </div>
+          <button id="exportBtn" class="btn btn--text export-btn">Download as Excel (.csv)</button>
+        </div>
+
+        <p id="loadingMsg" class="dash-empty">Loading…</p>
+        <p id="emptyMsg" class="dash-empty" hidden>No bookings match.</p>
+        <div class="dash-list" id="dashList"></div>
+      </div>
+
+      <!-- ===== AVAILABILITY TAB ===== -->
+      <div id="tabAvailability" class="tab-panel" hidden>
+        <div class="avail-form">
+          {role === 'admin' && (
+            <div class="field">
+              <label for="availClinician">Clinician</label>
+              <select id="availClinician">
+                <option value="sohail">Muhammad Sohail</option>
+                <option value="sehar">Sehar Waheed</option>
+              </select>
+            </div>
+          )}
+          <div class="field">
+            <label for="availDates">Dates (one per line, YYYY-MM-DD)</label>
+            <textarea id="availDates" rows="4" placeholder="2026-08-01&#10;2026-08-02"></textarea>
+          </div>
+          <div class="field">
+            <label for="availTimes">Times (one per line, 24h HH:MM)</label>
+            <textarea id="availTimes" rows="4" placeholder="09:00&#10;10:00&#10;14:00"></textarea>
+          </div>
+          <button id="addSlotsBtn" class="btn btn--primary" style="align-self:flex-start; border:none; cursor:pointer;">Add slots</button>
+          <p class="avail-hint">Going on vacation? Just don't add slots for those dates — nothing is open unless you add it. You can also remove any slot below before it's booked.</p>
+        </div>
+
+        <div id="availList" class="avail-list"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Screenshot modal -->
+  <div id="screenshotModal" class="modal" hidden>
+    <div class="modal-backdrop"></div>
+    <div class="modal-body">
+      <button id="modalClose" class="modal-close">Close ✕</button>
+      <img id="modalImg" src="" alt="Payment screenshot" />
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .dash-section{ padding:48px 0 96px; }
+  .dash-header{ display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:24px; }
+  .dash-header h1{ font-size:30px; margin-top:6px; }
+  .dash-logout{ padding:8px 4px; color:var(--ink-600); }
+  .dash-logout:hover{ color:var(--ink-900); }
+
+  .dash-tabs{ display:flex; gap:6px; margin-bottom:28px; border-bottom:1px solid var(--line); }
+  .tab-btn{
+    font-family:var(--font-mono); font-size:12.5px; letter-spacing:0.06em; text-transform:uppercase;
+    padding:10px 4px; margin-right:22px; border:none; border-bottom:2px solid transparent;
+    background:transparent; cursor:pointer; color:var(--ink-600);
+  }
+  .tab-btn.is-active{ color:var(--ink-900); border-bottom-color:var(--gold-500); }
+
+  .dash-toolbar{ display:flex; gap:12px; flex-wrap:wrap; align-items:center; margin-bottom:24px; }
+  #searchBox{
+    flex:1; min-width:240px; font-family:var(--font-body); font-size:14.5px;
+    padding:10px 14px; border:1px solid var(--line); border-radius:2px;
+  }
+  #searchBox:focus-visible{ outline:2px solid var(--gold-500); }
+  .dash-filters{ display:flex; gap:8px; flex-wrap:wrap; }
+  .filter-btn{
+    font-family:var(--font-mono); font-size:12px; letter-spacing:0.06em; text-transform:uppercase;
+    padding:8px 14px; border:1px solid var(--line); border-radius:2px; background:transparent; cursor:pointer; color:var(--ink-600);
+  }
+  .filter-btn.is-active{ border-color:var(--gold-500); color:var(--ink-900); background:rgba(199,164,74,0.08); }
+  .export-btn{ padding:8px 4px; white-space:nowrap; }
+
+  .dash-empty{ color:var(--ink-600); padding:24px 0; }
+
+  .dash-list{ display:flex; flex-direction:column; gap:14px; }
+  .booking-card{
+    border:1px solid var(--line); border-radius:2px; padding:20px 22px;
+    display:grid; grid-template-columns:1fr auto; gap:16px; align-items:start;
+  }
+  .booking-main{ display:flex; flex-direction:column; gap:6px; }
+  .booking-top{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .booking-ref{ font-family:var(--font-mono); font-size:13px; color:var(--gold-500); }
+  .booking-name{ font-weight:600; font-size:16px; }
+  .booking-meta{ font-size:14px; color:var(--ink-600); }
+  .booking-notes{ font-size:14px; color:var(--ink-900); margin-top:4px; }
+
+  .status-badge{ font-family:var(--font-mono); font-size:11px; letter-spacing:0.06em; text-transform:uppercase; padding:4px 10px; border-radius:20px; }
+  .status-badge.pending{ background:rgba(199,164,74,0.15); color:#8a6d1f; }
+  .status-badge.confirmed{ background:rgba(124,152,133,0.18); color:#3f5c47; }
+  .status-badge.declined{ background:rgba(180,67,46,0.12); color:#B4432E; }
+
+  .booking-actions{ display:flex; flex-direction:column; gap:8px; align-items:flex-end; }
+  .view-shot-btn{ font-size:13px; color:var(--ink-900); text-decoration:underline; background:none; border:none; cursor:pointer; padding:0; font-family:var(--font-body); }
+  .action-row{ display:flex; gap:8px; }
+  .action-btn{ font-family:var(--font-body); font-size:13px; padding:6px 12px; border:1px solid var(--line); border-radius:2px; background:transparent; cursor:pointer; }
+  .action-btn.confirm{ border-color:#3f5c47; color:#3f5c47; }
+  .action-btn.decline{ border-color:#B4432E; color:#B4432E; }
+  .action-btn:hover{ opacity:0.7; }
+
+  @media (max-width:560px){ .booking-card{ grid-template-columns:1fr; } .booking-actions{ align-items:flex-start; } }
+
+  .avail-form{ display:flex; flex-direction:column; gap:16px; max-width:480px; margin-bottom:36px; padding:22px; border:1px solid var(--line); border-radius:2px; background:var(--paper-50); }
+  .field{ display:flex; flex-direction:column; gap:6px; }
+  label{ font-size:14px; font-weight:500; }
+  select, textarea{ font-family:var(--font-body); font-size:14.5px; padding:10px 12px; border:1px solid var(--line); border-radius:2px; }
+  .avail-hint{ font-size:13px; color:var(--ink-600); }
+
+  .avail-list{ display:flex; flex-direction:column; gap:10px; }
+  .avail-day{ border:1px solid var(--line); border-radius:2px; padding:14px 18px; }
+  .avail-day-title{ font-family:var(--font-mono); font-size:13px; color:var(--ink-600); margin-bottom:8px; }
+  .avail-slots-row{ display:flex; gap:8px; flex-wrap:wrap; }
+  .avail-slot-chip{
+    display:flex; align-items:center; gap:8px; font-size:13.5px; padding:6px 10px;
+    border:1px solid var(--line); border-radius:2px;
+  }
+  .avail-slot-chip.booked{ opacity:0.55; }
+  .avail-slot-remove{ background:none; border:none; color:#B4432E; cursor:pointer; font-size:14px; padding:0; }
+
+  .modal{ position:fixed; inset:0; z-index:100; display:flex; align-items:center; justify-content:center; }
+  .modal-backdrop{ position:absolute; inset:0; background:rgba(10,14,20,0.82); }
+  .modal-body{ position:relative; max-width:90vw; max-height:85vh; }
+  .modal-body img{ max-width:90vw; max-height:85vh; border-radius:2px; display:block; }
+  .modal-close{
+    position:absolute; top:-38px; right:0; background:none; border:none; color:var(--paper-0);
+    font-family:var(--font-mono); font-size:13px; cursor:pointer;
+  }
+</style>
+
+<script define:vars={{ role }}>
+  const dashList = document.getElementById('dashList');
+  const loadingMsg = document.getElementById('loadingMsg');
+  const emptyMsg = document.getElementById('emptyMsg');
+  const filters = document.getElementById('dashFilters');
+  const searchBox = document.getElementById('searchBox');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const exportBtn = document.getElementById('exportBtn');
+  const tabs = document.getElementById('dashTabs');
+  const tabBookings = document.getElementById('tabBookings');
+  const tabAvailability = document.getElementById('tabAvailability');
+  const modal = document.getElementById('screenshotModal');
+  const modalImg = document.getElementById('modalImg');
+  const modalClose = document.getElementById('modalClose');
+
+  let allBookings = [];
+  let activeFilter = 'all';
+  let searchTerm = '';
+
+  function formatDate(iso) {
+    return new Date(iso).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  }
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str ?? '';
+    return div.innerHTML;
+  }
+  function clinicianName(c) {
+    return c === 'sohail' ? 'Muhammad Sohail' : c === 'sehar' ? 'Sehar Waheed' : c;
+  }
+
+  function matchesSearch(b, term) {
+    if (!term) return true;
+    const haystack = `${b.id} ${b.client_name} ${b.contact}`.toLowerCase();
+    return haystack.includes(term.toLowerCase());
+  }
+
+  function render() {
+    let items = activeFilter === 'all' ? allBookings : allBookings.filter((b) => b.status === activeFilter);
+    items = items.filter((b) => matchesSearch(b, searchTerm));
+
+    dashList.innerHTML = '';
+    emptyMsg.hidden = items.length > 0;
+
+    for (const b of items) {
+      const card = document.createElement('div');
+      card.className = 'booking-card';
+      card.innerHTML = `
+        <div class="booking-main">
+          <div class="booking-top">
+            <span class="booking-ref">${b.id}</span>
+            <span class="status-badge ${b.status}">${b.status}</span>
+          </div>
+          <span class="booking-name">${escapeHtml(b.client_name)}</span>
+          <span class="booking-meta">
+            ${b.service === 'individual' ? 'Individual' : 'Couples'} · PKR ${b.amount_pkr.toLocaleString('en-US')}
+            · ${clinicianName(b.clinician)} · ${escapeHtml(b.payment_method)}
+          </span>
+          <span class="booking-meta">${escapeHtml(b.contact)} · ${escapeHtml(b.preferred_time)}</span>
+          <span class="booking-meta">Submitted ${formatDate(b.created_at)}</span>
+          ${b.notes ? `<span class="booking-notes">"${escapeHtml(b.notes)}"</span>` : ''}
+        </div>
+        <div class="booking-actions">
+          <button class="view-shot-btn" data-id="${b.id}">View screenshot →</button>
+          <div class="action-row">
+            <button class="action-btn confirm" data-id="${b.id}" data-status="confirmed">Confirm</button>
+            <button class="action-btn decline" data-id="${b.id}" data-status="declined">Decline</button>
+          </div>
+        </div>
+      `;
+      dashList.appendChild(card);
+    }
+  }
+
+  async function loadBookings() {
+    loadingMsg.hidden = false;
+    const res = await fetch('/api/admin/bookings');
+    if (res.status === 401) { window.location.href = '/dashboard/login'; return; }
+    const data = await res.json();
+    allBookings = data.bookings || [];
+    loadingMsg.hidden = true;
+    render();
+  }
+
+  filters.addEventListener('click', (e) => {
+    const btn = e.target.closest('.filter-btn');
+    if (!btn) return;
+    filters.querySelectorAll('.filter-btn').forEach((b) => b.classList.remove('is-active'));
+    btn.classList.add('is-active');
+    activeFilter = btn.dataset.status || 'all';
+    render();
+  });
+
+  searchBox.addEventListener('input', () => { searchTerm = searchBox.value; render(); });
+
+  dashList.addEventListener('click', async (e) => {
+    const viewBtn = e.target.closest('.view-shot-btn');
+    if (viewBtn) {
+      const res = await fetch(`/api/admin/screenshot/${viewBtn.dataset.id}`);
+      if (res.ok) {
+        const blob = await res.blob();
+        modalImg.src = URL.createObjectURL(blob);
+        modal.hidden = false;
+      }
+      return;
+    }
+    const btn = e.target.closest('.action-btn');
+    if (!btn) return;
+    const id = btn.dataset.id, status = btn.dataset.status;
+    btn.disabled = true;
+    await fetch('/api/admin/bookings', {
+      method: 'PATCH', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ id, status }),
+    });
+    const booking = allBookings.find((b) => b.id === id);
+    if (booking) booking.status = status;
+    render();
+  });
+
+  modalClose.addEventListener('click', () => { modal.hidden = true; modalImg.src = ''; });
+  modal.querySelector('.modal-backdrop').addEventListener('click', () => { modal.hidden = true; modalImg.src = ''; });
+
+  exportBtn.addEventListener('click', () => {
+    const cols = ['id', 'created_at', 'client_name', 'contact', 'service', 'clinician', 'preferred_time', 'amount_pkr', 'payment_method', 'status', 'notes'];
+    const header = ['Reference', 'Submitted', 'Name', 'Contact', 'Service', 'Clinician', 'Time', 'Amount (PKR)', 'Payment Method', 'Status', 'Notes'];
+    const rows = allBookings.map((b) => cols.map((c) => {
+      const v = String(b[c] ?? '').replace(/"/g, '""');
+      return `"${v}"`;
+    }).join(','));
+    const csv = [header.join(','), ...rows].join('\r\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `bookings-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  logoutBtn.addEventListener('click', async () => {
+    await fetch('/api/admin/logout', { method: 'POST' });
+    window.location.href = '/dashboard/login';
+  });
+
+  // ===== Tabs =====
+  tabs.addEventListener('click', (e) => {
+    const btn = e.target.closest('.tab-btn');
+    if (!btn) return;
+    tabs.querySelectorAll('.tab-btn').forEach((b) => b.classList.remove('is-active'));
+    btn.classList.add('is-active');
+    const tab = btn.dataset.tab;
+    tabBookings.hidden = tab !== 'bookings';
+    tabAvailability.hidden = tab !== 'availability';
+    if (tab === 'availability') loadAvailability();
+  });
+
+  // ===== Availability =====
+  const availClinicianSelect = document.getElementById('availClinician');
+  const availDates = document.getElementById('availDates');
+  const availTimes = document.getElementById('availTimes');
+  const addSlotsBtn = document.getElementById('addSlotsBtn');
+  const availList = document.getElementById('availList');
+
+  function currentClinicianForAvail() {
+    return role === 'admin' ? availClinicianSelect.value : role;
+  }
+
+  async function loadAvailability() {
+    const clinician = currentClinicianForAvail();
+    const res = await fetch(`/api/admin/availability?clinician=${clinician}`);
+    const data = await res.json();
+    const slots = data.slots || [];
+    const byDate = {};
+    for (const s of slots) { (byDate[s.date] ||= []).push(s); }
+
+    availList.innerHTML = '';
+    const dates = Object.keys(byDate).sort();
+    if (!dates.length) {
+      availList.innerHTML = '<p class="dash-empty">No slots added yet.</p>';
+      return;
+    }
+    for (const date of dates) {
+      const day = document.createElement('div');
+      day.className = 'avail-day';
+      const title = document.createElement('div');
+      title.className = 'avail-day-title';
+      title.textContent = new Date(date + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+      day.appendChild(title);
+
+      const row = document.createElement('div');
+      row.className = 'avail-slots-row';
+      for (const s of byDate[date].sort((a, b) => a.time.localeCompare(b.time))) {
+        const chip = document.createElement('span');
+        chip.className = 'avail-slot-chip' + (s.status === 'booked' ? ' booked' : '');
+        chip.innerHTML = `${s.time}${s.status === 'booked' ? ' (booked)' : ''} ${s.status === 'open' ? `<button class="avail-slot-remove" data-id="${s.id}">✕</button>` : ''}`;
+        row.appendChild(chip);
+      }
+      day.appendChild(row);
+      availList.appendChild(day);
+    }
+  }
+
+  availList.addEventListener('click', async (e) => {
+    const btn = e.target.closest('.avail-slot-remove');
+    if (!btn) return;
+    await fetch(`/api/admin/availability?id=${btn.dataset.id}`, { method: 'DELETE' });
+    loadAvailability();
+  });
+
+  if (availClinicianSelect) availClinicianSelect.addEventListener('change', loadAvailability);
+
+  addSlotsBtn.addEventListener('click', async () => {
+    const dates = availDates.value.split('\n').map((s) => s.trim()).filter(Boolean);
+    const times = availTimes.value.split('\n').map((s) => s.trim()).filter(Boolean);
+    if (!dates.length || !times.length) return;
+    addSlotsBtn.disabled = true;
+    addSlotsBtn.textContent = 'Adding…';
+    await fetch('/api/admin/availability', {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ clinician: currentClinicianForAvail(), dates, times }),
+    });
+    addSlotsBtn.disabled = false;
+    addSlotsBtn.textContent = 'Add slots';
+    availDates.value = '';
+    availTimes.value = '';
+    loadAvailability();
+  });
+
+  loadBookings();
+</script>
