@@ -15,13 +15,19 @@
 		{
 			"binding": "DB",
 			"database_name": "psychology-square-bookings",
-			"database_id": "REPLACE_WITH_YOUR_D1_DATABASE_ID"
+			"database_id": "8de37583-292a-487d-a82d-d2d83f8684d8"
 		}
 	],
 	"r2_buckets": [
 		{
 			"binding": "SCREENSHOTS",
 			"bucket_name": "psychology-square-payment-proofs"
+		}
+	],
+	"kv_namespaces": [
+		{
+			"binding": "SESSION",
+			"id": "1e60ffb43e354004bff724acf83952e6"
 		}
 	],
 	"vars": {
