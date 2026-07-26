@@ -17,8 +17,10 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
           <span class="eyebrow">Signed in as {roleLabel}</span>
           <h1>Dashboard</h1>
         </div>
-        <button id="logoutBtn" class="btn btn--text dash-logout">Sign out</button>
+        <button id="logoutBtn" class="btn btn--ghost dash-logout">Sign out</button>
       </div>
+
+      <div id="newBookingBanner" class="new-booking-banner" hidden></div>
 
       <div class="dash-tabs" id="dashTabs">
         <button class="tab-btn is-active" data-tab="bookings">Bookings</button>
@@ -35,12 +37,51 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
             <button class="filter-btn" data-status="confirmed">Confirmed</button>
             <button class="filter-btn" data-status="declined">Declined</button>
           </div>
-          <button id="exportBtn" class="btn btn--text export-btn">Download as Excel (.csv)</button>
+          <div class="date-range">
+            <input type="date" id="dateFrom" aria-label="From date" />
+            <span>–</span>
+            <input type="date" id="dateTo" aria-label="To date" />
+          </div>
+          <button id="exportBtn" class="btn btn--ghost export-btn">Download as Excel (.csv)</button>
         </div>
 
-        <p id="loadingMsg" class="dash-empty">Loading…</p>
+        <div id="bulkBar" class="bulk-bar" hidden>
+          <span id="bulkCount"></span>
+          <button id="bulkConfirm" class="btn btn--ghost">Confirm selected</button>
+          <button id="bulkDecline" class="btn btn--ghost">Decline selected</button>
+        </div>
+
+        <div id="loadingSkeleton" class="skeleton-rows">
+          <div class="skeleton-row"></div><div class="skeleton-row"></div><div class="skeleton-row"></div>
+        </div>
         <p id="emptyMsg" class="dash-empty" hidden>No bookings match.</p>
-        <div class="dash-list" id="dashList"></div>
+
+        <div class="table-scroll" id="tableScroll" hidden>
+          <table class="bookings-table" id="bookingsTable">
+            <thead>
+              <tr>
+                <th class="col-check"><input type="checkbox" id="selectAll" /></th>
+                <th data-sort="id">Reference</th>
+                <th data-sort="client_name">Client</th>
+                <th data-sort="contact">Contact</th>
+                <th data-sort="service">Service</th>
+                <th data-sort="clinician">Clinician</th>
+                <th data-sort="amount_pkr">Amount</th>
+                <th data-sort="preferred_time">Time</th>
+                <th data-sort="created_at">Submitted</th>
+                <th data-sort="status">Status</th>
+                <th class="col-actions">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="bookingsBody"></tbody>
+          </table>
+        </div>
+
+        <div class="pagination" id="pagination" hidden>
+          <button id="pagePrev" class="cal-nav-btn">← Prev</button>
+          <span id="pageLabel"></span>
+          <button id="pageNext" class="cal-nav-btn">Next →</button>
+        </div>
       </div>
 
       <!-- ===== AVAILABILITY TAB ===== -->
@@ -57,41 +98,31 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
 
         <div class="avail-template">
           <h3 class="avail-template-title">Weekly schedule</h3>
-          <p class="avail-hint">Set this once — it keeps generating open slots for the weeks ahead automatically, using whatever you pick below. Change it anytime and it updates going forward (already-booked sessions are never touched).</p>
+          <p class="avail-hint">
+            Give each day its own hours — e.g. evenings on weekdays, afternoons on weekends. Set this once and it
+            keeps generating open slots automatically going forward (already-booked sessions are never touched).
+            All times are in Pakistan Standard Time (PKT).
+          </p>
 
-          <div class="avail-days-row" id="availDaysRow">
-            <button type="button" class="day-toggle" data-day="1">Mon</button>
-            <button type="button" class="day-toggle" data-day="2">Tue</button>
-            <button type="button" class="day-toggle" data-day="3">Wed</button>
-            <button type="button" class="day-toggle" data-day="4">Thu</button>
-            <button type="button" class="day-toggle" data-day="5">Fri</button>
-            <button type="button" class="day-toggle" data-day="6">Sat</button>
-            <button type="button" class="day-toggle" data-day="0">Sun</button>
-          </div>
+          <div class="day-rows" id="dayRows"></div>
 
-          <div class="avail-time-row">
-            <div class="field">
-              <label for="availStart">Start time</label>
-              <input type="time" id="availStart" value="09:00" />
-            </div>
-            <div class="field">
-              <label for="availEnd">End time</label>
-              <input type="time" id="availEnd" value="17:00" />
-            </div>
-            <div class="field">
-              <label for="availSlotLen">Session length</label>
-              <select id="availSlotLen">
-                <option value="30">30 min</option>
-                <option value="45">45 min</option>
-                <option value="60" selected>60 min</option>
-                <option value="90">90 min</option>
-                <option value="120">120 min</option>
-              </select>
-            </div>
+          <div class="field buffer-field">
+            <label for="bufferMinutes">Gap between sessions</label>
+            <select id="bufferMinutes">
+              <option value="0">No gap (back-to-back)</option>
+              <option value="5">5 min</option>
+              <option value="10">10 min</option>
+              <option value="15">15 min</option>
+              <option value="20">20 min</option>
+              <option value="30">30 min</option>
+              <option value="45">45 min</option>
+              <option value="60">60 min</option>
+            </select>
           </div>
 
           <button id="saveTemplateBtn" class="btn btn--primary" style="border:none; cursor:pointer; align-self:flex-start;">Save weekly schedule</button>
           <p id="templateSavedMsg" class="avail-saved-msg" hidden>Saved — upcoming weeks updated ✓</p>
+          <p id="bookedWarning" class="avail-warning" hidden></p>
         </div>
 
         <div class="avail-calendar">
@@ -101,7 +132,12 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
             <button id="calNext" class="cal-nav-btn" type="button">Next →</button>
           </div>
           <div class="cal-toolbar">
-            <button id="calSelectModeBtn" class="btn btn--text cal-select-mode-btn" type="button">Select multiple days</button>
+            <button id="calSelectModeBtn" class="btn btn--ghost cal-select-mode-btn" type="button">Select multiple days</button>
+          </div>
+          <div class="cal-legend">
+            <span><i class="dot open"></i> Open slots</span>
+            <span><i class="dot booked"></i> Booked slots</span>
+            <span><i class="swatch off"></i> Day off</span>
           </div>
           <div class="cal-weekdays">
             <span></span><span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
@@ -109,9 +145,9 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
           <div class="cal-grid" id="calGrid"></div>
           <div id="calSelectBar" class="cal-select-bar" hidden>
             <span id="calSelectCount"></span>
-            <button id="calExcludeSelected" class="btn btn--text" type="button">Exclude selected</button>
-            <button id="calIncludeSelected" class="btn btn--text" type="button">Make available</button>
-            <button id="calClearSelected" class="btn btn--text" type="button">Clear</button>
+            <button id="calExcludeSelected" class="btn btn--ghost" type="button">Exclude selected</button>
+            <button id="calIncludeSelected" class="btn btn--ghost" type="button">Make available</button>
+            <button id="calClearSelected" class="btn btn--ghost" type="button">Clear</button>
           </div>
           <p class="avail-hint" style="margin-top:12px;">Click any date to see or adjust that day's sessions. Click the circle at the start of a week to exclude or restore the whole week in one click — or use "Select multiple days" to exclude a specific set of dates at once.</p>
         </div>
@@ -119,21 +155,47 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
         <div id="calDayPanel" class="cal-day-panel" hidden>
           <div class="cal-day-panel-head">
             <span id="calDayPanelTitle"></span>
-            <button id="calDayOffToggle" class="btn btn--text" type="button"></button>
+            <button id="calDayOffToggle" class="btn btn--ghost" type="button"></button>
           </div>
           <div id="calDaySlots" class="avail-slots-row"></div>
         </div>
       </div>
     </div>
   </section>
+
+  <!-- Screenshot preview modal -->
+  <div id="shotModal" class="modal-overlay" hidden>
+    <div class="modal-box">
+      <button id="shotModalClose" class="modal-close" type="button">✕</button>
+      <img id="shotModalImg" alt="Payment screenshot" />
+      <a id="shotModalOpen" href="#" target="_blank" rel="noopener" class="modal-open-link">Open in new tab →</a>
+    </div>
+  </div>
+
+  <!-- Confirm dialog -->
+  <div id="confirmModal" class="modal-overlay" hidden>
+    <div class="modal-box modal-box--sm">
+      <p id="confirmMessage"></p>
+      <div class="modal-actions">
+        <button id="confirmCancel" class="btn btn--ghost">Cancel</button>
+        <button id="confirmOk" class="btn btn--primary" style="border:none;">Confirm</button>
+      </div>
+    </div>
+  </div>
 </Layout>
 
 <style>
   .dash-section{ padding:48px 0 96px; }
-  .dash-header{ display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:24px; }
+  .dash-header{ display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:20px; }
   .dash-header h1{ font-size:30px; margin-top:6px; }
-  .dash-logout{ padding:8px 4px; color:var(--ink-600); }
-  .dash-logout:hover{ color:var(--ink-900); }
+  .dash-logout{ padding:8px 14px; }
+
+  .new-booking-banner{
+    background:rgba(199,164,74,0.14); border:1px solid var(--gold-500); border-radius:2px;
+    padding:10px 16px; font-size:14px; color:var(--ink-900); margin-bottom:18px;
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+  }
+  .new-booking-banner button{ background:none; border:none; color:var(--ink-600); cursor:pointer; font-size:13px; }
 
   .dash-tabs{ display:flex; gap:6px; margin-bottom:28px; border-bottom:1px solid var(--line); }
   .tab-btn{
@@ -143,7 +205,16 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
   }
   .tab-btn.is-active{ color:var(--ink-900); border-bottom-color:var(--gold-500); }
 
-  .dash-toolbar{ display:flex; gap:12px; flex-wrap:wrap; align-items:center; margin-bottom:24px; }
+  /* Ghost buttons: visible dark text + border, for use on light backgrounds
+     (the .btn--text variant is near-white and meant for dark hero/nav only) */
+  .btn--ghost{
+    color:var(--ink-900); background:transparent; border:1px solid var(--line);
+    padding:9px 16px; border-radius:2px;
+  }
+  .btn--ghost:hover{ border-color:var(--gold-500); background:rgba(199,164,74,0.08); }
+  .btn--ghost.is-active{ border-color:var(--gold-500); background:rgba(199,164,74,0.12); }
+
+  .dash-toolbar{ display:flex; gap:12px; flex-wrap:wrap; align-items:center; margin-bottom:16px; }
   #searchBox{
     flex:1; min-width:240px; font-family:var(--font-body); font-size:14.5px;
     padding:10px 14px; border:1px solid var(--line); border-radius:2px;
@@ -155,61 +226,87 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
     padding:8px 14px; border:1px solid var(--line); border-radius:2px; background:transparent; cursor:pointer; color:var(--ink-600);
   }
   .filter-btn.is-active{ border-color:var(--gold-500); color:var(--ink-900); background:rgba(199,164,74,0.08); }
-  .export-btn{ padding:8px 4px; white-space:nowrap; }
+  .export-btn{ white-space:nowrap; }
+  .date-range{ display:flex; align-items:center; gap:6px; }
+  .date-range input{ font-family:var(--font-body); font-size:13.5px; padding:8px 10px; border:1px solid var(--line); border-radius:2px; }
+
+  .bulk-bar{
+    display:flex; align-items:center; gap:12px; margin-bottom:16px; padding:10px 14px;
+    border:1px solid var(--gold-500); border-radius:2px; background:rgba(199,164,74,0.08); font-size:13.5px;
+  }
 
   .dash-empty{ color:var(--ink-600); padding:24px 0; }
 
-  .dash-list{ display:flex; flex-direction:column; gap:14px; }
-  .booking-card{
-    border:1px solid var(--line); border-radius:2px; padding:20px 22px;
-    display:grid; grid-template-columns:1fr auto; gap:16px; align-items:start;
-  }
-  .booking-main{ display:flex; flex-direction:column; gap:6px; }
-  .booking-top{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
-  .booking-ref{ font-family:var(--font-mono); font-size:13px; color:var(--gold-500); }
-  .booking-name{ font-weight:600; font-size:16px; }
-  .booking-meta{ font-size:14px; color:var(--ink-600); }
-  .booking-notes{ font-size:14px; color:var(--ink-900); margin-top:4px; }
+  .skeleton-rows{ display:flex; flex-direction:column; gap:10px; }
+  .skeleton-row{ height:52px; border-radius:2px; background:linear-gradient(90deg, var(--paper-50) 25%, rgba(19,26,34,0.06) 37%, var(--paper-50) 63%); background-size:400% 100%; animation:shimmer 1.4s ease infinite; }
+  @keyframes shimmer{ 0%{background-position:100% 0;} 100%{background-position:0 0;} }
 
-  .status-badge{ font-family:var(--font-mono); font-size:11px; letter-spacing:0.06em; text-transform:uppercase; padding:4px 10px; border-radius:20px; }
+  .table-scroll{ overflow-x:auto; border:1px solid var(--line); border-radius:2px; max-height:640px; overflow-y:auto; }
+  .bookings-table{ width:100%; border-collapse:collapse; font-size:13.5px; white-space:nowrap; }
+  .bookings-table thead th{
+    position:sticky; top:0; background:var(--paper-0); text-align:left; font-family:var(--font-mono);
+    font-size:11px; letter-spacing:0.05em; text-transform:uppercase; color:var(--ink-600);
+    padding:12px 14px; border-bottom:1px solid var(--line); cursor:pointer; user-select:none; z-index:1;
+  }
+  .bookings-table thead th:hover{ color:var(--ink-900); }
+  .bookings-table thead th.sorted::after{ content:attr(data-dir); margin-left:4px; color:var(--gold-500); }
+  .bookings-table td{ padding:12px 14px; border-bottom:1px solid var(--line); vertical-align:top; }
+  .bookings-table tbody tr:hover{ background:rgba(199,164,74,0.05); }
+  .col-check{ width:36px; }
+  .col-actions{ width:210px; }
+  .cell-ref{ font-family:var(--font-mono); color:var(--gold-500); }
+  .cell-notes-flag{ color:var(--ink-600); cursor:help; }
+  .table-actions{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .view-shot-btn{ font-size:13px; color:var(--ink-900); text-decoration:underline; background:none; border:none; cursor:pointer; padding:0; font-family:var(--font-body); }
+
+  .status-badge{ font-family:var(--font-mono); font-size:11px; letter-spacing:0.06em; text-transform:uppercase; padding:4px 10px; border-radius:20px; white-space:nowrap; }
   .status-badge.pending{ background:rgba(199,164,74,0.15); color:#8a6d1f; }
   .status-badge.confirmed{ background:rgba(124,152,133,0.18); color:#3f5c47; }
   .status-badge.declined{ background:rgba(180,67,46,0.12); color:#B4432E; }
 
-  .booking-actions{ display:flex; flex-direction:column; gap:8px; align-items:flex-end; }
-  .view-shot-btn{ font-size:13px; color:var(--ink-900); text-decoration:underline; background:none; border:none; cursor:pointer; padding:0; font-family:var(--font-body); }
-  .action-row{ display:flex; gap:8px; }
   .action-btn{ font-family:var(--font-body); font-size:13px; padding:6px 12px; border:1px solid var(--line); border-radius:2px; background:transparent; cursor:pointer; }
   .action-btn.confirm{ border-color:#3f5c47; color:#3f5c47; }
   .action-btn.decline{ border-color:#B4432E; color:#B4432E; }
   .action-btn:hover{ opacity:0.7; }
+  .action-btn:disabled{ opacity:0.4; cursor:default; }
 
-  @media (max-width:560px){ .booking-card{ grid-template-columns:1fr; } .booking-actions{ align-items:flex-start; } }
+  .pagination{ display:flex; align-items:center; justify-content:center; gap:16px; margin-top:18px; font-size:13.5px; color:var(--ink-600); }
 
   .field{ display:flex; flex-direction:column; gap:6px; }
   label{ font-size:14px; font-weight:500; }
   select, textarea, input[type="time"]{ font-family:var(--font-body); font-size:14.5px; padding:10px 12px; border:1px solid var(--line); border-radius:2px; }
   .avail-hint{ font-size:13px; color:var(--ink-600); }
 
-  .avail-template{ display:flex; flex-direction:column; gap:16px; max-width:560px; margin-bottom:32px; padding:22px; border:1px solid var(--line); border-radius:2px; background:var(--paper-50); }
+  .avail-template{ display:flex; flex-direction:column; gap:16px; max-width:640px; margin-bottom:32px; padding:22px; border:1px solid var(--line); border-radius:2px; background:var(--paper-50); }
   .avail-template-title{ font-size:17px; margin:0; }
-  .avail-days-row{ display:flex; gap:8px; flex-wrap:wrap; }
-  .day-toggle{
-    font-family:var(--font-mono); font-size:12.5px; letter-spacing:0.04em; text-transform:uppercase;
-    padding:8px 14px; border:1px solid var(--line); border-radius:20px; background:transparent; cursor:pointer; color:var(--ink-600);
-  }
-  .day-toggle.is-on{ border-color:var(--gold-500); color:var(--ink-900); background:rgba(199,164,74,0.12); }
-  .avail-time-row{ display:flex; gap:16px; flex-wrap:wrap; }
-  .avail-time-row .field{ flex:1; min-width:130px; }
-  .avail-saved-msg{ font-size:13px; color:#3f5c47; }
 
-  .avail-calendar{ max-width:560px; margin-bottom:24px; border:1px solid var(--line); border-radius:2px; padding:20px; }
+  .day-rows{ display:flex; flex-direction:column; gap:8px; }
+  .day-row{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; padding:8px 0; border-bottom:1px solid var(--line); }
+  .day-row:last-child{ border-bottom:none; }
+  .day-row-toggle{
+    display:flex; align-items:center; gap:8px; width:96px; font-family:var(--font-mono); font-size:12.5px;
+    letter-spacing:0.04em; text-transform:uppercase; cursor:pointer; color:var(--ink-600);
+  }
+  .day-row.is-on .day-row-toggle{ color:var(--ink-900); }
+  .day-row-fields{ display:flex; gap:10px; flex-wrap:wrap; opacity:0.35; pointer-events:none; align-items:center; }
+  .day-row.is-on .day-row-fields{ opacity:1; pointer-events:auto; }
+  .day-row-fields input[type="time"], .day-row-fields select{ padding:8px 10px; font-size:13.5px; }
+  .buffer-field{ max-width:260px; }
+  .avail-saved-msg{ font-size:13px; color:#3f5c47; }
+  .avail-warning{ font-size:13px; color:#8a6d1f; }
+
+  .avail-calendar{ max-width:640px; margin-bottom:24px; border:1px solid var(--line); border-radius:2px; padding:20px; }
   .cal-nav{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
   .cal-nav-btn{ font-family:var(--font-mono); font-size:12px; background:none; border:none; color:var(--ink-600); cursor:pointer; padding:4px; }
   .cal-nav-btn:hover{ color:var(--ink-900); }
   .cal-month-label{ font-weight:600; font-size:15px; }
-  .cal-weekdays{ display:grid; grid-template-columns:repeat(7,1fr); font-family:var(--font-mono); font-size:11px; color:var(--ink-600); text-align:center; margin-bottom:6px; }
-  .cal-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+  .cal-legend{ display:flex; gap:16px; flex-wrap:wrap; font-size:12px; color:var(--ink-600); margin-bottom:10px; }
+  .cal-legend .dot{ display:inline-block; width:7px; height:7px; border-radius:50%; margin-right:5px; }
+  .cal-legend .dot.open{ background:#3f5c47; }
+  .cal-legend .dot.booked{ background:var(--gold-500); }
+  .cal-legend .swatch{ display:inline-block; width:10px; height:10px; margin-right:5px; background:rgba(180,67,46,0.2); border:1px solid rgba(180,67,46,0.4); }
+  .cal-weekdays{ display:grid; grid-template-columns:30px repeat(7,1fr); font-family:var(--font-mono); font-size:11px; color:var(--ink-600); text-align:center; margin-bottom:6px; }
+  .cal-grid{ display:flex; flex-direction:column; gap:4px; }
   .cal-cell{
     position:relative; aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
     border:1px solid var(--line); border-radius:2px; background:transparent; cursor:pointer; font-size:13px; color:var(--ink-900); padding:2px;
@@ -225,23 +322,17 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
   .cal-dot.open{ background:#3f5c47; }
   .cal-dot.booked{ background:var(--gold-500); }
 
-  .cal-day-panel{ max-width:560px; border:1px solid var(--line); border-radius:2px; padding:18px 20px; margin-bottom:36px; }
+  .cal-day-panel{ max-width:640px; border:1px solid var(--line); border-radius:2px; padding:18px 20px; margin-bottom:36px; }
   .cal-day-panel-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
   .cal-day-panel-head span{ font-weight:600; }
 
   .avail-slots-row{ display:flex; gap:8px; flex-wrap:wrap; }
-  .avail-slot-chip{
-    display:flex; align-items:center; gap:8px; font-size:13.5px; padding:6px 10px;
-    border:1px solid var(--line); border-radius:2px;
-  }
+  .avail-slot-chip{ display:flex; align-items:center; gap:8px; font-size:13.5px; padding:6px 10px; border:1px solid var(--line); border-radius:2px; }
   .avail-slot-chip.booked{ opacity:0.55; }
   .avail-slot-remove{ background:none; border:none; color:#B4432E; cursor:pointer; font-size:14px; padding:0; }
 
   .cal-toolbar{ display:flex; justify-content:flex-end; margin-bottom:10px; }
-  .cal-select-mode-btn.is-active{ border-color:var(--gold-500); color:var(--ink-900); background:rgba(199,164,74,0.12); }
 
-  .cal-weekdays{ display:grid; grid-template-columns:30px repeat(7,1fr); }
-  .cal-grid{ display:flex; flex-direction:column; gap:4px; }
   .cal-week-row{ display:grid; grid-template-columns:30px repeat(7,1fr); gap:4px; align-items:center; }
   .cal-week-btn{
     font-size:13px; width:26px; height:26px; border:1px solid var(--line); border-radius:50%;
@@ -255,86 +346,193 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
     display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-top:12px; padding:12px 16px;
     border:1px solid var(--gold-500); border-radius:2px; background:rgba(199,164,74,0.08); font-size:13.5px;
   }
+
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(11,20,31,0.6); display:flex; align-items:center; justify-content:center;
+    z-index:50; padding:24px;
+  }
+  .modal-box{ background:var(--paper-0); border-radius:2px; padding:24px; max-width:min(90vw, 640px); max-height:85vh; overflow:auto; position:relative; }
+  .modal-box--sm{ max-width:360px; }
+  .modal-box img{ max-width:100%; display:block; border:1px solid var(--line); }
+  .modal-close{ position:absolute; top:10px; right:10px; background:none; border:none; font-size:16px; cursor:pointer; color:var(--ink-600); }
+  .modal-close:hover{ color:var(--ink-900); }
+  .modal-open-link{ display:inline-block; margin-top:12px; font-size:13.5px; color:var(--ink-900); text-decoration:underline; }
+  .modal-actions{ display:flex; justify-content:flex-end; gap:10px; margin-top:16px; }
+
+  @media (max-width:840px){
+    .col-check, .col-actions{ position:static; }
+  }
+  @media (max-width:560px){
+    .dash-header{ flex-direction:column; gap:12px; }
+  }
 </style>
 
 <script define:vars={{ role }}>
-  const dashList = document.getElementById('dashList');
-  const loadingMsg = document.getElementById('loadingMsg');
-  const emptyMsg = document.getElementById('emptyMsg');
-  const filters = document.getElementById('dashFilters');
-  const searchBox = document.getElementById('searchBox');
-  const logoutBtn = document.getElementById('logoutBtn');
-  const exportBtn = document.getElementById('exportBtn');
+  // ===== Shared helpers =====
+  function escapeHtml(s) {
+    return String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+  function clinicianName(c) { return c === 'sohail' ? 'Muhammad Sohail' : c === 'sehar' ? 'Sehar Waheed' : 'No preference'; }
+  function formatDate(iso) {
+    const d = new Date(iso);
+    return d.toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+  }
+
+  function showConfirm(message) {
+    return new Promise((resolve) => {
+      const modal = document.getElementById('confirmModal');
+      document.getElementById('confirmMessage').textContent = message;
+      modal.hidden = false;
+      const okBtn = document.getElementById('confirmOk');
+      const cancelBtn = document.getElementById('confirmCancel');
+      function cleanup(result) {
+        modal.hidden = true;
+        okBtn.removeEventListener('click', onOk);
+        cancelBtn.removeEventListener('click', onCancel);
+        resolve(result);
+      }
+      function onOk() { cleanup(true); }
+      function onCancel() { cleanup(false); }
+      okBtn.addEventListener('click', onOk);
+      cancelBtn.addEventListener('click', onCancel);
+    });
+  }
+
+  // ===== Tabs (persisted via URL hash) =====
   const tabs = document.getElementById('dashTabs');
   const tabBookings = document.getElementById('tabBookings');
   const tabAvailability = document.getElementById('tabAvailability');
 
+  function activateTab(tab) {
+    tabs.querySelectorAll('.tab-btn').forEach((b) => b.classList.toggle('is-active', b.dataset.tab === tab));
+    tabBookings.hidden = tab !== 'bookings';
+    tabAvailability.hidden = tab !== 'availability';
+    if (tab === 'availability') loadAvailability();
+    history.replaceState(null, '', `#${tab}`);
+  }
+  tabs.addEventListener('click', (e) => {
+    const btn = e.target.closest('.tab-btn');
+    if (!btn) return;
+    activateTab(btn.dataset.tab);
+  });
+  activateTab(location.hash === '#availability' ? 'availability' : 'bookings');
+
+  // ===== Bookings =====
+  const searchBox = document.getElementById('searchBox');
+  const filters = document.getElementById('dashFilters');
+  const dateFrom = document.getElementById('dateFrom');
+  const dateTo = document.getElementById('dateTo');
+  const loadingSkeleton = document.getElementById('loadingSkeleton');
+  const emptyMsg = document.getElementById('emptyMsg');
+  const tableScroll = document.getElementById('tableScroll');
+  const bookingsBody = document.getElementById('bookingsBody');
+  const exportBtn = document.getElementById('exportBtn');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const selectAll = document.getElementById('selectAll');
+  const bulkBar = document.getElementById('bulkBar');
+  const bulkCount = document.getElementById('bulkCount');
+  const bulkConfirm = document.getElementById('bulkConfirm');
+  const bulkDecline = document.getElementById('bulkDecline');
+  const paginationEl = document.getElementById('pagination');
+  const pagePrev = document.getElementById('pagePrev');
+  const pageNext = document.getElementById('pageNext');
+  const pageLabel = document.getElementById('pageLabel');
+  const newBookingBanner = document.getElementById('newBookingBanner');
+
   let allBookings = [];
   let activeFilter = 'all';
   let searchTerm = '';
-
-  function formatDate(iso) {
-    return new Date(iso).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
-  }
-  function escapeHtml(str) {
-    const div = document.createElement('div');
-    div.textContent = str ?? '';
-    return div.innerHTML;
-  }
-  function clinicianName(c) {
-    return c === 'sohail' ? 'Muhammad Sohail' : c === 'sehar' ? 'Sehar Waheed' : c;
-  }
+  let sortKey = 'created_at';
+  let sortDir = -1; // -1 desc, 1 asc
+  let selected = new Set();
+  let page = 1;
+  const PAGE_SIZE = 25;
+  let lastPendingCount = null;
 
   function matchesSearch(b, term) {
     if (!term) return true;
-    const haystack = `${b.id} ${b.client_name} ${b.contact}`.toLowerCase();
-    return haystack.includes(term.toLowerCase());
+    const hay = `${b.client_name} ${b.contact} ${b.id}`.toLowerCase();
+    return hay.includes(term.toLowerCase());
+  }
+  function matchesDateRange(b) {
+    const d = b.created_at.slice(0, 10);
+    if (dateFrom.value && d < dateFrom.value) return false;
+    if (dateTo.value && d > dateTo.value) return false;
+    return true;
+  }
+
+  function filteredSorted() {
+    let items = activeFilter === 'all' ? allBookings.slice() : allBookings.filter((b) => b.status === activeFilter);
+    items = items.filter((b) => matchesSearch(b, searchTerm) && matchesDateRange(b));
+    items.sort((a, b) => {
+      const av = a[sortKey], bv = b[sortKey];
+      if (av === bv) return 0;
+      return av > bv ? sortDir : -sortDir;
+    });
+    return items;
   }
 
   function render() {
-    let items = activeFilter === 'all' ? allBookings : allBookings.filter((b) => b.status === activeFilter);
-    items = items.filter((b) => matchesSearch(b, searchTerm));
+    const items = filteredSorted();
+    const totalPages = Math.max(1, Math.ceil(items.length / PAGE_SIZE));
+    if (page > totalPages) page = totalPages;
+    const pageItems = items.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-    dashList.innerHTML = '';
     emptyMsg.hidden = items.length > 0;
+    tableScroll.hidden = items.length === 0;
+    paginationEl.hidden = items.length <= PAGE_SIZE;
+    pageLabel.textContent = `Page ${page} of ${totalPages} (${items.length} total)`;
 
-    for (const b of items) {
-      const card = document.createElement('div');
-      card.className = 'booking-card';
-      card.innerHTML = `
-        <div class="booking-main">
-          <div class="booking-top">
-            <span class="booking-ref">${b.id}</span>
-            <span class="status-badge ${b.status}">${b.status}</span>
+    bookingsBody.innerHTML = '';
+    for (const b of pageItems) {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><input type="checkbox" class="row-check" data-id="${b.id}" ${selected.has(b.id) ? 'checked' : ''} /></td>
+        <td class="cell-ref">${b.id}</td>
+        <td>${escapeHtml(b.client_name)}${b.notes ? ` <span class="cell-notes-flag" title="${escapeHtml(b.notes)}">📝</span>` : ''}</td>
+        <td>${escapeHtml(b.contact)}</td>
+        <td>${b.service === 'individual' ? 'Individual' : 'Couples'}</td>
+        <td>${clinicianName(b.clinician)}</td>
+        <td>PKR ${b.amount_pkr.toLocaleString('en-US')}</td>
+        <td>${escapeHtml(b.preferred_time)}</td>
+        <td>${formatDate(b.created_at)}</td>
+        <td><span class="status-badge ${b.status}">${b.status}</span></td>
+        <td>
+          <div class="table-actions">
+            <button class="view-shot-btn" data-shot="${b.id}" type="button">Screenshot</button>
+            <button class="action-btn confirm" data-id="${b.id}" data-status="confirmed" ${b.status === 'confirmed' ? 'disabled' : ''}>Confirm</button>
+            <button class="action-btn decline" data-id="${b.id}" data-status="declined" ${b.status === 'declined' ? 'disabled' : ''}>Decline</button>
           </div>
-          <span class="booking-name">${escapeHtml(b.client_name)}</span>
-          <span class="booking-meta">
-            ${b.service === 'individual' ? 'Individual' : 'Couples'} · PKR ${b.amount_pkr.toLocaleString('en-US')}
-            · ${clinicianName(b.clinician)} · ${escapeHtml(b.payment_method)}
-          </span>
-          <span class="booking-meta">${escapeHtml(b.contact)} · ${escapeHtml(b.preferred_time)}</span>
-          <span class="booking-meta">Submitted ${formatDate(b.created_at)}</span>
-          ${b.notes ? `<span class="booking-notes">"${escapeHtml(b.notes)}"</span>` : ''}
-        </div>
-        <div class="booking-actions">
-          <a class="view-shot-btn" href="/api/admin/screenshot/${b.id}" target="_blank" rel="noopener">View screenshot →</a>
-          <div class="action-row">
-            <button class="action-btn confirm" data-id="${b.id}" data-status="confirmed">Confirm</button>
-            <button class="action-btn decline" data-id="${b.id}" data-status="declined">Decline</button>
-          </div>
-        </div>
+        </td>
       `;
-      dashList.appendChild(card);
+      bookingsBody.appendChild(tr);
     }
+    updateBulkBar();
+
+    const pendingCount = allBookings.filter((b) => b.status === 'pending').length;
+    if (lastPendingCount !== null && pendingCount > lastPendingCount) {
+      newBookingBanner.hidden = false;
+      newBookingBanner.innerHTML = `<span>${pendingCount - lastPendingCount} new booking(s) came in.</span><button id="dismissBanner">Dismiss</button>`;
+      document.getElementById('dismissBanner').addEventListener('click', () => { newBookingBanner.hidden = true; });
+    }
+    lastPendingCount = pendingCount;
+    document.title = pendingCount > 0 ? `(${pendingCount}) Dashboard — The Psychology Square` : 'Dashboard — The Psychology Square';
   }
 
-  async function loadBookings() {
-    loadingMsg.hidden = false;
+  function updateBulkBar() {
+    bulkBar.hidden = selected.size === 0;
+    bulkCount.textContent = `${selected.size} selected`;
+    selectAll.checked = bookingsBody.querySelectorAll('.row-check').length > 0 &&
+      [...bookingsBody.querySelectorAll('.row-check')].every((c) => c.checked);
+  }
+
+  async function loadBookings(isPoll) {
+    if (!isPoll) { loadingSkeleton.hidden = false; tableScroll.hidden = true; emptyMsg.hidden = true; }
     const res = await fetch('/api/admin/bookings');
     if (res.status === 401) { window.location.href = '/dashboard/login'; return; }
     const data = await res.json();
     allBookings = data.bookings || [];
-    loadingMsg.hidden = true;
+    loadingSkeleton.hidden = true;
     render();
   }
 
@@ -344,15 +542,57 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
     filters.querySelectorAll('.filter-btn').forEach((b) => b.classList.remove('is-active'));
     btn.classList.add('is-active');
     activeFilter = btn.dataset.status || 'all';
+    page = 1;
     render();
   });
 
-  searchBox.addEventListener('input', () => { searchTerm = searchBox.value; render(); });
+  searchBox.addEventListener('input', () => { searchTerm = searchBox.value; page = 1; render(); });
+  dateFrom.addEventListener('change', () => { page = 1; render(); });
+  dateTo.addEventListener('change', () => { page = 1; render(); });
 
-  dashList.addEventListener('click', async (e) => {
+  document.getElementById('bookingsTable').querySelector('thead').addEventListener('click', (e) => {
+    const th = e.target.closest('th[data-sort]');
+    if (!th) return;
+    const key = th.dataset.sort;
+    if (sortKey === key) sortDir = -sortDir; else { sortKey = key; sortDir = 1; }
+    document.querySelectorAll('th[data-sort]').forEach((h) => { h.classList.remove('sorted'); h.removeAttribute('data-dir'); });
+    th.classList.add('sorted');
+    th.setAttribute('data-dir', sortDir === 1 ? '▲' : '▼');
+    render();
+  });
+
+  selectAll.addEventListener('change', () => {
+    bookingsBody.querySelectorAll('.row-check').forEach((c) => {
+      c.checked = selectAll.checked;
+      if (selectAll.checked) selected.add(c.dataset.id); else selected.delete(c.dataset.id);
+    });
+    updateBulkBar();
+  });
+
+  bookingsBody.addEventListener('change', (e) => {
+    const chk = e.target.closest('.row-check');
+    if (!chk) return;
+    if (chk.checked) selected.add(chk.dataset.id); else selected.delete(chk.dataset.id);
+    updateBulkBar();
+  });
+
+  bookingsBody.addEventListener('click', async (e) => {
+    const shotBtn = e.target.closest('[data-shot]');
+    if (shotBtn) {
+      const modal = document.getElementById('shotModal');
+      const img = document.getElementById('shotModalImg');
+      const openLink = document.getElementById('shotModalOpen');
+      const src = `/api/admin/screenshot/${shotBtn.dataset.shot}`;
+      img.src = src;
+      openLink.href = src;
+      modal.hidden = false;
+      return;
+    }
     const btn = e.target.closest('.action-btn');
     if (!btn) return;
     const id = btn.dataset.id, status = btn.dataset.status;
+    const ok = await showConfirm(`Mark booking ${id} as ${status}?`);
+    if (!ok) return;
     btn.disabled = true;
     await fetch('/api/admin/bookings', {
       method: 'PATCH', headers: { 'content-type': 'application/json' },
@@ -363,10 +603,36 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
     render();
   });
 
+  async function bulkUpdate(status) {
+    if (!selected.size) return;
+    const ok = await showConfirm(`Mark ${selected.size} booking(s) as ${status}?`);
+    if (!ok) return;
+    await Promise.all([...selected].map((id) =>
+      fetch('/api/admin/bookings', {
+        method: 'PATCH', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ id, status }),
+      })
+    ));
+    for (const id of selected) {
+      const booking = allBookings.find((b) => b.id === id);
+      if (booking) booking.status = status;
+    }
+    selected.clear();
+    render();
+  }
+  bulkConfirm.addEventListener('click', () => bulkUpdate('confirmed'));
+  bulkDecline.addEventListener('click', () => bulkUpdate('declined'));
+
+  document.getElementById('shotModalClose').addEventListener('click', () => { document.getElementById('shotModal').hidden = true; });
+  document.getElementById('shotModal').addEventListener('click', (e) => { if (e.target.id === 'shotModal') e.currentTarget.hidden = true; });
+
+  pagePrev.addEventListener('click', () => { if (page > 1) { page--; render(); } });
+  pageNext.addEventListener('click', () => { page++; render(); });
+
   exportBtn.addEventListener('click', () => {
     const cols = ['id', 'created_at', 'client_name', 'contact', 'service', 'clinician', 'preferred_time', 'amount_pkr', 'payment_method', 'status', 'notes'];
     const header = ['Reference', 'Submitted', 'Name', 'Contact', 'Service', 'Clinician', 'Time', 'Amount (PKR)', 'Payment Method', 'Status', 'Notes'];
-    const rows = allBookings.map((b) => cols.map((c) => {
+    const rows = filteredSorted().map((b) => cols.map((c) => {
       const v = String(b[c] ?? '').replace(/"/g, '""');
       return `"${v}"`;
     }).join(','));
@@ -385,26 +651,17 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
     window.location.href = '/dashboard/login';
   });
 
-  // ===== Tabs =====
-  tabs.addEventListener('click', (e) => {
-    const btn = e.target.closest('.tab-btn');
-    if (!btn) return;
-    tabs.querySelectorAll('.tab-btn').forEach((b) => b.classList.remove('is-active'));
-    btn.classList.add('is-active');
-    const tab = btn.dataset.tab;
-    tabBookings.hidden = tab !== 'bookings';
-    tabAvailability.hidden = tab !== 'availability';
-    if (tab === 'availability') loadAvailability();
-  });
+  loadBookings();
+  setInterval(() => loadBookings(true), 30000);
 
   // ===== Availability =====
+  const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const availClinicianSelect = document.getElementById('availClinician');
-  const availDaysRow = document.getElementById('availDaysRow');
-  const availStart = document.getElementById('availStart');
-  const availEnd = document.getElementById('availEnd');
-  const availSlotLen = document.getElementById('availSlotLen');
+  const dayRows = document.getElementById('dayRows');
+  const bufferMinutesSelect = document.getElementById('bufferMinutes');
   const saveTemplateBtn = document.getElementById('saveTemplateBtn');
   const templateSavedMsg = document.getElementById('templateSavedMsg');
+  const bookedWarning = document.getElementById('bookedWarning');
   const calPrev = document.getElementById('calPrev');
   const calNext = document.getElementById('calNext');
   const calMonthLabel = document.getElementById('calMonthLabel');
@@ -420,6 +677,37 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
   const calIncludeSelected = document.getElementById('calIncludeSelected');
   const calClearSelected = document.getElementById('calClearSelected');
 
+  // Build the 7 per-day rows once
+  for (let day = 0; day < 7; day++) {
+    const row = document.createElement('div');
+    row.className = 'day-row';
+    row.dataset.day = String(day);
+    row.innerHTML = `
+      <label class="day-row-toggle">
+        <input type="checkbox" class="day-row-checkbox" />
+        ${DAY_LABELS[day]}
+      </label>
+      <div class="day-row-fields">
+        <input type="time" class="day-start" value="09:00" />
+        <span>to</span>
+        <input type="time" class="day-end" value="17:00" />
+        <select class="day-slot-len">
+          <option value="30">30 min</option>
+          <option value="45">45 min</option>
+          <option value="60" selected>60 min</option>
+          <option value="90">90 min</option>
+          <option value="120">120 min</option>
+        </select>
+      </div>
+    `;
+    dayRows.appendChild(row);
+  }
+  dayRows.addEventListener('change', (e) => {
+    if (!e.target.classList.contains('day-row-checkbox')) return;
+    const row = e.target.closest('.day-row');
+    row.classList.toggle('is-on', e.target.checked);
+  });
+
   let availSlots = [];
   let availExceptions = new Set();
   let calMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
@@ -430,14 +718,8 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
   function currentClinicianForAvail() {
     return role === 'admin' ? availClinicianSelect.value : role;
   }
-
-  function todayStr() {
-    return fmtDate(new Date());
-  }
-
-  function fmtDate(d) {
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-  }
+  function todayStr() { return fmtDate(new Date()); }
+  function fmtDate(d) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
 
   function updateSelectBar() {
     calSelectBar.hidden = selectedDates.size === 0;
@@ -458,217 +740,183 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
     calSelectModeBtn.classList.toggle('is-active', selectMode);
     calSelectModeBtn.textContent = selectMode ? 'Done selecting' : 'Select multiple days';
     if (!selectMode) { selectedDates.clear(); updateSelectBar(); }
-    calDayPanel.hidden = true;
-    selectedDate = null;
     renderCalendar();
   });
+  calExcludeSelected.addEventListener('click', () => applyBulk('exclude', [...selectedDates]));
+  calIncludeSelected.addEventListener('click', () => applyBulk('include', [...selectedDates]));
+  calClearSelected.addEventListener('click', () => { selectedDates.clear(); updateSelectBar(); renderCalendar(); });
 
-  calExcludeSelected.addEventListener('click', async () => {
-    await applyBulk('exclude', [...selectedDates]);
-    selectedDates.clear();
-    updateSelectBar();
-  });
-  calIncludeSelected.addEventListener('click', async () => {
-    await applyBulk('include', [...selectedDates]);
-    selectedDates.clear();
-    updateSelectBar();
-  });
-  calClearSelected.addEventListener('click', () => {
-    selectedDates.clear();
-    updateSelectBar();
-    renderCalendar();
-  });
-
-  async function loadAvailability() {
-    const clinician = currentClinicianForAvail();
-    const res = await fetch(`/api/admin/availability?clinician=${clinician}`);
-    const data = await res.json();
-    availSlots = data.slots || [];
-    availExceptions = new Set(data.exceptions || []);
-
-    availDaysRow.querySelectorAll('.day-toggle').forEach((btn) => {
-      const on = data.template ? data.template.days.includes(Number(btn.dataset.day)) : false;
-      btn.classList.toggle('is-on', on);
-    });
-    if (data.template) {
-      availStart.value = data.template.start_time;
-      availEnd.value = data.template.end_time;
-      availSlotLen.value = String(data.template.slot_minutes);
-    }
-
-    renderCalendar();
-    if (selectedDate) renderDayPanel(selectedDate);
-  }
-
-  availDaysRow.addEventListener('click', (e) => {
-    const btn = e.target.closest('.day-toggle');
-    if (!btn) return;
-    btn.classList.toggle('is-on');
-  });
-
-  saveTemplateBtn.addEventListener('click', async () => {
-    const days = [...availDaysRow.querySelectorAll('.day-toggle.is-on')].map((b) => Number(b.dataset.day));
-    if (!days.length) { alert('Pick at least one working day.'); return; }
-    if (!availStart.value || !availEnd.value || availStart.value >= availEnd.value) {
-      alert('Pick a valid start and end time.'); return;
-    }
-    saveTemplateBtn.disabled = true;
-    saveTemplateBtn.textContent = 'Saving…';
-    templateSavedMsg.hidden = true;
-    await fetch('/api/admin/availability', {
-      method: 'POST', headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({
-        mode: 'generate',
-        clinician: currentClinicianForAvail(),
-        days,
-        start_time: availStart.value,
-        end_time: availEnd.value,
-        slot_minutes: Number(availSlotLen.value),
-      }),
-    });
-    saveTemplateBtn.disabled = false;
-    saveTemplateBtn.textContent = 'Save weekly schedule';
-    templateSavedMsg.hidden = false;
-    await loadAvailability();
-  });
-
-  if (availClinicianSelect) {
-    availClinicianSelect.addEventListener('change', () => {
-      selectedDate = null;
-      calDayPanel.hidden = true;
-      loadAvailability();
-    });
-  }
+  calPrev.addEventListener('click', () => { calMonth.setMonth(calMonth.getMonth() - 1); renderCalendar(); });
+  calNext.addEventListener('click', () => { calMonth.setMonth(calMonth.getMonth() + 1); renderCalendar(); });
 
   function renderCalendar() {
-    const year = calMonth.getFullYear();
-    const month = calMonth.getMonth();
-    calMonthLabel.textContent = calMonth.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
-
-    const byDate = {};
-    for (const s of availSlots) { (byDate[s.date] ||= []).push(s); }
-
-    const today = todayStr();
-    const firstOfMonth = new Date(year, month, 1);
-    const lastOfMonth = new Date(year, month + 1, 0);
-    const gridStart = new Date(firstOfMonth);
-    gridStart.setDate(gridStart.getDate() - gridStart.getDay());
-    const gridEnd = new Date(lastOfMonth);
-    gridEnd.setDate(gridEnd.getDate() + (6 - gridEnd.getDay()));
-
+    calMonthLabel.textContent = calMonth.toLocaleString('en-US', { month: 'long', year: 'numeric' });
     calGrid.innerHTML = '';
-    const cursor = new Date(gridStart);
+    const firstDay = new Date(calMonth.getFullYear(), calMonth.getMonth(), 1);
+    const startOffset = firstDay.getDay();
+    const daysInMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() + 1, 0).getDate();
+    const today = todayStr();
 
-    while (cursor <= gridEnd) {
+    const slotsByDate = new Map();
+    for (const s of availSlots) {
+      if (!slotsByDate.has(s.date)) slotsByDate.set(s.date, { open: 0, booked: 0 });
+      slotsByDate.get(s.date)[s.status === 'booked' ? 'booked' : 'open']++;
+    }
+
+    let dayCounter = 1 - startOffset;
+    for (let week = 0; week < 6 && dayCounter <= daysInMonth; week++) {
       const weekRow = document.createElement('div');
       weekRow.className = 'cal-week-row';
-
-      const weekDates = [];
-      for (let i = 0; i < 7; i++) {
-        weekDates.push(fmtDate(cursor));
-        cursor.setDate(cursor.getDate() + 1);
-      }
-
       const weekBtn = document.createElement('button');
-      weekBtn.type = 'button';
-      weekBtn.className = 'cal-week-btn';
-      const allFuture = weekDates.every((d) => d >= today);
-      const allOff = weekDates.every((d) => availExceptions.has(d) || !(byDate[d] && byDate[d].length));
-      weekBtn.textContent = allOff ? '↺' : '⊘';
-      weekBtn.title = allFuture ? (allOff ? 'Make this week available' : 'Exclude this whole week') : 'This week has already passed';
-      weekBtn.disabled = !allFuture;
-      weekBtn.addEventListener('click', () => applyBulk(allOff ? 'include' : 'exclude', weekDates));
+      weekBtn.className = 'cal-week-btn'; weekBtn.type = 'button'; weekBtn.textContent = '⊘';
+      weekBtn.title = 'Exclude/restore this whole week';
+      const weekDates = [];
       weekRow.appendChild(weekBtn);
 
-      for (const dateStr of weekDates) {
-        const d = new Date(dateStr + 'T00:00:00');
-        const inMonth = d.getMonth() === month;
+      for (let i = 0; i < 7; i++, dayCounter++) {
         const cell = document.createElement('button');
         cell.type = 'button';
         cell.className = 'cal-cell';
-        if (!inMonth) cell.classList.add('is-other-month');
-        const isPast = dateStr < today;
-        if (isPast) cell.classList.add('is-past');
-        if (dateStr === selectedDate) cell.classList.add('is-selected');
-        if (selectedDates.has(dateStr)) cell.classList.add('is-picked');
-
-        const daySlots = byDate[dateStr] || [];
-        const hasOpen = daySlots.some((s) => s.status === 'open');
-        const hasBooked = daySlots.some((s) => s.status === 'booked');
-        if (!daySlots.length) cell.classList.add('is-off');
-
-        cell.innerHTML = `<span>${d.getDate()}</span>`;
-        if (hasOpen || hasBooked) {
+        if (dayCounter < 1 || dayCounter > daysInMonth) { cell.classList.add('is-blank'); weekRow.appendChild(cell); continue; }
+        const d = new Date(calMonth.getFullYear(), calMonth.getMonth(), dayCounter);
+        const dateStr = fmtDate(d);
+        weekDates.push(dateStr);
+        if (dateStr < today) cell.classList.add('is-past');
+        if (availExceptions.has(dateStr)) cell.classList.add('is-off');
+        if (selectMode && selectedDates.has(dateStr)) cell.classList.add('is-picked');
+        cell.dataset.date = dateStr;
+        cell.innerHTML = `<span>${dayCounter}</span>`;
+        const counts = slotsByDate.get(dateStr);
+        if (counts) {
           const dotRow = document.createElement('div');
           dotRow.className = 'cal-dot-row';
-          if (hasOpen) dotRow.innerHTML += '<span class="cal-dot open"></span>';
-          if (hasBooked) dotRow.innerHTML += '<span class="cal-dot booked"></span>';
+          if (counts.open) dotRow.innerHTML += '<span class="cal-dot open"></span>';
+          if (counts.booked) dotRow.innerHTML += '<span class="cal-dot booked"></span>';
           cell.appendChild(dotRow);
         }
-
-        cell.dataset.date = dateStr;
-        if (!isPast) {
-          cell.addEventListener('click', () => {
-            if (selectMode) {
-              if (selectedDates.has(dateStr)) selectedDates.delete(dateStr);
-              else selectedDates.add(dateStr);
-              renderCalendar();
-              updateSelectBar();
-            } else {
-              selectedDate = dateStr;
-              renderCalendar();
-              renderDayPanel(dateStr);
-            }
-          });
-        }
+        cell.addEventListener('click', () => {
+          if (selectMode) {
+            if (selectedDates.has(dateStr)) selectedDates.delete(dateStr); else selectedDates.add(dateStr);
+            updateSelectBar(); renderCalendar();
+          } else {
+            openDayPanel(dateStr);
+          }
+        });
         weekRow.appendChild(cell);
       }
+      weekBtn.addEventListener('click', () => {
+        const allOff = weekDates.every((d) => availExceptions.has(d));
+        applyBulk(allOff ? 'include' : 'exclude', weekDates);
+      });
       calGrid.appendChild(weekRow);
     }
   }
 
-  function renderDayPanel(dateStr) {
+  function openDayPanel(dateStr) {
+    selectedDate = dateStr;
     calDayPanel.hidden = false;
-    calDayPanelTitle.textContent = new Date(dateStr + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-
+    const d = new Date(dateStr + 'T00:00:00');
+    calDayPanelTitle.textContent = d.toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
     const isOff = availExceptions.has(dateStr);
     calDayOffToggle.textContent = isOff ? 'Make this a working day' : 'Mark this day off';
-    calDayOffToggle.onclick = async () => {
-      const clinician = currentClinicianForAvail();
-      if (isOff) {
-        await fetch('/api/admin/availability', {
-          method: 'PATCH', headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ clinician, date: dateStr }),
-        });
-      } else {
-        await fetch(`/api/admin/availability?clinician=${clinician}&date=${dateStr}`, { method: 'DELETE' });
-      }
-      await loadAvailability();
-    };
-
     const daySlots = availSlots.filter((s) => s.date === dateStr).sort((a, b) => a.time.localeCompare(b.time));
-    calDaySlots.innerHTML = '';
-    if (!daySlots.length) {
-      calDaySlots.innerHTML = '<p class="dash-empty" style="padding:8px 0;">No sessions this day.</p>';
-      return;
-    }
-    for (const s of daySlots) {
-      const chip = document.createElement('span');
-      chip.className = 'avail-slot-chip' + (s.status === 'booked' ? ' booked' : '');
-      chip.innerHTML = `${s.time}${s.status === 'booked' ? ' (booked)' : ''} ${s.status === 'open' ? `<button class="avail-slot-remove" data-id="${s.id}">✕</button>` : ''}`;
-      calDaySlots.appendChild(chip);
-    }
+    calDaySlots.innerHTML = daySlots.length
+      ? daySlots.map((s) => `
+          <span class="avail-slot-chip ${s.status === 'booked' ? 'booked' : ''}">
+            ${s.time}${s.status === 'booked' ? ' (booked)' : ''}
+            ${s.status !== 'booked' ? `<button class="avail-slot-remove" data-id="${s.id}" title="Remove this slot">✕</button>` : ''}
+          </span>`).join('')
+      : '<span class="avail-hint">No slots on this day.</span>';
   }
+
+  calDayOffToggle.addEventListener('click', async () => {
+    if (!selectedDate) return;
+    const clinician = currentClinicianForAvail();
+    const isOff = availExceptions.has(selectedDate);
+    if (isOff) {
+      await fetch('/api/admin/availability', {
+        method: 'PATCH', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ clinician, date: selectedDate }),
+      });
+    } else {
+      await fetch(`/api/admin/availability?clinician=${encodeURIComponent(clinician)}&date=${encodeURIComponent(selectedDate)}`, { method: 'DELETE' });
+    }
+    await loadAvailability();
+    openDayPanel(selectedDate);
+  });
 
   calDaySlots.addEventListener('click', async (e) => {
     const btn = e.target.closest('.avail-slot-remove');
     if (!btn) return;
     await fetch(`/api/admin/availability?id=${btn.dataset.id}`, { method: 'DELETE' });
-    loadAvailability();
+    await loadAvailability();
+    openDayPanel(selectedDate);
   });
 
-  calPrev.addEventListener('click', () => { calMonth.setMonth(calMonth.getMonth() - 1); renderCalendar(); });
-  calNext.addEventListener('click', () => { calMonth.setMonth(calMonth.getMonth() + 1); renderCalendar(); });
+  saveTemplateBtn.addEventListener('click', async () => {
+    const clinician = currentClinicianForAvail();
+    const days = [...dayRows.querySelectorAll('.day-row.is-on')].map((row) => ({
+      day: Number(row.dataset.day),
+      start_time: row.querySelector('.day-start').value,
+      end_time: row.querySelector('.day-end').value,
+      slot_minutes: Number(row.querySelector('.day-slot-len').value),
+    }));
+    if (!days.length) {
+      templateSavedMsg.hidden = true;
+      bookedWarning.hidden = false;
+      bookedWarning.textContent = 'Turn on at least one day before saving.';
+      return;
+    }
+    saveTemplateBtn.disabled = true;
+    saveTemplateBtn.textContent = 'Saving…';
+    await fetch('/api/admin/availability', {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ mode: 'generate', clinician, days, buffer_minutes: Number(bufferMinutesSelect.value) }),
+    });
+    saveTemplateBtn.disabled = false;
+    saveTemplateBtn.textContent = 'Save weekly schedule';
+    bookedWarning.hidden = true;
+    templateSavedMsg.hidden = false;
+    setTimeout(() => { templateSavedMsg.hidden = true; }, 4000);
+    await loadAvailability();
+  });
 
-  loadBookings();
+  async function loadAvailability() {
+    const clinician = currentClinicianForAvail();
+    const res = await fetch(`/api/admin/availability?clinician=${encodeURIComponent(clinician)}`);
+    if (res.status === 401) { window.location.href = '/dashboard/login'; return; }
+    const data = await res.json();
+    availSlots = data.slots || [];
+    availExceptions = new Set(data.exceptions || []);
+
+    // Reset all day rows, then populate from the saved per-day template
+    dayRows.querySelectorAll('.day-row').forEach((row) => {
+      row.classList.remove('is-on');
+      row.querySelector('.day-row-checkbox').checked = false;
+    });
+    for (const t of data.templateDays || []) {
+      const row = dayRows.querySelector(`.day-row[data-day="${t.day}"]`);
+      if (!row) continue;
+      row.classList.add('is-on');
+      row.querySelector('.day-row-checkbox').checked = true;
+      row.querySelector('.day-start').value = t.start_time;
+      row.querySelector('.day-end').value = t.end_time;
+      row.querySelector('.day-slot-len').value = String(t.slot_minutes);
+    }
+    bufferMinutesSelect.value = String(data.bufferMinutes || 0);
+
+    if (data.bookedCountNext7Days > 0) {
+      bookedWarning.hidden = false;
+      bookedWarning.textContent = `Heads up: ${data.bookedCountNext7Days} session(s) already booked in the next 7 days — saving changes here never affects them.`;
+    } else {
+      bookedWarning.hidden = true;
+    }
+
+    renderCalendar();
+    if (selectedDate) openDayPanel(selectedDate);
+  }
+
+  if (availClinicianSelect) availClinicianSelect.addEventListener('change', () => { selectedDate = null; calDayPanel.hidden = true; loadAvailability(); });
+
+  if (location.hash === '#availability') loadAvailability();
 </script>

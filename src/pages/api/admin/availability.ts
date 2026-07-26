@@ -6,6 +6,8 @@ export const prerender = false;
 
 const WEEKS_AHEAD = 8; // how far out the rolling schedule keeps itself generated
 
+type DayTemplate = { day: number; start_time: string; end_time: string; slot_minutes: number };
+
 function canManage(role: string, clinician: string) {
   return role === 'admin' || role === clinician;
 }
@@ -18,20 +20,23 @@ function toDateStr(d: Date) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
-function timesInRange(start: string, end: string, stepMin: number): string[] {
+// Session start times from start..end, spaced by slot length + buffer, each
+// one guaranteed to fit (start + slot_minutes <= end).
+function timesInRange(start: string, end: string, slotMinutes: number, bufferMinutes: number): string[] {
   const [sh, sm] = start.split(':').map(Number);
   const [eh, em] = end.split(':').map(Number);
   let cur = sh * 60 + sm;
   const endMin = eh * 60 + em;
+  const step = slotMinutes + Math.max(0, bufferMinutes);
   const out: string[] = [];
-  while (cur < endMin) {
+  while (cur + slotMinutes <= endMin) {
     out.push(`${pad(Math.floor(cur / 60))}:${pad(cur % 60)}`);
-    cur += stepMin;
+    cur += step;
   }
   return out;
 }
 
-function datesForDays(days: number[], weeksAhead: number): string[] {
+function datesForDay(day: number, weeksAhead: number): string[] {
   const out: string[] = [];
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -39,24 +44,42 @@ function datesForDays(days: number[], weeksAhead: number): string[] {
   for (let i = 0; i < totalDays; i++) {
     const d = new Date(today);
     d.setDate(d.getDate() + i);
-    if (days.includes(d.getDay())) out.push(toDateStr(d));
+    if (d.getDay() === day) out.push(toDateStr(d));
   }
   return out;
 }
 
+async function getTemplateDays(clinician: string): Promise<DayTemplate[]> {
+  const res = await env.DB.prepare(
+    `SELECT day, start_time, end_time, slot_minutes FROM weekly_template_days WHERE clinician = ? ORDER BY day`
+  ).bind(clinician).all<DayTemplate>();
+  return res.results || [];
+}
+
+async function getBuffer(clinician: string): Promise<number> {
+  const row = await env.DB.prepare(`SELECT buffer_minutes FROM clinician_settings WHERE clinician = ?`)
+    .bind(clinician).first<{ buffer_minutes: number }>();
+  return row?.buffer_minutes ?? 0;
+}
+
 // Brings the next WEEKS_AHEAD weeks of open slots in line with a clinician's
-// saved weekly template: adds missing open slots that match, and removes
-// open (never-booked) slots that no longer match the template or fall on an
-// exception date. Booked slots are never touched.
-async function syncTemplate(clinician: string, days: number[], startTime: string, endTime: string, slotMinutes: number) {
+// saved per-day template: adds missing open slots that match, and removes
+// open (never-booked) slots that no longer match or fall on an exception
+// date. Booked slots are never touched.
+async function syncTemplate(clinician: string, days: DayTemplate[], bufferMinutes: number) {
   const exRes = await env.DB.prepare(`SELECT date FROM availability_exceptions WHERE clinician = ?`)
     .bind(clinician).all<{ date: string }>();
   const exceptionDates = new Set((exRes.results || []).map((r) => r.date));
 
-  const dates = datesForDays(days, WEEKS_AHEAD).filter((d) => !exceptionDates.has(d));
-  const times = timesInRange(startTime, endTime, slotMinutes);
-  const dateSet = new Set(dates);
-  const timeSet = new Set(times);
+  // date -> valid time set, built per weekday since each day can have its own hours
+  const validByDate = new Map<string, Set<string>>();
+  for (const t of days) {
+    const times = timesInRange(t.start_time, t.end_time, t.slot_minutes, bufferMinutes);
+    for (const date of datesForDay(t.day, WEEKS_AHEAD)) {
+      if (exceptionDates.has(date)) continue;
+      validByDate.set(date, new Set(times));
+    }
+  }
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -67,7 +90,7 @@ async function syncTemplate(clinician: string, days: number[], startTime: string
 
   const statements = [];
 
-  for (const date of dates) {
+  for (const [date, times] of validByDate) {
     for (const time of times) {
       statements.push(
         env.DB.prepare(
@@ -87,7 +110,8 @@ async function syncTemplate(clinician: string, days: number[], startTime: string
 
   for (const slot of existing.results || []) {
     if (slot.status === 'booked') continue;
-    const matches = dateSet.has(slot.date) && timeSet.has(slot.time) && !exceptionDates.has(slot.date);
+    const validTimes = validByDate.get(slot.date);
+    const matches = !!validTimes && validTimes.has(slot.time);
     if (!matches) {
       statements.push(env.DB.prepare(`DELETE FROM availability_slots WHERE id = ?`).bind(slot.id));
     }
@@ -96,12 +120,20 @@ async function syncTemplate(clinician: string, days: number[], startTime: string
   if (statements.length) await env.DB.batch(statements);
 }
 
-async function getTemplate(clinician: string) {
-  const t = await env.DB.prepare(
-    `SELECT days, start_time, end_time, slot_minutes FROM weekly_templates WHERE clinician = ?`
-  ).bind(clinician).first<{ days: string; start_time: string; end_time: string; slot_minutes: number }>();
-  if (!t) return null;
-  return { days: JSON.parse(t.days) as number[], start_time: t.start_time, end_time: t.end_time, slot_minutes: t.slot_minutes };
+function validDayTemplates(input: any): DayTemplate[] | null {
+  if (!Array.isArray(input)) return null;
+  const out: DayTemplate[] = [];
+  for (const row of input) {
+    const day = row?.day;
+    const startTime = row?.start_time;
+    const endTime = row?.end_time;
+    const slotMinutes = Number.isInteger(row?.slot_minutes) ? row.slot_minutes : 60;
+    if (!Number.isInteger(day) || day < 0 || day > 6) return null;
+    if (!/^\d{2}:\d{2}$/.test(startTime) || !/^\d{2}:\d{2}$/.test(endTime) || startTime >= endTime) return null;
+    if (![15, 30, 45, 60, 90, 120].includes(slotMinutes)) return null;
+    out.push({ day, start_time: startTime, end_time: endTime, slot_minutes: slotMinutes });
+  }
+  return out;
 }
 
 export const GET: APIRoute = async ({ request, url }) => {
@@ -111,19 +143,29 @@ export const GET: APIRoute = async ({ request, url }) => {
   const requested = url.searchParams.get('clinician');
   const clinician = session.role === 'admin' ? requested : session.role;
 
-  let template = null;
+  let templateDays: DayTemplate[] = [];
+  let bufferMinutes = 0;
   let exceptions: string[] = [];
+  let bookedCountThisWindow = 0;
 
   if (clinician) {
-    template = await getTemplate(clinician);
+    templateDays = await getTemplateDays(clinician);
+    bufferMinutes = await getBuffer(clinician);
     // Keep the rolling window topped up every time the dashboard checks in —
     // this is what makes "set it once" actually true going forward.
-    if (template) {
-      await syncTemplate(clinician, template.days, template.start_time, template.end_time, template.slot_minutes);
+    if (templateDays.length) {
+      await syncTemplate(clinician, templateDays, bufferMinutes);
     }
     const exRes = await env.DB.prepare(`SELECT date FROM availability_exceptions WHERE clinician = ?`)
       .bind(clinician).all<{ date: string }>();
     exceptions = (exRes.results || []).map((r) => r.date);
+
+    const today = toDateStr(new Date());
+    const in7 = new Date(); in7.setDate(in7.getDate() + 7);
+    const bookedRes = await env.DB.prepare(
+      `SELECT COUNT(*) as c FROM availability_slots WHERE clinician = ? AND status = 'booked' AND date >= ? AND date < ?`
+    ).bind(clinician, today, toDateStr(in7)).first<{ c: number }>();
+    bookedCountThisWindow = bookedRes?.c || 0;
   }
 
   const query = clinician
@@ -132,15 +174,21 @@ export const GET: APIRoute = async ({ request, url }) => {
   const stmt = clinician ? env.DB.prepare(query).bind(clinician) : env.DB.prepare(query);
   const { results } = await stmt.all();
 
-  return new Response(JSON.stringify({ slots: results, template, exceptions }), {
+  return new Response(JSON.stringify({
+    slots: results,
+    templateDays,
+    bufferMinutes,
+    exceptions,
+    bookedCountNext7Days: bookedCountThisWindow,
+  }), {
     status: 200,
     headers: { 'content-type': 'application/json' },
   });
 };
 
-// Two supported bodies:
-//  A) Weekly template (the normal path now):
-//     { mode: 'generate', clinician, days: [0..6], start_time, end_time, slot_minutes }
+// Supported bodies:
+//  A) Per-day weekly template (the normal path now):
+//     { mode: 'generate', clinician, days: [{ day, start_time, end_time, slot_minutes }], buffer_minutes }
 //  B) Legacy one-off bulk add, kept for compatibility:
 //     { clinician, dates: [...], times: [...] }
 export const POST: APIRoute = async ({ request }) => {
@@ -155,32 +203,30 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   if (body?.mode === 'generate') {
-    const days: number[] = Array.isArray(body?.days)
-      ? body.days.filter((d: any) => Number.isInteger(d) && d >= 0 && d <= 6)
-      : [];
-    const startTime = typeof body?.start_time === 'string' ? body.start_time : '';
-    const endTime = typeof body?.end_time === 'string' ? body.end_time : '';
-    const slotMinutes = Number.isInteger(body?.slot_minutes) ? body.slot_minutes : 60;
+    const days = validDayTemplates(body?.days);
+    const bufferMinutes = Number.isInteger(body?.buffer_minutes) ? Math.max(0, Math.min(180, body.buffer_minutes)) : 0;
 
-    if (!days.length) {
-      return new Response(JSON.stringify({ error: 'Pick at least one working day.' }), { status: 400 });
-    }
-    if (!/^\d{2}:\d{2}$/.test(startTime) || !/^\d{2}:\d{2}$/.test(endTime) || startTime >= endTime) {
-      return new Response(JSON.stringify({ error: 'Pick a valid start and end time.' }), { status: 400 });
-    }
-    if (![15, 30, 45, 60, 90, 120].includes(slotMinutes)) {
-      return new Response(JSON.stringify({ error: 'Invalid session length.' }), { status: 400 });
+    if (!days || !days.length) {
+      return new Response(JSON.stringify({ error: 'Pick at least one working day with a valid time range.' }), { status: 400 });
     }
 
-    await env.DB.prepare(
-      `INSERT INTO weekly_templates (clinician, days, start_time, end_time, slot_minutes, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?)
-       ON CONFLICT(clinician) DO UPDATE SET
-         days = excluded.days, start_time = excluded.start_time,
-         end_time = excluded.end_time, slot_minutes = excluded.slot_minutes, updated_at = excluded.updated_at`
-    ).bind(clinician, JSON.stringify(days), startTime, endTime, slotMinutes, new Date().toISOString()).run();
+    const now = new Date().toISOString();
+    const statements = [
+      env.DB.prepare(`DELETE FROM weekly_template_days WHERE clinician = ?`).bind(clinician),
+      ...days.map((d) =>
+        env.DB.prepare(
+          `INSERT INTO weekly_template_days (clinician, day, start_time, end_time, slot_minutes, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?)`
+        ).bind(clinician, d.day, d.start_time, d.end_time, d.slot_minutes, now)
+      ),
+      env.DB.prepare(
+        `INSERT INTO clinician_settings (clinician, buffer_minutes) VALUES (?, ?)
+         ON CONFLICT(clinician) DO UPDATE SET buffer_minutes = excluded.buffer_minutes`
+      ).bind(clinician, bufferMinutes),
+    ];
+    await env.DB.batch(statements);
 
-    await syncTemplate(clinician, days, startTime, endTime, slotMinutes);
+    await syncTemplate(clinician, days, bufferMinutes);
 
     return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { 'content-type': 'application/json' } });
   }
@@ -255,10 +301,9 @@ export const PUT: APIRoute = async ({ request }) => {
   if (statements.length) await env.DB.batch(statements);
 
   if (mode === 'include') {
-    const template = await getTemplate(clinician);
-    if (template) {
-      await syncTemplate(clinician, template.days, template.start_time, template.end_time, template.slot_minutes);
-    }
+    const days = await getTemplateDays(clinician);
+    const bufferMinutes = await getBuffer(clinician);
+    if (days.length) await syncTemplate(clinician, days, bufferMinutes);
   }
 
   return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { 'content-type': 'application/json' } });
@@ -327,10 +372,9 @@ export const PATCH: APIRoute = async ({ request }) => {
   await env.DB.prepare(`DELETE FROM availability_exceptions WHERE clinician = ? AND date = ?`)
     .bind(clinician, date).run();
 
-  const template = await getTemplate(clinician);
-  if (template) {
-    await syncTemplate(clinician, template.days, template.start_time, template.end_time, template.slot_minutes);
-  }
+  const days = await getTemplateDays(clinician);
+  const bufferMinutes = await getBuffer(clinician);
+  if (days.length) await syncTemplate(clinician, days, bufferMinutes);
 
   return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { 'content-type': 'application/json' } });
 };

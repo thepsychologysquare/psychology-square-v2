@@ -15,22 +15,23 @@ export const POST: APIRoute = async ({ request }) => {
 
   const body = await request.json().catch(() => null);
   const password = body?.password;
-  if (typeof password !== 'string') {
+  const identity = body?.identity; // 'admin' | 'sohail' | 'sehar' — chosen explicitly by the person logging in
+
+  if (typeof password !== 'string' || (identity !== 'admin' && identity !== 'sohail' && identity !== 'sehar')) {
     return new Response(JSON.stringify({ error: 'Incorrect password.' }), { status: 401 });
   }
 
-  let role: Role | null = null;
-  if (password === env.ADMIN_PASSWORD) role = 'admin';
-  else if (password === env.SOHAIL_PASSWORD) role = 'sohail';
-  else if (password === env.SEHAR_PASSWORD) role = 'sehar';
-
-  if (!role) {
+  // Check the password only against the identity that was explicitly picked —
+  // no more inferring who you are from whichever password happens to match.
+  const expected = identity === 'admin' ? env.ADMIN_PASSWORD : identity === 'sohail' ? env.SOHAIL_PASSWORD : env.SEHAR_PASSWORD;
+  if (password !== expected) {
     return new Response(JSON.stringify({ error: 'Incorrect password.' }), {
       status: 401,
       headers: { 'content-type': 'application/json' },
     });
   }
 
+  const role = identity as Role;
   const cookie = await createSessionCookie(sessionSecret, role);
   return new Response(JSON.stringify({ ok: true, role }), {
     status: 200,

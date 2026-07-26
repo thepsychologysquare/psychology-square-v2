@@ -37,8 +37,9 @@ CREATE INDEX IF NOT EXISTS idx_slots_status ON availability_slots (status);
 
 ALTER TABLE bookings ADD COLUMN slot_id INTEGER;
 
--- One recurring weekly schedule per clinician. Saved once; the availability
--- API keeps generating open slots from it automatically going forward.
+-- Legacy: one recurring weekly schedule per clinician, same hours every
+-- selected day. Superseded by weekly_template_days below (kept so old
+-- deployments migrate cleanly; the app no longer reads/writes this table).
 CREATE TABLE IF NOT EXISTS weekly_templates (
   clinician TEXT PRIMARY KEY,        -- 'sohail' | 'sehar'
   days TEXT NOT NULL,                -- JSON array of working weekdays, 0=Sun..6=Sat
@@ -46,6 +47,36 @@ CREATE TABLE IF NOT EXISTS weekly_templates (
   end_time TEXT NOT NULL,            -- 'HH:MM' (24h)
   slot_minutes INTEGER NOT NULL DEFAULT 60,
   updated_at TEXT NOT NULL
+);
+
+-- One row per (clinician, weekday) that's turned on — lets each day of the
+-- week have its own hours (e.g. Mon-Fri evenings, Sat-Sun afternoons).
+-- A day with no row is simply not worked.
+CREATE TABLE IF NOT EXISTS weekly_template_days (
+  clinician TEXT NOT NULL,
+  day INTEGER NOT NULL,              -- 0=Sun..6=Sat
+  start_time TEXT NOT NULL,          -- 'HH:MM' (24h)
+  end_time TEXT NOT NULL,            -- 'HH:MM' (24h)
+  slot_minutes INTEGER NOT NULL DEFAULT 60,
+  updated_at TEXT NOT NULL,
+  PRIMARY KEY (clinician, day)
+);
+
+-- One-off per-clinician settings. Currently just the buffer clinicians want
+-- left open between consecutive sessions (in minutes, 0 = back-to-back).
+CREATE TABLE IF NOT EXISTS clinician_settings (
+  clinician TEXT PRIMARY KEY,
+  buffer_minutes INTEGER NOT NULL DEFAULT 0
+);
+
+-- Best-effort one-time migration from the old single-row template into the
+-- new per-day shape. Safe to re-run: it only fires while the old row still
+-- exists and a per-day row for that clinician doesn't yet.
+INSERT INTO weekly_template_days (clinician, day, start_time, end_time, slot_minutes, updated_at)
+SELECT wt.clinician, d.value AS day, wt.start_time, wt.end_time, wt.slot_minutes, wt.updated_at
+FROM weekly_templates wt, json_each(wt.days) d
+WHERE NOT EXISTS (
+  SELECT 1 FROM weekly_template_days wtd WHERE wtd.clinician = wt.clinician
 );
 
 -- One-off dates marked off even though they'd normally be a working day
