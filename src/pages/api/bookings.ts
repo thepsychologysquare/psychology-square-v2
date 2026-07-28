@@ -4,8 +4,8 @@ import { env } from 'cloudflare:workers';
 export const prerender = false;
 
 const SERVICES: Record<string, number> = { individual: 5000, couples: 7000 };
-const PAYMENT_METHODS = new Set(['easypaisa', 'jazzcash', 'bank']);
-const MAX_SCREENSHOT_BYTES = 8 * 1024 * 1024; // 8MB
+const PAYMENT_METHODS = new Set(['jazzcash', 'bank_hbl', 'bank_ubl']);
+const MAX_SCREENSHOT_BYTES = 5 * 1024 * 1024; // 5MB — typical screenshots are well under 1-2MB; this leaves comfortable headroom for high-DPI screens without allowing arbitrary large uploads
 const RATE_LIMIT_WINDOW_MINUTES = 10;
 const RATE_LIMIT_MAX_SUBMISSIONS = 4;
 
@@ -64,7 +64,7 @@ export const POST: APIRoute = async ({ request }) => {
     return jsonError('Please attach a screenshot of your payment.', 400);
   }
   if (screenshot.size > MAX_SCREENSHOT_BYTES) {
-    return jsonError('That screenshot is too large — please attach one under 8MB.', 400);
+    return jsonError('That screenshot is too large — please attach one under 5MB.', 400);
   }
   if (!screenshot.type.startsWith('image/')) {
     return jsonError('Please attach an image file.', 400);

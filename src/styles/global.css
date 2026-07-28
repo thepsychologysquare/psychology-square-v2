@@ -676,3 +676,12 @@ a:focus-visible, button:focus-visible{
     text-overflow: ellipsis;
   }
 }
+
+/* ---------------------------------------
+   Site-wide fix: the `hidden` attribute only works if no other CSS
+   sets `display` on that element. Several components set `display:flex`
+   directly on elements that are also toggled via `.hidden = true/false`,
+   which silently defeats the browser's built-in [hidden]{display:none}.
+   This rule makes `hidden` always win, regardless of what else is set.
+--------------------------------------- */
+[hidden]{ display:none !important; }

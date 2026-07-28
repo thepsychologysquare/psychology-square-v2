@@ -5,53 +5,19 @@ import Layout from '../../layouts/Layout.astro';
 <Layout title="Staff login" description="The Psychology Square — staff dashboard.">
   <section class="login-section">
     <div class="wrap login-wrap">
-      <!-- Step 1: who are you -->
-      <div id="roleStep" class="login-form">
+      <form id="loginForm" class="login-form">
         <span class="eyebrow">Staff only</span>
         <h1>Sign in</h1>
-        <p class="role-hint">Choose your role to continue.</p>
-        <div class="role-grid">
-          <button type="button" class="role-card" data-identity="admin">
-            <span class="role-card-title">Admin</span>
-            <span class="role-card-sub">Full dashboard access</span>
-          </button>
-          <button type="button" class="role-card" data-identity="therapist">
-            <span class="role-card-title">Therapist</span>
-            <span class="role-card-sub">Your own bookings &amp; availability</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Step 2a: admin password -->
-      <form id="adminForm" class="login-form" hidden>
-        <button type="button" class="back-link" data-back>&larr; Back</button>
-        <h1>Admin sign in</h1>
         <div class="field">
-          <label for="adminPassword">Password</label>
-          <input type="password" id="adminPassword" required autofocus />
+          <label for="username">Username</label>
+          <input type="text" id="username" autocomplete="username" required autofocus placeholder="Username" />
         </div>
-        <button type="submit" class="btn btn--primary" id="adminBtn">Sign in</button>
-        <p class="login-error" id="adminError" role="alert" hidden></p>
-      </form>
-
-      <!-- Step 2b: pick therapist, then password -->
-      <form id="therapistForm" class="login-form" hidden>
-        <button type="button" class="back-link" data-back>&larr; Back</button>
-        <h1>Therapist sign in</h1>
-        <div class="role-grid role-grid--sm">
-          <button type="button" class="role-card" data-therapist="sohail">
-            <span class="role-card-title">Muhammad Sohail</span>
-          </button>
-          <button type="button" class="role-card" data-therapist="sehar">
-            <span class="role-card-title">Sehar Waheed</span>
-          </button>
+        <div class="field">
+          <label for="password">Password</label>
+          <input type="password" id="password" autocomplete="current-password" required />
         </div>
-        <div class="field" id="therapistPasswordField" hidden>
-          <label for="therapistPassword">Password</label>
-          <input type="password" id="therapistPassword" autofocus />
-        </div>
-        <button type="submit" class="btn btn--primary" id="therapistBtn" hidden>Sign in</button>
-        <p class="login-error" id="therapistError" role="alert" hidden></p>
+        <button type="submit" class="btn btn--primary" id="loginBtn">Sign in</button>
+        <p class="login-error" id="loginError" role="alert" hidden></p>
       </form>
     </div>
   </section>
@@ -59,13 +25,12 @@ import Layout from '../../layouts/Layout.astro';
 
 <style>
   .login-section{ padding:96px 0; display:flex; justify-content:center; }
-  .login-wrap{ max-width:420px; width:100%; }
+  .login-wrap{ max-width:360px; width:100%; }
   .login-form{ display:flex; flex-direction:column; gap:16px; }
   .login-form h1{ font-size:28px; margin-bottom:2px; }
-  .role-hint{ color:var(--ink-600); font-size:14.5px; margin-bottom:4px; }
   .field{ display:flex; flex-direction:column; gap:6px; }
   label{ font-size:14px; font-weight:500; }
-  input[type="password"]{
+  input[type="text"], input[type="password"]{
     font-family:var(--font-body); font-size:15px; padding:12px 14px;
     border:1px solid var(--line); border-radius:2px;
   }
@@ -73,94 +38,50 @@ import Layout from '../../layouts/Layout.astro';
   button{ font-family:var(--font-body); cursor:pointer; }
   .btn{ border:none; margin-top:6px; }
   .login-error{ color:#B4432E; font-size:14px; }
-  .back-link{
-    align-self:flex-start; background:none; border:none; padding:0; margin-bottom:4px;
-    color:var(--ink-600); font-size:13.5px;
-  }
-  .back-link:hover{ color:var(--ink-900); }
-
-  .role-grid{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
-  .role-grid--sm{ margin-bottom:4px; }
-  .role-card{
-    display:flex; flex-direction:column; gap:4px; align-items:flex-start; text-align:left;
-    border:1px solid var(--line); border-radius:2px; background:transparent; padding:18px 16px;
-    color:var(--ink-900); transition:all .2s var(--ease);
-  }
-  .role-card:hover, .role-card.is-active{ border-color:var(--gold-500); background:rgba(199,164,74,0.08); }
-  .role-card-title{ font-weight:600; font-size:15.5px; }
-  .role-card-sub{ font-size:12.5px; color:var(--ink-600); }
 </style>
 
 <script>
-  const roleStep = document.getElementById('roleStep') as HTMLDivElement;
-  const adminForm = document.getElementById('adminForm') as HTMLFormElement;
-  const therapistForm = document.getElementById('therapistForm') as HTMLFormElement;
-  const steps = [roleStep, adminForm, therapistForm];
+  const form = document.getElementById('loginForm') as HTMLFormElement;
+  const usernameInput = document.getElementById('username') as HTMLInputElement;
+  const passwordInput = document.getElementById('password') as HTMLInputElement;
+  const loginBtn = document.getElementById('loginBtn') as HTMLButtonElement;
+  const loginError = document.getElementById('loginError') as HTMLParagraphElement;
 
-  function showStep(el: HTMLElement) {
-    for (const s of steps) s.hidden = s !== el;
+  function normalizeIdentity(raw: string): 'admin' | 'sohail' | 'sehar' | null {
+    const v = raw.trim().toLowerCase();
+    if (v.includes('admin')) return 'admin';
+    if (v.includes('sohail')) return 'sohail';
+    if (v.includes('sehar')) return 'sehar';
+    return null;
   }
 
-  document.querySelectorAll('[data-back]').forEach((b) => {
-    b.addEventListener('click', () => showStep(roleStep));
-  });
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    loginError.hidden = true;
 
-  roleStep.querySelectorAll('[data-identity]').forEach((card) => {
-    card.addEventListener('click', () => {
-      const identity = (card as HTMLElement).dataset.identity;
-      showStep(identity === 'admin' ? adminForm : therapistForm);
-    });
-  });
+    const identity = normalizeIdentity(usernameInput.value);
+    if (!identity) {
+      loginError.textContent = 'Username or password incorrect.';
+      loginError.hidden = false;
+      return;
+    }
 
-  async function attemptLogin(identity: string, password: string, errorEl: HTMLParagraphElement, btn: HTMLButtonElement) {
-    errorEl.hidden = true;
-    btn.disabled = true;
-    btn.textContent = 'Signing in…';
+    loginBtn.disabled = true;
+    loginBtn.textContent = 'Signing in…';
+
     const res = await fetch('/api/admin/login', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ identity, password }),
+      body: JSON.stringify({ identity, password: passwordInput.value }),
     });
+
     if (res.ok) {
       window.location.href = '/dashboard';
     } else {
-      errorEl.textContent = 'Incorrect password.';
-      errorEl.hidden = false;
-      btn.disabled = false;
-      btn.textContent = 'Sign in';
+      loginError.textContent = 'Username or password incorrect.';
+      loginError.hidden = false;
+      loginBtn.disabled = false;
+      loginBtn.textContent = 'Sign in';
     }
-  }
-
-  // Admin
-  const adminBtn = document.getElementById('adminBtn') as HTMLButtonElement;
-  const adminError = document.getElementById('adminError') as HTMLParagraphElement;
-  adminForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const password = (document.getElementById('adminPassword') as HTMLInputElement).value;
-    attemptLogin('admin', password, adminError, adminBtn);
-  });
-
-  // Therapist — pick which one first, then a password field appears
-  let selectedTherapist: string | null = null;
-  const therapistPasswordField = document.getElementById('therapistPasswordField') as HTMLDivElement;
-  const therapistPasswordInput = document.getElementById('therapistPassword') as HTMLInputElement;
-  const therapistBtn = document.getElementById('therapistBtn') as HTMLButtonElement;
-  const therapistError = document.getElementById('therapistError') as HTMLParagraphElement;
-
-  therapistForm.querySelectorAll('[data-therapist]').forEach((card) => {
-    card.addEventListener('click', () => {
-      selectedTherapist = (card as HTMLElement).dataset.therapist || null;
-      therapistForm.querySelectorAll('[data-therapist]').forEach((c) => c.classList.remove('is-active'));
-      card.classList.add('is-active');
-      therapistPasswordField.hidden = false;
-      therapistBtn.hidden = false;
-      therapistPasswordInput.focus();
-    });
-  });
-
-  therapistForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    if (!selectedTherapist) return;
-    attemptLogin(selectedTherapist, therapistPasswordInput.value, therapistError, therapistBtn);
   });
 </script>

@@ -169,8 +169,8 @@ export const GET: APIRoute = async ({ request, url }) => {
   }
 
   const query = clinician
-    ? `SELECT id, clinician, date, time, status FROM availability_slots WHERE clinician = ? ORDER BY date, time`
-    : `SELECT id, clinician, date, time, status FROM availability_slots ORDER BY date, time`;
+    ? `SELECT id, clinician, date, time, status FROM availability_slots WHERE clinician = ? AND status != 'excluded' ORDER BY date, time`
+    : `SELECT id, clinician, date, time, status FROM availability_slots WHERE status != 'excluded' ORDER BY date, time`;
   const stmt = clinician ? env.DB.prepare(query).bind(clinician) : env.DB.prepare(query);
   const { results } = await stmt.all();
 
@@ -346,7 +346,7 @@ export const DELETE: APIRoute = async ({ request, url }) => {
     return new Response(JSON.stringify({ error: 'Cannot remove a slot that has already been booked.' }), { status: 400 });
   }
 
-  await env.DB.prepare(`DELETE FROM availability_slots WHERE id = ?`).bind(id).run();
+  await env.DB.prepare(`UPDATE availability_slots SET status = 'excluded' WHERE id = ?`).bind(id).run();
   return new Response(JSON.stringify({ ok: true }), {
     status: 200,
     headers: { 'content-type': 'application/json' },

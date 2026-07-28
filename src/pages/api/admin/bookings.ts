@@ -57,3 +57,34 @@ export const PATCH: APIRoute = async ({ request }) => {
     headers: { 'content-type': 'application/json' },
   });
 };
+
+export const DELETE: APIRoute = async ({ request, url }) => {
+  const session = await getSession(request.headers.get('cookie'), env?.ADMIN_SESSION_SECRET || '');
+  if (!session) return new Response(JSON.stringify({ error: 'Not signed in.' }), { status: 401 });
+
+  const id = url.searchParams.get('id');
+  if (!id) return new Response(JSON.stringify({ error: 'Missing id.' }), { status: 400 });
+
+  const booking = await env.DB.prepare(
+    `SELECT clinician, screenshot_key, slot_id FROM bookings WHERE id = ?`
+  ).bind(id).first<{ clinician: string; screenshot_key: string; slot_id: number | null }>();
+
+  if (!booking) return new Response(JSON.stringify({ error: 'Not found.' }), { status: 404 });
+  if (session.role !== 'admin' && booking.clinician !== session.role) {
+    return new Response(JSON.stringify({ error: 'Not authorized.' }), { status: 403 });
+  }
+
+  await env.DB.prepare(`DELETE FROM bookings WHERE id = ?`).bind(id).run();
+  // Free the slot back up so it can be booked again, since this booking no longer exists.
+  if (booking.slot_id) {
+    await env.DB.prepare(`UPDATE availability_slots SET status = 'open' WHERE id = ?`).bind(booking.slot_id).run();
+  }
+  if (booking.screenshot_key) {
+    await env.SCREENSHOTS.delete(booking.screenshot_key).catch(() => {});
+  }
+
+  return new Response(JSON.stringify({ ok: true }), {
+    status: 200,
+    headers: { 'content-type': 'application/json' },
+  });
+};

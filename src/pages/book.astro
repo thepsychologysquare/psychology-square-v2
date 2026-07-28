@@ -88,16 +88,16 @@ import Layout from '../layouts/Layout.astro';
           <span class="form-step">05 — Send payment</span>
           <div class="payment-methods" role="radiogroup" aria-label="Payment method">
             <label class="payment-option">
-              <input type="radio" name="payment_method" value="easypaisa" checked />
-              <span>EasyPaisa</span>
-            </label>
-            <label class="payment-option">
-              <input type="radio" name="payment_method" value="jazzcash" />
+              <input type="radio" name="payment_method" value="jazzcash" checked />
               <span>JazzCash</span>
             </label>
             <label class="payment-option">
-              <input type="radio" name="payment_method" value="bank" />
-              <span>Bank transfer (UBL)</span>
+              <input type="radio" name="payment_method" value="bank_hbl" />
+              <span>Bank transfer — HBL (Sehar Waheed)</span>
+            </label>
+            <label class="payment-option">
+              <input type="radio" name="payment_method" value="bank_ubl" />
+              <span>Bank transfer — UBL (Muhammad Sohail)</span>
             </label>
           </div>
 
@@ -112,7 +112,7 @@ import Layout from '../layouts/Layout.astro';
           <div class="field">
             <label for="screenshot">Upload a screenshot of the payment</label>
             <input type="file" id="screenshot" name="screenshot" accept="image/*" required />
-            <p class="field-hint">A clear screenshot of the transaction confirmation is all we need.</p>
+            <p class="field-hint">A clear screenshot of the transaction confirmation is all we need (under 5MB, images only).</p>
           </div>
         </div>
 
@@ -131,7 +131,7 @@ import Layout from '../layouts/Layout.astro';
   </section>
 </Layout>
 
-<style>
+<style is:global>
   .book-hero{ background:var(--navy-950); color:var(--paper-0); padding:64px 0 48px; }
   .book-hero h1{ font-size:clamp(32px,4vw,44px); color:var(--paper-0); margin-top:10px; }
   .book-hero-sub{ color:rgba(248,249,246,0.72); font-size:16px; max-width:520px; margin-top:14px; }
@@ -193,7 +193,8 @@ import Layout from '../layouts/Layout.astro';
   .cal-cell.is-bookable:hover{ border-color:var(--gold-500); }
   .cal-cell.is-other-month{ visibility:hidden; }
   .cal-cell.is-past, .cal-cell.is-off{ opacity:0.3; cursor:default; color:var(--ink-600); }
-  .cal-cell.is-selected{ border-color:var(--gold-500); border-width:2px; }
+  .cal-cell.is-selected{ border-color:var(--gold-500); border-width:2px; background:var(--gold-500); color:var(--navy-950); font-weight:700; }
+  .cal-cell.is-selected .cal-dot{ background:var(--navy-950); }
   .cal-dot{ width:5px; height:5px; border-radius:50%; background:var(--gold-500); margin-top:3px; }
 
   .book-day-panel{ margin-top:18px; padding-top:16px; border-top:1px solid var(--line); }
@@ -217,9 +218,9 @@ import Layout from '../layouts/Layout.astro';
 <script>
   const PRICES: Record<string, number> = { individual: 5000, couples: 7000 };
   const PAYMENT_DETAILS: Record<string, string> = {
-    easypaisa: `EasyPaisa: 03XX-XXXXXXX\nAccount title: The Psychology Square`,
-    jazzcash: `JazzCash: 03XX-XXXXXXX\nAccount title: The Psychology Square`,
-    bank: `UBL Bank\nAccount title: The Psychology Square\nAccount number: XXXXXXXXXXXX\nIBAN: PKXX UNIL XXXXXXXXXXXXXXXX`,
+    jazzcash: `JazzCash\nAccount number: 0333-1597844\nName: Muhammad Sohail`,
+    bank_hbl: `Habib Bank Limited (HBL)\nAccount title: Sehar Waheed\nAccount number: 23057904517003\nIBAN: PK64HABB0023057904517003`,
+    bank_ubl: `United Bank Limited (UBL)\nAccount title: Muhammad Sohail\nAccount number: 1486274438499\nIBAN: PK93UNIL0109000274438499`,
   };
   const CLINICIAN_NAMES: Record<string, string> = { sohail: 'Muhammad Sohail', sehar: 'Sehar Waheed' };
 
@@ -258,7 +259,7 @@ import Layout from '../layouts/Layout.astro';
     return (form.querySelector('input[name="service"]:checked') as HTMLInputElement)?.value ?? 'individual';
   }
   function currentPaymentMethod(): string {
-    return (form.querySelector('input[name="payment_method"]:checked') as HTMLInputElement)?.value ?? 'easypaisa';
+    return (form.querySelector('input[name="payment_method"]:checked') as HTMLInputElement)?.value ?? 'jazzcash';
   }
   function updateSummary() {
     const price = PRICES[currentService()] ?? 5000;
@@ -322,11 +323,18 @@ import Layout from '../layouts/Layout.astro';
       cell.disabled = !bookable;
       if (bookable) {
         cell.addEventListener('click', () => {
-          selectedDate = dateStr;
-          selectedSlotId = null;
+          if (selectedDate === dateStr) {
+            selectedDate = null;
+            selectedSlotId = null;
+            bookDayPanel.hidden = true;
+          } else {
+            selectedDate = dateStr;
+            selectedSlotId = null;
+            renderDayPanel(dateStr);
+          }
           renderCalendar();
-          renderDayPanel(dateStr);
           updateSubmitState();
+          updateSummary();
         });
       }
       bookCalGrid.appendChild(cell);
@@ -345,7 +353,12 @@ import Layout from '../layouts/Layout.astro';
       btn.className = 'slot-time-btn' + (slot.id === selectedSlotId ? ' is-selected' : '');
       const label = clinicianFilter.value ? slot.time : `${slot.time} — ${CLINICIAN_NAMES[slot.clinician]}`;
       btn.textContent = label;
-      btn.addEventListener('click', () => { selectedSlotId = slot.id; renderDayPanel(dateStr); updateSubmitState(); });
+      btn.addEventListener('click', () => {
+        selectedSlotId = (selectedSlotId === slot.id) ? null : slot.id;
+        renderDayPanel(dateStr);
+        updateSubmitState();
+        updateSummary();
+      });
       bookSlotTimes.appendChild(btn);
     }
   }

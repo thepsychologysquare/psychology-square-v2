@@ -49,6 +49,7 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
           <span id="bulkCount"></span>
           <button id="bulkConfirm" class="btn btn--ghost">Confirm selected</button>
           <button id="bulkDecline" class="btn btn--ghost">Decline selected</button>
+          <button id="bulkDelete" class="btn btn--ghost bulk-delete-btn">Delete selected</button>
         </div>
 
         <div id="loadingSkeleton" class="skeleton-rows">
@@ -184,7 +185,7 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
   </div>
 </Layout>
 
-<style>
+<style is:global>
   .dash-section{ padding:48px 0 96px; }
   .dash-header{ display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:20px; }
   .dash-header h1{ font-size:30px; margin-top:6px; }
@@ -252,23 +253,32 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
   .bookings-table thead th.sorted::after{ content:attr(data-dir); margin-left:4px; color:var(--gold-500); }
   .bookings-table td{ padding:12px 14px; border-bottom:1px solid var(--line); vertical-align:top; }
   .bookings-table tbody tr:hover{ background:rgba(199,164,74,0.05); }
+  .bookings-table tbody tr.row-pending{ background:rgba(199,164,74,0.09); font-weight:600; }
+  .bookings-table tbody tr.row-pending:hover{ background:rgba(199,164,74,0.14); }
+  .bookings-table tbody tr.row-pending td{ border-left:3px solid var(--gold-500); }
+  .bookings-table tbody tr.row-pending td:first-child{ border-left:none; }
   .col-check{ width:36px; }
-  .col-actions{ width:210px; }
+  .col-actions{ width:150px; }
   .cell-ref{ font-family:var(--font-mono); color:var(--gold-500); }
   .cell-notes-flag{ color:var(--ink-600); cursor:help; }
-  .table-actions{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
-  .view-shot-btn{ font-size:13px; color:var(--ink-900); text-decoration:underline; background:none; border:none; cursor:pointer; padding:0; font-family:var(--font-body); }
+  .table-actions{ display:flex; gap:6px; align-items:center; }
+  .icon-btn{
+    width:30px; height:30px; display:inline-flex; align-items:center; justify-content:center;
+    font-size:14px; border:1px solid var(--line); border-radius:2px; background:var(--paper-0);
+    cursor:pointer; padding:0; line-height:1;
+  }
+  .icon-btn:hover{ background:rgba(199,164,74,0.08); }
+  .icon-btn:disabled{ opacity:0.35; cursor:not-allowed; }
+  .icon-btn.confirm{ border-color:#3f5c47; color:#3f5c47; }
+  .icon-btn.decline{ border-color:#B4432E; color:#B4432E; }
+  .icon-btn.delete{ border-color:var(--ink-600); color:var(--ink-600); }
+  .icon-btn.delete:hover{ border-color:#B4432E; color:#B4432E; }
 
   .status-badge{ font-family:var(--font-mono); font-size:11px; letter-spacing:0.06em; text-transform:uppercase; padding:4px 10px; border-radius:20px; white-space:nowrap; }
   .status-badge.pending{ background:rgba(199,164,74,0.15); color:#8a6d1f; }
   .status-badge.confirmed{ background:rgba(124,152,133,0.18); color:#3f5c47; }
   .status-badge.declined{ background:rgba(180,67,46,0.12); color:#B4432E; }
 
-  .action-btn{ font-family:var(--font-body); font-size:13px; padding:6px 12px; border:1px solid var(--line); border-radius:2px; background:transparent; cursor:pointer; }
-  .action-btn.confirm{ border-color:#3f5c47; color:#3f5c47; }
-  .action-btn.decline{ border-color:#B4432E; color:#B4432E; }
-  .action-btn:hover{ opacity:0.7; }
-  .action-btn:disabled{ opacity:0.4; cursor:default; }
 
   .pagination{ display:flex; align-items:center; justify-content:center; gap:16px; margin-top:18px; font-size:13.5px; color:var(--ink-600); }
 
@@ -316,7 +326,7 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
   .cal-cell.is-past{ opacity:0.35; cursor:default; }
   .cal-cell.is-past:hover{ border-color:var(--line); }
   .cal-cell.is-off{ background:rgba(180,67,46,0.06); color:var(--ink-600); }
-  .cal-cell.is-selected{ border-color:var(--gold-500); border-width:2px; }
+  .cal-cell.is-selected{ border-color:var(--gold-500); border-width:2px; background:var(--gold-500); color:var(--navy-950); font-weight:700; }
   .cal-dot-row{ display:flex; gap:3px; margin-top:3px; }
   .cal-dot{ width:5px; height:5px; border-radius:50%; }
   .cal-dot.open{ background:#3f5c47; }
@@ -353,7 +363,7 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
   }
   .modal-box{ background:var(--paper-0); border-radius:2px; padding:24px; max-width:min(90vw, 640px); max-height:85vh; overflow:auto; position:relative; }
   .modal-box--sm{ max-width:360px; }
-  .modal-box img{ max-width:100%; display:block; border:1px solid var(--line); }
+  .modal-box img{ max-width:100%; min-width:280px; min-height:80px; display:block; border:1px solid var(--line); color:var(--ink-600); font-size:13.5px; padding:16px; }
   .modal-close{ position:absolute; top:10px; right:10px; background:none; border:none; font-size:16px; cursor:pointer; color:var(--ink-600); }
   .modal-close:hover{ color:var(--ink-900); }
   .modal-open-link{ display:inline-block; margin-top:12px; font-size:13.5px; color:var(--ink-900); text-decoration:underline; }
@@ -379,23 +389,7 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
   }
 
   function showConfirm(message) {
-    return new Promise((resolve) => {
-      const modal = document.getElementById('confirmModal');
-      document.getElementById('confirmMessage').textContent = message;
-      modal.hidden = false;
-      const okBtn = document.getElementById('confirmOk');
-      const cancelBtn = document.getElementById('confirmCancel');
-      function cleanup(result) {
-        modal.hidden = true;
-        okBtn.removeEventListener('click', onOk);
-        cancelBtn.removeEventListener('click', onCancel);
-        resolve(result);
-      }
-      function onOk() { cleanup(true); }
-      function onCancel() { cleanup(false); }
-      okBtn.addEventListener('click', onOk);
-      cancelBtn.addEventListener('click', onCancel);
-    });
+    return Promise.resolve(window.confirm(message));
   }
 
   // ===== Tabs (persisted via URL hash) =====
@@ -433,6 +427,7 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
   const bulkCount = document.getElementById('bulkCount');
   const bulkConfirm = document.getElementById('bulkConfirm');
   const bulkDecline = document.getElementById('bulkDecline');
+  const bulkDelete = document.getElementById('bulkDelete');
   const paginationEl = document.getElementById('pagination');
   const pagePrev = document.getElementById('pagePrev');
   const pageNext = document.getElementById('pageNext');
@@ -486,6 +481,7 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
     bookingsBody.innerHTML = '';
     for (const b of pageItems) {
       const tr = document.createElement('tr');
+      if (b.status === 'pending') tr.className = 'row-pending';
       tr.innerHTML = `
         <td><input type="checkbox" class="row-check" data-id="${b.id}" ${selected.has(b.id) ? 'checked' : ''} /></td>
         <td class="cell-ref">${b.id}</td>
@@ -499,9 +495,10 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
         <td><span class="status-badge ${b.status}">${b.status}</span></td>
         <td>
           <div class="table-actions">
-            <button class="view-shot-btn" data-shot="${b.id}" type="button">Screenshot</button>
-            <button class="action-btn confirm" data-id="${b.id}" data-status="confirmed" ${b.status === 'confirmed' ? 'disabled' : ''}>Confirm</button>
-            <button class="action-btn decline" data-id="${b.id}" data-status="declined" ${b.status === 'declined' ? 'disabled' : ''}>Decline</button>
+            <button class="icon-btn shot" data-shot="${b.id}" type="button" title="View screenshot">🖼</button>
+            <button class="icon-btn confirm" data-id="${b.id}" data-status="confirmed" title="Confirm" ${b.status === 'confirmed' ? 'disabled' : ''}>✓</button>
+            <button class="icon-btn decline" data-id="${b.id}" data-status="declined" title="Decline" ${b.status === 'declined' ? 'disabled' : ''}>✕</button>
+            <button class="icon-btn delete" data-delete="${b.id}" type="button" title="Delete">🗑</button>
           </div>
         </td>
       `;
@@ -579,16 +576,44 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
   bookingsBody.addEventListener('click', async (e) => {
     const shotBtn = e.target.closest('[data-shot]');
     if (shotBtn) {
-      const modal = document.getElementById('shotModal');
-      const img = document.getElementById('shotModalImg');
-      const openLink = document.getElementById('shotModalOpen');
+      // Open the tab synchronously, right on the click, so browsers don't
+      // treat it as a blocked popup (that only happens once we're past
+      // an `await` and the original click's "user gesture" has expired).
+      const win = window.open('', '_blank');
+      shotBtn.disabled = true;
+      const originalText = shotBtn.textContent;
+      shotBtn.textContent = 'Loading…';
       const src = `/api/admin/screenshot/${shotBtn.dataset.shot}`;
-      img.src = src;
-      openLink.href = src;
-      modal.hidden = false;
+      try {
+        const res = await fetch(src, { credentials: 'same-origin' });
+        if (!res.ok) throw new Error(`Server said ${res.status}`);
+        const blob = await res.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        if (win) win.location.href = blobUrl;
+      } catch (err) {
+        if (win) win.close();
+        window.alert(`Could not load the screenshot: ${err.message || err}`);
+      } finally {
+        shotBtn.disabled = false;
+        shotBtn.textContent = originalText;
+      }
       return;
     }
-    const btn = e.target.closest('.action-btn');
+    const deleteBtn = e.target.closest('[data-delete]');
+    if (deleteBtn) {
+      const id = deleteBtn.dataset.delete;
+      const ok = await showConfirm(`Delete booking ${id} permanently? This can't be undone.`);
+      if (!ok) return;
+      deleteBtn.disabled = true;
+      const res = await fetch(`/api/admin/bookings?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
+      if (res.ok) {
+        allBookings = allBookings.filter((b) => b.id !== id);
+        selected.delete(id);
+        render();
+      }
+      return;
+    }
+    const btn = e.target.closest('.icon-btn.confirm, .icon-btn.decline');
     if (!btn) return;
     const id = btn.dataset.id, status = btn.dataset.status;
     const ok = await showConfirm(`Mark booking ${id} as ${status}?`);
@@ -622,6 +647,17 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
   }
   bulkConfirm.addEventListener('click', () => bulkUpdate('confirmed'));
   bulkDecline.addEventListener('click', () => bulkUpdate('declined'));
+  bulkDelete.addEventListener('click', async () => {
+    if (!selected.size) return;
+    const ok = await showConfirm(`Delete ${selected.size} booking(s) permanently? This can't be undone.`);
+    if (!ok) return;
+    await Promise.all([...selected].map((id) =>
+      fetch(`/api/admin/bookings?id=${encodeURIComponent(id)}`, { method: 'DELETE' })
+    ));
+    allBookings = allBookings.filter((b) => !selected.has(b.id));
+    selected.clear();
+    render();
+  });
 
   document.getElementById('shotModalClose').addEventListener('click', () => { document.getElementById('shotModal').hidden = true; });
   document.getElementById('shotModal').addEventListener('click', (e) => { if (e.target.id === 'shotModal') e.currentTarget.hidden = true; });
@@ -784,6 +820,7 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
         if (dateStr < today) cell.classList.add('is-past');
         if (availExceptions.has(dateStr)) cell.classList.add('is-off');
         if (selectMode && selectedDates.has(dateStr)) cell.classList.add('is-picked');
+        if (!selectMode && dateStr === selectedDate) cell.classList.add('is-selected');
         cell.dataset.date = dateStr;
         cell.innerHTML = `<span>${dayCounter}</span>`;
         const counts = slotsByDate.get(dateStr);
@@ -798,8 +835,13 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
           if (selectMode) {
             if (selectedDates.has(dateStr)) selectedDates.delete(dateStr); else selectedDates.add(dateStr);
             updateSelectBar(); renderCalendar();
+          } else if (selectedDate === dateStr) {
+            selectedDate = null;
+            calDayPanel.hidden = true;
+            renderCalendar();
           } else {
             openDayPanel(dateStr);
+            renderCalendar();
           }
         });
         weekRow.appendChild(cell);
