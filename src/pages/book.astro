@@ -39,7 +39,6 @@ import Layout from '../layouts/Layout.astro';
           <span class="form-step">02 — Choose a clinician</span>
           <div class="field">
             <select id="clinicianFilter">
-              <option value="">No preference — show all available times</option>
               <option value="sohail">Muhammad Sohail</option>
               <option value="sehar">Sehar Waheed</option>
             </select>
@@ -113,6 +112,11 @@ import Layout from '../layouts/Layout.astro';
             <label for="screenshot">Upload a screenshot of the payment</label>
             <input type="file" id="screenshot" name="screenshot" accept="image/*" required />
             <p class="field-hint">A clear screenshot of the transaction confirmation is all we need (under 5MB, images only).</p>
+            <p class="upload-error" id="uploadError" role="alert" hidden></p>
+            <div class="upload-preview" id="uploadPreview" hidden>
+              <span id="uploadPreviewName"></span>
+              <button type="button" id="uploadRemoveBtn" class="upload-remove-btn">Remove ✕</button>
+            </div>
           </div>
         </div>
 
@@ -158,6 +162,16 @@ import Layout from '../layouts/Layout.astro';
   input:focus-visible, select:focus-visible, textarea:focus-visible{ outline:2px solid var(--gold-500); outline-offset:1px; }
   textarea{ resize:vertical; font-family:var(--font-body); }
   .field-hint{ font-size:13px; color:var(--ink-600); }
+  .upload-error{ font-size:13.5px; color:#B4432E; margin-top:8px; }
+  .upload-preview{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    margin-top:10px; padding:10px 14px; background:var(--paper-50); border:1px solid var(--line); border-radius:2px;
+    font-size:13.5px; color:var(--ink-900);
+  }
+  .upload-preview span{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .upload-remove-btn{
+    background:none; border:none; color:#B4432E; font-size:13px; font-weight:600; cursor:pointer; flex:none; padding:0;
+  }
 
   .service-options, .payment-methods{ display:flex; flex-direction:column; gap:10px; }
   .service-option{ display:flex; border:1px solid var(--line); border-radius:2px; padding:16px; cursor:pointer; transition:border-color .2s var(--ease); }
@@ -229,6 +243,44 @@ import Layout from '../layouts/Layout.astro';
   const paymentInstructions = document.getElementById('paymentInstructions')!;
   const submitBtn = document.getElementById('submitBtn') as HTMLButtonElement;
   const formError = document.getElementById('formError') as HTMLParagraphElement;
+  const screenshotInput = document.getElementById('screenshot') as HTMLInputElement;
+  const uploadError = document.getElementById('uploadError') as HTMLParagraphElement;
+  const uploadPreview = document.getElementById('uploadPreview') as HTMLDivElement;
+  const uploadPreviewName = document.getElementById('uploadPreviewName') as HTMLSpanElement;
+  const uploadRemoveBtn = document.getElementById('uploadRemoveBtn') as HTMLButtonElement;
+
+  const MAX_SCREENSHOT_BYTES = 5 * 1024 * 1024;
+
+  function clearUpload() {
+    screenshotInput.value = '';
+    uploadPreview.hidden = true;
+    uploadError.hidden = true;
+  }
+
+  screenshotInput.addEventListener('change', () => {
+    const file = screenshotInput.files?.[0];
+    uploadError.hidden = true;
+    uploadPreview.hidden = true;
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      uploadError.textContent = `"${file.name}" isn't an image file. Please attach a screenshot (JPG, PNG, etc.) — not a PDF or document.`;
+      uploadError.hidden = false;
+      screenshotInput.value = '';
+      return;
+    }
+    if (file.size > MAX_SCREENSHOT_BYTES) {
+      uploadError.textContent = `"${file.name}" is too large (${(file.size / (1024 * 1024)).toFixed(1)}MB). Please attach a screenshot under 5MB.`;
+      uploadError.hidden = false;
+      screenshotInput.value = '';
+      return;
+    }
+
+    uploadPreviewName.textContent = file.name;
+    uploadPreview.hidden = false;
+  });
+
+  uploadRemoveBtn.addEventListener('click', clearUpload);
   const confirmationPanel = document.getElementById('confirmationPanel')!;
   const confirmationRef = document.getElementById('confirmationRef')!;
   const clinicianFilter = document.getElementById('clinicianFilter') as HTMLSelectElement;

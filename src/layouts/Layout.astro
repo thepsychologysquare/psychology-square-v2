@@ -31,6 +31,7 @@ const { title, description = "The Psychology Square — individual and couples t
     </a>
 
     <nav class="site-nav" aria-label="Primary">
+      <div class="nav-item"><a href="/">Home</a></div>
       <div class="nav-item">
         <a href="/articles">Articles</a>
         <div class="mega-panel">
@@ -94,11 +95,11 @@ const { title, description = "The Psychology Square — individual and couples t
         <a href="/services">Services</a>
         <div class="mega-panel mega-panel--narrow">
           <div class="mega-panel-grid mega-panel-grid--single">
-            <a class="mega-card" href="/services#therapy">
+            <a class="mega-card" href="/services/therapy">
               <span class="mega-card-title">Therapy</span>
               <span class="mega-card-blurb">Individual &amp; couples sessions.</span>
             </a>
-            <a class="mega-card" href="/services#research-analysis">
+            <a class="mega-card" href="/services/research-analysis">
               <span class="mega-card-title">Research Analysis</span>
               <span class="mega-card-blurb">Stats, psychometrics &amp; R support.</span>
             </a>
@@ -121,10 +122,10 @@ const { title, description = "The Psychology Square — individual and couples t
           </div>
         </div>
       </div>
-      <div class="nav-item"><a href="/#contact">Contact</a></div>
+      <div class="nav-item"><a href="/contact">Contact</a></div>
     </nav>
 
-    <a href="/#contact" class="header-cta">Book a session</a>
+    <a href="/book" class="header-cta">Book Now</a>
 
     <button class="hamburger-btn" id="hamburgerBtn" aria-label="Open menu" aria-expanded="false">
       <span></span><span></span><span></span>
@@ -139,6 +140,7 @@ const { title, description = "The Psychology Square — individual and couples t
     <button class="drawer-close-btn" id="drawerCloseBtn" aria-label="Close menu">✕</button>
   </div>
   <nav class="mobile-nav">
+    <a href="/" class="mobile-nav-link">Home</a>
     <details class="mobile-nav-group">
       <summary>Articles</summary>
       <div class="mobile-nav-links">
@@ -163,8 +165,8 @@ const { title, description = "The Psychology Square — individual and couples t
     <details class="mobile-nav-group">
       <summary>Services</summary>
       <div class="mobile-nav-links">
-        <a href="/services#therapy">Therapy</a>
-        <a href="/services#research-analysis">Research Analysis</a>
+        <a href="/services/therapy">Therapy</a>
+        <a href="/services/research-analysis">Research Analysis</a>
       </div>
     </details>
     <details class="mobile-nav-group">
@@ -174,9 +176,9 @@ const { title, description = "The Psychology Square — individual and couples t
         <a href="/team/sehar">Sehar Waheed</a>
       </div>
     </details>
-    <a href="/#contact" class="mobile-nav-link">Contact</a>
+    <a href="/contact" class="mobile-nav-link">Contact</a>
   </nav>
-  <a href="/#contact" class="btn btn--primary mobile-drawer-cta">Book a session</a>
+  <a href="/book" class="btn btn--primary mobile-drawer-cta">Book Now</a>
 </div>
 
 <main>

@@ -353,12 +353,31 @@ export const DELETE: APIRoute = async ({ request, url }) => {
   });
 };
 
-// Undo a day-off exception: { clinician, date }
+// Two supported bodies:
+//  A) Undo a day-off exception:        { clinician, date }
+//  B) Undo a single slot removal:      { id }
 export const PATCH: APIRoute = async ({ request }) => {
   const session = await getSession(request.headers.get('cookie'), env?.ADMIN_SESSION_SECRET || '');
   if (!session) return new Response(JSON.stringify({ error: 'Not signed in.' }), { status: 401 });
 
   const body = await request.json().catch(() => null);
+
+  // (B) Restore a single removed slot
+  if (body?.id) {
+    const slot = await env.DB.prepare(`SELECT clinician, status FROM availability_slots WHERE id = ?`)
+      .bind(body.id).first<{ clinician: string; status: string }>();
+    if (!slot) return new Response(JSON.stringify({ error: 'Slot not found — it may be too old to restore.' }), { status: 404 });
+    if (!canManage(session.role, slot.clinician)) {
+      return new Response(JSON.stringify({ error: 'Not authorized.' }), { status: 403 });
+    }
+    if (slot.status !== 'excluded') {
+      return new Response(JSON.stringify({ error: 'This slot was not removed, nothing to undo.' }), { status: 400 });
+    }
+    await env.DB.prepare(`UPDATE availability_slots SET status = 'open' WHERE id = ?`).bind(body.id).run();
+    return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { 'content-type': 'application/json' } });
+  }
+
+  // (A) Undo a day-off exception
   const clinician = body?.clinician;
   const date = body?.date;
 

@@ -159,6 +159,10 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
             <button id="calDayOffToggle" class="btn btn--ghost" type="button"></button>
           </div>
           <div id="calDaySlots" class="avail-slots-row"></div>
+          <div id="undoToast" class="undo-toast" hidden>
+            <span id="undoToastText"></span>
+            <button id="undoToastBtn" class="undo-toast-btn" type="button">Undo</button>
+          </div>
         </div>
       </div>
     </div>
@@ -340,6 +344,16 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
   .avail-slot-chip{ display:flex; align-items:center; gap:8px; font-size:13.5px; padding:6px 10px; border:1px solid var(--line); border-radius:2px; }
   .avail-slot-chip.booked{ opacity:0.55; }
   .avail-slot-remove{ background:none; border:none; color:#B4432E; cursor:pointer; font-size:14px; padding:0; }
+  .undo-toast{
+    display:flex; align-items:center; gap:14px; justify-content:space-between;
+    margin-top:14px; padding:10px 14px; background:var(--navy-950); color:var(--paper-0);
+    border-radius:3px; font-size:13.5px;
+  }
+  .undo-toast-btn{
+    background:none; border:1px solid rgba(248,249,246,0.4); color:var(--gold-300);
+    font-size:12.5px; font-weight:600; padding:5px 12px; border-radius:2px; cursor:pointer; flex:none;
+  }
+  .undo-toast-btn:hover{ border-color: var(--gold-300); }
 
   .cal-toolbar{ display:flex; justify-content:flex-end; margin-bottom:10px; }
 
@@ -706,6 +720,11 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
   const calDayPanelTitle = document.getElementById('calDayPanelTitle');
   const calDayOffToggle = document.getElementById('calDayOffToggle');
   const calDaySlots = document.getElementById('calDaySlots');
+  const undoToast = document.getElementById('undoToast');
+  const undoToastText = document.getElementById('undoToastText');
+  const undoToastBtn = document.getElementById('undoToastBtn');
+  let undoTimeout = null;
+  let pendingUndoId = null;
   const calSelectModeBtn = document.getElementById('calSelectModeBtn');
   const calSelectBar = document.getElementById('calSelectBar');
   const calSelectCount = document.getElementById('calSelectCount');
@@ -864,7 +883,7 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
     const daySlots = availSlots.filter((s) => s.date === dateStr).sort((a, b) => a.time.localeCompare(b.time));
     calDaySlots.innerHTML = daySlots.length
       ? daySlots.map((s) => `
-          <span class="avail-slot-chip ${s.status === 'booked' ? 'booked' : ''}">
+          <span class="avail-slot-chip ${s.status === 'booked' ? 'booked' : ''}" data-time="${s.time}">
             ${s.time}${s.status === 'booked' ? ' (booked)' : ''}
             ${s.status !== 'booked' ? `<button class="avail-slot-remove" data-id="${s.id}" title="Remove this slot">✕</button>` : ''}
           </span>`).join('')
@@ -887,10 +906,33 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
     openDayPanel(selectedDate);
   });
 
+  function showUndoToast(id, timeLabel) {
+    if (undoTimeout) clearTimeout(undoTimeout);
+    pendingUndoId = id;
+    undoToastText.textContent = `Removed ${timeLabel}.`;
+    undoToast.hidden = false;
+    undoTimeout = setTimeout(() => { undoToast.hidden = true; pendingUndoId = null; }, 8000);
+  }
+
+  undoToastBtn.addEventListener('click', async () => {
+    if (!pendingUndoId) return;
+    if (undoTimeout) clearTimeout(undoTimeout);
+    undoToast.hidden = true;
+    await fetch('/api/admin/availability', {
+      method: 'PATCH', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ id: pendingUndoId }),
+    });
+    pendingUndoId = null;
+    await loadAvailability();
+    if (selectedDate) openDayPanel(selectedDate);
+  });
+
   calDaySlots.addEventListener('click', async (e) => {
     const btn = e.target.closest('.avail-slot-remove');
     if (!btn) return;
+    const removedTime = btn.closest('.avail-slot-chip')?.dataset.time || '';
     await fetch(`/api/admin/availability?id=${btn.dataset.id}`, { method: 'DELETE' });
+    showUndoToast(btn.dataset.id, removedTime);
     await loadAvailability();
     openDayPanel(selectedDate);
   });

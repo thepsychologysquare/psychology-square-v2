@@ -82,19 +82,17 @@ const categoriesPresent = [...new Set(sorted.map((a) => a.data.category))].sort(
             data-title={a.data.title.toLowerCase()}
             data-description={a.data.description.toLowerCase()}
           >
-            <div class="assessment-card-main">
-              <span class="article-meta">{categoryMeta[a.data.category]} · {a.data.age.map((x) => ageMeta[x]).join(' & ')}</span>
-              <h3>{a.data.title}</h3>
-              <p>{a.data.description}</p>
-              {a.data.sourceNote && <p class="assessment-source">{a.data.sourceNote}</p>}
+            <span class="article-meta">{categoryMeta[a.data.category]} · {a.data.age.map((x) => ageMeta[x]).join(' & ')}</span>
+            <h3>{a.data.title}</h3>
+            <p class="assessment-desc">{a.data.description}</p>
+            {a.data.sourceNote && <p class="assessment-source">{a.data.sourceNote}</p>}
+
+            <div class="scoring-block">
+              <span class="scoring-label">How to score</span>
+              <p>{a.data.scoringSummary}</p>
             </div>
-            <div class="assessment-card-side">
-              <a class="worksheet-btn worksheet-btn--download" href={a.data.pdfUrl} target="_blank" rel="noopener noreferrer">View PDF →</a>
-              <details class="scoring-details">
-                <summary>How to score</summary>
-                <p>{a.data.scoringSummary}</p>
-              </details>
-            </div>
+
+            <a class="worksheet-btn worksheet-btn--download" href={a.data.pdfUrl} target="_blank" rel="noopener noreferrer">View PDF →</a>
           </div>
         ))}
       </div>
@@ -163,35 +161,37 @@ const categoriesPresent = [...new Set(sorted.map((a) => a.data.category))].sort(
   .assessment-list{ display:flex; flex-direction:column; gap:16px; }
   .assessment-card{
     display:flex;
-    justify-content:space-between;
-    gap:24px;
+    flex-direction: column;
     background: var(--paper-0);
     border: 1px solid var(--line);
-    padding: 24px 28px;
+    padding: 26px 28px;
     transition: border-color .25s var(--ease);
   }
   .assessment-card:hover{ border-color: var(--gold-500); }
   .assessment-card.is-hidden{ display:none; }
-  .assessment-card-main{ flex: 1; }
-  .assessment-card-main h3{ font-size: 18px; margin: 6px 0 8px; }
-  .assessment-card-main p{ color: var(--ink-600); font-size: 14.5px; }
+  .assessment-card h3{ font-size: 19px; margin: 6px 0 8px; }
+  .assessment-desc{ color: var(--ink-600); font-size: 14.5px; }
   .assessment-source{ font-size: 12px !important; margin-top: 8px; color: var(--sage-500) !important; }
-  .assessment-card-side{ display:flex; flex-direction:column; gap:10px; align-items:flex-start; min-width: 200px; }
 
-  .scoring-details{ width: 100%; }
-  .scoring-details summary{
-    font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.03em; text-transform: uppercase;
-    color: var(--navy-700); cursor: pointer; list-style:none; padding: 4px 0;
+  .scoring-block{
+    margin-top: 18px;
+    padding: 16px 18px;
+    background: var(--paper-50);
+    border-left: 3px solid var(--sage-500);
+    border-radius: 2px;
   }
-  .scoring-details summary::-webkit-details-marker{ display:none; }
-  .scoring-details summary:hover{ color: var(--gold-500); }
-  .scoring-details p{ font-size: 13.5px; color: var(--ink-600); margin-top: 8px; line-height: 1.6; }
+  .scoring-label{
+    display:block;
+    font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--sage-500); margin-bottom: 6px;
+  }
+  .scoring-block p{ font-size: 13.5px; color: var(--ink-700); line-height: 1.65; }
+
+  .assessment-card .worksheet-btn{ margin-top: 20px; align-self: flex-start; }
 
   @media (max-width: 700px){
     .toolbar{ flex-direction: column; }
     .filter-panel{ right: 0; left: 0; width: auto; }
-    .assessment-card{ flex-direction: column; }
-    .assessment-card-side{ min-width: 0; }
   }
 </style>
 

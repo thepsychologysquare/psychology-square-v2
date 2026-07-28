@@ -1,0 +1,70 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+<Layout title="Contact" description="Get in touch with The Psychology Square — booking, questions, or research analysis enquiries.">
+
+  <section class="hero article-index-hero">
+    <div class="wrap">
+      <p class="eyebrow">Get In Touch</p>
+      <h1 class="hero-title" style="font-size: clamp(32px, 4vw, 48px); margin-bottom: 16px;">Contact</h1>
+      <p class="hero-sub">Questions about therapy, research analysis support, or anything else — send a message and we'll get back to you. For therapy sessions specifically, booking directly is usually fastest.</p>
+      <div class="hero-actions" style="margin-top: 28px;">
+        <a href="/book" class="btn btn--primary">Book Now</a>
+        <a href="mailto:info@thepsychologysquare.com" class="btn btn--text">Email us directly →</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap" style="max-width: 560px;">
+      <form action="https://formspree.io/f/mdaqlngp" method="POST" class="request-form">
+        <input type="hidden" name="_subject" value="New message from Contact page" />
+        <label>
+          Your name
+          <input type="text" name="name" required />
+        </label>
+        <label>
+          Your email
+          <input type="email" name="email" required />
+        </label>
+        <label>
+          What's this about?
+          <select name="topic">
+            <option>Therapy — general question</option>
+            <option>Research Analysis enquiry</option>
+            <option>Something else</option>
+          </select>
+        </label>
+        <label>
+          Message
+          <textarea name="message" rows="5" required></textarea>
+        </label>
+        <button type="submit" class="btn btn--primary">Send message</button>
+      </form>
+    </div>
+  </section>
+
+</Layout>
+
+<style>
+  .article-index-hero{ padding: 72px 0 56px; }
+
+  .request-form{ display:flex; flex-direction:column; gap:18px; }
+  .request-form label{ display:flex; flex-direction:column; gap:6px; font-size: 14px; color: var(--ink-600); font-weight: 500; }
+  .request-form input,
+  .request-form select,
+  .request-form textarea{
+    font-family: var(--font-body);
+    font-size: 15px;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    background: var(--paper-0);
+    color: var(--ink-900);
+  }
+  .request-form input:focus,
+  .request-form select:focus,
+  .request-form textarea:focus{ outline: 2px solid var(--gold-500); outline-offset: 1px; }
+  .request-form button{ align-self: flex-start; border: none; cursor: pointer; }
+  .form-note{ margin-top: 20px; color: var(--sage-500); font-size: 14px; }
+</style>
