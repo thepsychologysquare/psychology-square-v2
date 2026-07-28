@@ -1,0 +1,56 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+<Layout title="Team" description="Meet the clinicians at The Psychology Square — Muhammad Sohail and Sehar Waheed.">
+
+  <section class="hero article-index-hero">
+    <div class="wrap">
+      <p class="eyebrow">Who you'll work with</p>
+      <h1 class="hero-title" style="font-size: clamp(32px, 4vw, 48px); margin-bottom: 16px;">Two clinicians. One practice.</h1>
+      <p class="hero-sub">Both trained clinical psychologists, working individually and together out of the same practice.</p>
+    </div>
+  </section>
+
+  <section class="team">
+    <div class="wrap">
+      <div class="team-grid">
+        <article class="team-card">
+          <div class="avatar">
+            <img src="/images/sohail.jpg" alt="Muhammad Sohail" onerror="this.classList.add('img-error')">
+            <span class="avatar-fallback">MS</span>
+          </div>
+          <h3>Muhammad Sohail</h3>
+          <span class="team-role">Founder &amp; CEO - The Psychology Square</span>
+          <span class="team-role">Lecturer of Psychology &amp; Clinical Psychologist</span>
+          <ul class="team-credentials">
+            <li>Lecturer of Psychology, Rashid Latif Khan University (RLKU)</li>
+            <li>M.S. in Clinical Psychology</li>
+            <li>Member, American Psychological Association (APA)</li>
+          </ul>
+          <a href="/team/sohail" class="profile-link">View full profile →</a>
+        </article>
+
+        <article class="team-card">
+          <div class="avatar">
+            <img src="/images/sehar.jpg" alt="Sehar Waheed" onerror="this.classList.add('img-error')">
+            <span class="avatar-fallback">SW</span>
+          </div>
+          <h3>Sehar Waheed</h3>
+          <span class="team-role">Co-CEO - The Psychology Square</span>
+          <span class="team-role">Clinical Psychologist &amp; Counselor</span>
+          <ul class="team-credentials">
+            <li>Clinical Psychologist / Counselor, University of Management and Technology (UMT)</li>
+            <li>M.S. in Clinical Psychology</li>
+            <li>Member, American Psychological Association (APA)</li>
+          </ul>
+          <a href="/team/sehar" class="profile-link">View full profile →</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+</Layout>
+
+<style>
+  .article-index-hero{ padding: 72px 0 56px; }
+</style>

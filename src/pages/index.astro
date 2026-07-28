@@ -90,44 +90,34 @@ import Layout from '../layouts/Layout.astro';
     </div>
   </section>
 
-  <section class="team" id="team">
+  <section class="team">
     <div class="wrap">
       <p class="eyebrow eyebrow--dark">Who you'll work with</p>
       <h2 class="section-title">Two clinicians. One practice.</h2>
 
       <div class="team-grid">
-        <article class="team-card">
+        <a class="team-teaser" href="/team/sohail">
           <div class="avatar">
             <img src="/images/sohail.jpg" alt="Muhammad Sohail" onerror="this.classList.add('img-error')">
             <span class="avatar-fallback">MS</span>
           </div>
           <h3>Muhammad Sohail</h3>
-          <span class="team-role">Founder &amp; CEO - The Psychology Square</span>
-          <span class="team-role">Lecturer of Psychology &amp; Clinical Psychologist</span>
-          <ul class="team-credentials">
-            <li>Lecturer of Psychology, Rashid Latif Khan University (RLKU)</li>
-            <li>M.S. in Clinical Psychology</li>
-            <li>Member, American Psychological Association (APA)</li>
-          </ul>
-          <a href="/team/sohail" class="profile-link">View full profile →</a>
-        </article>
+          <span class="team-role">Founder &amp; CEO · Clinical Psychologist</span>
+          <span class="profile-link">View full profile →</span>
+        </a>
 
-        <article class="team-card">
+        <a class="team-teaser" href="/team/sehar">
           <div class="avatar">
             <img src="/images/sehar.jpg" alt="Sehar Waheed" onerror="this.classList.add('img-error')">
             <span class="avatar-fallback">SW</span>
           </div>
           <h3>Sehar Waheed</h3>
-          <span class="team-role">Co-CEO - The Psychology Square</span>
-          <span class="team-role">Clinical Psychologist &amp; Counselor</span>
-          <ul class="team-credentials">
-            <li>Clinical Psychologist / Counselor, University of Management and Technology (UMT)</li>
-            <li>M.S. in Clinical Psychology</li>
-            <li>Member, American Psychological Association (APA)</li>
-          </ul>
-          <a href="/team/sehar" class="profile-link">View full profile →</a>
-        </article>
+          <span class="team-role">Co-CEO · Clinical Psychologist &amp; Counselor</span>
+          <span class="profile-link">View full profile →</span>
+        </a>
       </div>
+
+      <a href="/team" class="btn btn--text-onlight" style="margin-top:32px;">Meet the full team →</a>
     </div>
   </section>
 
@@ -149,8 +139,8 @@ import Layout from '../layouts/Layout.astro';
 
       <div class="booking-actions">
         <a href="/book" class="btn btn--primary contact-btn">Book Now</a>
-        <a href="mailto:info@thepsychologysquare.com" class="btn btn--text">Email us →</a>
-        <a href="/contact" class="btn btn--text">Send a message →</a>
+        <a href="mailto:info@thepsychologysquare.com" class="btn btn--text-onlight">Email us →</a>
+        <a href="/contact" class="btn btn--text-onlight">Send a message →</a>
       </div>
     </div>
   </section>

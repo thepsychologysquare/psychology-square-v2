@@ -97,6 +97,7 @@ const tagsPresent = [...new Set(sorted.flatMap((a) => a.data.tags))].sort();
       </div>
 
       <p class="no-results" id="no-results" hidden>No articles match your filters. Try clearing some, or search a different term.</p>
+      <div class="pager" id="pager"></div>
     </div>
   </section>
 </Layout>
@@ -269,6 +270,15 @@ const tagsPresent = [...new Set(sorted.flatMap((a) => a.data.tags))].sort();
   }
   .no-results{ color: var(--ink-600); padding: 40px 0; }
   .article-card.is-hidden{ display:none; }
+  .article-card.is-paged-out{ display:none; }
+  .pager{ display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-top:40px; }
+  .pager-btn{
+    font-family:var(--font-mono); font-size:13px; padding:8px 14px;
+    border:1px solid var(--line); border-radius:2px; background:var(--paper-0); cursor:pointer;
+  }
+  .pager-btn:hover:not(:disabled){ border-color:var(--gold-500); }
+  .pager-btn.is-current{ background:var(--gold-500); border-color:var(--gold-500); color:var(--navy-950); font-weight:600; }
+  .pager-btn:disabled{ opacity:0.4; cursor:not-allowed; }
 
   @media (max-width: 600px){
     .toolbar{ flex-direction: column; }
@@ -277,7 +287,11 @@ const tagsPresent = [...new Set(sorted.flatMap((a) => a.data.tags))].sort();
 </style>
 
 <script>
+  import { createPaginator } from '../../lib/pagination';
+
   type FilterEntry = { type: 'category' | 'tag'; value: string; label: string };
+
+  const paginator = createPaginator({ pagerEl: document.getElementById('pager')! });
 
   const searchInput = document.getElementById('search-input') as HTMLInputElement;
   const filterDropdown = document.getElementById('filter-dropdown') as HTMLDetailsElement;
@@ -370,6 +384,9 @@ const tagsPresent = [...new Set(sorted.flatMap((a) => a.data.tags))].sort();
       resultsCount.textContent = `Showing ${visibleCount} of ${cards.length} article${cards.length === 1 ? '' : 's'}`;
     }
     if (noResults) noResults.hidden = visibleCount !== 0;
+
+    const eligible = [...cards].filter((c) => !c.classList.contains('is-hidden'));
+    paginator.refresh(eligible);
 
     renderChips();
   }
