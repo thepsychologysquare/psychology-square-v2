@@ -149,8 +149,9 @@ import Layout from '../layouts/Layout.astro';
   .book-hero-sub{ color:rgba(248,249,246,0.72); font-size:16px; max-width:520px; margin-top:14px; }
 
   .book-section{ padding:56px 0 96px; }
-  .book-layout{ display:grid; grid-template-columns:1fr 320px; gap:48px; align-items:start; }
-  @media (max-width:900px){ .book-layout{ grid-template-columns:1fr; } }
+  .book-layout{ display:grid; grid-template-columns:1fr 320px; gap:48px; align-items:start; min-width:0; }
+  .book-layout > *{ min-width:0; }
+  @media (max-width:900px){ .book-layout{ grid-template-columns:minmax(0,1fr); } }
 
   .booking-form{ display:flex; flex-direction:column; gap:36px; }
   .form-block{ display:flex; flex-direction:column; gap:14px; }
@@ -182,16 +183,17 @@ import Layout from '../layouts/Layout.astro';
   }
 
   .service-options, .payment-methods{ display:flex; flex-direction:column; gap:10px; }
-  .service-option{ display:flex; border:1px solid var(--line); border-radius:2px; padding:16px; cursor:pointer; transition:border-color .2s var(--ease); }
+  .service-option{ display:flex; min-width:0; border:1px solid var(--line); border-radius:2px; padding:16px; cursor:pointer; transition:border-color .2s var(--ease); }
   .service-option:has(input:checked){ border-color:var(--gold-500); background:rgba(199,164,74,0.06); }
-  .service-option input{ margin-right:14px; margin-top:3px; accent-color:var(--gold-500); }
-  .service-option-body{ display:flex; flex-direction:column; gap:4px; }
+  .service-option input{ margin-right:14px; margin-top:3px; accent-color:var(--gold-500); flex-shrink:0; }
+  .service-option-body{ display:flex; flex-direction:column; gap:4px; min-width:0; }
   .service-option-title{ font-weight:600; }
   .service-option-price{ font-family:var(--font-mono); font-size:13px; color:var(--gold-500); }
 
-  .payment-option{ display:flex; align-items:center; gap:10px; border:1px solid var(--line); border-radius:2px; padding:12px 16px; cursor:pointer; }
+  .payment-option{ display:flex; align-items:center; gap:10px; min-width:0; border:1px solid var(--line); border-radius:2px; padding:12px 16px; cursor:pointer; }
   .payment-option:has(input:checked){ border-color:var(--gold-500); background:rgba(199,164,74,0.06); }
-  .payment-option input{ accent-color:var(--gold-500); }
+  .payment-option input{ accent-color:var(--gold-500); flex-shrink:0; }
+  .payment-option span{ min-width:0; }
 
   .payment-details{ margin-top:6px; padding:18px; background:var(--paper-50); border-radius:2px; }
   .payment-amount{ font-size:15px; margin-bottom:10px; }
