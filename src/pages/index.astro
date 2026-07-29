@@ -6,12 +6,13 @@ import Layout from '../layouts/Layout.astro';
   <section class="hero">
     <div class="wrap hero-inner">
       <div class="hero-copy">
+        <span class="since-badge">Since 2019</span>
         <p class="eyebrow">Online &amp; In-Person — Johar Town, Lahore, Pakistan</p>
         <h1 class="hero-title">A steady space<br>to think things<br>through.</h1>
         <p class="hero-sub">Individual and couples therapy, held online over video call or in person in Johar Town, Lahore. Evidence-based, unhurried, and built around what you're actually carrying.</p>
         <div class="hero-actions">
           <a href="/book" class="btn btn--primary">Book Now</a>
-          <a href="#services" class="btn btn--text">See how sessions work →</a>
+          <a href="#team" class="btn btn--text">Meet your therapists →</a>
         </div>
       </div>
       <div class="hero-visual" aria-hidden="true">
@@ -21,34 +22,42 @@ import Layout from '../layouts/Layout.astro';
     </div>
   </section>
 
-  <section class="practice" id="practice">
-    <div class="wrap practice-inner">
-      <p class="eyebrow eyebrow--dark">The Approach</p>
-      <h2 class="section-title">Therapy that stays grounded in evidence, not slogans.</h2>
-      <div class="practice-grid">
-        <div class="practice-block">
-          <span class="block-index">01</span>
-          <h3>Structured, not clinical-cold</h3>
-          <p>Sessions follow an evidence-based framework, but conversation comes first. You won't be handed a worksheet before you've been heard.</p>
-        </div>
-        <div class="practice-block">
-          <span class="block-index">02</span>
-          <h3>Online or in person, your choice</h3>
-          <p>Join over video call from anywhere, or come in person to the Johar Town, Lahore office. Either way — a quiet, confidential hour.</p>
-        </div>
-        <div class="practice-block">
-          <span class="block-index">03</span>
-          <h3>Rooted in real training</h3>
-          <p>Grounded in supervised clinical experience across hospital and addiction-treatment settings, not theory alone.</p>
-        </div>
-      </div>
-    </div>
-  </section>
+  <section class="team" id="team">
+    <div class="wrap">
+      <p class="eyebrow eyebrow--dark">Who you'll work with</p>
+      <h2 class="section-title">Two clinicians. One practice.</h2>
 
-  <section class="quote-block">
-    <div class="wrap quote-inner">
-      <p class="quote-text">"Therapy works best when it stays collaborative — you're not handed a worksheet before you've been heard."</p>
-      <p class="quote-attribution">Muhammad Sohail, Clinical Psychologist</p>
+      <div class="team-grid">
+        <a class="team-teaser" href="/team/sohail">
+          <div class="avatar">
+            <img src="/images/sohail.jpg" alt="Muhammad Sohail" onerror="this.classList.add('img-error')">
+            <span class="avatar-fallback">MS</span>
+          </div>
+          <h3>Muhammad Sohail</h3>
+          <span class="team-role">Founder &amp; CEO · Clinical Psychologist</span>
+          <ul class="team-credentials">
+            <li>Lecturer of Psychology, Rashid Latif Khan University (RLKU)</li>
+            <li>M.S. in Clinical Psychology</li>
+            <li>Member, American Psychological Association (APA)</li>
+          </ul>
+          <span class="profile-link">View full profile →</span>
+        </a>
+
+        <a class="team-teaser" href="/team/sehar">
+          <div class="avatar">
+            <img src="/images/sehar.jpg" alt="Sehar Waheed" onerror="this.classList.add('img-error')">
+            <span class="avatar-fallback">SW</span>
+          </div>
+          <h3>Sehar Waheed</h3>
+          <span class="team-role">Co-CEO · Clinical Psychologist &amp; Counselor</span>
+          <ul class="team-credentials">
+            <li>Clinical Psychologist / Counselor, University of Management and Technology (UMT)</li>
+            <li>M.S. in Clinical Psychology</li>
+            <li>Member, American Psychological Association (APA)</li>
+          </ul>
+          <span class="profile-link">View full profile →</span>
+        </a>
+      </div>
     </div>
   </section>
 
@@ -90,34 +99,34 @@ import Layout from '../layouts/Layout.astro';
     </div>
   </section>
 
-  <section class="team">
-    <div class="wrap">
-      <p class="eyebrow eyebrow--dark">Who you'll work with</p>
-      <h2 class="section-title">Two clinicians. One practice.</h2>
+  <section class="quote-block">
+    <div class="wrap quote-inner">
+      <p class="quote-text">"Therapy works best when it stays collaborative — you're not handed a worksheet before you've been heard."</p>
+      <p class="quote-attribution">Muhammad Sohail, Clinical Psychologist</p>
+    </div>
+  </section>
 
-      <div class="team-grid">
-        <a class="team-teaser" href="/team/sohail">
-          <div class="avatar">
-            <img src="/images/sohail.jpg" alt="Muhammad Sohail" onerror="this.classList.add('img-error')">
-            <span class="avatar-fallback">MS</span>
-          </div>
-          <h3>Muhammad Sohail</h3>
-          <span class="team-role">Founder &amp; CEO · Clinical Psychologist</span>
-          <span class="profile-link">View full profile →</span>
-        </a>
-
-        <a class="team-teaser" href="/team/sehar">
-          <div class="avatar">
-            <img src="/images/sehar.jpg" alt="Sehar Waheed" onerror="this.classList.add('img-error')">
-            <span class="avatar-fallback">SW</span>
-          </div>
-          <h3>Sehar Waheed</h3>
-          <span class="team-role">Co-CEO · Clinical Psychologist &amp; Counselor</span>
-          <span class="profile-link">View full profile →</span>
-        </a>
+  <section class="practice" id="practice">
+    <div class="wrap practice-inner">
+      <p class="eyebrow eyebrow--dark">The Approach</p>
+      <h2 class="section-title">Therapy that stays grounded in evidence, not slogans.</h2>
+      <div class="practice-grid">
+        <div class="practice-block">
+          <span class="block-index">01</span>
+          <h3>Structured, not clinical-cold</h3>
+          <p>Sessions follow an evidence-based framework, but conversation comes first. You won't be handed a worksheet before you've been heard.</p>
+        </div>
+        <div class="practice-block">
+          <span class="block-index">02</span>
+          <h3>Online or in person, your choice</h3>
+          <p>Join over video call from anywhere, or come in person to the Johar Town, Lahore office. Either way — a quiet, confidential hour.</p>
+        </div>
+        <div class="practice-block">
+          <span class="block-index">03</span>
+          <h3>Rooted in real training</h3>
+          <p>Grounded in supervised clinical experience across hospital and addiction-treatment settings, not theory alone.</p>
+        </div>
       </div>
-
-      <a href="/team" class="btn btn--text-onlight" style="margin-top:32px;">Meet the full team →</a>
     </div>
   </section>
 
@@ -139,8 +148,8 @@ import Layout from '../layouts/Layout.astro';
 
       <div class="booking-actions">
         <a href="/book" class="btn btn--primary contact-btn">Book Now</a>
-        <a href="mailto:info@thepsychologysquare.com" class="btn btn--text-onlight">Email us →</a>
-        <a href="/contact" class="btn btn--text-onlight">Send a message →</a>
+        <a href="mailto:info@thepsychologysquare.com" class="btn btn--outline">Email us →</a>
+        <a href="/contact" class="btn btn--outline">Send a message →</a>
       </div>
     </div>
   </section>
@@ -179,6 +188,19 @@ import Layout from '../layouts/Layout.astro';
 </Layout>
 
 <style>
+  .since-badge{
+    display:inline-flex; align-items:center; gap:8px;
+    font-family:var(--font-mono); font-size:12px; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--gold-300); border:1px solid rgba(199,164,74,0.4); background:rgba(199,164,74,0.08);
+    padding:6px 14px; border-radius:20px; margin-bottom:18px;
+  }
+  .since-badge::before{ content:''; width:6px; height:6px; border-radius:50%; background:var(--gold-500); }
+
+  .btn--outline{
+    color:var(--navy-950); border:1.5px solid var(--navy-950); padding:11.5px 24px; border-radius:2px;
+  }
+  .btn--outline:hover{ background:var(--navy-950); color:var(--paper-0); }
+
   .explore-grid{ display:grid; grid-template-columns: 1.4fr 1fr; gap: 28px; align-items:stretch; }
   .featured-article-box{
     background: var(--paper-0); border: 1px solid var(--line); border-left: 3px solid var(--gold-500);

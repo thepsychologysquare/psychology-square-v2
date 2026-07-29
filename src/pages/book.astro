@@ -37,11 +37,19 @@ import Layout from '../layouts/Layout.astro';
 
         <div class="form-block">
           <span class="form-step">02 — Choose a clinician</span>
-          <div class="field">
-            <select id="clinicianFilter">
-              <option value="sohail">Muhammad Sohail</option>
-              <option value="sehar">Sehar Waheed</option>
-            </select>
+          <div class="service-options" role="radiogroup" aria-label="Clinician" id="clinicianOptions">
+            <label class="service-option">
+              <input type="radio" name="clinician" value="sohail" checked />
+              <span class="service-option-body">
+                <span class="service-option-title">Muhammad Sohail</span>
+              </span>
+            </label>
+            <label class="service-option">
+              <input type="radio" name="clinician" value="sehar" />
+              <span class="service-option-body">
+                <span class="service-option-title">Sehar Waheed</span>
+              </span>
+            </label>
           </div>
         </div>
 
@@ -283,7 +291,10 @@ import Layout from '../layouts/Layout.astro';
   uploadRemoveBtn.addEventListener('click', clearUpload);
   const confirmationPanel = document.getElementById('confirmationPanel')!;
   const confirmationRef = document.getElementById('confirmationRef')!;
-  const clinicianFilter = document.getElementById('clinicianFilter') as HTMLSelectElement;
+  const clinicianOptions = document.getElementById('clinicianOptions') as HTMLElement;
+  function currentClinician(): string {
+    return (clinicianOptions.querySelector('input[name="clinician"]:checked') as HTMLInputElement)?.value ?? 'sohail';
+  }
   const slotStatus = document.getElementById('slotStatus')!;
   const bookCalendar = document.getElementById('bookCalendar')!;
   const bookCalPrev = document.getElementById('bookCalPrev') as HTMLButtonElement;
@@ -403,7 +414,7 @@ import Layout from '../layouts/Layout.astro';
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'slot-time-btn' + (slot.id === selectedSlotId ? ' is-selected' : '');
-      const label = clinicianFilter.value ? slot.time : `${slot.time} — ${CLINICIAN_NAMES[slot.clinician]}`;
+      const label = slot.time;
       btn.textContent = label;
       btn.addEventListener('click', () => {
         selectedSlotId = (selectedSlotId === slot.id) ? null : slot.id;
@@ -465,14 +476,14 @@ import Layout from '../layouts/Layout.astro';
     slotStatus.textContent = 'Loading available times…';
     selectedSlotId = null;
     selectedDate = null;
-    const qs = clinicianFilter.value ? `?clinician=${clinicianFilter.value}` : '';
+    const qs = `?clinician=${currentClinician()}`;
     const res = await fetch(`/api/availability${qs}`);
     const data = await res.json();
     slots = data.slots || [];
     renderSlots();
     updateSubmitState();
   }
-  clinicianFilter.addEventListener('change', loadSlots);
+  clinicianOptions.addEventListener('change', loadSlots);
   loadSlots();
 
   form.addEventListener('submit', async (e) => {
