@@ -4,20 +4,64 @@ import '../styles/global.css';
 export interface Props {
   title: string;
   description?: string;
+  fullTitle?: string;
 }
-const { title, description = "The Psychology Square — individual and couples therapy, online and in person in Johar Town, Lahore." } = Astro.props;
+const {
+  title,
+  description = "The Psychology Square — individual and couples therapy, online and in person in Johar Town, Lahore.",
+  fullTitle,
+} = Astro.props;
+const pageTitle = fullTitle ?? `${title} — The Psychology Square`;
+const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://www.thepsychologysquare.com');
+const ogImage = new URL('/images/og-cover.jpg', canonicalURL.origin);
 ---
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{title} — The Psychology Square</title>
+  <title>{pageTitle}</title>
   <meta name="description" content={description} />
+  <link rel="canonical" href={canonicalURL} />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="The Psychology Square" />
+  <meta property="og:title" content={pageTitle} />
+  <meta property="og:description" content={description} />
+  <meta property="og:url" content={canonicalURL} />
+  <meta property="og:image" content={ogImage} />
+  <meta property="og:locale" content="en_PK" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content={pageTitle} />
+  <meta name="twitter:description" content={description} />
+  <meta name="twitter:image" content={ogImage} />
+
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "MedicalBusiness",
+    "name": "The Psychology Square",
+    "url": "https://www.thepsychologysquare.com",
+    "image": ogImage.toString(),
+    "description": "Individual and couples therapy, online and in person in Johar Town, Lahore, Pakistan.",
+    "priceRange": "PKR 5,000–7,000",
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Johar Town, Lahore",
+      "addressCountry": "PK"
+    },
+    "email": "info@thepsychologysquare.com",
+    "medicalSpecialty": "Psychiatric",
+    "areaServed": "Lahore, Pakistan",
+    "employee": [
+      { "@type": "Person", "name": "Muhammad Sohail", "jobTitle": "Clinical Psychologist" },
+      { "@type": "Person", "name": "Sehar Waheed", "jobTitle": "Clinical Psychologist" }
+    ]
+  })} />
 </head>
 <body>
 <header class="site-header">
