@@ -22,7 +22,11 @@ const categoriesPresent = [...new Set(sorted.map((a) => a.data.category))].sort(
 const tagsPresent = [...new Set(sorted.flatMap((a) => a.data.tags))].sort();
 ---
 
-<Layout title="Articles" description="Articles on anxiety, depression, ADHD, trauma, relationships, and more — written and reviewed by licensed clinical psychologists.">
+<Layout
+  title="Articles"
+  fullTitle="Psychology Articles — Anxiety, Depression, ADHD & More | The Psychology Square"
+  description="Clinically-reviewed articles on anxiety, depression, ADHD, trauma, relationships, and more — written and reviewed by licensed clinical psychologists in Lahore."
+>
   <section class="hero article-index-hero">
     <div class="wrap">
       <p class="eyebrow">From the Practice</p>

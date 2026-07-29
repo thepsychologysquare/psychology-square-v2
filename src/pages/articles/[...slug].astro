@@ -41,9 +41,44 @@ const formattedDate = article.data.publishDate.toLocaleDateString('en-US', {
   month: 'long',
   day: 'numeric',
 });
+const isoDate = article.data.publishDate.toISOString();
+const canonicalPath = `/articles/${article.id}`;
 ---
 
-<Layout title={article.data.title} description={article.data.description}>
+<Layout
+  title={article.data.title}
+  description={article.data.description}
+  fullTitle={`${article.data.title} — The Psychology Square`}
+>
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": article.data.title,
+    "description": article.data.description,
+    "datePublished": isoDate,
+    "dateModified": isoDate,
+    "author": { "@type": "Person", "name": article.data.author },
+    ...(article.data.reviewedBy ? { "reviewedBy": { "@type": "Person", "name": article.data.reviewedBy } } : {}),
+    "publisher": {
+      "@type": "Organization",
+      "name": "The Psychology Square",
+      "url": "https://www.thepsychologysquare.com"
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": `https://www.thepsychologysquare.com${canonicalPath}`
+    }
+  })} />
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.thepsychologysquare.com/" },
+      { "@type": "ListItem", "position": 2, "name": "Articles", "item": "https://www.thepsychologysquare.com/articles" },
+      { "@type": "ListItem", "position": 3, "name": categoryMeta[article.data.category], "item": `https://www.thepsychologysquare.com/articles/category/${article.data.category}` },
+      { "@type": "ListItem", "position": 4, "name": article.data.title, "item": `https://www.thepsychologysquare.com${canonicalPath}` }
+    ]
+  })} />
   <article class="article-page">
     <div class="wrap">
       <nav class="breadcrumbs" aria-label="Breadcrumb">
@@ -64,7 +99,7 @@ const formattedDate = article.data.publishDate.toLocaleDateString('en-US', {
       <div class="byline">
         <span>By {article.data.author}</span>
         {article.data.reviewedBy && <span> · Reviewed by {article.data.reviewedBy}</span>}
-        <span> · {formattedDate}</span>
+        <span> · <time datetime={isoDate}>{formattedDate}</time></span>
       </div>
 
       <div class="prose">
