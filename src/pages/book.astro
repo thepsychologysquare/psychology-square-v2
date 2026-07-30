@@ -32,7 +32,9 @@ import Layout from '../layouts/Layout.astro';
                 <span class="service-option-price">PKR 7,000 / session</span>
               </span>
             </label>
-          
+          </div>
+        </div>
+
         <div class="form-block">
           <span class="form-step">02 — Choose a clinician</span>
           <div class="service-options" role="radiogroup" aria-label="Clinician" id="clinicianOptions">
@@ -344,8 +346,6 @@ import Layout from '../layouts/Layout.astro';
     const month = calMonth.getMonth();
     bookCalMonthLabel.textContent = calMonth.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
 
-    // Bound navigation to the actual booking horizon — can't go before this month,
-    // and can't go past the last month that has any open slot.
     const isCurrentMonth = year === new Date().getFullYear() && month === new Date().getMonth();
     bookCalPrev.disabled = isCurrentMonth;
     const lastAvailable = availableDates.length ? availableDates[availableDates.length - 1] : null;
@@ -437,7 +437,6 @@ import Layout from '../layouts/Layout.astro';
     bookCalendar.hidden = false;
 
     const availableDates = [...new Set(slots.map((s) => s.date))].sort();
-    // Jump the visible month to the first month that actually has something open.
     const firstAvailable = new Date(availableDates[0] + 'T00:00:00');
     const now = new Date();
     const currentlyShownIsEmpty = !availableDates.some((d) => {
@@ -500,7 +499,7 @@ import Layout from '../layouts/Layout.astro';
 
       if (!res.ok) {
         const errBody = await res.json().catch(() => ({}));
-        if (res.status === 409) await loadSlots(); // slot taken — refresh options
+        if (res.status === 409) await loadSlots();
         throw new Error(errBody.error || 'Something went wrong. Please try again.');
       }
 
