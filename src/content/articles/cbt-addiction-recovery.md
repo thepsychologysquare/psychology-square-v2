@@ -1,11 +1,16 @@
 ---
 title: "CBT in Addiction Recovery: What the Work Actually Involves"
-description: "A grounded look at how cognitive behavioral therapy supports motivation and self-control during recovery."
-category: "addiction-recovery"
-subcategory: "cbt"
-tags: ["addiction-recovery", "cbt", "coping-skills"]
-author: "Sehar Waheed"
-reviewedBy: "Muhammad Sohail"
+description: A grounded look at how cognitive behavioral therapy supports
+  motivation and self-control during recovery.
+image: /images/sehar.jpg
+category: addiction-recovery
+subcategory: cbt
+tags:
+  - addiction-recovery
+  - cbt
+  - coping-skills
+author: Sehar Waheed
+reviewedBy: Muhammad Sohail
 publishDate: 2026-07-15
 draft: false
 ---
