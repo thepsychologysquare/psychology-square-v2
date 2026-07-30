@@ -2,6 +2,7 @@
 title: What ADHD Actually Looks Like in Adults
 description: Beyond the childhood stereotype — how attention, emotion
   regulation, and self-image show up differently once you're grown.
+image: /images/sehar.jpg
 category: adhd
 subcategory: adult-adhd
 tags:
