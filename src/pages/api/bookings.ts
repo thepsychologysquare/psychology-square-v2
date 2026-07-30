@@ -3,7 +3,7 @@ import { env } from 'cloudflare:workers';
 
 export const prerender = false;
 
-const SERVICES: Record<string, number> = { individual: 5000, couples: 7000, group: 10000 };
+const SERVICES: Record<string, number> = { individual: 5000, couples: 7000 };
 const PAYMENT_METHODS = new Set(['jazzcash', 'bank_hbl', 'bank_ubl']);
 const MAX_SCREENSHOT_BYTES = 5 * 1024 * 1024; // 5MB — typical screenshots are well under 1-2MB; this leaves comfortable headroom for high-DPI screens without allowing arbitrary large uploads
 const RATE_LIMIT_WINDOW_MINUTES = 10;
