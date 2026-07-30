@@ -1,6 +1,5 @@
 import { defineCollection, z } from 'astro:content';
 import { glob } from 'astro/loaders';
-
 const categoryEnum = z.enum([
   'anxiety',
   'depression',
@@ -10,10 +9,9 @@ const categoryEnum = z.enum([
   'stress-burnout',
   'adhd',
 ]);
-
 const articles = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/articles' }),
-  schema: ({ image }) => z.object({
+  schema: z.object({
     title: z.string(),
     description: z.string(),
     category: categoryEnum,
@@ -24,11 +22,10 @@ const articles = defineCollection({
     publishDate: z.date(),
     draft: z.boolean().default(false),
     // Safe, non-destructive optional fields for Decap CMS uploads:
-    image: image().or(z.string()).optional(),
+    image: z.string().optional(),
     imageAlt: z.string().optional(),
   }),
 });
-
 const worksheets = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/worksheets' }),
   schema: z.object({
@@ -45,7 +42,6 @@ const worksheets = defineCollection({
     draft: z.boolean().default(false),
   }),
 });
-
 const assessments = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/assessments' }),
   schema: z.object({
@@ -63,5 +59,4 @@ const assessments = defineCollection({
     draft: z.boolean().default(false),
   }),
 });
-
 export const collections = { articles, worksheets, assessments };
