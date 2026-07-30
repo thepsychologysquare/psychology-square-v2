@@ -1,10 +1,43 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+
+const siteOrigin = 'https://www.thepsychologysquare.com';
+const serviceJson = {
+  "@context": "https://schema.org",
+  "@type": "Service",
+  "serviceType": "Statistical & Psychometric Research Analysis",
+  "provider": { "@type": "Organization", "name": "The Psychology Square", "url": siteOrigin },
+  "areaServed": "Lahore, Pakistan",
+  "url": `${siteOrigin}/services/research-analysis`,
+  "description": "R and SPSS support for psychology students and researchers, from beginner data analysis to advanced psychometric scale validation.",
+};
+const breadcrumbJson = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home", "item": `${siteOrigin}/` },
+    { "@type": "ListItem", "position": 2, "name": "Services", "item": `${siteOrigin}/services` },
+    { "@type": "ListItem", "position": 3, "name": "Research Analysis", "item": `${siteOrigin}/services/research-analysis` },
+  ],
+};
 ---
-<Layout title="Research Analysis" description="Statistical and research analysis support for psychology students and researchers — R, SPSS, and psychometrics.">
+<Layout
+  title="Research Analysis"
+  fullTitle="R & SPSS Statistical Analysis Support for Psychology Research | The Psychology Square"
+  description="Statistical and research analysis support for psychology students and researchers in Lahore — R, SPSS, psychometrics, and scale validation, beginner to advanced."
+>
+  <script type="application/ld+json" set:html={JSON.stringify(serviceJson)} />
+  <script type="application/ld+json" set:html={JSON.stringify(breadcrumbJson)} />
 
   <section class="hero article-index-hero">
     <div class="wrap">
+      <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <a href="/">Home</a>
+        <span class="crumb-sep">/</span>
+        <a href="/services">Services</a>
+        <span class="crumb-sep">/</span>
+        <span class="crumb-current">Research Analysis</span>
+      </nav>
       <p class="eyebrow">Services</p>
       <h1 class="hero-title" style="font-size: clamp(32px, 4vw, 48px); margin-bottom: 16px;">Research Analysis</h1>
       <p class="hero-sub">Statistical &amp; research support for psychology work — for students and researchers who need help with the numbers side, from a first thesis analysis to advanced psychometric work.</p>
@@ -44,4 +77,12 @@ import Layout from '../../layouts/Layout.astro';
 
 <style>
   .article-index-hero{ padding: 72px 0 56px; }
+
+  .breadcrumbs{
+    font-family: var(--font-mono); font-size: 12px; color: rgba(248,249,246,0.6);
+    margin-bottom: 20px; display:flex; flex-wrap:wrap; gap:6px; align-items:center;
+  }
+  .breadcrumbs a:hover{ color: var(--gold-300); }
+  .crumb-sep{ color: rgba(248,249,246,0.3); }
+  .crumb-current{ color: rgba(248,249,246,0.85); }
 </style>

@@ -13,7 +13,7 @@ const categoryEnum = z.enum([
 
 const articles = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/articles' }),
-  schema: z.object({
+  schema: ({ image }) => z.object({
     title: z.string(),
     description: z.string(),
     category: categoryEnum,
@@ -23,6 +23,9 @@ const articles = defineCollection({
     reviewedBy: z.string().optional(),
     publishDate: z.date(),
     draft: z.boolean().default(false),
+    // Safe, non-destructive optional fields for Decap CMS uploads:
+    image: image().or(z.string()).optional(),
+    imageAlt: z.string().optional(),
   }),
 });
 

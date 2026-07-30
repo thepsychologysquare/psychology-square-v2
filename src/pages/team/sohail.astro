@@ -1,235 +1,172 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+
+const siteOrigin = 'https://www.thepsychologysquare.com';
+const specialties = ['CBT', 'Addiction Recovery', 'ADHD', 'Crisis Intervention', 'Psychometrics'];
+
+const personJson = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "name": "Muhammad Sohail",
+  "jobTitle": "Clinical Psychologist & Lecturer of Psychology",
+  "description": "Founder of The Psychology Square, Clinical Psychologist, and Lecturer of Psychology at Rashid Latif Khan University, Lahore.",
+  "worksFor": { "@type": "Organization", "name": "The Psychology Square", "url": siteOrigin },
+  "affiliation": [
+    { "@type": "CollegeOrUniversity", "name": "Rashid Latif Khan University (RLKU)" },
+  ],
+  "url": `${siteOrigin}/team/sohail`,
+  "image": `${siteOrigin}/images/sohail.jpg`,
+  "alumniOf": [
+    { "@type": "CollegeOrUniversity", "name": "University of Central Punjab" },
+    { "@type": "CollegeOrUniversity", "name": "University of Peshawar" },
+  ],
+  "memberOf": { "@type": "Organization", "name": "American Psychological Association" },
+  "knowsAbout": specialties,
+};
+const breadcrumbJson = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home", "item": `${siteOrigin}/` },
+    { "@type": "ListItem", "position": 2, "name": "Team", "item": `${siteOrigin}/team` },
+    { "@type": "ListItem", "position": 3, "name": "Muhammad Sohail", "item": `${siteOrigin}/team/sohail` },
+  ],
+};
 ---
-<Layout title="Muhammad Sohail" description="Full profile of Muhammad Sohail, Lecturer of Psychology and Clinical Psychologist at The Psychology Square.">
+<Layout
+  title="Muhammad Sohail"
+  fullTitle="Muhammad Sohail — Clinical Psychologist & Lecturer in Lahore | The Psychology Square"
+  description="Meet Muhammad Sohail, Founder of The Psychology Square — Clinical Psychologist and Lecturer of Psychology at RLKU, Lahore, specializing in CBT, addiction recovery, and ADHD."
+>
+  <script type="application/ld+json" set:html={JSON.stringify(personJson)} />
+  <script type="application/ld+json" set:html={JSON.stringify(breadcrumbJson)} />
 
   <section class="profile-hero">
     <div class="wrap">
-      <a href="/team" class="back-link">← Back to team</a>
+      <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <a href="/">Home</a>
+        <span class="crumb-sep">/</span>
+        <a href="/team">Team</a>
+        <span class="crumb-sep">/</span>
+        <span class="crumb-current">Muhammad Sohail</span>
+      </nav>
       <div class="profile-hero-inner">
         <div class="avatar">
-          <img src="/images/sohail.jpg" alt="Muhammad Sohail" onerror="this.classList.add('img-error')">
+          <img src="/images/sohail.jpg" alt="Muhammad Sohail, Clinical Psychologist at The Psychology Square" width="104" height="104" onerror="this.classList.add('img-error')">
           <span class="avatar-fallback">MS</span>
         </div>
         <div>
           <h1>Muhammad Sohail</h1>
-          <span class="role">Founder &amp; CEO · Clinical Psychologist</span>
+          <span class="role">Founder &amp; CEO · Clinical Psychologist &amp; Lecturer of Psychology</span>
         </div>
       </div>
     </div>
   </section>
 
-  <section class="cv-section">
-    <div class="wrap">
-      <h2>Summary</h2>
-      <p style="max-width:640px; color:var(--ink-600); font-size:15.5px; line-height:1.7;">
-        Clinical Psychologist and Lecturer with experience in psychological assessment, CBT, addiction treatment, academic teaching, and psychometric research. Published researcher with conference presentations on ADHD, autism, substance use disorders, and emotion regulation. Experienced in university teaching, clinical practice, and interdisciplinary mental health initiatives.
+  <section class="section profile-about">
+    <div class="wrap" style="max-width: 720px;">
+      <p class="profile-lede">
+        Muhammad Sohail believes therapy works best when it's collaborative — a space to think things through, not a lecture. That principle shapes how he works, whether he's in a session, in front of a classroom, or building The Psychology Square itself.
+      </p>
+      <p>
+        He holds an M.S. in Clinical Psychology from the University of Central Punjab and a B.S. in Psychology from the University of Peshawar, and currently lectures on psychology at Rashid Latif Khan University (RLKU) in Lahore. His clinical training spans hospital, disability-care, and addiction-treatment settings — including Services Hospital, the Lahore Institute of Special Care and Attention, and Ehsas Clinic's addiction and psychological treatment program.
+      </p>
+      <p>
+        Alongside clinical work, Muhammad is an active researcher, with published work and conference presentations on ADHD, autism, emotion regulation, and substance use disorders. He founded The Psychology Square in 2019, and remains a Member of the American Psychological Association.
       </p>
     </div>
   </section>
 
-  <section class="cv-section">
-    <div class="wrap">
-      <h2>Education</h2>
-      <ul class="cv-list">
-        <li>
-          <span class="cv-when">2021 – 2023 · CGPA 3.71</span>
-          <div class="cv-what">
-            <strong>M.S. in Clinical Psychology</strong>
-            <p>University of Central Punjab</p>
-          </div>
-        </li>
-        <li>
-          <span class="cv-when">2017 – 2021 · CGPA 3.34</span>
-          <div class="cv-what">
-            <strong>B.S. in Psychology</strong>
-            <p>University of Peshawar</p>
-          </div>
-        </li>
-      </ul>
-    </div>
-  </section>
-
-  <section class="cv-section">
-    <div class="wrap">
-      <h2>Work Experience</h2>
-      <ul class="cv-list">
-        <li><span class="cv-when">May 2024 – Present</span><div class="cv-what"><strong>Lecturer, Psychology — Rashid Latif Khan University (RLKU), Lahore</strong></div></li>
-        <li><span class="cv-when">Jan – Jun 2024</span><div class="cv-what"><strong>Visiting Lecturer, Psychology — FAST National University of Computer and Emerging Sciences</strong></div></li>
-        <li><span class="cv-when">2019 – Present</span><div class="cv-what"><strong>Founder &amp; CEO | Clinical Psychologist | Web Developer | Graphic Designer — The Psychology Square</strong></div></li>
-        <li><span class="cv-when">Feb – Jul 2022</span><div class="cv-what"><strong>Trainee Clinical Psychologist — SIMS / Services Hospital</strong></div></li>
-        <li><span class="cv-when">Oct 2022 – Feb 2023</span><div class="cv-what"><strong>Trainee Clinical Psychologist — Lahore Institute of Special Care and Attention (LISCA)</strong></div></li>
-        <li><span class="cv-when">Feb – Jul 2023</span><div class="cv-what"><strong>Trainee Clinical Psychologist — Ehsas Clinic: Addiction and Psychological Treatment Center</strong></div></li>
-        <li><span class="cv-when">Jan 2019 – Dec 2022 · Mar 2022 – Present</span><div class="cv-what"><strong>Professional Content Writer — NUIS Solutions; Ausonia Partners LLC</strong></div></li>
-        <li><span class="cv-when">Aug 2023 – Feb 2024 · 2023 – Present</span><div class="cv-what"><strong>Graphic Designer — Data Is Alive; Shutterstock</strong></div></li>
-      </ul>
-    </div>
-  </section>
-
-  <section class="cv-section">
-    <div class="wrap">
-      <h2>Skills</h2>
-      <div class="tag-row">
-        <span class="tag-row-label">Clinical</span>
-        <span class="skill-tag">Psychological Assessment</span>
-        <span class="skill-tag">CBT</span>
-        <span class="skill-tag">Crisis Intervention</span>
-        <span class="skill-tag">Case Formulation</span>
-        <span class="skill-tag">Psychotherapy</span>
-        <span class="skill-tag">Psychometric Testing</span>
-        <span class="skill-tag">DSM-5 Diagnostic Assessment</span>
-        <span class="skill-tag">Addiction Treatment</span>
-      </div>
-      <div class="tag-row">
-        <span class="tag-row-label">Research</span>
-        <span class="skill-tag">SPSS</span>
-        <span class="skill-tag">SmartPLS</span>
-        <span class="skill-tag">R</span>
-        <span class="skill-tag">Psychometrics</span>
-        <span class="skill-tag">Quantitative Analysis</span>
-      </div>
-      <div class="tag-row">
-        <span class="tag-row-label">Digital</span>
-        <span class="skill-tag">Microsoft Office</span>
-        <span class="skill-tag">Canva</span>
-        <span class="skill-tag">Adobe Illustrator</span>
-        <span class="skill-tag">WordPress</span>
+  <section class="section section--alt">
+    <div class="wrap" style="max-width: 720px;">
+      <p class="eyebrow" style="margin-bottom: 14px;">Specializes In</p>
+      <div class="category-pills">
+        {specialties.map((s) => <span class="topic-pill">{s}</span>)}
       </div>
     </div>
   </section>
 
-  <section class="cv-section">
-    <div class="wrap">
-      <h2>Research Interests</h2>
-      <div class="tag-row">
-        <span class="skill-tag">Psychometrics</span>
-        <span class="skill-tag">ADHD</span>
-        <span class="skill-tag">Artificial Intelligence</span>
+  <section class="section">
+    <div class="wrap profile-grid">
+      <div>
+        <h2 class="profile-h2">Credentials</h2>
+        <ul class="credential-list">
+          <li>M.S. Clinical Psychology — University of Central Punjab (2023)</li>
+          <li>B.S. Psychology — University of Peshawar (2021)</li>
+          <li>Lecturer of Psychology — Rashid Latif Khan University (RLKU)</li>
+          <li>Member, American Psychological Association (APA)</li>
+        </ul>
+      </div>
+      <div>
+        <h2 class="profile-h2">Experience Highlights</h2>
+        <ul class="credential-list">
+          <li>Founder &amp; Clinical Psychologist, The Psychology Square (2019–present)</li>
+          <li>Trainee Clinical Psychologist — Services Hospital, LISCA, and Ehsas Addiction Treatment Centre</li>
+          <li>Visiting Lecturer, FAST National University of Computer and Emerging Sciences</li>
+          <li>Conference presenter — ADHD, autism, and addiction recovery, national &amp; international</li>
+        </ul>
       </div>
     </div>
   </section>
 
-  <section class="cv-section">
-    <div class="wrap">
-      <h2>Memberships</h2>
-      <ul class="cv-list">
-        <li><div class="cv-what"><strong>Member, American Psychological Association (APA)</strong></div></li>
+  <section class="section section--alt">
+    <div class="wrap" style="max-width: 720px;">
+      <h2 class="profile-h2">Selected Publications &amp; Research</h2>
+      <ul class="credential-list">
+        <li>Tayyaba, M., Ayaz, A., &amp; Sohail, M. (2026). Emotional Intelligence as a Predictor of Career Decision Self-Efficacy among Pakistani University Students. <em>Social Science Review Archives</em>.</li>
+        <li>Sohail, M. (2023). The Development and Validation of an Emotion Regulation Scale for Children with ADHD. University of Central Punjab.</li>
+        <li>Sohail, M., Waheed, S., &amp; Farooqi, R. (2024). Understanding emotion regulation in Pakistani children with ADHD. International Conference on Mental Wellbeing.</li>
       </ul>
     </div>
   </section>
 
-  <section class="cv-section">
+  <section class="section">
     <div class="wrap">
-      <h2>Thesis</h2>
-      <ul class="cv-list">
-        <li><span class="cv-when">2023</span><div class="cv-what"><p>Sohail, M. The Development and Validation of Emotion Regulation Scale for Children with ADHD. Manuscript in preparation, University of Central Punjab.</p></div></li>
-      </ul>
-    </div>
-  </section>
-
-  <section class="cv-section">
-    <div class="wrap">
-      <h2>Published Papers</h2>
-      <ul class="cv-list">
-        <li><span class="cv-when">2026</span><div class="cv-what"><p>Tayyaba, M., Ayaz, A., &amp; Sohail, M. Emotional Intelligence as a Predictor of Career Decision Self-Efficacy among Pakistani University Students. <em>Social Science Review Archives, 4</em>(1), 455–462.</p></div></li>
-      </ul>
-    </div>
-  </section>
-
-  <section class="cv-section">
-    <div class="wrap">
-      <h2>Conference Papers</h2>
-      <ul class="cv-list">
-        <li><span class="cv-when">2023</span><div class="cv-what"><p>Waheed, S., Hasan, S., &amp; Sohail, M. Obsessive Compulsive Disorder, Rumination and Cognitive Errors: A Correlational Study. Book of Abstracts, Rawalpindi Women University.</p></div></li>
-        <li><span class="cv-when">2023</span><div class="cv-what"><p>Sohail, M. Breaking Taboos in Child Development and Disability (Poster Abstract), 5th International Developmental-Behavioral Pediatric Conference, UCHS-CH, Lahore.</p></div></li>
-        <li><span class="cv-when">2024</span><div class="cv-what"><p>Sohail, M., Waheed, S., &amp; Farooqi, R. Understanding emotion regulation in Pakistani children with ADHD: Implications for child adjustment and parent self-efficacy. International Conference on Mental Wellbeing.</p></div></li>
-        <li><span class="cv-when">2024</span><div class="cv-what"><p>Waheed, S., Sohail, M., &amp; Farooqi, R. Comprehensive psychotherapeutic intervention for a 31-year-old male with substance use disorders and emotional distress. International Conference on Mental Wellbeing.</p></div></li>
-        <li><span class="cv-when">2024</span><div class="cv-what"><p>Sohail, M., Waheed, S., &amp; Farooqi, R. Harnessing cognitive behavioral therapy (CBT): A multifaceted approach to enhancing self-control and motivation in substance use disorder recovery. 1st National Stucon, Rashid Latif Medical College.</p></div></li>
-        <li><span class="cv-when">2025</span><div class="cv-what"><p>Sohail, M., Waheed, S., &amp; Farooqi, R. Early clinical intervention in a preschool child with autism spectrum disorder level 3: a case study. 2nd National Stucon, Rashid Latif Medical College.</p></div></li>
-      </ul>
-    </div>
-  </section>
-
-  <section class="cv-section">
-    <div class="wrap">
-      <h2>Courses</h2>
-      <ul class="plain-list">
-        <li><strong>Introduction to Psychology</strong> — Yale University, 2023</li>
-        <li><strong>Addiction Treatment: Clinical Skills for Healthcare Providers</strong> — Yale University, 2023</li>
-        <li><strong>Introduction to Abnormal Psychology</strong> — Wesleyan University, 2021</li>
-        <li><strong>ADHD: Everyday Strategies for Elementary Students</strong> — University at Buffalo, 2023</li>
-        <li><strong>Managing ADHD, Autism, Learning Disability, and Concussion in School</strong> — University of Colorado System, 2023</li>
-        <li><strong>Psychological First Aid</strong> — Johns Hopkins University, 2023</li>
-      </ul>
-    </div>
-  </section>
-
-  <section class="cv-section">
-    <div class="wrap">
-      <h2>Continuing Education Credits</h2>
-      <ul class="plain-list">
-        <li><strong>Lifelong Learning: Improving Suicide Prevention Through Evidence-Based Strategies</strong> — American Psychiatric Association, Jul 2026</li>
-        <li><strong>Standardized Integration: Social Determinants of Mental Health in the DSM</strong> — American Psychiatric Association, Jul 2026</li>
-        <li><strong>Beyond Sleep Hygiene: Evidence-Based Behavioral Strategies for Insomnia Management</strong> — Medscape, Jul 2026</li>
-      </ul>
-    </div>
-  </section>
-
-  <section class="cv-section">
-    <div class="wrap">
-      <h2>AI-Related Certifications</h2>
-      <ul class="plain-list">
-        <li><strong>Claude 101</strong> — Anthropic Education, Jul 2026</li>
-        <li><strong>AI Fluency: Framework &amp; Foundation</strong> — Anthropic Education, Jul 2026</li>
-        <li><strong>AI Fluency for Educators</strong> — Anthropic Education, Jul 2026</li>
-        <li><strong>AI Foundations</strong> — OpenAI, Jul 2026</li>
-      </ul>
-    </div>
-  </section>
-
-  <section class="cv-section">
-    <div class="wrap">
-      <h2>Other Certifications &amp; Recognitions</h2>
-      <ul class="plain-list">
-        <li>Certificate of Appreciation, 2nd International Stucon, Rashid Latif Khan University, 2025</li>
-        <li>Participation, 15th International Conference of the Pakistan Psychological Association (PPA)</li>
-        <li>Workshop: "Illuminate, Innovate, Integrate: AI in Research Revolution", RLKU, 2024</li>
-        <li>Certificate of Appreciation, International Conference on Mental Well-Being, RLKU &amp; University of the Punjab, 2024</li>
-        <li>One Day International Seminar: "The Rise of Psychology as a Profession", RLKU, 2023</li>
-        <li>Workshop on Continuum Care for Substance Use Disorders, University of Central Punjab, 2022</li>
-        <li>International Conference on Substance Use Disorder (ICSUD-2022), University of Central Punjab</li>
-        <li>Workshop on Cognitive Behavioral Therapy with Substance Use Disorders, University of Central Punjab, 2022</li>
-        <li>Dementia Friend, Alzheimer's Pakistan, 2022</li>
-        <li>Training on Data Analysis using SmartPLS, University of Central Punjab, 2022</li>
-        <li>Merit Certificate, 4th Position in Matric, BISEM, 2015</li>
-        <li>Seminar Management: "12 Steps Towards Recovery in Drug Addiction", University of Central Punjab, 2023</li>
-        <li>Seminar Management: "Grounded Theory", University of Central Punjab, 2023</li>
-        <li>Letter of Recognition, Community Service at Cantonment General Hospital, Lahore, 2022</li>
-        <li>Recognition, Community Service at University of Central Punjab Mental Well-being Camp, 2023</li>
-      </ul>
-    </div>
-  </section>
-
-  <section class="cv-section" style="border-bottom:none;">
-    <div class="wrap">
-      <h2>Workshops, Seminars &amp; Webinars Organized</h2>
-      <ul class="plain-list">
-        <li>Twelve Steps towards Recovery and Addiction (Workshop), University of Central Punjab, 2023</li>
-        <li>Grounded Theory (Workshop), University of Central Punjab, 2023</li>
-        <li>"Stress Smarts: Practical Management Strategies", 1st National Stucon, Rashid Latif Medical College, 2024</li>
-        <li>Online Lecture: Why Research is Important? — RLKU, 2024</li>
-        <li>Awareness Camp: Mental Health Awareness Camp — RLKU, 2024</li>
-        <li>Training: Stay Safe, by Pakistan Girls Guide Association — RLKU, 2024</li>
-        <li>Online Lecture: Introduction to Organizational Psychology — RLKU, 2024</li>
-        <li>Webinar: USEFP's 2025 Undergraduate Semester Exchange Program — RLKU, 2024</li>
-        <li>Faculty/Staff Session: Mental Health at Workplace — RLKU, 2024</li>
-        <li>Event: MIND — Mental Health in New Directions — RLKU, 2024</li>
-        <li>Core Value Workshop: Perseverance — RLKU, 2024</li>
-        <li>Seminar: Breaking the Cycle of Online Gaming Addiction — RLKU</li>
-        <li>Seminar: Understanding Eating Disorders — RLKU / Hamid Latif Hospital</li>
-        <li>Panelist, "Empowering Young Minds to Thrive Amidst Global Uncertainty" — UMT SPP, Lahore, Mar 2026</li>
-      </ul>
+      <div class="request-cta-banner">
+        <p>Ready to talk to Sohail?</p>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <a href="/book" class="btn btn--primary">Book Now</a>
+          <a href="mailto:info@thepsychologysquare.com" class="btn btn--text">Email us →</a>
+        </div>
+      </div>
     </div>
   </section>
 
 </Layout>
+
+<style>
+  .breadcrumbs{
+    font-family: var(--font-mono); font-size: 12px; color: rgba(248,249,246,0.6);
+    margin-bottom: 28px; display:flex; flex-wrap:wrap; gap:6px; align-items:center;
+  }
+  .breadcrumbs a:hover{ color: var(--gold-300); }
+  .crumb-sep{ color: rgba(248,249,246,0.3); }
+  .crumb-current{ color: rgba(248,249,246,0.85); }
+
+  .profile-lede{
+    font-family: var(--font-display);
+    font-size: 22px;
+    line-height: 1.5;
+    color: var(--ink-900);
+    margin-bottom: 24px;
+  }
+  .profile-about p{ font-size: 16px; line-height: 1.75; color: var(--ink-700); margin-bottom: 18px; }
+
+  .category-pills{ display:flex; flex-wrap:wrap; gap:10px; }
+  .topic-pill{
+    font-family: var(--font-mono); font-size: 12.5px; letter-spacing: 0.04em; text-transform: uppercase;
+    color: var(--navy-700); border: 1px solid var(--line); padding: 9px 16px; border-radius: 999px;
+    background: var(--paper-0);
+  }
+
+  .profile-h2{ font-size: 15px; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.08em; color: var(--sage-500); margin-bottom: 18px; }
+  .profile-grid{ display:grid; grid-template-columns: 1fr 1fr; gap: 48px; }
+  .credential-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:14px; }
+  .credential-list li{ font-size: 14.5px; color: var(--ink-700); line-height: 1.6; padding-top: 14px; border-top: 1px solid var(--line); }
+  .credential-list li:first-child{ border-top: none; padding-top: 0; }
+
+  @media (max-width: 700px){
+    .profile-grid{ grid-template-columns: 1fr; gap: 40px; }
+    .profile-lede{ font-size: 19px; }
+  }
+</style>

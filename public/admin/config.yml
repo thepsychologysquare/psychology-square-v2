@@ -17,6 +17,8 @@ collections:
     fields:
       - {label: "Title", name: "title", widget: "string"}
       - {label: "Description", name: "description", widget: "text", hint: "One or two sentences — shows on article cards and in search results."}
+      - {label: "Featured Image", name: "image", widget: "image", required: false, hint: "Optional header image for the article card."}
+      - {label: "Image Alt Text", name: "imageAlt", widget: "string", required: false, hint: "Brief description of the image for accessibility/SEO."}
       - label: "Category"
         name: "category"
         widget: "select"

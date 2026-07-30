@@ -18,11 +18,59 @@ const categoryMeta: Record<string, string> = {
 const ageMeta: Record<string, string> = { 'children': 'Children', 'adults': 'Adults' };
 
 const categoriesPresent = [...new Set(sorted.map((w) => w.data.category))].sort();
+
+const siteOrigin = 'https://www.thepsychologysquare.com';
+const itemListJson = {
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  "name": "Therapy Worksheets",
+  "description": "Free and paid printable worksheets covering anxiety, depression, ADHD, trauma, relationships, and stress.",
+  "url": `${siteOrigin}/resources/worksheets`,
+  "mainEntity": {
+    "@type": "ItemList",
+    "itemListElement": sorted.map((w, i) => ({
+      "@type": "ListItem",
+      "position": i + 1,
+      "item": {
+        "@type": "CreativeWork",
+        "name": w.data.title,
+        "description": w.data.description,
+        "url": w.data.tier === 'free' && w.data.fileUrl
+          ? new URL(w.data.fileUrl, siteOrigin).toString()
+          : `${siteOrigin}/resources/worksheets`,
+        "isAccessibleForFree": w.data.tier === 'free',
+      },
+    })),
+  },
+};
+const breadcrumbJson = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home", "item": `${siteOrigin}/` },
+    { "@type": "ListItem", "position": 2, "name": "Resources", "item": `${siteOrigin}/resources` },
+    { "@type": "ListItem", "position": 3, "name": "Worksheets", "item": `${siteOrigin}/resources/worksheets` },
+  ],
+};
 ---
 
-<Layout title="Worksheets" description="Free and paid worksheets to use between therapy sessions.">
+<Layout
+  title="Worksheets"
+  fullTitle="Free & Paid Therapy Worksheets — Anxiety, Depression, ADHD | The Psychology Square"
+  description="Printable therapy worksheets for anxiety, depression, ADHD, trauma, and relationships — free downloads and paid sets, from a licensed practice in Lahore."
+>
+  <script type="application/ld+json" set:html={JSON.stringify(itemListJson)} />
+  <script type="application/ld+json" set:html={JSON.stringify(breadcrumbJson)} />
+
   <section class="hero article-index-hero">
     <div class="wrap">
+      <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <a href="/">Home</a>
+        <span class="crumb-sep">/</span>
+        <a href="/resources">Resources</a>
+        <span class="crumb-sep">/</span>
+        <span class="crumb-current">Worksheets</span>
+      </nav>
       <p class="eyebrow">Resources</p>
       <h1 class="hero-title" style="font-size: clamp(32px, 4vw, 48px); margin-bottom: 16px;">Worksheets</h1>
       <p class="hero-sub">Printable worksheets to use on your own or bring to a session. Some are free, some are part of a paid set — request any paid worksheet and we'll follow up directly.</p>
@@ -107,9 +155,9 @@ const categoriesPresent = [...new Set(sorted.map((w) => w.data.category))].sort(
             <h3>{w.data.title}</h3>
             <p>{w.data.description}</p>
             {w.data.tier === 'free' ? (
-              <a class="worksheet-btn worksheet-btn--download" href={w.data.fileUrl} target="_blank" rel="noopener">Download PDF →</a>
+              <a class="worksheet-btn worksheet-btn--download" href={w.data.fileUrl} target="_blank" rel="noopener" aria-label={`Download ${w.data.title} PDF`}>Download PDF →</a>
             ) : (
-              <button class="worksheet-btn worksheet-btn--request request-btn" data-title={w.data.title} type="button">Request this worksheet →</button>
+              <button class="worksheet-btn worksheet-btn--request request-btn" data-title={w.data.title} type="button" aria-label={`Request ${w.data.title}`}>Request this worksheet →</button>
             )}
           </div>
         ))}
@@ -156,6 +204,17 @@ const categoriesPresent = [...new Set(sorted.map((w) => w.data.category))].sort(
 
 <style>
   .article-index-hero{ padding: 72px 0 56px; }
+
+  .breadcrumbs{
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: rgba(248,249,246,0.6);
+    margin-bottom: 20px;
+    display:flex; flex-wrap:wrap; gap:6px; align-items:center;
+  }
+  .breadcrumbs a:hover{ color: var(--gold-300); }
+  .crumb-sep{ color: rgba(248,249,246,0.3); }
+  .crumb-current{ color: rgba(248,249,246,0.85); }
 
   .toolbar{ display:flex; gap:12px; position: relative; z-index: 20; }
   .search-input{

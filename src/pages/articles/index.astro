@@ -20,6 +20,35 @@ const categoryMeta: Record<string, string> = {
 // Auto-derived from actual content — adding a category or tag later needs zero page edits.
 const categoriesPresent = [...new Set(sorted.map((a) => a.data.category))].sort();
 const tagsPresent = [...new Set(sorted.flatMap((a) => a.data.tags))].sort();
+
+const siteOrigin = 'https://www.thepsychologysquare.com';
+const blogJson = {
+  "@context": "https://schema.org",
+  "@type": "Blog",
+  "name": "The Psychology Square — Articles",
+  "url": `${siteOrigin}/articles`,
+  "description": "Clinically-reviewed articles on anxiety, depression, ADHD, trauma, relationships, and more.",
+  "blogPost": sorted.slice(0, 20).map((a) => {
+    const imgUrl = typeof a.data.image === 'string' ? a.data.image : a.data.image?.src;
+    return {
+      "@type": "BlogPosting",
+      "headline": a.data.title,
+      "description": a.data.description,
+      "url": `${siteOrigin}/articles/${a.id}`,
+      "datePublished": a.data.publishDate.toISOString(),
+      "author": { "@type": "Person", "name": a.data.author },
+      ...(imgUrl ? { "image": `${siteOrigin}${imgUrl}` } : {}),
+    };
+  }),
+};
+const breadcrumbJson = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home", "item": `${siteOrigin}/` },
+    { "@type": "ListItem", "position": 2, "name": "Articles", "item": `${siteOrigin}/articles` },
+  ],
+};
 ---
 
 <Layout
@@ -27,11 +56,32 @@ const tagsPresent = [...new Set(sorted.flatMap((a) => a.data.tags))].sort();
   fullTitle="Psychology Articles — Anxiety, Depression, ADHD & More | The Psychology Square"
   description="Clinically-reviewed articles on anxiety, depression, ADHD, trauma, relationships, and more — written and reviewed by licensed clinical psychologists in Lahore."
 >
+  <script type="application/ld+json" set:html={JSON.stringify(blogJson)} />
+  <script type="application/ld+json" set:html={JSON.stringify(breadcrumbJson)} />
+
   <section class="hero article-index-hero">
     <div class="wrap">
+      <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <a href="/">Home</a>
+        <span class="crumb-sep">/</span>
+        <span class="crumb-current">Articles</span>
+      </nav>
       <p class="eyebrow">From the Practice</p>
       <h1 class="hero-title" style="font-size: clamp(32px, 4vw, 48px); margin-bottom: 16px;">Articles</h1>
       <p class="hero-sub">Grounded, clinically-reviewed writing on anxiety, depression, ADHD, trauma, relationships, and more — no generic advice.</p>
+    </div>
+  </section>
+
+  <section class="section" style="padding-bottom: 0;">
+    <div class="wrap">
+      <p class="articles-intro">
+        Every article here is written or reviewed by a licensed clinical psychologist at The Psychology Square, drawing on real clinical training rather than generic wellness content. Below you'll find {sorted.length} article{sorted.length === 1 ? '' : 's'} across {categoriesPresent.length} topic areas — use the search and filters to find what's relevant, or browse by topic:
+      </p>
+      <div class="topic-link-row">
+        {categoriesPresent.map((cat) => (
+          <a href={`/articles/category/${cat}`} class="topic-pill">{categoryMeta[cat] || cat}</a>
+        ))}
+      </div>
     </div>
   </section>
 
@@ -84,20 +134,34 @@ const tagsPresent = [...new Set(sorted.flatMap((a) => a.data.tags))].sort();
       <p class="results-count" id="results-count"></p>
 
       <div class="card-grid" id="article-grid">
-        {sorted.map((article) => (
-          <a
-            class="article-card"
-            href={`/articles/${article.id}`}
-            data-title={article.data.title.toLowerCase()}
-            data-description={article.data.description.toLowerCase()}
-            data-category={article.data.category}
-            data-tags={article.data.tags.join(',')}
-          >
-            <span class="article-meta">{categoryMeta[article.data.category] || article.data.category}</span>
-            <h3>{article.data.title}</h3>
-            <p>{article.data.description}</p>
-          </a>
-        ))}
+        {sorted.map((article) => {
+          const imgSrc = typeof article.data.image === 'string' ? article.data.image : article.data.image?.src;
+          return (
+            <a
+              class="article-card"
+              href={`/articles/${article.id}`}
+              data-title={article.data.title.toLowerCase()}
+              data-description={article.data.description.toLowerCase()}
+              data-category={article.data.category}
+              data-tags={article.data.tags.join(',')}
+            >
+              {imgSrc && (
+                <div class="card-image-wrap">
+                  <img 
+                    src={imgSrc} 
+                    alt={article.data.imageAlt || article.data.title} 
+                    loading="lazy"
+                  />
+                </div>
+              )}
+              <div class="card-body">
+                <span class="article-meta">{categoryMeta[article.data.category] || article.data.category}</span>
+                <h3>{article.data.title}</h3>
+                <p>{article.data.description}</p>
+              </div>
+            </a>
+          );
+        })}
       </div>
 
       <p class="no-results" id="no-results" hidden>No articles match your filters. Try clearing some, or search a different term.</p>
@@ -108,6 +172,29 @@ const tagsPresent = [...new Set(sorted.flatMap((a) => a.data.tags))].sort();
 
 <style>
   .article-index-hero{ padding: 72px 0 56px; }
+
+  .breadcrumbs{
+    font-family: var(--font-mono); font-size: 12px; color: rgba(248,249,246,0.6);
+    margin-bottom: 20px; display:flex; flex-wrap:wrap; gap:6px; align-items:center;
+  }
+  .breadcrumbs a:hover{ color: var(--gold-300); }
+  .crumb-sep{ color: rgba(248,249,246,0.3); }
+  .crumb-current{ color: rgba(248,249,246,0.85); }
+
+  .articles-intro{
+    max-width: 680px;
+    font-size: 15.5px;
+    line-height: 1.7;
+    color: var(--ink-600);
+    margin-bottom: 20px;
+  }
+  .topic-link-row{ display:flex; flex-wrap:wrap; gap:10px; margin-bottom: 48px; }
+  .topic-link-row .topic-pill{
+    font-family: var(--font-mono); font-size: 12.5px; letter-spacing: 0.04em; text-transform: uppercase;
+    color: var(--navy-700); border: 1px solid var(--line); padding: 9px 16px; border-radius: 999px;
+    background: var(--paper-0); transition: border-color .2s var(--ease), color .2s var(--ease);
+  }
+  .topic-link-row .topic-pill:hover{ border-color: var(--gold-500); color: var(--gold-500); }
 
   .toolbar{
     display:flex;
@@ -273,6 +360,35 @@ const tagsPresent = [...new Set(sorted.flatMap((a) => a.data.tags))].sort();
     margin: 24px 0;
   }
   .no-results{ color: var(--ink-600); padding: 40px 0; }
+  
+  /* Article Card Base & Image Styling */
+  .article-card {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .card-image-wrap {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    background-color: var(--paper-50);
+    border-bottom: 1px solid var(--line);
+  }
+  .card-image-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s var(--ease);
+  }
+  .article-card:hover .card-image-wrap img {
+    transform: scale(1.03);
+  }
+  .card-body {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+  }
+
   .article-card.is-hidden{ display:none; }
   .article-card.is-paged-out{ display:none; }
   .pager{ display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-top:40px; }

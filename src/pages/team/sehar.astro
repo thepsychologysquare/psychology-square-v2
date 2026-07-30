@@ -1,157 +1,170 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+
+const siteOrigin = 'https://www.thepsychologysquare.com';
+const specialties = ['Campus Counseling', 'Crisis Intervention', 'Group Therapy', 'Psychoeducation', 'Substance Use Disorders'];
+
+const personJson = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "name": "Sehar Waheed",
+  "jobTitle": "Clinical Psychologist & Counselor",
+  "description": "Co-CEO of The Psychology Square, Clinical Psychologist at the Happiness Center, University of Management and Technology (UMT), Lahore.",
+  "worksFor": { "@type": "Organization", "name": "The Psychology Square", "url": siteOrigin },
+  "affiliation": [
+    { "@type": "CollegeOrUniversity", "name": "University of Management and Technology (UMT)" },
+  ],
+  "url": `${siteOrigin}/team/sehar`,
+  "image": `${siteOrigin}/images/sehar.jpg`,
+  "alumniOf": [
+    { "@type": "CollegeOrUniversity", "name": "University of Central Punjab" },
+    { "@type": "CollegeOrUniversity", "name": "COMSATS University" },
+  ],
+  "memberOf": { "@type": "Organization", "name": "American Psychological Association" },
+  "knowsAbout": specialties,
+};
+const breadcrumbJson = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home", "item": `${siteOrigin}/` },
+    { "@type": "ListItem", "position": 2, "name": "Team", "item": `${siteOrigin}/team` },
+    { "@type": "ListItem", "position": 3, "name": "Sehar Waheed", "item": `${siteOrigin}/team/sehar` },
+  ],
+};
 ---
-<Layout title="Sehar Waheed" description="Full profile of Sehar Waheed, Clinical Psychologist and Counselor at The Psychology Square.">
+<Layout
+  title="Sehar Waheed"
+  fullTitle="Sehar Waheed — Clinical Psychologist & Counselor in Lahore | The Psychology Square"
+  description="Meet Sehar Waheed, Co-CEO of The Psychology Square — Clinical Psychologist at UMT's Happiness Center, Lahore, specializing in campus counseling and crisis intervention."
+>
+  <script type="application/ld+json" set:html={JSON.stringify(personJson)} />
+  <script type="application/ld+json" set:html={JSON.stringify(breadcrumbJson)} />
 
   <section class="profile-hero">
     <div class="wrap">
-      <a href="/team" class="back-link">← Back to team</a>
+      <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <a href="/">Home</a>
+        <span class="crumb-sep">/</span>
+        <a href="/team">Team</a>
+        <span class="crumb-sep">/</span>
+        <span class="crumb-current">Sehar Waheed</span>
+      </nav>
       <div class="profile-hero-inner">
         <div class="avatar">
-          <img src="/images/sehar.jpg" alt="Sehar Waheed" onerror="this.classList.add('img-error')">
+          <img src="/images/sehar.jpg" alt="Sehar Waheed, Clinical Psychologist at The Psychology Square" width="104" height="104" onerror="this.classList.add('img-error')">
           <span class="avatar-fallback">SW</span>
         </div>
         <div>
           <h1>Sehar Waheed</h1>
-          <span class="role">Co-CEO - The Psychology Square · Clinical Psychologist, MS · Campus Counselor</span>
+          <span class="role">Co-CEO · Clinical Psychologist &amp; Counselor</span>
         </div>
       </div>
     </div>
   </section>
 
-  <section class="cv-section">
-    <div class="wrap">
-      <h2>Summary</h2>
-      <p style="max-width:640px; color:var(--ink-600); font-size:15.5px; line-height:1.7;">
-        Clinical Psychologist (MS) with over three years of direct counseling experience and seven years of overall clinical work, including campus counseling, individual and group therapy, crisis intervention, and psychoeducational programming for university communities. Gold Medalist in BS Psychology and an active APA member, with a track record of building rapport across diverse populations and designing wellbeing outreach programs. Currently serves as Clinical Psychologist / Clinical Counsellor at the Happiness Center, University of Management and Technology (UMT).
+  <section class="section profile-about">
+    <div class="wrap" style="max-width: 720px;">
+      <p class="profile-lede">
+        Sehar Waheed's work sits at the intersection of clinical care and community — years spent not just in the therapy room, but building the wellbeing infrastructure around it, from campus counseling programs to crisis-response training.
+      </p>
+      <p>
+        A Gold Medalist in her B.S. in Psychology from COMSATS University, she went on to complete an M.S. in Clinical Psychology at the University of Central Punjab. She currently serves as Clinical Psychologist / Clinical Counsellor at the Happiness Center, University of Management and Technology (UMT), where she provides individual counseling, designs campus wellbeing programming, and helped establish a formal referral partnership between UMT and Bright Therapeutic Center to widen students' access to care.
+      </p>
+      <p>
+        Her clinical background includes campus counseling and research work at the University of Central Punjab, and supervised addiction-treatment experience at Focus Rehab. She also teaches as a visiting lecturer in psychology at COMSATS, FAST, and Lahore Leads University, and is a Member of the American Psychological Association.
       </p>
     </div>
   </section>
 
-  <section class="cv-section">
-    <div class="wrap">
-      <h2>Education &amp; Affiliations</h2>
-      <ul class="cv-list">
-        <li>
-          <span class="cv-when">MS · CGPA 3.69</span>
-          <div class="cv-what">
-            <strong>Clinical Psychology</strong>
-            <p>University of Central Punjab</p>
-          </div>
-        </li>
-        <li>
-          <span class="cv-when">BS · CGPA 3.68</span>
-          <div class="cv-what">
-            <strong>Psychology — Gold Medalist</strong>
-            <p>COMSATS University</p>
-          </div>
-        </li>
-        <li>
-          <span class="cv-when">Since 2026</span>
-          <div class="cv-what">
-            <strong>Member, American Psychological Association (APA)</strong>
-          </div>
-        </li>
+  <section class="section section--alt">
+    <div class="wrap" style="max-width: 720px;">
+      <p class="eyebrow" style="margin-bottom: 14px;">Specializes In</p>
+      <div class="category-pills">
+        {specialties.map((s) => <span class="topic-pill">{s}</span>)}
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap profile-grid">
+      <div>
+        <h2 class="profile-h2">Credentials</h2>
+        <ul class="credential-list">
+          <li>M.S. Clinical Psychology — University of Central Punjab</li>
+          <li>B.S. Psychology, Gold Medalist — COMSATS University</li>
+          <li>Member, American Psychological Association (APA)</li>
+        </ul>
+      </div>
+      <div>
+        <h2 class="profile-h2">Experience Highlights</h2>
+        <ul class="credential-list">
+          <li>Clinical Psychologist / Counsellor, Happiness Center, UMT (2026–present)</li>
+          <li>Research Associate &amp; Campus Counsellor, University of Central Punjab</li>
+          <li>Trainee Clinical Psychologist — Focus Rehab &amp; LISCA</li>
+          <li>Visiting Lecturer — COMSATS, FAST, and Lahore Leads University</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--alt">
+    <div class="wrap" style="max-width: 720px;">
+      <h2 class="profile-h2">Selected Publications</h2>
+      <ul class="credential-list">
+        <li>Fatima, S., Waheed, S., Daud, S., Daud, S., &amp; Aslam, S. (2022). Gratitude, Self-Regulation, and Academic Motivation During COVID-19 in University Students. <em>Webology</em>.</li>
+        <li>Waheed, S. (2023). Unspecified Somatic Symptom and Related Disorder: Case Study and Treatment. Insight Medical Publishing.</li>
       </ul>
     </div>
   </section>
 
-  <section class="cv-section">
+  <section class="section">
     <div class="wrap">
-      <h2>Clinical &amp; Counseling Experience</h2>
-      <ul class="cv-list">
-        <li>
-          <span class="cv-when">Feb 2026 – Present</span>
-          <div class="cv-what">
-            <strong>Clinical Psychologist / Clinical Counsellor — Happiness Center, University of Management and Technology (UMT)</strong>
-            <p>Provides individual counseling to students and staff on emotional, psychological, relational, and behavioral concerns. Conducts initial assessments, develops individualized care plans, and monitors client progress. Designs and delivers campus wellbeing seminars and outreach events, supports the intern program, and produces psychoeducational materials. Facilitated an MOU between UMT and Bright Therapeutic Center to expand referral and treatment pathways for students.</p>
-          </div>
-        </li>
-        <li>
-          <span class="cv-when">Oct 2023 – Feb 2026</span>
-          <div class="cv-what">
-            <strong>Research Associate &amp; Campus Counsellor — University of Central Punjab (UCP)</strong>
-            <p>Delivered one-on-one campus counseling to students on academic stress, adjustment difficulties, and personal challenges, and facilitated psychoeducational workshops on substance use disorders and related topics.</p>
-          </div>
-        </li>
-        <li>
-          <span class="cv-when">2019 – Present</span>
-          <div class="cv-what">
-            <strong>Clinical Psychologist — The Psychology Square</strong>
-            <p>Provides ongoing individual therapy alongside clinical operations oversight as Co-CEO.</p>
-          </div>
-        </li>
-        <li>
-          <span class="cv-when">Feb 2023 – Jul 2023</span>
-          <div class="cv-what">
-            <strong>Trainee Clinical Psychologist — Focus Rehab: Addiction and Psychological Treatment Centre</strong>
-            <p>Delivered supervised individual and group treatment sessions using CBT-based interventions in an addiction treatment setting.</p>
-          </div>
-        </li>
-        <li>
-          <span class="cv-when">Oct 2022 – Feb 2023</span>
-          <div class="cv-what">
-            <strong>Trainee Clinical Psychologist — Lahore Institute of Special Care and Attention (LISCA)</strong>
-            <p>Conducted clinical assessments and supervised interventions for individuals with diverse psychological needs.</p>
-          </div>
-        </li>
-      </ul>
-    </div>
-  </section>
-
-  <section class="cv-section">
-    <div class="wrap">
-      <h2>Teaching Experience</h2>
-      <ul class="cv-list">
-        <li><span class="cv-when">Spring 2025 – Present</span><div class="cv-what"><strong>Visiting Lecturer, Psychology</strong><p>COMSATS University</p></div></li>
-        <li><span class="cv-when">Fall 2024</span><div class="cv-what"><strong>Visiting Lecturer, Psychology</strong><p>FAST University</p></div></li>
-        <li><span class="cv-when">Spring 2024</span><div class="cv-what"><strong>Visiting Lecturer, Psychology</strong><p>Lahore Leads University</p></div></li>
-      </ul>
-    </div>
-  </section>
-
-  <section class="cv-section">
-    <div class="wrap">
-      <h2>Trainings &amp; Workshops Delivered</h2>
-      <ul class="cv-list">
-        <li><span class="cv-when">Workplace</span><div class="cv-what"><strong>Healthy Mind and Productive Work: Employee Well-being Toolkit</strong></div></li>
-        <li><span class="cv-when">Pre-conference</span><div class="cv-what"><strong>Workshop on the Association Splitting Technique</strong><p>Delivered for clinical students.</p></div></li>
-        <li><span class="cv-when">Campus-wide</span><div class="cv-what"><strong>School-wise Mental Health Seminar (#MyUMTCares)</strong><p>In collaboration with UMT's School of Professional Psychology.</p></div></li>
-        <li><span class="cv-when">Psychoeducation</span><div class="cv-what"><strong>Workshops on Substance Use Disorders</strong><p>And related topics.</p></div></li>
-      </ul>
-    </div>
-  </section>
-
-  <section class="cv-section">
-    <div class="wrap">
-      <h2>Selected Certifications</h2>
-      <ul class="cv-list">
-        <li><span class="cv-when">Johns Hopkins University</span><div class="cv-what"><strong>Psychological First Aid Course</strong></div></li>
-        <li><span class="cv-when">University of Central Punjab</span><div class="cv-what"><strong>Cognitive Behaviour Therapy for Substance Use Disorders</strong></div></li>
-        <li><span class="cv-when">University of Central Punjab</span><div class="cv-what"><strong>Treatment of Substance Use Disorder Workshop</strong></div></li>
-        <li><span class="cv-when">Alzheimer's Pakistan</span><div class="cv-what"><strong>Dementia Friends Certificate</strong></div></li>
-      </ul>
-    </div>
-  </section>
-
-  <section class="cv-section" style="border-bottom:none;">
-    <div class="wrap">
-      <h2>Publications</h2>
-      <ul class="cv-list">
-        <li>
-          <span class="cv-when">2022</span>
-          <div class="cv-what">
-            <p>Fatima, S., Waheed, S., Daud, S., Daud, S., &amp; Aslam, S. Gratitude, Self-Regulation, and Academic Motivation During COVID-19 in University Students. <em>Webology, 19</em>(2).</p>
-          </div>
-        </li>
-        <li>
-          <span class="cv-when">2023</span>
-          <div class="cv-what">
-            <p>Waheed, S. Unspecified Somatic Symptom and Related Disorder: Case Study and Treatment. Insight Medical Publishing.</p>
-          </div>
-        </li>
-      </ul>
+      <div class="request-cta-banner">
+        <p>Ready to talk to Sehar?</p>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <a href="/book" class="btn btn--primary">Book Now</a>
+          <a href="mailto:info@thepsychologysquare.com" class="btn btn--text">Email us →</a>
+        </div>
+      </div>
     </div>
   </section>
 
 </Layout>
+
+<style>
+  .breadcrumbs{
+    font-family: var(--font-mono); font-size: 12px; color: rgba(248,249,246,0.6);
+    margin-bottom: 28px; display:flex; flex-wrap:wrap; gap:6px; align-items:center;
+  }
+  .breadcrumbs a:hover{ color: var(--gold-300); }
+  .crumb-sep{ color: rgba(248,249,246,0.3); }
+  .crumb-current{ color: rgba(248,249,246,0.85); }
+
+  .profile-lede{
+    font-family: var(--font-display);
+    font-size: 22px;
+    line-height: 1.5;
+    color: var(--ink-900);
+    margin-bottom: 24px;
+  }
+  .profile-about p{ font-size: 16px; line-height: 1.75; color: var(--ink-700); margin-bottom: 18px; }
+
+  .category-pills{ display:flex; flex-wrap:wrap; gap:10px; }
+  .topic-pill{
+    font-family: var(--font-mono); font-size: 12.5px; letter-spacing: 0.04em; text-transform: uppercase;
+    color: var(--navy-700); border: 1px solid var(--line); padding: 9px 16px; border-radius: 999px;
+    background: var(--paper-0);
+  }
+
+  .profile-h2{ font-size: 15px; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.08em; color: var(--sage-500); margin-bottom: 18px; }
+  .profile-grid{ display:grid; grid-template-columns: 1fr 1fr; gap: 48px; }
+  .credential-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:14px; }
+  .credential-list li{ font-size: 14.5px; color: var(--ink-700); line-height: 1.6; padding-top: 14px; border-top: 1px solid var(--line); }
+  .credential-list li:first-child{ border-top: none; padding-top: 0; }
+
+  @media (max-width: 700px){
+    .profile-grid{ grid-template-columns: 1fr; gap: 40px; }
+    .profile-lede{ font-size: 19px; }
+  }
+</style>

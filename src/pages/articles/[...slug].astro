@@ -43,6 +43,8 @@ const formattedDate = article.data.publishDate.toLocaleDateString('en-US', {
 });
 const isoDate = article.data.publishDate.toISOString();
 const canonicalPath = `/articles/${article.id}`;
+
+const mainImgSrc = typeof article.data.image === 'string' ? article.data.image : article.data.image?.src;
 ---
 
 <Layout
@@ -59,6 +61,7 @@ const canonicalPath = `/articles/${article.id}`;
     "dateModified": isoDate,
     "author": { "@type": "Person", "name": article.data.author },
     ...(article.data.reviewedBy ? { "reviewedBy": { "@type": "Person", "name": article.data.reviewedBy } } : {}),
+    ...(mainImgSrc ? { "image": `https://www.thepsychologysquare.com${mainImgSrc}` } : {}),
     "publisher": {
       "@type": "Organization",
       "name": "The Psychology Square",
@@ -102,6 +105,16 @@ const canonicalPath = `/articles/${article.id}`;
         <span> · <time datetime={isoDate}>{formattedDate}</time></span>
       </div>
 
+      {mainImgSrc && (
+        <figure class="article-hero-image">
+          <img 
+            src={mainImgSrc} 
+            alt={article.data.imageAlt || article.data.title} 
+            loading="eager" 
+          />
+        </figure>
+      )}
+
       <div class="prose">
         <Content />
       </div>
@@ -123,13 +136,27 @@ const canonicalPath = `/articles/${article.id}`;
           <h2 class="section-title">Related articles</h2>
         </div>
         <div class="card-grid">
-          {related.map((a) => (
-            <a class="article-card" href={`/articles/${a.id}`}>
-              <span class="article-meta">{categoryMeta[a.data.category]}</span>
-              <h3>{a.data.title}</h3>
-              <p>{a.data.description}</p>
-            </a>
-          ))}
+          {related.map((a) => {
+            const relImgSrc = typeof a.data.image === 'string' ? a.data.image : a.data.image?.src;
+            return (
+              <a class="article-card" href={`/articles/${a.id}`}>
+                {relImgSrc && (
+                  <div class="card-image-wrap">
+                    <img 
+                      src={relImgSrc} 
+                      alt={a.data.imageAlt || a.data.title} 
+                      loading="lazy" 
+                    />
+                  </div>
+                )}
+                <div class="card-body">
+                  <span class="article-meta">{categoryMeta[a.data.category]}</span>
+                  <h3>{a.data.title}</h3>
+                  <p>{a.data.description}</p>
+                </div>
+              </a>
+            );
+          })}
         </div>
       </div>
     </section>
@@ -169,6 +196,20 @@ const canonicalPath = `/articles/${article.id}`;
     border-bottom: 1px solid var(--line);
   }
 
+  .article-hero-image {
+    margin: 0 0 40px 0;
+    width: 100%;
+    border-radius: 4px;
+    overflow: hidden;
+    background-color: var(--paper-50);
+  }
+  .article-hero-image img {
+    width: 100%;
+    max-height: 480px;
+    object-fit: cover;
+    display: block;
+  }
+
   .prose{
     font-size: 17px;
     line-height: 1.75;
@@ -204,5 +245,33 @@ const canonicalPath = `/articles/${article.id}`;
     border: 1px solid var(--line);
     padding: 6px 12px;
     border-radius: 999px;
+  }
+
+  /* Related Article Cards Image Layout */
+  .article-card {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .card-image-wrap {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    background-color: var(--paper-50);
+    border-bottom: 1px solid var(--line);
+  }
+  .card-image-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s var(--ease);
+  }
+  .article-card:hover .card-image-wrap img {
+    transform: scale(1.03);
+  }
+  .card-body {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
   }
 </style>
