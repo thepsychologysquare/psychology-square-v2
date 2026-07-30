@@ -40,6 +40,9 @@ const worksheets = defineCollection({
     fileUrl: z.string().optional(),
     order: z.number().default(0),
     draft: z.boolean().default(false),
+    // Safe, non-destructive optional fields for Decap CMS uploads:
+    image: z.string().optional(),
+    imageAlt: z.string().optional(),
   }),
 });
 const assessments = defineCollection({

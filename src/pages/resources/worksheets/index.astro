@@ -140,7 +140,9 @@ const breadcrumbJson = {
       <p class="results-count" id="results-count"></p>
 
       <div class="card-grid worksheet-grid" id="worksheet-grid">
-        {sorted.map((w) => (
+        {sorted.map((w) => {
+          const imgSrc = typeof w.data.image === 'string' ? w.data.image : w.data.image?.src;
+          return (
           <div
             class="article-card worksheet-card"
             data-tier={w.data.tier}
@@ -149,6 +151,11 @@ const breadcrumbJson = {
             data-title={w.data.title.toLowerCase()}
             data-description={w.data.description.toLowerCase()}
           >
+            {imgSrc && (
+              <div class="card-image-wrap">
+                <img src={imgSrc} alt={w.data.imageAlt || w.data.title} loading="lazy" />
+              </div>
+            )}
             <span class="article-meta">
               {w.data.tier === 'free' ? 'Free' : 'Paid'} · {categoryMeta[w.data.category]} · {w.data.age.map((a) => ageMeta[a]).join(' & ')}
             </span>
@@ -160,7 +167,8 @@ const breadcrumbJson = {
               <button class="worksheet-btn worksheet-btn--request request-btn" data-title={w.data.title} type="button" aria-label={`Request ${w.data.title}`}>Request this worksheet →</button>
             )}
           </div>
-        ))}
+          );
+        })}
       </div>
 
       <p class="no-results" id="no-results" hidden>No worksheets match your filters. Try clearing some, or search a different term.</p>
@@ -352,6 +360,9 @@ const breadcrumbJson = {
   .no-results{ color: var(--ink-600); padding: 40px 0; }
 
   .worksheet-card{ justify-content: flex-start; }
+  .card-image-wrap{ width: 100%; aspect-ratio: 16 / 9; overflow: hidden; background-color: var(--paper-50); border-bottom: 1px solid var(--line); margin-bottom: 14px; }
+  .card-image-wrap img{ width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s var(--ease); }
+  .worksheet-card:hover .card-image-wrap img{ transform: scale(1.03); }
   .worksheet-card.is-hidden{ display: none; }
   .worksheet-card.is-paged-out{ display: none; }
   .pager{ display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-top:40px; }
