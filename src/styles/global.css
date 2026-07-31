@@ -184,7 +184,6 @@ a:focus-visible, button:focus-visible{
   max-width:480px;
   font-size:17px;
   color:rgba(248,249,246,0.72);
-  margin-bottom:34px;
 }
 .hero-actions{display:flex; gap:26px; align-items:center; flex-wrap:wrap;}
 .btn{
@@ -203,6 +202,7 @@ a:focus-visible, button:focus-visible{
 .btn--text:hover{color:var(--gold-300);}
 .btn--text-onlight{color:var(--navy-950); padding:13px 4px; text-decoration:underline; text-underline-offset:3px;}
 .btn--text-onlight:hover{color:var(--gold-500);}
+
 
 .hero-signature{
   --cell:30px; --gap:8px;
@@ -640,7 +640,7 @@ a:focus-visible, button:focus-visible{
 .booking-actions{ display:flex; flex-wrap:wrap; gap:14px; justify-content:center; }
 
 .profile-hero{ background:var(--navy-950); color:var(--paper-0); padding:72px 0 64px; }
-.profile-hero-inner{ display:flex; align-items:center; gap:28px; }
+.profile-hero-inner{ display:flex; align-items:center; gap:12px; }
 .profile-hero .avatar{ width:104px; height:104px; margin-bottom:0; }
 .profile-hero h1{ font-size:clamp(28px,4vw,40px); color:var(--paper-0); margin-bottom:8px; }
 .profile-hero .role{ font-family:var(--font-mono); font-size:14px; color:var(--gold-300); }
@@ -705,6 +705,7 @@ a:focus-visible, button:focus-visible{
   .section-title{ margin-bottom:20px; }
   .practice-grid, .service-cards, .team-grid{ gap:16px; }
   .card-grid{ gap:16px; }
+  .profile-hero{ padding: 40px 0 36px; }
 }
 /* ---------------------------------------
    Section & toolbar spacing tightening
@@ -754,4 +755,31 @@ img {
   aspect-ratio: 1 / 1;
   overflow: hidden;
   background-color: var(--paper-50);
+}
+
+.social-links {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.social-links a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  color: rgba(248, 249, 246, 0.75);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  transition: all 0.2s var(--ease, ease);
+}
+
+.social-links a:hover {
+  color: var(--gold-300, #c7a44a);
+  background: rgba(199, 164, 74, 0.12);
+  border-color: rgba(199, 164, 74, 0.4);
+  transform: translateY(-2px);
 }
