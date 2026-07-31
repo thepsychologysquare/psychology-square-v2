@@ -1,0 +1,209 @@
+---
+import { getCollection, render } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+
+export async function getStaticPaths() {
+  const courses = await getCollection('courses', ({ data }) => !data.draft);
+  return courses.map((course) => ({
+    params: { slug: course.id },
+    props: { course },
+  }));
+}
+
+const { course } = Astro.props;
+const { Content } = await render(course);
+
+// Only question + options go to the client — correctIndex stays server-side
+// so grading can never be inspected or tampered with in the browser.
+const clientQuiz = course.data.quiz.map((q) => ({ question: q.question, options: q.options }));
+---
+<Layout
+  title={course.data.title}
+  description={course.data.description}
+  fullTitle={`${course.data.title} — The Psychology Square`}
+>
+  <article class="course-article">
+    <div class="wrap wrap--narrow">
+      <span class="eyebrow">CE Course &middot; {course.data.ceHours} {course.data.ceHours === 1 ? 'hour' : 'hours'}</span>
+      <h1>{course.data.title}</h1>
+      <p class="lede">{course.data.description}</p>
+
+      <div class="course-content">
+        <Content />
+      </div>
+
+      <section class="quiz-section" id="quizSection">
+        <h2>Complete the quiz</h2>
+        <p class="quiz-intro">Score {course.data.passScorePercent}% or higher to earn your certificate. You can retake the quiz if needed.</p>
+
+        <form id="quizForm" class="quiz-form">
+          <div class="field-row">
+            <div class="field">
+              <label for="learnerName">Full name</label>
+              <input type="text" id="learnerName" name="learnerName" required autocomplete="name" placeholder="As it should appear on your certificate" />
+            </div>
+            <div class="field">
+              <label for="learnerEmail">Email</label>
+              <input type="email" id="learnerEmail" name="learnerEmail" required autocomplete="email" placeholder="you@example.com" />
+            </div>
+          </div>
+
+          <div id="quizQuestions"></div>
+
+          <button type="submit" class="btn btn--primary" id="quizSubmitBtn">Submit quiz</button>
+          <p class="quiz-error" id="quizError" role="alert" hidden></p>
+        </form>
+
+        <div id="quizResult" class="quiz-result" hidden></div>
+      </section>
+    </div>
+  </article>
+</Layout>
+
+<script type="application/json" id="quizData" set:html={JSON.stringify(clientQuiz)}></script>
+<script define:vars={{ courseSlug: course.id }}>
+  const quiz = JSON.parse(document.getElementById('quizData').textContent);
+  const questionsEl = document.getElementById('quizQuestions');
+
+  quiz.forEach((q, qIndex) => {
+    const fieldset = document.createElement('fieldset');
+    fieldset.className = 'quiz-question';
+
+    const legend = document.createElement('legend');
+    legend.textContent = `${qIndex + 1}. ${q.question}`;
+    fieldset.appendChild(legend);
+
+    q.options.forEach((option, oIndex) => {
+      const label = document.createElement('label');
+      label.className = 'quiz-option';
+      const input = document.createElement('input');
+      input.type = 'radio';
+      input.name = `q${qIndex}`;
+      input.value = String(oIndex);
+      input.required = true;
+      label.appendChild(input);
+      label.appendChild(document.createTextNode(' ' + option));
+      fieldset.appendChild(label);
+    });
+
+    questionsEl.appendChild(fieldset);
+  });
+
+  const form = document.getElementById('quizForm');
+  const submitBtn = document.getElementById('quizSubmitBtn');
+  const errorEl = document.getElementById('quizError');
+  const resultEl = document.getElementById('quizResult');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    errorEl.hidden = true;
+
+    const name = document.getElementById('learnerName').value.trim();
+    const email = document.getElementById('learnerEmail').value.trim();
+    const answers = quiz.map((_, qIndex) => {
+      const selected = form.querySelector(`input[name="q${qIndex}"]:checked`);
+      return selected ? Number(selected.value) : -1;
+    });
+
+    if (answers.includes(-1)) {
+      errorEl.textContent = 'Please answer every question.';
+      errorEl.hidden = false;
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Submitting…';
+
+    try {
+      const res = await fetch('/api/courses/submit', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ courseSlug, name, email, answers }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        errorEl.textContent = data.error || 'Something went wrong. Please try again.';
+        errorEl.hidden = false;
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit quiz';
+        return;
+      }
+
+      form.hidden = true;
+      resultEl.hidden = false;
+
+      if (data.passed) {
+        resultEl.innerHTML = `
+          <div class="result result--pass">
+            <h3>You passed — ${data.scorePercent}%</h3>
+            <p>Your certificate has been generated${data.emailSent ? ' and emailed to you' : ''}.</p>
+            <a href="/certificates/${data.certificateId}" class="btn btn--primary">View your certificate</a>
+          </div>`;
+      } else {
+        resultEl.innerHTML = `
+          <div class="result result--fail">
+            <h3>Score: ${data.scorePercent}%</h3>
+            <p>You need ${data.passScorePercent}% or higher to pass. Review the material above and try again.</p>
+            <button type="button" class="btn btn--text" id="retryBtn">Retake the quiz</button>
+          </div>`;
+        document.getElementById('retryBtn').addEventListener('click', () => {
+          form.hidden = false;
+          resultEl.hidden = true;
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Submit quiz';
+          form.querySelectorAll('input[type="radio"]').forEach((r) => (r.checked = false));
+        });
+      }
+    } catch {
+      errorEl.textContent = 'Could not reach the server. Please check your connection and try again.';
+      errorEl.hidden = false;
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Submit quiz';
+    }
+  });
+</script>
+
+<style>
+  .course-article{ padding:64px 0 96px; }
+  .wrap--narrow{ max-width:720px; margin:0 auto; padding:0 24px; }
+  .eyebrow{ font-family:var(--font-mono); font-size:12px; letter-spacing:0.08em; text-transform:uppercase; color:var(--gold-500); }
+  .course-article h1{ font-family:var(--font-display); font-size:clamp(30px,4vw,42px); margin:8px 0 12px; }
+  .lede{ color:var(--ink-600); font-size:17px; line-height:1.6; margin-bottom:36px; }
+
+  .course-content{ font-size:16px; line-height:1.75; }
+  .course-content :global(h2){ font-family:var(--font-display); font-size:24px; margin:40px 0 14px; }
+  .course-content :global(p){ margin-bottom:16px; }
+  .course-content :global(ul), .course-content :global(ol){ margin:0 0 16px 22px; }
+  .course-content :global(li){ margin-bottom:6px; }
+
+  .quiz-section{ margin-top:56px; padding-top:40px; border-top:1px solid var(--line); }
+  .quiz-section h2{ font-family:var(--font-display); font-size:26px; margin-bottom:6px; }
+  .quiz-intro{ color:var(--ink-600); margin-bottom:28px; }
+
+  .field-row{ display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:28px; }
+  .field{ display:flex; flex-direction:column; gap:6px; }
+  label{ font-size:14px; font-weight:500; }
+  input[type="text"], input[type="email"]{
+    font-family:var(--font-body); font-size:15px; padding:12px 14px;
+    border:1px solid var(--line); border-radius:2px;
+  }
+  input:focus-visible{ outline:2px solid var(--gold-500); outline-offset:1px; }
+
+  .quiz-question{ border:none; padding:0; margin:0 0 26px; }
+  .quiz-question legend{ font-weight:600; margin-bottom:10px; padding:0; }
+  .quiz-option{ display:flex; align-items:center; gap:10px; padding:8px 0; font-size:15px; cursor:pointer; }
+  .quiz-option input{ margin:0; }
+
+  .btn{ font-family:var(--font-body); cursor:pointer; border:none; }
+  .btn--primary{ background:var(--gold-500); color:var(--navy-950, var(--ink-900)); padding:12px 26px; border-radius:2px; margin-top:6px; }
+  .btn--primary:disabled{ opacity:0.6; cursor:default; }
+  .btn--text{ background:none; color:var(--ink-900); text-decoration:underline; padding:0; }
+  .quiz-error{ color:#B4432E; font-size:14px; margin-top:12px; }
+
+  .quiz-result{ margin-top:8px; }
+  .result{ padding:28px; border:1px solid var(--line); border-radius:2px; }
+  .result--pass{ background:var(--paper-50); }
+  .result h3{ font-family:var(--font-display); font-size:22px; margin-bottom:8px; }
+  .result p{ color:var(--ink-600); margin-bottom:18px; }
+</style>

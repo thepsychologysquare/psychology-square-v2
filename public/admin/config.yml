@@ -93,6 +93,47 @@ collections:
       - {label: "Order", name: "order", widget: "number", default: 0, required: false, hint: "Lower numbers show first. Leave as 0 if you don't care about order."}
       - {label: "Draft", name: "draft", widget: "boolean", default: false, hint: "Turn ON to hide this worksheet from the live site until it's ready."}
 
+  - name: "courses"
+    label: "CE Courses"
+    folder: "src/content/courses"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - {label: "Title", name: "title", widget: "string"}
+      - {label: "Description", name: "description", widget: "text", hint: "One or two sentences — shows on the course card."}
+      - {label: "Featured Image", name: "image", widget: "image", required: false}
+      - {label: "Image Alt Text", name: "imageAlt", widget: "string", required: false}
+      - label: "Topic"
+        name: "category"
+        widget: "select"
+        default: "general"
+        options:
+          - {label: "General", value: "general"}
+          - {label: "Anxiety", value: "anxiety"}
+          - {label: "Depression", value: "depression"}
+          - {label: "ADHD", value: "adhd"}
+          - {label: "Addiction & Recovery", value: "addiction-recovery"}
+          - {label: "Trauma", value: "trauma"}
+          - {label: "Relationships", value: "relationships"}
+          - {label: "Stress & Burnout", value: "stress-burnout"}
+      - {label: "CE Hours", name: "ceHours", widget: "number", default: 1, hint: "Continuing education hours this course is worth."}
+      - label: "Author"
+        name: "author"
+        widget: "select"
+        options: ["Muhammad Sohail", "Sehar Waheed"]
+      - {label: "Pass Score (%)", name: "passScorePercent", widget: "number", default: 80, min: 1, max: 100, hint: "Minimum quiz score required to earn the certificate."}
+      - label: "Quiz Questions"
+        name: "quiz"
+        widget: "list"
+        hint: "Add at least one question. Mark the correct answer's position below (0 = first option, 1 = second, etc.)."
+        fields:
+          - {label: "Question", name: "question", widget: "string"}
+          - {label: "Options", name: "options", widget: "list", hint: "List each answer choice, in order."}
+          - {label: "Correct Option Number", name: "correctIndex", widget: "number", hint: "0 for the first option, 1 for the second, and so on."}
+      - {label: "Order", name: "order", widget: "number", default: 0, required: false, hint: "Lower numbers show first."}
+      - {label: "Draft", name: "draft", widget: "boolean", default: false, hint: "Turn ON to hide this course from the live site until it's ready."}
+      - {label: "Course Content", name: "body", widget: "markdown", hint: "The lesson material the learner reads before taking the quiz."}
+
   - name: "assessments"
     label: "Assessments"
     folder: "src/content/assessments"

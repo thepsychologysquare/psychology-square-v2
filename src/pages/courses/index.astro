@@ -1,0 +1,78 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+
+const allCourses = await getCollection('courses', ({ data }) => !data.draft);
+const sorted = allCourses.sort((a, b) => a.data.order - b.data.order);
+
+const categoryMeta: Record<string, string> = {
+  'general': 'General',
+  'anxiety': 'Anxiety',
+  'depression': 'Depression',
+  'adhd': 'ADHD',
+  'addiction-recovery': 'Addiction & Recovery',
+  'trauma': 'Trauma',
+  'relationships': 'Relationships',
+  'stress-burnout': 'Stress & Burnout',
+};
+---
+<Layout
+  title="CE Courses"
+  description="Continuing education courses from The Psychology Square. Complete a course, pass the quiz, and receive a verifiable certificate by email."
+>
+  <section class="courses-hero">
+    <div class="wrap">
+      <span class="eyebrow">Continuing Education</span>
+      <h1>CE Courses</h1>
+      <p class="lede">Short, practical courses. Pass the quiz at the end and we'll email you a verifiable certificate immediately.</p>
+      <a href="/my-certificates" class="btn btn--text">View my certificates &rarr;</a>
+    </div>
+  </section>
+
+  <section class="courses-grid-section">
+    <div class="wrap">
+      {sorted.length === 0 && (
+        <p class="empty-state">No courses are available yet — check back soon.</p>
+      )}
+      <div class="courses-grid">
+        {sorted.map((course) => (
+          <a href={`/courses/${course.id}`} class="course-card">
+            <span class="course-card__category">{categoryMeta[course.data.category] ?? course.data.category}</span>
+            <h2>{course.data.title}</h2>
+            <p>{course.data.description}</p>
+            <div class="course-card__meta">
+              <span>{course.data.ceHours} CE {course.data.ceHours === 1 ? 'hour' : 'hours'}</span>
+              <span>{course.data.quiz.length} question quiz</span>
+            </div>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .courses-hero{ padding:72px 0 40px; border-bottom:1px solid var(--line); }
+  .courses-hero h1{ font-family:var(--font-display); font-size:clamp(32px,4vw,44px); margin:6px 0 14px; }
+  .courses-hero .lede{ max-width:560px; color:var(--ink-600); font-size:17px; line-height:1.6; margin-bottom:20px; }
+  .eyebrow{ font-family:var(--font-mono); font-size:12px; letter-spacing:0.08em; text-transform:uppercase; color:var(--gold-500); }
+
+  .courses-grid-section{ padding:56px 0 96px; }
+  .empty-state{ color:var(--ink-600); }
+  .courses-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:24px; }
+  .course-card{
+    display:flex; flex-direction:column; gap:10px; padding:26px;
+    border:1px solid var(--line); border-radius:2px; background:var(--paper-0);
+    text-decoration:none; color:inherit; transition:border-color .15s ease, transform .15s ease;
+  }
+  .course-card:hover{ border-color:var(--gold-500); transform:translateY(-2px); }
+  .course-card__category{
+    font-family:var(--font-mono); font-size:11px; letter-spacing:0.06em; text-transform:uppercase; color:var(--gold-500);
+  }
+  .course-card h2{ font-family:var(--font-display); font-size:20px; margin:2px 0 0; }
+  .course-card p{ color:var(--ink-600); font-size:14.5px; line-height:1.55; flex-grow:1; }
+  .course-card__meta{
+    display:flex; gap:14px; font-family:var(--font-mono); font-size:12px; color:var(--ink-600);
+    padding-top:12px; border-top:1px solid var(--line);
+  }
+</style>

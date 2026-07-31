@@ -62,4 +62,30 @@ const assessments = defineCollection({
     draft: z.boolean().default(false),
   }),
 });
-export const collections = { articles, worksheets, assessments };
+const courses = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/courses' }),
+  schema: z.object({
+    title: z.string(),
+    description: z.string(),
+    category: z.enum([
+      'anxiety', 'depression', 'addiction-recovery', 'trauma',
+      'relationships', 'stress-burnout', 'adhd', 'general',
+    ]).default('general'),
+    ceHours: z.number().default(1),
+    author: z.string(),
+    passScorePercent: z.number().min(1).max(100).default(80),
+    // Quiz questions: index of the correct option within that question's options array.
+    quiz: z.array(z.object({
+      question: z.string(),
+      options: z.array(z.string()).min(2),
+      correctIndex: z.number().int().min(0),
+    })).min(1),
+    order: z.number().default(0),
+    draft: z.boolean().default(false),
+    // Safe, non-destructive optional fields for Decap CMS uploads:
+    image: z.string().optional(),
+    imageAlt: z.string().optional(),
+  }),
+});
+
+export const collections = { articles, worksheets, assessments, courses };

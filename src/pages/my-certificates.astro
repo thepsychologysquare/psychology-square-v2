@@ -1,0 +1,178 @@
+---
+export const prerender = false;
+import { env } from 'cloudflare:workers';
+import Layout from '../layouts/Layout.astro';
+import { getClientSession } from '../lib/clientAuth';
+
+const cookieHeader = Astro.request.headers.get('cookie');
+const session = env?.CLIENT_SESSION_SECRET
+  ? await getClientSession(cookieHeader, env.CLIENT_SESSION_SECRET)
+  : null;
+
+let certificates: Array<{
+  id: string; course_title: string; ce_hours: number; score_percent: number; issued_at: string;
+}> = [];
+
+if (session && env?.DB) {
+  const result = await env.DB.prepare(
+    `SELECT id, course_title, ce_hours, score_percent, issued_at FROM certificates WHERE email = ? ORDER BY issued_at DESC`
+  ).bind(session.email).all();
+  certificates = (result.results ?? []) as typeof certificates;
+}
+
+const expired = Astro.url.searchParams.get('expired') === '1';
+---
+<Layout title="My Certificates" description="View every CE certificate you've earned from The Psychology Square.">
+  <section class="my-certs">
+    <div class="wrap wrap--narrow">
+      {!session && (
+        <div class="login-panel">
+          <span class="eyebrow">My Certificates</span>
+          <h1>View your certificates</h1>
+          <p class="lede">Enter the email you used when completing a course. We'll send you a one-time link — no password needed.</p>
+
+          {expired && <p class="notice">That link has expired or was already used. Please request a new one below.</p>}
+
+          <form id="magicLinkForm" class="magic-form">
+            <div class="field">
+              <label for="email">Email address</label>
+              <input type="email" id="email" name="email" required autocomplete="email" placeholder="you@example.com" />
+            </div>
+            <button type="submit" class="btn btn--primary" id="magicLinkBtn">Send me a link</button>
+            <p class="form-error" id="formError" role="alert" hidden></p>
+          </form>
+
+          <div id="sentMessage" class="sent-message" hidden>
+            <h2>Check your email</h2>
+            <p>If that address has certificates on file, a sign-in link is on its way. It expires in 15 minutes.</p>
+          </div>
+        </div>
+      )}
+
+      {session && (
+        <div class="dashboard">
+          <div class="dashboard-header">
+            <div>
+              <span class="eyebrow">My Certificates</span>
+              <h1>{session.email}</h1>
+            </div>
+            <button type="button" class="btn btn--text" id="logoutBtn">Sign out</button>
+          </div>
+
+          {certificates.length === 0 && (
+            <p class="empty-state">No certificates yet. <a href="/courses">Browse CE courses</a> to get started.</p>
+          )}
+
+          <div class="cert-list">
+            {certificates.map((c) => (
+              <a href={`/certificates/${c.id}`} class="cert-row">
+                <div>
+                  <h2>{c.course_title}</h2>
+                  <span class="cert-row__meta">
+                    {c.ce_hours} CE {c.ce_hours === 1 ? 'hour' : 'hours'} &middot; Score {c.score_percent}% &middot;
+                    {' '}{new Date(c.issued_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                  </span>
+                </div>
+                <span class="cert-row__arrow">View &rarr;</span>
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  </section>
+</Layout>
+
+<script>
+  const form = document.getElementById('magicLinkForm') as HTMLFormElement | null;
+  if (form) {
+    const btn = document.getElementById('magicLinkBtn') as HTMLButtonElement;
+    const errorEl = document.getElementById('formError') as HTMLParagraphElement;
+    const sentMessage = document.getElementById('sentMessage') as HTMLDivElement;
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorEl.hidden = true;
+      btn.disabled = true;
+      btn.textContent = 'Sending…';
+
+      const email = (document.getElementById('email') as HTMLInputElement).value.trim();
+
+      try {
+        const res = await fetch('/api/certificates/request-link', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ email }),
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          errorEl.textContent = data.error || 'Something went wrong. Please try again.';
+          errorEl.hidden = false;
+          btn.disabled = false;
+          btn.textContent = 'Send me a link';
+          return;
+        }
+
+        form.hidden = true;
+        sentMessage.hidden = false;
+      } catch {
+        errorEl.textContent = 'Could not reach the server. Please check your connection and try again.';
+        errorEl.hidden = false;
+        btn.disabled = false;
+        btn.textContent = 'Send me a link';
+      }
+    });
+  }
+
+  const logoutBtn = document.getElementById('logoutBtn');
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', async () => {
+      await fetch('/api/certificates/logout', { method: 'POST' });
+      window.location.href = '/my-certificates';
+    });
+  }
+</script>
+
+<style>
+  .my-certs{ padding:72px 0 96px; }
+  .wrap--narrow{ max-width:640px; margin:0 auto; padding:0 24px; }
+  .eyebrow{ font-family:var(--font-mono); font-size:12px; letter-spacing:0.08em; text-transform:uppercase; color:var(--gold-500); }
+
+  .login-panel h1{ font-family:var(--font-display); font-size:32px; margin:8px 0 12px; }
+  .lede{ color:var(--ink-600); font-size:16px; line-height:1.6; margin-bottom:28px; }
+  .notice{ background:var(--paper-50); border:1px solid var(--line); padding:12px 16px; border-radius:2px; font-size:14px; margin-bottom:20px; }
+
+  .magic-form{ display:flex; flex-direction:column; gap:16px; max-width:360px; }
+  .field{ display:flex; flex-direction:column; gap:6px; }
+  label{ font-size:14px; font-weight:500; }
+  input[type="email"]{
+    font-family:var(--font-body); font-size:15px; padding:12px 14px;
+    border:1px solid var(--line); border-radius:2px;
+  }
+  input:focus-visible{ outline:2px solid var(--gold-500); outline-offset:1px; }
+  .btn{ font-family:var(--font-body); cursor:pointer; border:none; }
+  .btn--primary{ background:var(--gold-500); color:var(--ink-900); padding:12px 24px; border-radius:2px; margin-top:4px; }
+  .btn--primary:disabled{ opacity:0.6; cursor:default; }
+  .btn--text{ background:none; color:var(--ink-900); text-decoration:underline; padding:0; }
+  .form-error{ color:#B4432E; font-size:14px; }
+
+  .sent-message h2{ font-family:var(--font-display); font-size:22px; margin-bottom:8px; }
+  .sent-message p{ color:var(--ink-600); }
+
+  .dashboard-header{ display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:36px; gap:16px; }
+  .dashboard-header h1{ font-family:var(--font-display); font-size:24px; margin-top:6px; word-break:break-all; }
+  .empty-state{ color:var(--ink-600); }
+  .empty-state a{ color:var(--gold-500); }
+
+  .cert-list{ display:flex; flex-direction:column; gap:12px; }
+  .cert-row{
+    display:flex; justify-content:space-between; align-items:center; gap:16px;
+    padding:20px 22px; border:1px solid var(--line); border-radius:2px; text-decoration:none; color:inherit;
+    transition:border-color .15s ease;
+  }
+  .cert-row:hover{ border-color:var(--gold-500); }
+  .cert-row h2{ font-family:var(--font-display); font-size:17px; margin-bottom:4px; }
+  .cert-row__meta{ font-size:13px; color:var(--ink-600); }
+  .cert-row__arrow{ font-family:var(--font-mono); font-size:13px; white-space:nowrap; color:var(--gold-500); }
+</style>

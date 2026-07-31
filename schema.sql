@@ -86,3 +86,37 @@ CREATE TABLE IF NOT EXISTS availability_exceptions (
   date TEXT NOT NULL,                -- 'YYYY-MM-DD'
   PRIMARY KEY (clinician, date)
 );
+
+-- CE certification system. See migrations-2026-07-certifications.sql for
+-- the standalone migration if you're applying this to an existing DB.
+
+-- One row per quiz submission, pass or fail.
+CREATE TABLE IF NOT EXISTS course_attempts (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  course_slug TEXT NOT NULL,
+  course_title TEXT NOT NULL,
+  name TEXT NOT NULL,
+  email TEXT NOT NULL,
+  score_percent INTEGER NOT NULL,
+  passed INTEGER NOT NULL,          -- 0 | 1
+  created_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_course_attempts_email ON course_attempts (email);
+CREATE INDEX IF NOT EXISTS idx_course_attempts_course ON course_attempts (course_slug);
+
+-- One row per issued certificate — created only on a qualifying attempt.
+-- The id is the public, verifiable reference (e.g. TPS-CERT-4F9A2).
+CREATE TABLE IF NOT EXISTS certificates (
+  id TEXT PRIMARY KEY,
+  course_slug TEXT NOT NULL,
+  course_title TEXT NOT NULL,
+  ce_hours REAL NOT NULL,
+  name TEXT NOT NULL,
+  email TEXT NOT NULL,
+  score_percent INTEGER NOT NULL,
+  issued_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_certificates_email ON certificates (email);
+CREATE INDEX IF NOT EXISTS idx_certificates_course ON certificates (course_slug);
