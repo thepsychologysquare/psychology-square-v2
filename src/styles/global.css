@@ -184,6 +184,7 @@ a:focus-visible, button:focus-visible{
   max-width:480px;
   font-size:17px;
   color:rgba(248,249,246,0.72);
+  margin-bottom: 20px;
 }
 .hero-actions{display:flex; gap:26px; align-items:center; flex-wrap:wrap;}
 .btn{
