@@ -1,262 +1,253 @@
 ---
-import '../styles/global.css';
-
-export interface Props {
-  title: string;
-  description?: string;
-  fullTitle?: string;
-}
-const {
-  title,
-  description = "The Psychology Square — individual and couples therapy, online and in person in Johar Town, Lahore.",
-  fullTitle,
-} = Astro.props;
-const pageTitle = fullTitle ?? `${title} — The Psychology Square`;
-const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://www.thepsychologysquare.com');
-const ogImage = new URL('/images/og-cover.jpg', canonicalURL.origin);
+import Layout from '../layouts/Layout.astro';
 ---
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{pageTitle}</title>
-  <meta name="description" content={description} />
-  <link rel="canonical" href={canonicalURL} />
+<Layout
+  title="Home"
+  fullTitle="The Psychology Square — Online &amp; In-Person Therapy in Lahore"
+  description="Individual and couples therapy in Johar Town, Lahore — online or in person. Licensed clinical psychologists, evidence-based, unhurried. Book a session today."
+>
 
-  <meta property="og:type" content="website" />
-  <meta property="og:site_name" content="The Psychology Square" />
-  <meta property="og:title" content={pageTitle} />
-  <meta property="og:description" content={description} />
-  <meta property="og:url" content={canonicalURL} />
-  <meta property="og:image" content={ogImage} />
-  <meta property="og:locale" content="en_PK" />
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content={pageTitle} />
-  <meta name="twitter:description" content={description} />
-  <meta name="twitter:image" content={ogImage} />
-
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
-
-  <script type="application/ld+json" set:html={JSON.stringify({
-    "@context": "https://schema.org",
-    "@type": "MedicalBusiness",
-    "name": "The Psychology Square",
-    "url": "https://www.thepsychologysquare.com",
-    "image": ogImage.toString(),
-    "description": "Individual and couples therapy, online and in person in Johar Town, Lahore, Pakistan.",
-    "priceRange": "PKR 5,000–7,000",
-    "address": {
-      "@type": "PostalAddress",
-      "addressLocality": "Johar Town, Lahore",
-      "addressCountry": "PK"
-    },
-    "email": "info@thepsychologysquare.com",
-    "medicalSpecialty": "Psychiatric",
-    "areaServed": "Lahore, Pakistan",
-    "employee": [
-      { "@type": "Person", "name": "Muhammad Sohail", "jobTitle": "Clinical Psychologist" },
-      { "@type": "Person", "name": "Sehar Waheed", "jobTitle": "Clinical Psychologist" }
-    ]
-  })} />
-</head>
-<body>
-<header class="site-header">
-  <div class="wrap header-inner">
-    <a href="/" class="wordmark">
-      <span class="mark" aria-hidden="true">
-        <span class="mark-sq mark-sq--1"></span>
-        <span class="mark-sq mark-sq--2"></span>
-      </span>
-      The Psychology&nbsp;Square
-    </a>
-
-    <nav class="site-nav" aria-label="Primary">
-      <div class="nav-item"><a href="/">Home</a></div>
-      <div class="nav-item">
-        <a href="/articles">Articles</a>
-        <div class="mega-panel">
-          <div class="mega-panel-grid">
-            <a class="mega-card" href="/articles/category/anxiety">
-              <span class="mega-card-title">Anxiety</span>
-              <span class="mega-card-blurb">Practical tools for managing worry and panic.</span>
-            </a>
-            <a class="mega-card" href="/articles/category/depression">
-              <span class="mega-card-title">Depression</span>
-              <span class="mega-card-blurb">Understanding low mood and paths forward.</span>
-            </a>
-            <a class="mega-card" href="/articles/category/adhd">
-              <span class="mega-card-title">ADHD</span>
-              <span class="mega-card-blurb">Attention, focus, and daily life strategies.</span>
-            </a>
-            <a class="mega-card" href="/articles/category/addiction-recovery">
-              <span class="mega-card-title">Addiction &amp; Recovery</span>
-              <span class="mega-card-blurb">Grounded guidance through recovery.</span>
-            </a>
-            <a class="mega-card" href="/articles/category/trauma">
-              <span class="mega-card-title">Trauma</span>
-              <span class="mega-card-blurb">How trauma shows up, and what helps.</span>
-            </a>
-            <a class="mega-card" href="/articles/category/relationships">
-              <span class="mega-card-title">Relationships</span>
-              <span class="mega-card-blurb">Conflict, communication, and repair.</span>
-            </a>
-            <a class="mega-card" href="/articles/category/stress-burnout">
-              <span class="mega-card-title">Stress &amp; Burnout</span>
-              <span class="mega-card-blurb">Recognizing and recovering from burnout.</span>
-            </a>
-            <a class="mega-card mega-card--all" href="/articles">
-              <span class="mega-card-title">View all articles →</span>
-            </a>
-          </div>
+  <section class="hero">
+    <div class="wrap hero-inner">
+      <div class="hero-copy">
+        <span class="since-badge">Since 2019</span>
+        <p class="eyebrow">Online &amp; In-Person — Johar Town, Lahore, Pakistan</p>
+        <h1 class="hero-title">A steady space<br>to think things<br>through.</h1>
+        <p class="hero-sub">Individual and couples therapy, held online over video call or in person in Johar Town, Lahore. Evidence-based, unhurried, and built around what you're actually carrying.</p>
+        <div class="hero-actions">
+          <a href="/book" class="btn btn--primary">Book Now</a>
+          <a href="#team" class="btn btn--text">Meet your therapists →</a>
         </div>
       </div>
+      <div class="hero-visual" aria-hidden="true">
+        <div class="grid-signature" id="gridSignature"></div>
+        <p class="visual-caption">Let's Get You a Slot</p>
+      </div>
+    </div>
+  </section>
 
-      <div class="nav-item">
-        <a href="/resources">Resources</a>
-        <div class="mega-panel mega-panel--narrow">
-          <div class="mega-panel-grid mega-panel-grid--single">
-            <a class="mega-card" href="/resources/worksheets">
-              <span class="mega-card-title">Worksheets</span>
-              <span class="mega-card-blurb">Printable tools for between sessions.</span>
-            </a>
-            <a class="mega-card" href="/resources/assessments">
-              <span class="mega-card-title">Assessments</span>
-              <span class="mega-card-blurb">Public scales and how to score them.</span>
-            </a>
+  <section class="team" id="team">
+    <div class="wrap">
+      <p class="eyebrow eyebrow--dark">Who you'll work with</p>
+      <h2 class="section-title">Two clinicians. One practice.</h2>
+
+      <div class="team-grid">
+        <a class="team-teaser" href="/team/sohail">
+          <div class="avatar">
+            <img 
+              src="/images/sohail.jpg" 
+              alt="Muhammad Sohail, Clinical Psychologist at The Psychology Square" 
+              width="84" 
+              height="84" 
+              loading="lazy" 
+              decoding="async" 
+              onerror="this.classList.add('img-error')"
+            />
+            <span class="avatar-fallback">MS</span>
           </div>
+          <h3>Muhammad Sohail</h3>
+          <span class="team-role">Founder &amp; CEO · Clinical Psychologist</span>
+          <ul class="team-credentials">
+            <li>Lecturer of Psychology, Rashid Latif Khan University (RLKU)</li>
+            <li>M.S. in Clinical Psychology</li>
+            <li>Member, American Psychological Association (APA)</li>
+          </ul>
+          <span class="profile-link">View full profile →</span>
+        </a>
+
+        <a class="team-teaser" href="/team/sehar">
+          <div class="avatar">
+            <img 
+              src="/images/sehar.jpg" 
+              alt="Sehar Waheed, Clinical Psychologist at The Psychology Square" 
+              width="84" 
+              height="84" 
+              loading="lazy" 
+              decoding="async" 
+              onerror="this.classList.add('img-error')"
+            />
+            <span class="avatar-fallback">SW</span>
+          </div>
+          <h3>Sehar Waheed</h3>
+          <span class="team-role">Co-CEO · Clinical Psychologist &amp; Counselor</span>
+          <ul class="team-credentials">
+            <li>Clinical Psychologist / Counselor, University of Management and Technology (UMT)</li>
+            <li>M.S. in Clinical Psychology</li>
+            <li>Member, American Psychological Association (APA)</li>
+          </ul>
+          <span class="profile-link">View full profile →</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="services" id="services">
+    <div class="wrap">
+      <p class="eyebrow eyebrow--dark">Services</p>
+      <h2 class="section-title">Two formats. One space.</h2>
+
+      <div class="service-cards">
+        <article class="service-card">
+          <div class="service-card-top">
+            <span class="service-sq" aria-hidden="true"></span>
+            <h3>Individual Therapy</h3>
+          </div>
+          <p>One-to-one sessions, online or in person, for working through what's weighing on you — patterns, symptoms, or simply a season that feels heavier than it should.</p>
+          <span class="price-badge">PKR 5,000 / session</span>
+        </article>
+        <article class="service-card">
+          <div class="service-card-top">
+            <span class="service-sq" aria-hidden="true"></span>
+            <h3>Couples Therapy</h3>
+          </div>
+          <p>Joint sessions, online or in person, for partners working through communication, conflict, or disconnection — with both people's experience given equal room.</p>
+          <span class="price-badge">PKR 7,000 / session</span>
+        </article>
+      </div>
+
+      <div class="issues">
+        <p class="issues-label">Commonly addressed</p>
+        <ul class="issue-tags">
+          <li>Anxiety</li>
+          <li>Depression</li>
+          <li>Addiction &amp; Recovery</li>
+          <li>Trauma &amp; Distress</li>
+          <li>Relationship Conflict</li>
+          <li>Stress &amp; Burnout</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="quote-block">
+    <div class="wrap quote-inner">
+      <p class="quote-text">"Therapy works best when it stays collaborative — you're not handed a worksheet before you've been heard."</p>
+      <p class="quote-attribution">Muhammad Sohail, Clinical Psychologist</p>
+    </div>
+  </section>
+
+  <section class="practice" id="practice">
+    <div class="wrap practice-inner">
+      <p class="eyebrow eyebrow--dark">The Approach</p>
+      <h2 class="section-title">Therapy that stays grounded in evidence, not slogans.</h2>
+      <div class="practice-grid">
+        <div class="practice-block">
+          <span class="block-index">01</span>
+          <h3>Structured, not clinical-cold</h3>
+          <p>Sessions follow an evidence-based framework, but conversation comes first. You won't be handed a worksheet before you've been heard.</p>
+        </div>
+        <div class="practice-block">
+          <span class="block-index">02</span>
+          <h3>Online or in person, your choice</h3>
+          <p>Join over video call from anywhere, or come in person to the Johar Town, Lahore office. Either way — a quiet, confidential hour.</p>
+        </div>
+        <div class="practice-block">
+          <span class="block-index">03</span>
+          <h3>Rooted in real training</h3>
+          <p>Grounded in supervised clinical experience across hospital and addiction-treatment settings, not theory alone.</p>
         </div>
       </div>
+    </div>
+  </section>
 
-      <div class="nav-item">
-        <a href="/services">Services</a>
-        <div class="mega-panel mega-panel--narrow">
-          <div class="mega-panel-grid mega-panel-grid--single">
-            <a class="mega-card" href="/services/therapy">
-              <span class="mega-card-title">Therapy</span>
-              <span class="mega-card-blurb">Individual &amp; couples sessions.</span>
-            </a>
-            <a class="mega-card" href="/services/research-analysis">
-              <span class="mega-card-title">Research Analysis</span>
-              <span class="mega-card-blurb">Stats, psychometrics &amp; R support.</span>
-            </a>
-          </div>
+  <section class="contact" id="contact">
+    <div class="wrap contact-inner">
+      <p class="eyebrow eyebrow--dark">Get in touch</p>
+      <h2 class="section-title">Book a session.</h2>
+      <p class="format-note">Available online (video call) and in person — Johar Town, Lahore, Pakistan</p>
+
+      <div class="policy-block">
+        <h3>Read before booking</h3>
+        <ul class="policy-list">
+          <li><strong>Informed Consent</strong> — We work collaboratively toward your goals. You're welcome to ask about the process or approach at any time.</li>
+          <li><strong>Confidentiality</strong> — What's shared in session is private and protected, with standard legal exceptions such as risk of serious harm to yourself or others.</li>
+          <li><strong>Environment</strong> — For online sessions, please join from a quiet, private, and secure location.</li>
+        </ul>
+        <p class="policy-note">Payment is arranged directly by email and confirmed before the session — reach out and we'll sort the details together, including for the appointment time.</p>
+      </div>
+
+      <div class="booking-actions">
+        <a href="/book" class="btn btn--primary contact-btn">Book Now</a>
+        <a href="mailto:info@thepsychologysquare.com" class="btn btn--outline">Email us →</a>
+        <a href="/contact" class="btn btn--outline">Send a message →</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="explore-more">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow" style="color: var(--sage-500); margin-bottom: 10px;">Explore More</p>
+          <h2 class="section-title">Beyond the session room.</h2>
         </div>
       </div>
-
-      <div class="nav-item">
-        <a href="/team">Team</a>
-        <div class="mega-panel mega-panel--narrow">
-          <div class="mega-panel-grid mega-panel-grid--single">
-            <a class="mega-card" href="/team/sohail">
-              <span class="mega-card-title">Muhammad Sohail</span>
-              <span class="mega-card-blurb">Founder &amp; CEO · Clinical Psychologist</span>
-            </a>
-            <a class="mega-card" href="/team/sehar">
-              <span class="mega-card-title">Sehar Waheed</span>
-              <span class="mega-card-blurb">Co-CEO · Clinical Psychologist &amp; Counselor</span>
-            </a>
-          </div>
+      <div class="explore-grid">
+        <a class="featured-article-box" href="/articles/adhd-in-adults">
+          <span class="article-meta">Featured Article · ADHD</span>
+          <h3>What ADHD Actually Looks Like in Adults</h3>
+          <p>Beyond the childhood stereotype — how attention, emotion regulation, and self-image show up differently once you're grown.</p>
+          <span class="section-link">Read the article →</span>
+        </a>
+        <div class="explore-side">
+          <a class="explore-teaser" href="/services">
+            <h3>Services</h3>
+            <p>Therapy, plus research &amp; statistical analysis support for students and researchers.</p>
+            <span class="section-link">View services →</span>
+          </a>
+          <a class="explore-teaser" href="/resources">
+            <h3>Resources</h3>
+            <p>Printable worksheets to use on your own or bring to a session.</p>
+            <span class="section-link">View resources →</span>
+          </a>
         </div>
       </div>
-      <div class="nav-item"><a href="/courses">Courses</a></div>
-      <div class="nav-item"><a href="/contact">Contact</a></div>
-    </nav>
+    </div>
+  </section>
 
-    <a href="/book" class="header-cta">Book Now</a>
+</Layout>
 
-    <button class="hamburger-btn" id="hamburgerBtn" aria-label="Open menu" aria-expanded="false">
-      <span></span><span></span><span></span>
-    </button>
-  </div>
-</header>
+<style>
+  .since-badge{
+    display:inline-flex; align-items:center; gap:8px;
+    font-family:var(--font-mono); font-size:12px; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--gold-300); border:1px solid rgba(199,164,74,0.4); background:rgba(199,164,74,0.08);
+    padding:6px 14px; border-radius:20px; margin-bottom:18px;
+  }
+  .since-badge::before{ content:''; width:6px; height:6px; border-radius:50%; background:var(--gold-500); }
 
-<button class="drawer-overlay" id="drawerOverlay" aria-hidden="true"></button>
-<div class="mobile-drawer" id="mobileDrawer">
-  <div class="mobile-drawer-header">
-    <span class="wordmark-mini">The Psychology&nbsp;Square</span>
-    <button class="drawer-close-btn" id="drawerCloseBtn" aria-label="Close menu">✕</button>
-  </div>
-  <nav class="mobile-nav">
-    <a href="/" class="mobile-nav-link">Home</a>
-    <details class="mobile-nav-group">
-      <summary>Articles</summary>
-      <div class="mobile-nav-links">
-        <a href="/articles/category/anxiety">Anxiety</a>
-        <a href="/articles/category/depression">Depression</a>
-        <a href="/articles/category/adhd">ADHD</a>
-        <a href="/articles/category/addiction-recovery">Addiction &amp; Recovery</a>
-        <a href="/articles/category/trauma">Trauma</a>
-        <a href="/articles/category/relationships">Relationships</a>
-        <a href="/articles/category/stress-burnout">Stress &amp; Burnout</a>
-        <a href="/articles">View all articles →</a>
-      </div>
-    </details>
-    <details class="mobile-nav-group">
-      <summary>Resources</summary>
-      <div class="mobile-nav-links">
-        <a href="/resources/worksheets">Worksheets</a>
-        <a href="/resources/assessments">Assessments</a>
-        <a href="/resources">View all resources →</a>
-      </div>
-    </details>
-    <details class="mobile-nav-group">
-      <summary>Services</summary>
-      <div class="mobile-nav-links">
-        <a href="/services/therapy">Therapy</a>
-        <a href="/services/research-analysis">Research Analysis</a>
-        <a href="/services">View all services →</a>
-      </div>
-    </details>
-    <details class="mobile-nav-group">
-      <summary>Team</summary>
-      <div class="mobile-nav-links">
-        <a href="/team/sohail">Muhammad Sohail</a>
-        <a href="/team/sehar">Sehar Waheed</a>
-        <a href="/team">View all team →</a>
-      </div>
-    </details>
-    <a href="/courses" class="mobile-nav-link">Courses</a>
-    <a href="/contact" class="mobile-nav-link">Contact</a>
-  </nav>
-  <a href="/book" class="btn btn--primary mobile-drawer-cta">Book Now</a>
-</div>
+  .explore-grid{ display:grid; grid-template-columns: 1.4fr 1fr; gap: 28px; align-items:stretch; }
+  .featured-article-box{
+    background: var(--paper-0); border: 1px solid var(--line); border-left: 3px solid var(--gold-500);
+    padding: 32px; display:flex; flex-direction:column; gap:12px;
+    transition: border-color .25s var(--ease), transform .25s var(--ease);
+  }
+  .featured-article-box:hover{ transform: translateY(-3px); }
+  .featured-article-box h3{ font-size: 22px; }
+  .featured-article-box p{ color: var(--ink-600); font-size: 14.5px; flex:1; }
+  .explore-side{ display:flex; flex-direction:column; gap:16px; }
+  .explore-teaser{
+    background: var(--paper-0); border: 1px solid var(--line); padding: 22px; flex:1;
+    display:flex; flex-direction:column; gap:8px; transition: border-color .25s var(--ease);
+  }
+  .explore-teaser:hover{ border-color: var(--gold-500); }
+  .explore-teaser h3{ font-size: 16px; }
+  .explore-teaser p{ color: var(--ink-600); font-size: 13.5px; flex:1; }
 
-<main>
-  <slot />
-</main>
-<footer class="site-footer">
-  <div class="wrap footer-inner">
-    <span>© {new Date().getFullYear()} The Psychology Square</span>
-    <span>Johar Town, Lahore, Pakistan — Online &amp; in-person sessions</span>
-  </div>
-</footer>
+  @media (max-width: 860px){ .explore-grid{ grid-template-columns: 1fr; } }
+</style>
 
 <script>
-  const hamburgerBtn = document.getElementById('hamburgerBtn');
-  const drawer = document.getElementById('mobileDrawer');
-  const overlay = document.getElementById('drawerOverlay');
-  const closeBtn = document.getElementById('drawerCloseBtn');
-
-  function openDrawer() {
-    drawer?.classList.add('is-open');
-    overlay?.classList.add('is-open');
-    hamburgerBtn?.setAttribute('aria-expanded', 'true');
-    document.body.style.overflow = 'hidden';
+  const grid = document.getElementById('gridSignature');
+  if (grid) {
+    const total = 36;
+    const filledGold = new Set([2, 9, 14, 21, 27, 30]);
+    const filledSage = new Set([7, 16, 24]);
+    for (let i = 0; i < total; i++) {
+      const cell = document.createElement('span');
+      if (filledGold.has(i)) cell.classList.add('filled');
+      if (filledSage.has(i)) cell.classList.add('filled-sage');
+      grid.appendChild(cell);
+    }
   }
-  function closeDrawer() {
-    drawer?.classList.remove('is-open');
-    overlay?.classList.remove('is-open');
-    hamburgerBtn?.setAttribute('aria-expanded', 'false');
-    document.body.style.overflow = '';
-  }
-
-  hamburgerBtn?.addEventListener('click', openDrawer);
-  closeBtn?.addEventListener('click', closeDrawer);
-  overlay?.addEventListener('click', closeDrawer);
 </script>
-</body>
-</html>
