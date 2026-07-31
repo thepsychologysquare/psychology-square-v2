@@ -32,6 +32,6 @@
 	],
 	"vars": {
 		"BOOKING_ADMIN_EMAIL": "thepsychologysquare@gmail.com",
-		"EMAIL_FROM": "The Psychology Square <certificates@thepsychologysquare.com>"
+		"EMAIL_FROM": "The Psychology Square <info@thepsychologysquare.com>"
 	}
 }
