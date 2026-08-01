@@ -1,5 +1,5 @@
 ---
-courseSlug: Emotioanal Intelligence
+courseSlug: emotional-intelligence-eq-101
 title: "Module 1: Self-Awareness"
 type: text
 order: 0
