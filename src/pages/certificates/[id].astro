@@ -57,6 +57,7 @@ const formattedDate = certificate
 
           <div class="cert-actions">
             <button type="button" class="btn btn--primary" id="downloadPdfBtn">Download PDF</button>
+            <button type="button" class="btn btn--text" id="copyLinkBtn">Copy verification link</button>
             <a href="/my-certificates" class="btn btn--text">View all my certificates &rarr;</a>
           </div>
         </>
@@ -74,6 +75,20 @@ const formattedDate = certificate
     date: formattedDate,
     certId: certificate.id,
   }}>
+    const copyBtn = document.getElementById('copyLinkBtn');
+    copyBtn.addEventListener('click', async () => {
+      const link = window.location.href;
+      try {
+        await navigator.clipboard.writeText(link);
+      } catch {
+        window.prompt('Copy this verification link:', link);
+        return;
+      }
+      const original = copyBtn.textContent;
+      copyBtn.textContent = 'Link copied ✓';
+      setTimeout(() => { copyBtn.textContent = original; }, 2000);
+    });
+
     document.getElementById('downloadPdfBtn').addEventListener('click', async () => {
       const btn = document.getElementById('downloadPdfBtn');
       btn.disabled = true;

@@ -26,6 +26,7 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
         <button class="tab-btn is-active" data-tab="bookings">Bookings</button>
         <button class="tab-btn" data-tab="availability">Availability</button>
         <button class="tab-btn" data-tab="enrollments">Course Enrollments</button>
+        <button class="tab-btn" data-tab="certificates">Certificates</button>
       </div>
 
       <!-- ===== BOOKINGS TAB ===== -->
@@ -189,6 +190,35 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
           </table>
         </div>
       </div>
+
+      <!-- ===== CERTIFICATES TAB ===== -->
+      <div id="tabCertificates" class="tab-panel" hidden>
+        <div class="course-stats" id="courseStats"></div>
+
+        <div class="dash-toolbar">
+          <input type="text" id="certSearchBox" placeholder="Search by name, email, course, or certificate ID" />
+          <button id="certExportBtn" class="btn btn--text export-btn">Download as Excel (.csv)</button>
+        </div>
+        <p id="certLoadingMsg" class="dash-empty">Loading…</p>
+        <p id="certEmptyMsg" class="dash-empty" hidden>No certificates issued yet.</p>
+        <div class="table-scroll">
+          <table class="bookings-table" id="certTable" hidden>
+            <thead>
+              <tr>
+                <th>Certificate ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Course</th>
+                <th>Score</th>
+                <th>Hours</th>
+                <th>Issued</th>
+                <th class="col-actions">Verify</th>
+              </tr>
+            </thead>
+            <tbody id="certBody"></tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -269,6 +299,12 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
   .skeleton-rows{ display:flex; flex-direction:column; gap:10px; }
   .skeleton-row{ height:52px; border-radius:2px; background:linear-gradient(90deg, var(--paper-50) 25%, rgba(19,26,34,0.06) 37%, var(--paper-50) 63%); background-size:400% 100%; animation:shimmer 1.4s ease infinite; }
   @keyframes shimmer{ 0%{background-position:100% 0;} 100%{background-position:0 0;} }
+
+  .course-stats{ display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:14px; margin-bottom:24px; }
+  .course-stat-card{ border:1px solid var(--line); border-radius:2px; padding:16px 18px; background:var(--paper-50); }
+  .course-stat-card h3{ font-family:var(--font-display); font-size:15px; margin-bottom:10px; }
+  .course-stat-row{ display:flex; justify-content:space-between; font-size:13px; padding:3px 0; color:var(--ink-600); }
+  .course-stat-row strong{ color:var(--ink-900); }
 
   .table-scroll{ overflow-x:auto; border:1px solid var(--line); border-radius:2px; max-height:640px; overflow-y:auto; }
   .bookings-table{ width:100%; border-collapse:collapse; font-size:13.5px; white-space:nowrap; }
@@ -435,14 +471,17 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
   const tabBookings = document.getElementById('tabBookings');
   const tabAvailability = document.getElementById('tabAvailability');
   const tabEnrollments = document.getElementById('tabEnrollments');
+  const tabCertificates = document.getElementById('tabCertificates');
 
   function activateTab(tab) {
     tabs.querySelectorAll('.tab-btn').forEach((b) => b.classList.toggle('is-active', b.dataset.tab === tab));
     tabBookings.hidden = tab !== 'bookings';
     tabAvailability.hidden = tab !== 'availability';
     tabEnrollments.hidden = tab !== 'enrollments';
+    tabCertificates.hidden = tab !== 'certificates';
     if (tab === 'availability') loadAvailability();
     if (tab === 'enrollments') loadEnrollments();
+    if (tab === 'certificates') loadCertificates();
     history.replaceState(null, '', `#${tab}`);
   }
   tabs.addEventListener('click', (e) => {
@@ -450,7 +489,9 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
     if (!btn) return;
     activateTab(btn.dataset.tab);
   });
-  activateTab(location.hash === '#availability' ? 'availability' : location.hash === '#enrollments' ? 'enrollments' : 'bookings');
+  const initialTab = ['availability', 'enrollments', 'certificates'].includes(location.hash.slice(1))
+    ? location.hash.slice(1) : 'bookings';
+  activateTab(initialTab);
 
   // ===== Course Enrollments =====
   let allEnrollments = [];
@@ -501,6 +542,81 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
     const a = document.createElement('a');
     a.href = url;
     a.download = `course-enrollments-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  // ===== Certificates =====
+  let allCertificates = [];
+  const certBody = document.getElementById('certBody');
+  const certTable = document.getElementById('certTable');
+  const certLoadingMsg = document.getElementById('certLoadingMsg');
+  const certEmptyMsg = document.getElementById('certEmptyMsg');
+  const certSearchBox = document.getElementById('certSearchBox');
+  const certExportBtn = document.getElementById('certExportBtn');
+  const courseStatsEl = document.getElementById('courseStats');
+
+  async function loadCertificates() {
+    certLoadingMsg.hidden = false;
+    certTable.hidden = true;
+    const res = await fetch('/api/admin/certificates');
+    if (res.status === 401) { window.location.href = '/dashboard/login'; return; }
+    const data = await res.json();
+    allCertificates = data.certificates || [];
+    certLoadingMsg.hidden = true;
+    renderCourseStats(data.courseStats || []);
+    renderCertificates();
+  }
+
+  function renderCourseStats(stats) {
+    if (stats.length === 0) { courseStatsEl.innerHTML = ''; return; }
+    courseStatsEl.innerHTML = stats.map((s) => {
+      const passRate = s.attempt_count > 0 ? Math.round((s.passed_attempt_count / s.attempt_count) * 100) : 0;
+      return `
+        <div class="course-stat-card">
+          <h3>${escapeHtml(s.course_title)}</h3>
+          <div class="course-stat-row"><span>Enrolled</span><strong>${s.enrolled_count}</strong></div>
+          <div class="course-stat-row"><span>Quiz attempts</span><strong>${s.attempt_count}</strong></div>
+          <div class="course-stat-row"><span>Pass rate</span><strong>${passRate}%</strong></div>
+          <div class="course-stat-row"><span>Avg score</span><strong>${s.avg_score_percent ?? '—'}${s.avg_score_percent != null ? '%' : ''}</strong></div>
+          <div class="course-stat-row"><span>Certificates issued</span><strong>${s.certificate_count}</strong></div>
+        </div>`;
+    }).join('');
+  }
+
+  function renderCertificates() {
+    const term = (certSearchBox.value || '').toLowerCase();
+    const items = allCertificates.filter((c) =>
+      !term || c.name.toLowerCase().includes(term) || c.email.toLowerCase().includes(term) ||
+      c.course_title.toLowerCase().includes(term) || c.id.toLowerCase().includes(term)
+    );
+    certEmptyMsg.hidden = items.length > 0;
+    certTable.hidden = items.length === 0;
+    certBody.innerHTML = items.map((c) => `
+      <tr>
+        <td><code>${escapeHtml(c.id)}</code></td>
+        <td>${escapeHtml(c.name)}</td>
+        <td>${escapeHtml(c.email)}</td>
+        <td>${escapeHtml(c.course_title)}</td>
+        <td>${c.score_percent}%</td>
+        <td>${c.ce_hours}</td>
+        <td>${formatDate(c.issued_at)}</td>
+        <td><a href="/certificates/${encodeURIComponent(c.id)}" target="_blank" rel="noopener">View →</a></td>
+      </tr>
+    `).join('');
+  }
+  certSearchBox.addEventListener('input', renderCertificates);
+
+  certExportBtn.addEventListener('click', () => {
+    const header = ['Certificate ID', 'Name', 'Email', 'Course', 'Score %', 'Hours', 'Issued At'];
+    const rows = allCertificates.map((c) => [c.id, c.name, c.email, c.course_title, c.score_percent, c.ce_hours, c.issued_at]
+      .map((v) => `"${String(v ?? '').replace(/"/g, '""')}"`).join(','));
+    const csv = [header.join(','), ...rows].join('\r\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `certificates-${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   });
