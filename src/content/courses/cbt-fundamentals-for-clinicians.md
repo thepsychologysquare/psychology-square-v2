@@ -4,7 +4,7 @@ description: "A practical refresher on core cognitive-behavioral therapy princip
 image: ""
 imageAlt: ""
 category: "general"
-ceHours: 1
+estimatedHours: 1
 author: "Muhammad Sohail"
 passScorePercent: 80
 quiz:

@@ -1,21 +1,34 @@
 ---
+export const prerender = false;
 import { getCollection, render } from 'astro:content';
+import { env } from 'cloudflare:workers';
 import Layout from '../../layouts/Layout.astro';
+import { getClientSession } from '../../lib/clientAuth';
 
-export async function getStaticPaths() {
-  const courses = await getCollection('courses', ({ data }) => !data.draft);
-  return courses.map((course) => ({
-    params: { slug: course.id },
-    props: { course },
-  }));
+const { slug } = Astro.params;
+const courses = await getCollection('courses', ({ data }) => !data.draft);
+const course = courses.find((c) => c.id === slug);
+if (!course) return Astro.redirect('/courses', 302);
+
+const session = env?.CLIENT_SESSION_SECRET
+  ? await getClientSession(Astro.request.headers.get('cookie'), env.CLIENT_SESSION_SECRET)
+  : null;
+
+let enrollment: { name: string } | null = null;
+if (session && env?.DB) {
+  enrollment = await env.DB.prepare(
+    `SELECT name FROM enrollments WHERE course_slug = ? AND email = ?`
+  ).bind(course.id, session.email).first<{ name: string }>();
 }
+const isEnrolled = !!enrollment;
 
-const { course } = Astro.props;
-const { Content } = await render(course);
-
-// Only question + options go to the client — correctIndex stays server-side
-// so grading can never be inspected or tampered with in the browser.
-const clientQuiz = course.data.quiz.map((q) => ({ question: q.question, options: q.options }));
+// Only rendered/sent to the browser at all once enrolled — an
+// unenrolled visitor's page source never contains the lesson content or
+// the quiz questions, not just a visually-hidden version of them.
+const { Content } = isEnrolled ? await render(course) : { Content: null };
+const clientQuiz = isEnrolled
+  ? course.data.quiz.map((q) => ({ question: q.question, options: q.options }))
+  : [];
 ---
 <Layout
   title={course.data.title}
@@ -24,144 +37,245 @@ const clientQuiz = course.data.quiz.map((q) => ({ question: q.question, options:
 >
   <article class="course-article">
     <div class="wrap wrap--narrow">
-      <span class="eyebrow">CE Course &middot; {course.data.ceHours} {course.data.ceHours === 1 ? 'hour' : 'hours'}</span>
+      <span class="eyebrow">Course &middot; {course.data.estimatedHours} {course.data.estimatedHours === 1 ? 'hour' : 'hours'}</span>
       <h1>{course.data.title}</h1>
       <p class="lede">{course.data.description}</p>
 
-      <div class="course-content">
-        <Content />
-      </div>
+      {!isEnrolled ? (
+        <section class="enroll-gate" id="enrollGate">
+          <h2>Enroll to access this course</h2>
+          <p class="enroll-copy">Enrolling is free and takes a few seconds — you'll get a sign-in link by email, no password needed. The lessons and quiz unlock right after.</p>
 
-      <section class="quiz-section" id="quizSection">
-        <h2>Complete the quiz</h2>
-        <p class="quiz-intro">Score {course.data.passScorePercent}% or higher to earn your certificate. You can retake the quiz if needed.</p>
+          {session ? (
+            <div id="enrollNowPanel">
+              <p class="signed-in-as">Signed in as <strong>{session.email}</strong></p>
+              <button type="button" class="btn btn--primary" id="enrollNowBtn">Enroll now</button>
+              <p class="enroll-error" id="enrollNowError" role="alert" hidden></p>
+            </div>
+          ) : (
+            <form id="enrollForm" class="enroll-form">
+              <div class="field-row">
+                <div class="field">
+                  <label for="enrollName">Full name</label>
+                  <input type="text" id="enrollName" required autocomplete="name" placeholder="As it should appear on your certificate" />
+                </div>
+                <div class="field">
+                  <label for="enrollEmail">Email</label>
+                  <input type="email" id="enrollEmail" required autocomplete="email" placeholder="you@example.com" />
+                </div>
+              </div>
+              <button type="submit" class="btn btn--primary" id="enrollBtn">Enroll &amp; email me a link</button>
+              <p class="enroll-error" id="enrollError" role="alert" hidden></p>
+            </form>
+          )}
 
-        <form id="quizForm" class="quiz-form">
-          <div class="field-row">
-            <div class="field">
-              <label for="learnerName">Full name</label>
-              <input type="text" id="learnerName" name="learnerName" required autocomplete="name" placeholder="As it should appear on your certificate" />
-            </div>
-            <div class="field">
-              <label for="learnerEmail">Email</label>
-              <input type="email" id="learnerEmail" name="learnerEmail" required autocomplete="email" placeholder="you@example.com" />
-            </div>
+          <div id="enrollSent" class="enroll-sent" hidden>
+            <h3>Check your email</h3>
+            <p>Click the link we just sent to finish enrolling — it expires in 15 minutes.</p>
+          </div>
+        </section>
+      ) : (
+        <Fragment>
+          <div class="course-content">
+            <Content />
           </div>
 
-          <div id="quizQuestions"></div>
+          <section class="quiz-section" id="quizSection">
+            <h2>Complete the quiz</h2>
+            <p class="quiz-intro">Score {course.data.passScorePercent}% or higher to earn your certificate. You can retake the quiz if needed.</p>
 
-          <button type="submit" class="btn btn--primary" id="quizSubmitBtn">Submit quiz</button>
-          <p class="quiz-error" id="quizError" role="alert" hidden></p>
-        </form>
+            <form id="quizForm" class="quiz-form">
+              <input type="hidden" id="learnerName" value={enrollment?.name || ''} />
+              <input type="hidden" id="learnerEmail" value={session?.email || ''} />
 
-        <div id="quizResult" class="quiz-result" hidden></div>
-      </section>
+              <div id="quizQuestions"></div>
+
+              <button type="submit" class="btn btn--primary" id="quizSubmitBtn">Submit quiz</button>
+              <p class="quiz-error" id="quizError" role="alert" hidden></p>
+            </form>
+
+            <div id="quizResult" class="quiz-result" hidden></div>
+          </section>
+        </Fragment>
+      )}
     </div>
   </article>
 </Layout>
 
 <script type="application/json" id="quizData" set:html={JSON.stringify(clientQuiz)}></script>
-<script define:vars={{ courseSlug: course.id }}>
-  const quiz = JSON.parse(document.getElementById('quizData').textContent);
-  const questionsEl = document.getElementById('quizQuestions');
+<script define:vars={{ courseSlug: course.id, currentUrl: Astro.url.pathname, isEnrolled }}>
+  // ---------- Enroll gate ----------
+  const enrollForm = document.getElementById('enrollForm');
+  if (enrollForm) {
+    const btn = document.getElementById('enrollBtn');
+    const errorEl = document.getElementById('enrollError');
+    const sentEl = document.getElementById('enrollSent');
 
-  quiz.forEach((q, qIndex) => {
-    const fieldset = document.createElement('fieldset');
-    fieldset.className = 'quiz-question';
+    enrollForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorEl.hidden = true;
+      btn.disabled = true;
+      btn.textContent = 'Sending…';
 
-    const legend = document.createElement('legend');
-    legend.textContent = `${qIndex + 1}. ${q.question}`;
-    fieldset.appendChild(legend);
+      const name = document.getElementById('enrollName').value.trim();
+      const email = document.getElementById('enrollEmail').value.trim();
 
-    q.options.forEach((option, oIndex) => {
-      const label = document.createElement('label');
-      label.className = 'quiz-option';
-      const input = document.createElement('input');
-      input.type = 'radio';
-      input.name = `q${qIndex}`;
-      input.value = String(oIndex);
-      input.required = true;
-      label.appendChild(input);
-      label.appendChild(document.createTextNode(' ' + option));
-      fieldset.appendChild(label);
-    });
-
-    questionsEl.appendChild(fieldset);
-  });
-
-  const form = document.getElementById('quizForm');
-  const submitBtn = document.getElementById('quizSubmitBtn');
-  const errorEl = document.getElementById('quizError');
-  const resultEl = document.getElementById('quizResult');
-
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    errorEl.hidden = true;
-
-    const name = document.getElementById('learnerName').value.trim();
-    const email = document.getElementById('learnerEmail').value.trim();
-    const answers = quiz.map((_, qIndex) => {
-      const selected = form.querySelector(`input[name="q${qIndex}"]:checked`);
-      return selected ? Number(selected.value) : -1;
-    });
-
-    if (answers.includes(-1)) {
-      errorEl.textContent = 'Please answer every question.';
-      errorEl.hidden = false;
-      return;
-    }
-
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Submitting…';
-
-    try {
-      const res = await fetch('/api/courses/submit', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ courseSlug, name, email, answers }),
-      });
-      const data = await res.json();
-
-      if (!res.ok) {
-        errorEl.textContent = data.error || 'Something went wrong. Please try again.';
+      try {
+        const res = await fetch('/api/certificates/request-link', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ email, redirect: currentUrl, enrollCourseSlug: courseSlug, enrollName: name }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          errorEl.textContent = data.error || 'Something went wrong. Please try again.';
+          errorEl.hidden = false;
+          btn.disabled = false;
+          btn.textContent = 'Enroll & email me a link';
+          return;
+        }
+        enrollForm.hidden = true;
+        sentEl.hidden = false;
+      } catch {
+        errorEl.textContent = 'Could not reach the server. Please check your connection and try again.';
         errorEl.hidden = false;
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Submit quiz';
+        btn.disabled = false;
+        btn.textContent = 'Enroll & email me a link';
+      }
+    });
+  }
+
+  const enrollNowBtn = document.getElementById('enrollNowBtn');
+  if (enrollNowBtn) {
+    enrollNowBtn.addEventListener('click', async () => {
+      const errorEl = document.getElementById('enrollNowError');
+      errorEl.hidden = true;
+      enrollNowBtn.disabled = true;
+      enrollNowBtn.textContent = 'Enrolling…';
+      try {
+        const res = await fetch('/api/courses/enroll', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ courseSlug }),
+        });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          errorEl.textContent = data.error || 'Something went wrong. Please try again.';
+          errorEl.hidden = false;
+          enrollNowBtn.disabled = false;
+          enrollNowBtn.textContent = 'Enroll now';
+          return;
+        }
+        window.location.reload();
+      } catch {
+        errorEl.textContent = 'Could not reach the server. Please check your connection and try again.';
+        errorEl.hidden = false;
+        enrollNowBtn.disabled = false;
+        enrollNowBtn.textContent = 'Enroll now';
+      }
+    });
+  }
+
+  // ---------- Quiz (only present in the DOM once enrolled) ----------
+  if (isEnrolled) {
+    const quiz = JSON.parse(document.getElementById('quizData').textContent);
+    const questionsEl = document.getElementById('quizQuestions');
+
+    quiz.forEach((q, qIndex) => {
+      const fieldset = document.createElement('fieldset');
+      fieldset.className = 'quiz-question';
+      const legend = document.createElement('legend');
+      legend.textContent = `${qIndex + 1}. ${q.question}`;
+      fieldset.appendChild(legend);
+      q.options.forEach((option, oIndex) => {
+        const label = document.createElement('label');
+        label.className = 'quiz-option';
+        const input = document.createElement('input');
+        input.type = 'radio';
+        input.name = `q${qIndex}`;
+        input.value = String(oIndex);
+        input.required = true;
+        label.appendChild(input);
+        label.appendChild(document.createTextNode(' ' + option));
+        fieldset.appendChild(label);
+      });
+      questionsEl.appendChild(fieldset);
+    });
+
+    const form = document.getElementById('quizForm');
+    const submitBtn = document.getElementById('quizSubmitBtn');
+    const errorEl = document.getElementById('quizError');
+    const resultEl = document.getElementById('quizResult');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorEl.hidden = true;
+
+      const name = document.getElementById('learnerName').value.trim();
+      const email = document.getElementById('learnerEmail').value.trim();
+      const answers = quiz.map((_, qIndex) => {
+        const selected = form.querySelector(`input[name="q${qIndex}"]:checked`);
+        return selected ? Number(selected.value) : -1;
+      });
+
+      if (answers.includes(-1)) {
+        errorEl.textContent = 'Please answer every question.';
+        errorEl.hidden = false;
         return;
       }
 
-      form.hidden = true;
-      resultEl.hidden = false;
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Submitting…';
 
-      if (data.passed) {
-        resultEl.innerHTML = `
-          <div class="result result--pass">
-            <h3>You passed — ${data.scorePercent}%</h3>
-            <p>Your certificate has been generated${data.emailSent ? ' and emailed to you' : ''}.</p>
-            <a href="/certificates/${data.certificateId}" class="btn btn--primary">View your certificate</a>
-          </div>`;
-      } else {
-        resultEl.innerHTML = `
-          <div class="result result--fail">
-            <h3>Score: ${data.scorePercent}%</h3>
-            <p>You need ${data.passScorePercent}% or higher to pass. Review the material above and try again.</p>
-            <button type="button" class="btn btn--text" id="retryBtn">Retake the quiz</button>
-          </div>`;
-        document.getElementById('retryBtn').addEventListener('click', () => {
-          form.hidden = false;
-          resultEl.hidden = true;
+      try {
+        const res = await fetch('/api/courses/submit', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ courseSlug, name, email, answers }),
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          errorEl.textContent = data.error || 'Something went wrong. Please try again.';
+          errorEl.hidden = false;
           submitBtn.disabled = false;
           submitBtn.textContent = 'Submit quiz';
-          form.querySelectorAll('input[type="radio"]').forEach((r) => (r.checked = false));
-        });
+          return;
+        }
+
+        form.hidden = true;
+        resultEl.hidden = false;
+
+        if (data.passed) {
+          resultEl.innerHTML = `
+            <div class="result result--pass">
+              <h3>You passed — ${data.scorePercent}%</h3>
+              <p>Your certificate has been generated${data.emailSent ? ' and emailed to you' : ''}.</p>
+              <a href="/certificates/${data.certificateId}" class="btn btn--primary">View your certificate</a>
+            </div>`;
+        } else {
+          resultEl.innerHTML = `
+            <div class="result result--fail">
+              <h3>Score: ${data.scorePercent}%</h3>
+              <p>You need ${data.passScorePercent}% or higher to pass. Review the material above and try again.</p>
+              <button type="button" class="btn btn--text" id="retryBtn">Retake the quiz</button>
+            </div>`;
+          document.getElementById('retryBtn').addEventListener('click', () => {
+            form.hidden = false;
+            resultEl.hidden = true;
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Submit quiz';
+            form.querySelectorAll('input[type="radio"]').forEach((r) => (r.checked = false));
+          });
+        }
+      } catch {
+        errorEl.textContent = 'Could not reach the server. Please check your connection and try again.';
+        errorEl.hidden = false;
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit quiz';
       }
-    } catch {
-      errorEl.textContent = 'Could not reach the server. Please check your connection and try again.';
-      errorEl.hidden = false;
-      submitBtn.disabled = false;
-      submitBtn.textContent = 'Submit quiz';
-    }
-  });
+    });
+  }
 </script>
 
 <style>
@@ -170,6 +284,14 @@ const clientQuiz = course.data.quiz.map((q) => ({ question: q.question, options:
   .eyebrow{ font-family:var(--font-mono); font-size:12px; letter-spacing:0.08em; text-transform:uppercase; color:var(--gold-500); }
   .course-article h1{ font-family:var(--font-display); font-size:clamp(30px,4vw,42px); margin:8px 0 12px; }
   .lede{ color:var(--ink-600); font-size:17px; line-height:1.6; margin-bottom:36px; }
+
+  .enroll-gate{ margin-top:20px; padding:32px; border:1px solid var(--line); border-radius:2px; background:var(--paper-50); }
+  .enroll-gate h2{ font-family:var(--font-display); font-size:22px; margin-bottom:8px; }
+  .enroll-copy{ color:var(--ink-600); margin-bottom:24px; }
+  .signed-in-as{ font-size:14px; margin-bottom:16px; }
+  .enroll-error{ color:#B4432E; font-size:14px; margin-top:12px; }
+  .enroll-sent h3{ font-family:var(--font-display); font-size:20px; margin-bottom:8px; }
+  .enroll-sent p{ color:var(--ink-600); }
 
   .course-content{ font-size:16px; line-height:1.75; }
   .course-content :global(h2){ font-family:var(--font-display); font-size:24px; margin:40px 0 14px; }
@@ -181,7 +303,7 @@ const clientQuiz = course.data.quiz.map((q) => ({ question: q.question, options:
   .quiz-section h2{ font-family:var(--font-display); font-size:26px; margin-bottom:6px; }
   .quiz-intro{ color:var(--ink-600); margin-bottom:28px; }
 
-  .field-row{ display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:28px; }
+  .field-row{ display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px; }
   .field{ display:flex; flex-direction:column; gap:6px; }
   label{ font-size:14px; font-weight:500; }
   input[type="text"], input[type="email"]{

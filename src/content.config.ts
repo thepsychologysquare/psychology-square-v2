@@ -71,7 +71,7 @@ const courses = defineCollection({
       'anxiety', 'depression', 'addiction-recovery', 'trauma',
       'relationships', 'stress-burnout', 'adhd', 'general',
     ]).default('general'),
-    ceHours: z.number().default(1),
+    estimatedHours: z.number().default(1),
     author: z.string(),
     passScorePercent: z.number().min(1).max(100).default(80),
     // Quiz questions: index of the correct option within that question's options array.

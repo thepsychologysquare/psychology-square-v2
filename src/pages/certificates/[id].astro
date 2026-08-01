@@ -46,7 +46,7 @@ const formattedDate = certificate
             <div class="certificate__course">{certificate.course_title}</div>
             <div class="certificate__details">
               <div><span>Score</span><strong>{certificate.score_percent}%</strong></div>
-              <div><span>CE Hours</span><strong>{certificate.ce_hours}</strong></div>
+              <div><span>Hours</span><strong>{certificate.ce_hours}</strong></div>
               <div><span>Date</span><strong>{formattedDate}</strong></div>
             </div>
             <div class="certificate__footer">
@@ -126,7 +126,7 @@ const formattedDate = certificate
       doc.setFont('times', 'normal');
       doc.setFontSize(12);
       doc.setTextColor(...inkLight);
-      doc.text(`Score: ${scorePercent}%      CE Hours: ${ceHours}      Date: ${date}`, centerX, 300, { align: 'center' });
+      doc.text(`Score: ${scorePercent}%      Hours: ${ceHours}      Date: ${date}`, centerX, 300, { align: 'center' });
 
       doc.setFontSize(10);
       doc.text(`Certificate ID: ${certId}`, centerX, pageHeight - 50, { align: 'center' });

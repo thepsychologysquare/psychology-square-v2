@@ -17,13 +17,13 @@ const categoryMeta: Record<string, string> = {
 };
 ---
 <Layout
-  title="CE Courses"
+  title="Courses"
   description="Continuing education courses from The Psychology Square. Complete a course, pass the quiz, and receive a verifiable certificate by email."
 >
   <section class="courses-hero">
     <div class="wrap">
       <span class="eyebrow">Continuing Education</span>
-      <h1>CE Courses</h1>
+      <h1>Courses</h1>
       <p class="lede">Short, practical courses. Pass the quiz at the end and we'll email you a verifiable certificate immediately.</p>
       <a href="/my-certificates" class="btn btn--text">View my certificates &rarr;</a>
     </div>
@@ -41,7 +41,7 @@ const categoryMeta: Record<string, string> = {
             <h2>{course.data.title}</h2>
             <p>{course.data.description}</p>
             <div class="course-card__meta">
-              <span>{course.data.ceHours} CE {course.data.ceHours === 1 ? 'hour' : 'hours'}</span>
+              <span>{course.data.estimatedHours} {course.data.estimatedHours === 1 ? 'hour' : 'hours'}</span>
               <span>{course.data.quiz.length} question quiz</span>
             </div>
           </a>

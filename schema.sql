@@ -15,8 +15,7 @@ CREATE TABLE IF NOT EXISTS bookings (
   screenshot_key TEXT NOT NULL,      -- R2 object key for the uploaded proof
   screenshot_type TEXT NOT NULL,     -- content-type, for serving it back correctly
   status TEXT NOT NULL DEFAULT 'pending',  -- 'pending' | 'confirmed' | 'declined'
-  submitter_ip TEXT,                 -- used only for rate-limiting, not shown in the UI
-  mode TEXT NOT NULL DEFAULT 'online'      -- 'online' | 'in_person'
+  submitter_ip TEXT                  -- used only for rate-limiting, not shown in the UI
 );
 
 CREATE INDEX IF NOT EXISTS idx_bookings_created_at ON bookings (created_at DESC);
@@ -121,3 +120,34 @@ CREATE TABLE IF NOT EXISTS certificates (
 
 CREATE INDEX IF NOT EXISTS idx_certificates_email ON certificates (email);
 CREATE INDEX IF NOT EXISTS idx_certificates_course ON certificates (course_slug);
+
+-- Passwordless login tokens. Previously stored in KV, which is only
+-- *eventually* consistent across Cloudflare's edge locations — a token
+-- written by one request could briefly be invisible to a read from a
+-- different location, which is the most likely cause of magic links
+-- intermittently failing ("expired") right after being issued. D1 has a
+-- single consistent primary, so a token is reliably visible the instant
+-- it's written.
+CREATE TABLE IF NOT EXISTS magic_link_tokens (
+  token TEXT PRIMARY KEY,
+  email TEXT NOT NULL,
+  redirect_path TEXT,          -- where to send them after verifying (e.g. back to a course)
+  enroll_course_slug TEXT,     -- if this login was to enroll in a course, which one
+  enroll_name TEXT,            -- name given at the enroll form, for the enrollment record
+  expires_at TEXT NOT NULL
+);
+
+-- One row per person enrolled in a course. Enrolling is what unlocks the
+-- lesson content and quiz on that course's page.
+CREATE TABLE IF NOT EXISTS enrollments (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  course_slug TEXT NOT NULL,
+  course_title TEXT NOT NULL,
+  name TEXT NOT NULL,
+  email TEXT NOT NULL,
+  enrolled_at TEXT NOT NULL,
+  UNIQUE(course_slug, email)
+);
+
+CREATE INDEX IF NOT EXISTS idx_enrollments_email ON enrollments (email);
+CREATE INDEX IF NOT EXISTS idx_enrollments_course ON enrollments (course_slug);

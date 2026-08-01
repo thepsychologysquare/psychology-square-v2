@@ -22,7 +22,7 @@ if (session && env?.DB) {
 
 const expired = Astro.url.searchParams.get('expired') === '1';
 ---
-<Layout title="My Certificates" description="View every CE certificate you've earned from The Psychology Square.">
+<Layout title="My Certificates" description="View every certificate you've earned from The Psychology Square.">
   <section class="my-certs">
     <div class="wrap wrap--narrow">
       {!session && (
@@ -60,7 +60,7 @@ const expired = Astro.url.searchParams.get('expired') === '1';
           </div>
 
           {certificates.length === 0 && (
-            <p class="empty-state">No certificates yet. <a href="/courses">Browse CE courses</a> to get started.</p>
+            <p class="empty-state">No certificates yet. <a href="/courses">Browse courses</a> to get started.</p>
           )}
 
           <div class="cert-list">
@@ -69,7 +69,7 @@ const expired = Astro.url.searchParams.get('expired') === '1';
                 <div>
                   <h2>{c.course_title}</h2>
                   <span class="cert-row__meta">
-                    {c.ce_hours} CE {c.ce_hours === 1 ? 'hour' : 'hours'} &middot; Score {c.score_percent}% &middot;
+                    {c.ce_hours} {c.ce_hours === 1 ? 'hour' : 'hours'} &middot; Score {c.score_percent}% &middot;
                     {' '}{new Date(c.issued_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
                   </span>
                 </div>

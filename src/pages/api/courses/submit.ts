@@ -17,7 +17,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const POST: APIRoute = async ({ request }) => {
   if (!env?.DB) {
-    return jsonError('Certification system is not configured yet.', 500);
+    return jsonError('Course system is not configured yet.', 500);
   }
 
   const body = await request.json().catch(() => null);
@@ -30,6 +30,13 @@ export const POST: APIRoute = async ({ request }) => {
   if (!name || name.length > 200) return jsonError('Please enter your name.', 400);
   if (!EMAIL_RE.test(email) || email.length > 200) return jsonError('Please enter a valid email address.', 400);
   if (!answers) return jsonError('Missing quiz answers.', 400);
+
+  // Server-side gate: only an enrolled email can submit for this course,
+  // regardless of what the page's client-side JS did or didn't check.
+  const enrollment = await env.DB.prepare(
+    `SELECT 1 FROM enrollments WHERE course_slug = ? AND email = ?`
+  ).bind(courseSlug, email).first();
+  if (!enrollment) return jsonError('Please enroll in this course before submitting the quiz.', 403);
 
   const course = await getEntry('courses', courseSlug);
   if (!course || course.data.draft) {
@@ -68,7 +75,7 @@ export const POST: APIRoute = async ({ request }) => {
     await env.DB.prepare(
       `INSERT INTO certificates (id, course_slug, course_title, ce_hours, name, email, score_percent, issued_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
-    ).bind(certificateId, courseSlug, course.data.title, course.data.ceHours, name, email, scorePercent, now).run();
+    ).bind(certificateId, courseSlug, course.data.title, course.data.estimatedHours, name, email, scorePercent, now).run();
   } catch {
     return jsonError('You passed, but the certificate could not be saved. Please try submitting again.', 500);
   }

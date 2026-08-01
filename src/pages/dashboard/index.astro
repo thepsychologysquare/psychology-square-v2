@@ -25,6 +25,7 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
       <div class="dash-tabs" id="dashTabs">
         <button class="tab-btn is-active" data-tab="bookings">Bookings</button>
         <button class="tab-btn" data-tab="availability">Availability</button>
+        <button class="tab-btn" data-tab="enrollments">Course Enrollments</button>
       </div>
 
       <!-- ===== BOOKINGS TAB ===== -->
@@ -65,9 +66,7 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
                 <th data-sort="id">Reference</th>
                 <th data-sort="client_name">Client</th>
                 <th data-sort="contact">Contact</th>
-				<th>Notes</th>
                 <th data-sort="service">Service</th>
-                <th data-sort="mode">Format</th>
                 <th data-sort="clinician">Clinician</th>
                 <th data-sort="amount_pkr">Amount</th>
                 <th data-sort="preferred_time">Time</th>
@@ -165,6 +164,29 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
             <span id="undoToastText"></span>
             <button id="undoToastBtn" class="undo-toast-btn" type="button">Undo</button>
           </div>
+        </div>
+      </div>
+
+      <div id="tabEnrollments" class="tab-panel" hidden>
+        <div class="dash-toolbar">
+          <input type="text" id="enrollSearchBox" placeholder="Search by name, email, or course" />
+          <button id="enrollExportBtn" class="btn btn--text export-btn">Download as Excel (.csv)</button>
+        </div>
+        <p id="enrollLoadingMsg" class="dash-empty">Loading…</p>
+        <p id="enrollEmptyMsg" class="dash-empty" hidden>No enrollments yet.</p>
+        <div class="table-scroll">
+          <table class="bookings-table" id="enrollTable" hidden>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Course</th>
+                <th>Enrolled</th>
+                <th>Completed</th>
+              </tr>
+            </thead>
+            <tbody id="enrollBody"></tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -284,9 +306,6 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
   .status-badge.pending{ background:rgba(199,164,74,0.15); color:#8a6d1f; }
   .status-badge.confirmed{ background:rgba(124,152,133,0.18); color:#3f5c47; }
   .status-badge.declined{ background:rgba(180,67,46,0.12); color:#B4432E; }
-  .format-badge{ font-family:var(--font-mono); font-size:11px; letter-spacing:0.06em; text-transform:uppercase; padding:4px 10px; border-radius:20px; white-space:nowrap; }
-  .format-badge.online{ background:rgba(45,90,135,0.10); color:#2d5a87; }
-  .format-badge.in_person{ background:rgba(124,152,133,0.18); color:#3f5c47; }
 
 
   .pagination{ display:flex; align-items:center; justify-content:center; gap:16px; margin-top:18px; font-size:13.5px; color:var(--ink-600); }
@@ -402,7 +421,6 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
     return String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   }
   function clinicianName(c) { return c === 'sohail' ? 'Muhammad Sohail' : c === 'sehar' ? 'Sehar Waheed' : 'No preference'; }
-  function modeLabel(m) { return m === 'in_person' ? 'In person' : 'Online'; }
   function formatDate(iso) {
     const d = new Date(iso);
     return d.toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
@@ -416,12 +434,15 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
   const tabs = document.getElementById('dashTabs');
   const tabBookings = document.getElementById('tabBookings');
   const tabAvailability = document.getElementById('tabAvailability');
+  const tabEnrollments = document.getElementById('tabEnrollments');
 
   function activateTab(tab) {
     tabs.querySelectorAll('.tab-btn').forEach((b) => b.classList.toggle('is-active', b.dataset.tab === tab));
     tabBookings.hidden = tab !== 'bookings';
     tabAvailability.hidden = tab !== 'availability';
+    tabEnrollments.hidden = tab !== 'enrollments';
     if (tab === 'availability') loadAvailability();
+    if (tab === 'enrollments') loadEnrollments();
     history.replaceState(null, '', `#${tab}`);
   }
   tabs.addEventListener('click', (e) => {
@@ -429,7 +450,60 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
     if (!btn) return;
     activateTab(btn.dataset.tab);
   });
-  activateTab(location.hash === '#availability' ? 'availability' : 'bookings');
+  activateTab(location.hash === '#availability' ? 'availability' : location.hash === '#enrollments' ? 'enrollments' : 'bookings');
+
+  // ===== Course Enrollments =====
+  let allEnrollments = [];
+  const enrollBody = document.getElementById('enrollBody');
+  const enrollTable = document.getElementById('enrollTable');
+  const enrollLoadingMsg = document.getElementById('enrollLoadingMsg');
+  const enrollEmptyMsg = document.getElementById('enrollEmptyMsg');
+  const enrollSearchBox = document.getElementById('enrollSearchBox');
+  const enrollExportBtn = document.getElementById('enrollExportBtn');
+
+  async function loadEnrollments() {
+    enrollLoadingMsg.hidden = false;
+    enrollTable.hidden = true;
+    const res = await fetch('/api/admin/enrollments');
+    if (res.status === 401) { window.location.href = '/dashboard/login'; return; }
+    const data = await res.json();
+    allEnrollments = data.enrollments || [];
+    enrollLoadingMsg.hidden = true;
+    renderEnrollments();
+  }
+
+  function renderEnrollments() {
+    const term = (enrollSearchBox.value || '').toLowerCase();
+    const items = allEnrollments.filter((e) =>
+      !term || e.name.toLowerCase().includes(term) || e.email.toLowerCase().includes(term) || e.course_title.toLowerCase().includes(term)
+    );
+    enrollEmptyMsg.hidden = items.length > 0;
+    enrollTable.hidden = items.length === 0;
+    enrollBody.innerHTML = items.map((e) => `
+      <tr>
+        <td>${escapeHtml(e.name)}</td>
+        <td>${escapeHtml(e.email)}</td>
+        <td>${escapeHtml(e.course_title)}</td>
+        <td>${formatDate(e.enrolled_at)}</td>
+        <td>${e.completed > 0 ? '✓ Completed' : '—'}</td>
+      </tr>
+    `).join('');
+  }
+  enrollSearchBox.addEventListener('input', renderEnrollments);
+
+  enrollExportBtn.addEventListener('click', () => {
+    const header = ['Name', 'Email', 'Course', 'Enrolled At', 'Completed'];
+    const rows = allEnrollments.map((e) => [e.name, e.email, e.course_title, e.enrolled_at, e.completed > 0 ? 'Yes' : 'No']
+      .map((v) => `"${String(v ?? '').replace(/"/g, '""')}"`).join(','));
+    const csv = [header.join(','), ...rows].join('\r\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `course-enrollments-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  });
 
   // ===== Bookings =====
   const searchBox = document.getElementById('searchBox');
@@ -505,11 +579,9 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
       tr.innerHTML = `
         <td><input type="checkbox" class="row-check" data-id="${b.id}" ${selected.has(b.id) ? 'checked' : ''} /></td>
         <td class="cell-ref">${b.id}</td>
-        <td>${escapeHtml(b.client_name)}</td>
-		<td>${escapeHtml(b.contact)}</td>
-		<td class="cell-notes">${b.notes ? escapeHtml(b.notes) : '—'}</td>
+        <td>${escapeHtml(b.client_name)}${b.notes ? ` <span class="cell-notes-flag" title="${escapeHtml(b.notes)}">📝</span>` : ''}</td>
+        <td>${escapeHtml(b.contact)}</td>
         <td>${b.service === 'individual' ? 'Individual' : 'Couples'}</td>
-        <td><span class="format-badge ${b.mode || 'online'}">${modeLabel(b.mode || 'online')}</span></td>
         <td>${clinicianName(b.clinician)}</td>
         <td>PKR ${b.amount_pkr.toLocaleString('en-US')}</td>
         <td>${escapeHtml(b.preferred_time)}</td>
@@ -688,10 +760,10 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
   pageNext.addEventListener('click', () => { page++; render(); });
 
   exportBtn.addEventListener('click', () => {
-    const cols = ['id', 'created_at', 'client_name', 'contact', 'service', 'mode', 'clinician', 'preferred_time', 'amount_pkr', 'payment_method', 'status', 'notes'];
-    const header = ['Reference', 'Submitted', 'Name', 'Contact', 'Service', 'Format', 'Clinician', 'Time', 'Amount (PKR)', 'Payment Method', 'Status', 'Notes'];
+    const cols = ['id', 'created_at', 'client_name', 'contact', 'service', 'clinician', 'preferred_time', 'amount_pkr', 'payment_method', 'status', 'notes'];
+    const header = ['Reference', 'Submitted', 'Name', 'Contact', 'Service', 'Clinician', 'Time', 'Amount (PKR)', 'Payment Method', 'Status', 'Notes'];
     const rows = filteredSorted().map((b) => cols.map((c) => {
-      const v = String(c === 'mode' ? modeLabel(b.mode || 'online') : (b[c] ?? '')).replace(/"/g, '""');
+      const v = String(b[c] ?? '').replace(/"/g, '""');
       return `"${v}"`;
     }).join(','));
     const csv = [header.join(','), ...rows].join('\r\n');
