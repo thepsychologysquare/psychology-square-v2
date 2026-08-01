@@ -49,7 +49,11 @@ export const POST: APIRoute = async ({ request }) => {
 
   // Always respond the same way whether or not this email has anything
   // on file — don't let this endpoint be used to probe which addresses exist.
-  await sendMagicLinkEmail(env, { toEmail: email, link });
+  await sendMagicLinkEmail(env, {
+    toEmail: email,
+    link,
+    purpose: enrollCourseSlug ? 'enroll' : 'view-certificates',
+  });
 
   return new Response(JSON.stringify({ ok: true }), {
     status: 200,
