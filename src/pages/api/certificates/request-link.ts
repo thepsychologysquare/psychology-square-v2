@@ -45,7 +45,7 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   const token = await createMagicLinkToken(env.DB, { email, redirectPath, enrollCourseSlug, enrollName });
-  const link = new URL(`/api/certificates/verify?token=${token}`, request.url).toString();
+  const link = new URL(`/certificates/verify?token=${token}`, request.url).toString();
 
   // Always respond the same way whether or not this email has anything
   // on file — don't let this endpoint be used to probe which addresses exist.

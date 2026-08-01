@@ -5,20 +5,35 @@ import { createClientSessionCookie } from '../../../lib/clientAuth';
 
 export const prerender = false;
 
-export const GET: APIRoute = async ({ request, redirect }) => {
+function jsonError(message: string, status: number) {
+  return new Response(JSON.stringify({ error: message }), {
+    status,
+    headers: { 'content-type': 'application/json' },
+  });
+}
+
+// POST-only, and only ever called by an explicit button click on the
+// /certificates/verify confirmation page -- never by the bare emailed link
+// itself. Email providers and corporate security gateways routinely
+// pre-fetch links inside emails to scan them for safety before a person
+// ever clicks; if this endpoint consumed the token on GET, that automated
+// visit would burn the one-time token and the real click would always
+// come back "expired." Requiring a real click (a JS-initiated POST) means
+// scanners that merely fetch the page never trigger it.
+export const POST: APIRoute = async ({ request }) => {
   if (!env?.DB || !env?.CLIENT_SESSION_SECRET) {
-    return new Response('Sign-in is not configured yet.', { status: 500 });
+    return jsonError('Sign-in is not configured yet.', 500);
   }
 
-  const url = new URL(request.url);
-  const token = url.searchParams.get('token') || '';
+  const body = await request.json().catch(() => null);
+  const token = typeof body?.token === 'string' ? body.token : '';
 
   const payload = await consumeMagicLinkToken(env.DB, token);
   if (!payload) {
-    return redirect('/my-certificates?expired=1', 302);
+    return jsonError('That link has expired or was already used. Please request a new one.', 400);
   }
 
-  // If this login was to enroll in a course, create the enrollment now —
+  // If this login was to enroll in a course, create the enrollment now --
   // the person has just proven they own this email address.
   if (payload.enrollCourseSlug && payload.enrollName) {
     const { getCollection } = await import('astro:content');
@@ -38,11 +53,8 @@ export const GET: APIRoute = async ({ request, redirect }) => {
   }
 
   const cookie = await createClientSessionCookie(env.CLIENT_SESSION_SECRET, payload.email);
-  return new Response(null, {
-    status: 302,
-    headers: {
-      'Location': payload.redirectPath || '/my-certificates',
-      'set-cookie': cookie,
-    },
+  return new Response(JSON.stringify({ ok: true, redirectPath: payload.redirectPath || '/my-certificates' }), {
+    status: 200,
+    headers: { 'content-type': 'application/json', 'set-cookie': cookie },
   });
 };

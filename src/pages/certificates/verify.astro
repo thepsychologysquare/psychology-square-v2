@@ -1,0 +1,69 @@
+---
+export const prerender = false;
+import Layout from '../../layouts/Layout.astro';
+
+const token = Astro.url.searchParams.get('token') || '';
+---
+<Layout title="Confirm sign-in" description="Confirm your one-time sign-in link for The Psychology Square.">
+  <section class="verify-page">
+    <div class="wrap wrap--narrow">
+      {!token ? (
+        <div class="panel">
+          <h1>Missing link</h1>
+          <p>This link is missing its token. Please request a new one.</p>
+          <a href="/my-certificates" class="btn btn--primary">Request a new link</a>
+        </div>
+      ) : (
+        <div class="panel" id="confirmPanel">
+          <h1>Confirm it's you</h1>
+          <p>Click below to finish signing in. This extra click keeps automated email scanners from using up your link before you do.</p>
+          <button type="button" class="btn btn--primary" id="confirmBtn">Continue</button>
+          <p class="verify-error" id="verifyError" role="alert" hidden></p>
+        </div>
+      )}
+    </div>
+  </section>
+</Layout>
+
+{token && (
+  <script define:vars={{ token }}>
+    const btn = document.getElementById('confirmBtn');
+    const errorEl = document.getElementById('verifyError');
+    btn.addEventListener('click', async () => {
+      btn.disabled = true;
+      btn.textContent = 'Signing in…';
+      errorEl.hidden = true;
+      try {
+        const res = await fetch('/api/certificates/verify', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ token }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          errorEl.textContent = data.error || 'That link has expired or was already used. Please request a new one.';
+          errorEl.hidden = false;
+          btn.hidden = true;
+          return;
+        }
+        window.location.href = data.redirectPath || '/my-certificates';
+      } catch {
+        errorEl.textContent = 'Could not reach the server. Please check your connection and try again.';
+        errorEl.hidden = false;
+        btn.disabled = false;
+        btn.textContent = 'Continue';
+      }
+    });
+  </script>
+)}
+
+<style>
+  .verify-page{ padding:96px 0; }
+  .wrap--narrow{ max-width:480px; margin:0 auto; padding:0 24px; text-align:center; }
+  .panel h1{ font-family:var(--font-display); font-size:26px; margin-bottom:12px; }
+  .panel p{ color:var(--ink-600); font-size:15px; line-height:1.6; margin-bottom:24px; }
+  .btn{ font-family:var(--font-body); cursor:pointer; border:none; text-decoration:none; display:inline-block; }
+  .btn--primary{ background:var(--gold-500); color:var(--ink-900); padding:12px 26px; border-radius:2px; }
+  .btn--primary:disabled{ opacity:0.6; cursor:default; }
+  .verify-error{ color:#B4432E; font-size:14px; margin-top:16px; }
+</style>
