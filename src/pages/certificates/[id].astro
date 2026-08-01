@@ -56,7 +56,17 @@ const formattedDate = certificate
           </div>
 
           <div class="cert-actions">
-            <button type="button" class="btn btn--primary" id="downloadPdfBtn">Download PDF</button>
+            <button
+              type="button"
+              class="btn btn--primary"
+              id="downloadPdfBtn"
+              data-name={certificate.name}
+              data-course-title={certificate.course_title}
+              data-ce-hours={certificate.ce_hours}
+              data-score-percent={certificate.score_percent}
+              data-date={formattedDate}
+              data-cert-id={certificate.id}
+            >Download PDF</button>
             <button type="button" class="btn btn--text" id="copyLinkBtn">Copy verification link</button>
             <a href="/my-certificates" class="btn btn--text">View all my certificates &rarr;</a>
           </div>
@@ -67,14 +77,7 @@ const formattedDate = certificate
 </Layout>
 
 {certificate && (
-  <script define:vars={{
-    name: certificate.name,
-    courseTitle: certificate.course_title,
-    ceHours: certificate.ce_hours,
-    scorePercent: certificate.score_percent,
-    date: formattedDate,
-    certId: certificate.id,
-  }}>
+  <script define:vars={{ certId: certificate.id }}>
     const copyBtn = document.getElementById('copyLinkBtn');
     copyBtn.addEventListener('click', async () => {
       const link = window.location.href;
@@ -88,68 +91,86 @@ const formattedDate = certificate
       copyBtn.textContent = 'Link copied ✓';
       setTimeout(() => { copyBtn.textContent = original; }, 2000);
     });
+  </script>
+)}
 
-    document.getElementById('downloadPdfBtn').addEventListener('click', async () => {
-      const btn = document.getElementById('downloadPdfBtn');
+{certificate && (
+  <script>
+    // A normal (bundled) script, deliberately NOT using define:vars — Astro
+    // always inlines define:vars scripts as raw <script> tags, skipping the
+    // Vite bundler entirely. That broke the dynamic import('jspdf') below,
+    // since a bare package name only resolves through the bundler; the
+    // browser had nothing to resolve "jspdf" against and the click silently
+    // did nothing. Reading the certificate data from data-* attributes
+    // instead lets this script go through Vite normally.
+    const btn = document.getElementById('downloadPdfBtn');
+    btn?.addEventListener('click', async () => {
+      const { name, courseTitle, ceHours, scorePercent, date, certId } = btn.dataset;
       btn.disabled = true;
       btn.textContent = 'Preparing…';
 
-      const { jsPDF } = await import('jspdf');
-      const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
-      const pageWidth = doc.internal.pageSize.getWidth();
-      const pageHeight = doc.internal.pageSize.getHeight();
-      const centerX = pageWidth / 2;
+      try {
+        const { jsPDF } = await import('jspdf');
+        const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const pageHeight = doc.internal.pageSize.getHeight();
+        const centerX = pageWidth / 2;
 
-      const gold = [199, 164, 74];
-      const ink = [19, 26, 34];
-      const inkLight = [75, 87, 96];
+        const gold = [199, 164, 74];
+        const ink = [19, 26, 34];
+        const inkLight = [75, 87, 96];
 
-      doc.setDrawColor(...gold);
-      doc.setLineWidth(1.5);
-      doc.rect(24, 24, pageWidth - 48, pageHeight - 48);
+        doc.setDrawColor(...gold);
+        doc.setLineWidth(1.5);
+        doc.rect(24, 24, pageWidth - 48, pageHeight - 48);
 
-      doc.setTextColor(...gold);
-      doc.setFont('times', 'bold');
-      doc.setFontSize(13);
-      doc.text('THE PSYCHOLOGY SQUARE', centerX, 80, { align: 'center' });
+        doc.setTextColor(...gold);
+        doc.setFont('times', 'bold');
+        doc.setFontSize(13);
+        doc.text('THE PSYCHOLOGY SQUARE', centerX, 80, { align: 'center' });
 
-      doc.setTextColor(...ink);
-      doc.setFont('times', 'bold');
-      doc.setFontSize(32);
-      doc.text('Certificate of Completion', centerX, 120, { align: 'center' });
+        doc.setTextColor(...ink);
+        doc.setFont('times', 'bold');
+        doc.setFontSize(32);
+        doc.text('Certificate of Completion', centerX, 120, { align: 'center' });
 
-      doc.setFont('times', 'normal');
-      doc.setFontSize(14);
-      doc.setTextColor(...inkLight);
-      doc.text('This certifies that', centerX, 165, { align: 'center' });
+        doc.setFont('times', 'normal');
+        doc.setFontSize(14);
+        doc.setTextColor(...inkLight);
+        doc.text('This certifies that', centerX, 165, { align: 'center' });
 
-      doc.setFont('times', 'bolditalic');
-      doc.setFontSize(28);
-      doc.setTextColor(...ink);
-      doc.text(name, centerX, 200, { align: 'center' });
+        doc.setFont('times', 'bolditalic');
+        doc.setFontSize(28);
+        doc.setTextColor(...ink);
+        doc.text(name, centerX, 200, { align: 'center' });
 
-      doc.setFont('times', 'normal');
-      doc.setFontSize(14);
-      doc.setTextColor(...inkLight);
-      doc.text('has successfully completed', centerX, 230, { align: 'center' });
+        doc.setFont('times', 'normal');
+        doc.setFontSize(14);
+        doc.setTextColor(...inkLight);
+        doc.text('has successfully completed', centerX, 230, { align: 'center' });
 
-      doc.setFont('times', 'bold');
-      doc.setFontSize(20);
-      doc.setTextColor(...ink);
-      doc.text(courseTitle, centerX, 260, { align: 'center' });
+        doc.setFont('times', 'bold');
+        doc.setFontSize(20);
+        doc.setTextColor(...ink);
+        doc.text(courseTitle, centerX, 260, { align: 'center' });
 
-      doc.setFont('times', 'normal');
-      doc.setFontSize(12);
-      doc.setTextColor(...inkLight);
-      doc.text(`Score: ${scorePercent}%      Hours: ${ceHours}      Date: ${date}`, centerX, 300, { align: 'center' });
+        doc.setFont('times', 'normal');
+        doc.setFontSize(12);
+        doc.setTextColor(...inkLight);
+        doc.text(`Score: ${scorePercent}%      Hours: ${ceHours}      Date: ${date}`, centerX, 300, { align: 'center' });
 
-      doc.setFontSize(10);
-      doc.text(`Certificate ID: ${certId}`, centerX, pageHeight - 50, { align: 'center' });
-      doc.text(`thepsychologysquare.com/certificates/${certId}`, centerX, pageHeight - 36, { align: 'center' });
+        doc.setFontSize(10);
+        doc.text(`Certificate ID: ${certId}`, centerX, pageHeight - 50, { align: 'center' });
+        doc.text(`thepsychologysquare.com/certificates/${certId}`, centerX, pageHeight - 36, { align: 'center' });
 
-      doc.save(`${certId}.pdf`);
-      btn.disabled = false;
-      btn.textContent = 'Download PDF';
+        doc.save(`${certId}.pdf`);
+      } catch (err) {
+        console.error('Certificate PDF generation failed', err);
+        alert('Sorry, the PDF could not be generated. Please try again or contact support.');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Download PDF';
+      }
     });
   </script>
 )}

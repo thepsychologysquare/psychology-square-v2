@@ -88,4 +88,29 @@ const courses = defineCollection({
   }),
 });
 
-export const collections = { articles, worksheets, assessments, courses };
+// Course modules: each module is its own file, matched to a course by
+// `courseSlug`. Kept as a separate collection (rather than a nested list
+// field on the course itself) so each module gets its own real markdown
+// body — nested markdown editors inside list widgets are painful in Decap
+// CMS, and this also means an existing course with zero module files just
+// falls back to its old single-page behavior untouched.
+const courseModules = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/course-modules' }),
+  schema: z.object({
+    courseSlug: z.string(),
+    title: z.string(),
+    type: z.enum(['text', 'video']).default('text'),
+    videoUrl: z.string().optional(),
+    order: z.number().default(0),
+    // Optional, ungraded check-in question(s) shown at the end of the
+    // module for reinforcement — these never affect the certificate score.
+    questions: z.array(z.object({
+      question: z.string(),
+      options: z.array(z.string()).min(2),
+      correctIndex: z.number().int().min(0),
+    })).optional().default([]),
+    draft: z.boolean().default(false),
+  }),
+});
+
+export const collections = { articles, worksheets, assessments, courses, courseModules };

@@ -132,7 +132,36 @@ collections:
           - {label: "Correct Option Number", name: "correctIndex", widget: "number", hint: "0 for the first option, 1 for the second, and so on."}
       - {label: "Order", name: "order", widget: "number", default: 0, required: false, hint: "Lower numbers show first."}
       - {label: "Draft", name: "draft", widget: "boolean", default: false, hint: "Turn ON to hide this course from the live site until it's ready."}
-      - {label: "Course Content", name: "body", widget: "markdown", hint: "The lesson material the learner reads before taking the quiz."}
+      - {label: "Course Content (legacy, used only if no modules exist below)", name: "body", widget: "markdown", required: false, hint: "Older courses without modules use this single page. New courses should use the separate 'Course Modules' collection instead."}
+
+  - name: "courseModules"
+    label: "Course Modules"
+    folder: "src/content/course-modules"
+    create: true
+    slug: "{{courseSlug}}--{{slug}}"
+    fields:
+      - {label: "Course Slug", name: "courseSlug", widget: "string", hint: "Must exactly match the course's URL slug (the filename of the course, e.g. 'cbt-fundamentals-for-clinicians')."}
+      - {label: "Module Title", name: "title", widget: "string"}
+      - label: "Module Type"
+        name: "type"
+        widget: "select"
+        default: "text"
+        options:
+          - {label: "Text lesson", value: "text"}
+          - {label: "Video lesson", value: "video"}
+      - {label: "Video URL", name: "videoUrl", widget: "string", required: false, hint: "Embeddable video URL (e.g. a YouTube/Vimeo embed link). Only used when Module Type is Video."}
+      - {label: "Order", name: "order", widget: "number", default: 0, hint: "Lower numbers show first in the sidebar."}
+      - label: "Check-in Questions (optional)"
+        name: "questions"
+        widget: "list"
+        required: false
+        hint: "Optional, ungraded questions shown at the end of this module for reinforcement. These do NOT affect the certificate score."
+        fields:
+          - {label: "Question", name: "question", widget: "string"}
+          - {label: "Options", name: "options", widget: "list"}
+          - {label: "Correct Option Number", name: "correctIndex", widget: "number", hint: "0 for the first option, 1 for the second, and so on."}
+      - {label: "Draft", name: "draft", widget: "boolean", default: false}
+      - {label: "Module Content", name: "body", widget: "markdown", hint: "The lesson text (or notes/transcript for a video lesson)."}
 
   - name: "assessments"
     label: "Assessments"

@@ -29,6 +29,27 @@ const { Content } = isEnrolled ? await render(course) : { Content: null };
 const clientQuiz = isEnrolled
   ? course.data.quiz.map((q) => ({ question: q.question, options: q.options }))
   : [];
+
+// Modules are optional: a course with none falls back to the legacy
+// single-page + quiz layout below, completely unchanged. A course with
+// module files gets the sidebar/progress player instead.
+const allModules = isEnrolled
+  ? (await getCollection('courseModules', (d) => !d.data.draft && d.data.courseSlug === course.id))
+      .sort((a, b) => a.data.order - b.data.order)
+  : [];
+const hasModules = allModules.length > 0;
+const renderedModules = await Promise.all(
+  allModules.map(async (m) => ({
+    title: m.data.title,
+    type: m.data.type,
+    videoUrl: m.data.videoUrl || '',
+    questions: m.data.questions || [],
+    Content: (await render(m)).Content,
+  }))
+);
+const moduleQuestionsForClient = renderedModules.map((m) =>
+  m.questions.map((q) => ({ question: q.question, options: q.options, correctIndex: q.correctIndex }))
+);
 ---
 <Layout
   title={course.data.title}
@@ -76,15 +97,68 @@ const clientQuiz = isEnrolled
         </section>
       ) : (
         <Fragment>
-          <div class="course-content">
-            <Content />
-          </div>
+          {hasModules ? (
+            <div class="course-player" id="coursePlayer">
+              <aside class="module-sidebar">
+                <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+                <p class="progress-label" id="progressLabel">0 of {renderedModules.length} modules complete</p>
+                <ol class="module-list" id="moduleList">
+                  {renderedModules.map((m, i) => (
+                    <li class="module-list__item" data-module-index={i}>
+                      <button type="button" class="module-list__btn">
+                        <span class="module-list__check" aria-hidden="true">✓</span>
+                        <span class="module-list__title">{i + 1}. {m.title}</span>
+                      </button>
+                    </li>
+                  ))}
+                </ol>
+              </aside>
+
+              <div class="module-main">
+                {renderedModules.map((m, i) => (
+                  <div class="module-pane" data-module-index={i} hidden={i !== 0}>
+                    <h2 class="module-pane__title">{m.title}</h2>
+                    {m.type === 'video' && m.videoUrl && (
+                      <div class="module-video">
+                        <iframe src={m.videoUrl} title={m.title} allowfullscreen loading="lazy"></iframe>
+                      </div>
+                    )}
+                    <div class="course-content">
+                      {m.Content && <m.Content />}
+                    </div>
+
+                    {m.questions.length > 0 && (
+                      <div class="module-checkin" data-module-index={i}>
+                        <h3>Quick check-in</h3>
+                        <p class="module-checkin__hint">Just for your own review — this doesn't affect your certificate.</p>
+                        <div class="module-checkin__questions"></div>
+                      </div>
+                    )}
+
+                    <div class="module-pane__nav">
+                      {i > 0 && <button type="button" class="btn btn--text module-prev">&larr; Previous</button>}
+                      <button type="button" class="btn btn--primary module-complete-btn">
+                        {i === renderedModules.length - 1 ? 'Mark complete' : 'Mark complete & continue'}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div class="course-content">
+              <Content />
+            </div>
+          )}
 
           <section class="quiz-section" id="quizSection">
             <h2>Complete the quiz</h2>
             <p class="quiz-intro">Score {course.data.passScorePercent}% or higher to earn your certificate. You can retake the quiz if needed.</p>
+            {hasModules && (
+              <p class="quiz-locked-note" id="quizLockedNote">Complete all modules above to unlock the quiz.</p>
+            )}
 
-            <form id="quizForm" class="quiz-form">
+            <form id="quizForm" class="quiz-form" hidden={hasModules}>
               <input type="hidden" id="learnerName" value={enrollment?.name || ''} />
               <input type="hidden" id="learnerEmail" value={session?.email || ''} />
 
@@ -103,7 +177,8 @@ const clientQuiz = isEnrolled
 </Layout>
 
 <script type="application/json" id="quizData" set:html={JSON.stringify(clientQuiz)}></script>
-<script define:vars={{ courseSlug: course.id, currentUrl: Astro.url.pathname, isEnrolled }}>
+<script type="application/json" id="moduleQuestionsData" set:html={JSON.stringify(moduleQuestionsForClient)}></script>
+<script define:vars={{ courseSlug: course.id, currentUrl: Astro.url.pathname, isEnrolled, hasModules, totalModules: renderedModules.length, learnerEmail: session?.email || '' }}>
   // ---------- Enroll gate ----------
   const enrollForm = document.getElementById('enrollForm');
   if (enrollForm) {
@@ -174,6 +249,91 @@ const clientQuiz = isEnrolled
         enrollNowBtn.textContent = 'Enroll now';
       }
     });
+  }
+
+  // ---------- Module player (sidebar navigation + progress) ----------
+  if (isEnrolled && hasModules) {
+    const progressKey = `courseProgress:${courseSlug}:${learnerEmail}`;
+    const completed = new Set(JSON.parse(localStorage.getItem(progressKey) || '[]'));
+
+    const paneList = Array.from(document.querySelectorAll('.module-pane'));
+    const listItems = Array.from(document.querySelectorAll('.module-list__item'));
+    const progressFill = document.getElementById('progressFill');
+    const progressLabel = document.getElementById('progressLabel');
+    const moduleQuestions = JSON.parse(document.getElementById('moduleQuestionsData').textContent);
+
+    function showModule(index) {
+      paneList.forEach((pane) => { pane.hidden = Number(pane.dataset.moduleIndex) !== index; });
+      listItems.forEach((li) => li.querySelector('.module-list__btn').classList.toggle('is-active', Number(li.dataset.moduleIndex) === index));
+      window.scrollTo({ top: document.getElementById('coursePlayer').offsetTop - 20, behavior: 'smooth' });
+    }
+
+    function updateProgressUI() {
+      listItems.forEach((li) => {
+        li.querySelector('.module-list__btn').classList.toggle('is-complete', completed.has(Number(li.dataset.moduleIndex)));
+      });
+      const pct = Math.round((completed.size / totalModules) * 100);
+      progressFill.style.width = `${pct}%`;
+      progressLabel.textContent = `${completed.size} of ${totalModules} modules complete`;
+
+      const quizForm = document.getElementById('quizForm');
+      const lockedNote = document.getElementById('quizLockedNote');
+      if (completed.size >= totalModules) {
+        quizForm.hidden = false;
+        if (lockedNote) lockedNote.hidden = true;
+      }
+    }
+
+    function markComplete(index) {
+      completed.add(index);
+      localStorage.setItem(progressKey, JSON.stringify([...completed]));
+      updateProgressUI();
+    }
+
+    listItems.forEach((li) => {
+      li.querySelector('.module-list__btn').addEventListener('click', () => showModule(Number(li.dataset.moduleIndex)));
+    });
+
+    paneList.forEach((pane) => {
+      const index = Number(pane.dataset.moduleIndex);
+      const prevBtn = pane.querySelector('.module-prev');
+      if (prevBtn) prevBtn.addEventListener('click', () => showModule(index - 1));
+      pane.querySelector('.module-complete-btn').addEventListener('click', () => {
+        markComplete(index);
+        if (index < totalModules - 1) showModule(index + 1);
+      });
+
+      // Render this module's optional check-in question(s), if any.
+      const questions = moduleQuestions[index] || [];
+      const checkinEl = pane.querySelector('.module-checkin__questions');
+      if (checkinEl && questions.length > 0) {
+        questions.forEach((q, qi) => {
+          const wrap = document.createElement('div');
+          wrap.className = 'checkin-question';
+          const p = document.createElement('p');
+          p.className = 'checkin-question__text';
+          p.textContent = q.question;
+          wrap.appendChild(p);
+          q.options.forEach((opt, oi) => {
+            const optBtn = document.createElement('button');
+            optBtn.type = 'button';
+            optBtn.className = 'checkin-option';
+            optBtn.textContent = opt;
+            optBtn.addEventListener('click', () => {
+              wrap.querySelectorAll('.checkin-option').forEach((b) => (b.disabled = true));
+              optBtn.classList.add(oi === q.correctIndex ? 'is-correct' : 'is-incorrect');
+              if (oi !== q.correctIndex) {
+                wrap.querySelectorAll('.checkin-option')[q.correctIndex].classList.add('is-correct');
+              }
+            });
+            wrap.appendChild(optBtn);
+          });
+          checkinEl.appendChild(wrap);
+        });
+      }
+    });
+
+    updateProgressUI();
   }
 
   // ---------- Quiz (only present in the DOM once enrolled) ----------
@@ -298,6 +458,50 @@ const clientQuiz = isEnrolled
   .course-content :global(p){ margin-bottom:16px; }
   .course-content :global(ul), .course-content :global(ol){ margin:0 0 16px 22px; }
   .course-content :global(li){ margin-bottom:6px; }
+
+  /* ---------- Module player ---------- */
+  .course-player{ display:grid; grid-template-columns:260px 1fr; gap:36px; margin-top:24px; align-items:start; }
+  @media (max-width: 760px){ .course-player{ grid-template-columns:1fr; } }
+
+  .module-sidebar{ position:sticky; top:24px; border:1px solid var(--line); border-radius:2px; padding:20px; background:var(--paper-50); max-height:calc(100vh - 48px); overflow-y:auto; }
+  .progress-track{ height:6px; border-radius:4px; background:var(--line); overflow:hidden; margin-bottom:8px; }
+  .progress-fill{ height:100%; background:var(--gold-500); width:0%; transition:width 0.3s ease; }
+  .progress-label{ font-size:12px; color:var(--ink-600); margin-bottom:16px; }
+  .module-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:4px; }
+  .module-list__btn{
+    display:flex; align-items:center; gap:8px; width:100%; text-align:left;
+    background:none; border:none; cursor:pointer; padding:9px 10px; border-radius:2px;
+    font-family:var(--font-body); font-size:14px; color:var(--ink-900);
+  }
+  .module-list__btn:hover{ background:rgba(0,0,0,0.04); }
+  .module-list__btn.is-active{ background:rgba(199,164,74,0.15); font-weight:600; }
+  .module-list__check{
+    display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px;
+    border-radius:50%; border:1.5px solid var(--line); font-size:11px; color:transparent; flex-shrink:0;
+  }
+  .module-list__btn.is-complete .module-list__check{ background:var(--gold-500); border-color:var(--gold-500); color:#fff; }
+
+  .module-main{ min-width:0; }
+  .module-pane__title{ font-family:var(--font-display); font-size:24px; margin-bottom:18px; }
+  .module-video{ position:relative; padding-top:56.25%; margin-bottom:24px; background:#000; border-radius:2px; overflow:hidden; }
+  .module-video iframe{ position:absolute; inset:0; width:100%; height:100%; border:0; }
+  .module-pane__nav{ display:flex; gap:16px; align-items:center; margin-top:32px; padding-top:24px; border-top:1px solid var(--line); }
+
+  .module-checkin{ margin-top:32px; padding:22px; border:1px solid var(--line); border-radius:2px; background:var(--paper-50); }
+  .module-checkin h3{ font-family:var(--font-display); font-size:17px; margin-bottom:4px; }
+  .module-checkin__hint{ font-size:13px; color:var(--ink-600); margin-bottom:16px; }
+  .checkin-question{ margin-bottom:18px; }
+  .checkin-question__text{ font-weight:600; font-size:14px; margin-bottom:10px; }
+  .checkin-option{
+    display:block; width:100%; text-align:left; font-family:var(--font-body); font-size:14px;
+    padding:9px 12px; margin-bottom:6px; border:1px solid var(--line); border-radius:2px;
+    background:var(--paper-0); cursor:pointer;
+  }
+  .checkin-option:disabled{ cursor:default; }
+  .checkin-option.is-correct{ border-color:#2E7D5B; background:rgba(46,125,91,0.1); }
+  .checkin-option.is-incorrect{ border-color:#B4432E; background:rgba(180,67,46,0.1); }
+
+  .quiz-locked-note{ font-size:14px; color:var(--ink-600); font-style:italic; margin-bottom:8px; }
 
   .quiz-section{ margin-top:56px; padding-top:40px; border-top:1px solid var(--line); }
   .quiz-section h2{ font-family:var(--font-display); font-size:26px; margin-bottom:6px; }
