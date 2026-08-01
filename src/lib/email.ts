@@ -97,7 +97,10 @@ function modeLabel(mode: string): string {
 function clinicianLabel(clinician: string): string {
   return CLINICIAN_LABELS[clinician] || clinician;
 }
-
+const CLINICIAN_EMAILS: Record<string, string> = {
+  sehar: 'sehar@thepsychologysquare.com',
+  sohail: 'sohail@thepsychologysquare.com',
+};
 // Sent to the practice inbox the moment a client submits a booking, so
 // clinicians/admin don't have to keep the dashboard open to notice it.
 export async function sendNewBookingAdminEmail(
@@ -131,8 +134,34 @@ export async function sendNewBookingAdminEmail(
   return sendEmail({
     apiKey: env.RESEND_API_KEY,
     from: env.EMAIL_FROM,
-    to: env.BOOKING_ADMIN_EMAIL,
+    to: [env.BOOKING_ADMIN_EMAIL, CLINICIAN_EMAILS[args.clinician]].filter(Boolean) as string[],
     subject: `New booking (${args.reference}) — ${args.clientName}`,
+    html,
+  });
+}
+
+
+// Sent to the client immediately after they submit — separate from the
+// confirmed/declined email, which comes later once a therapist reviews it.
+export async function sendBookingReceivedClientEmail(
+  env: { RESEND_API_KEY?: string; EMAIL_FROM?: string },
+  args: { toContact: string; toName: string; reference: string }
+): Promise<{ ok: boolean; error?: string }> {
+  if (!EMAIL_RE.test(args.toContact)) {
+    return { ok: false, error: 'Contact on file is not an email address — skipped.' };
+  }
+  if (!env.RESEND_API_KEY || !env.EMAIL_FROM) {
+    return { ok: false, error: 'Email is not configured yet.' };
+  }
+  const html = emailShell(`
+    <h1 style="font-size:22px;margin:0 0 16px;">Thank you, ${escapeHtml(args.toName)}!</h1>
+    <p style="font-size:15px;line-height:1.6;">Thank you for choosing The Psychology Square. We've received your booking request (reference ${escapeHtml(args.reference)}) and you'll be contacted once your session has been confirmed.</p>
+  `);
+  return sendEmail({
+    apiKey: env.RESEND_API_KEY,
+    from: env.EMAIL_FROM,
+    to: args.toContact,
+    subject: `We've received your booking — ${args.reference}`,
     html,
   });
 }
@@ -140,6 +169,7 @@ export async function sendNewBookingAdminEmail(
 // Sent to the client the moment a therapist/admin confirms or declines
 // their booking from the dashboard. Silently skipped if the contact field
 // they gave at booking time was a phone number rather than an email.
+
 export async function sendBookingStatusEmail(
   env: { RESEND_API_KEY?: string; EMAIL_FROM?: string },
   args: {

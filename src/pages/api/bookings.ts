@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
 import { sendNewBookingAdminEmail } from '../../lib/email';
+import { sendNewBookingAdminEmail, sendBookingReceivedClientEmail } from '../../lib/email';
 
 export const prerender = false;
 
@@ -142,6 +143,12 @@ export const POST: APIRoute = async ({ request }) => {
     paymentMethod,
     notes: notes || undefined,
   }).catch(() => {});
+  
+  await sendBookingReceivedClientEmail(env, {
+  toContact: contact,
+  toName: clientName,
+  reference,
+}).catch(() => {});
 
   return new Response(JSON.stringify({ reference }), {
     status: 201,

@@ -65,6 +65,7 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
                 <th data-sort="id">Reference</th>
                 <th data-sort="client_name">Client</th>
                 <th data-sort="contact">Contact</th>
+				<th>Notes</th>
                 <th data-sort="service">Service</th>
                 <th data-sort="mode">Format</th>
                 <th data-sort="clinician">Clinician</th>
@@ -504,7 +505,8 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
       tr.innerHTML = `
         <td><input type="checkbox" class="row-check" data-id="${b.id}" ${selected.has(b.id) ? 'checked' : ''} /></td>
         <td class="cell-ref">${b.id}</td>
-        <td>${escapeHtml(b.client_name)}${b.notes ? ` <span class="cell-notes-flag" title="${escapeHtml(b.notes)}">📝</span>` : ''}</td>
+        <td>${escapeHtml(b.client_name)}</td>
+		<td class="cell-notes">${b.notes ? escapeHtml(b.notes) : '—'}</td>
         <td>${escapeHtml(b.contact)}</td>
         <td>${b.service === 'individual' ? 'Individual' : 'Couples'}</td>
         <td><span class="format-badge ${b.mode || 'online'}">${modeLabel(b.mode || 'online')}</span></td>
