@@ -2,6 +2,7 @@
 import Layout from '../../layouts/Layout.astro';
 
 const siteOrigin = 'https://www.thepsychologysquare.com';
+
 const serviceJson = {
   "@context": "https://schema.org",
   "@type": "Service",
@@ -9,7 +10,7 @@ const serviceJson = {
   "provider": { "@type": "Organization", "name": "The Psychology Square", "url": siteOrigin },
   "areaServed": "Lahore, Pakistan",
   "url": `${siteOrigin}/services/research-analysis`,
-  "description": "R and SPSS support for psychology students and researchers, from beginner data analysis to advanced psychometric scale validation.",
+  "description": "Statistical consulting and psychometric analysis for psychology students, researchers, and institutions — descriptive & inferential statistics, scale development, SEM/HLM modeling, and viva/defense preparation, in R, SPSS, AMOS, and Python.",
 };
 const breadcrumbJson = {
   "@context": "https://schema.org",
@@ -20,15 +21,151 @@ const breadcrumbJson = {
     { "@type": "ListItem", "position": 3, "name": "Research Analysis", "item": `${siteOrigin}/services/research-analysis` },
   ],
 };
+
+// --- Content data -----------------------------------------------------
+// NOTE: trustStats figures below are illustrative placeholders — swap in real numbers before launch.
+
+const trustStats = [
+  { value: '300+', label: 'Student & faculty analyses completed' },
+  { value: '4', label: 'Platforms covered — R, SPSS, AMOS & Python' },
+  { value: '1-on-1', label: 'Defense & viva walkthroughs included' },
+];
+
+const serviceCategories = [
+  {
+    tag: 'Foundations',
+    title: 'Descriptive & Inferential Statistics',
+    desc: 'The core toolkit for most thesis chapters and journal submissions — cleaned data, the right test for your design, and output you can actually explain.',
+    items: [
+      'Descriptive statistics & data cleaning',
+      'Independent & paired-samples t-tests',
+      'ANOVA, MANOVA & ANCOVA',
+      'Non-parametric tests (Mann–Whitney, Kruskal–Wallis, Chi-square)',
+      'Correlation & multiple regression',
+      'A priori power analysis & sample size (G*Power)',
+    ],
+  },
+  {
+    tag: 'Psychometrics',
+    title: 'Scale Development & Validation',
+    desc: 'For researchers building, adapting, or validating a psychological measure — from first reliability check to full construct validation.',
+    items: [
+      'Reliability analysis (Cronbach\u2019s alpha, McDonald\u2019s omega)',
+      'Exploratory Factor Analysis (EFA)',
+      'Confirmatory Factor Analysis (CFA)',
+      'Construct & criterion validity testing',
+      'Cross-cultural scale translation & adaptation',
+      'Item-level analysis & item response theory (on request)',
+    ],
+  },
+  {
+    tag: 'Advanced',
+    title: 'Advanced Modeling & Scripting',
+    desc: 'For dissertations, publications, and grant-level work that needs modeling beyond a standard regression.',
+    items: [
+      'Mediation & moderation analysis (Hayes PROCESS Macro)',
+      'Structural Equation Modeling (SEM)',
+      'Hierarchical Linear Modeling (HLM) & multilevel models',
+      'Path analysis',
+      'Longitudinal & repeated-measures modeling',
+      'Custom R scripting & workflow automation',
+    ],
+  },
+];
+
+const software = ['R & RStudio', 'SPSS', 'AMOS', 'Python', 'G*Power',];
+
+const deliverables = [
+  {
+    title: 'APA 7th-edition result tables & figures',
+    desc: 'Publication-ready tables and high-resolution ggplot2 figures, formatted to APA 7th edition specifications and ready to drop into your manuscript.',
+  },
+  {
+    title: 'Annotated, reproducible code',
+    desc: 'Fully commented .R scripts or .sps syntax files — nothing runs in a black box. You keep every line, and can re-run or extend the analysis yourself.',
+  },
+  {
+    title: 'Plain-English interpretation report',
+    desc: 'A companion write-up explaining what each result actually means for your hypotheses, your thesis narrative, or your paper\u2019s discussion section.',
+  },
+  {
+    title: 'Optional 1-on-1 defense walkthrough',
+    desc: 'A live session to prepare you for your viva or thesis defense — anticipating committee questions and making sure you can explain every number with confidence.',
+  },
+];
+
+const steps = [
+  {
+    num: '01',
+    title: 'Initial Submission & Scope Review',
+    desc: 'Share your dataset, research questions, and study design through the form below. We review it and confirm exactly what the analysis will involve.',
+  },
+  {
+    num: '02',
+    title: 'Custom Proposal & Transparent Quote',
+    desc: 'You receive a written proposal covering the tests to be run, software used, timeline, and a fixed quote — no surprise charges once work begins.',
+  },
+  {
+    num: '03',
+    title: 'Analysis Execution & Code Validation',
+    desc: 'The analysis is run and independently checked for accuracy before anything is sent to you — assumptions tested, output verified, code cleaned.',
+  },
+  {
+    num: '04',
+    title: 'Final Delivery & Defense Preparation',
+    desc: 'You receive your full deliverable package, plus — if you\u2019d like it — a walkthrough session to prepare you to defend the results yourself.',
+  },
+];
+
+const faqs = [
+  {
+    q: 'Will I get the raw software code/syntax?',
+    a: 'Yes, always. Every project includes the fully annotated .R script or .sps syntax file behind your results, so you have a complete, reproducible record of exactly how each number was produced.',
+  },
+  {
+    q: 'What if my advisor/supervisor requests modifications to the analysis?',
+    a: 'Reasonable revisions requested by your supervisor or committee following delivery are covered within the project scope. We\u2019ll re-run or adjust the relevant analysis and update your deliverables accordingly.',
+  },
+  {
+    q: 'How do you ensure my data remains confidential?',
+    a: 'Your dataset is used solely for the agreed analysis, handled by the assigned analyst only, and never shared, published, or reused. Files are stored securely and deleted after an agreed retention period, and a confidentiality agreement is available on request.',
+  },
+  {
+    q: 'Can you help me understand the results so I can defend them?',
+    a: 'That\u2019s the point of the plain-English report and the optional walkthrough session — both are built specifically so you can explain and defend every result in your own words during your viva or committee review.',
+  },
+  {
+    q: 'Is this compatible with my university\u2019s academic integrity policy?',
+    a: 'Yes. We work as a statistical consultant, not a ghostwriter — analyzing data and explaining methodology and results, while you retain ownership of your research questions, interpretation, and written thesis. See our ethics statement above for more detail.',
+  },
+  {
+    q: 'How long does a typical project take?',
+    a: 'The turnaround time depends on the depth of the analysis and the scope of the research, but projects are typically completed within 1–2 weeks. Timeline details can always be mutually decided to fit your specific academic deadline. Additionally, research writing support can be provided for an extra charge depending on the requirements of your project.',
+  },
+];
+
+const researchLevels = ['Undergraduate thesis', 'Master\u2019s thesis', 'PhD dissertation', 'Journal publication / manuscript', 'Institutional / departmental research'];
+const softwareOptions = ['R / RStudio', 'SPSS', 'AMOS', 'Python', 'Not sure — need a recommendation'];
+const datasetStatus = ['Data already collected', 'Still collecting data', 'Need help designing the study first'];
 ---
 <Layout
   title="Research Analysis"
-  fullTitle="R & SPSS Statistical Analysis Support for Psychology Research | The Psychology Square"
-  description="Statistical and research analysis support for psychology students and researchers in Lahore — R, SPSS, psychometrics, and scale validation, beginner to advanced."
+  fullTitle="Statistical & Research Analysis Services for Psychology | The Psychology Square"
+  description="Statistical consulting for psychology students, researchers, and institutions — descriptive & inferential statistics, psychometrics, SEM/HLM, and defense preparation, in R, SPSS, AMOS, and Python."
 >
   <script type="application/ld+json" set:html={JSON.stringify(serviceJson)} />
   <script type="application/ld+json" set:html={JSON.stringify(breadcrumbJson)} />
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqs.map((f) => ({
+      "@type": "Question",
+      "name": f.q,
+      "acceptedAnswer": { "@type": "Answer", "text": f.a },
+    })),
+  })} />
 
+  <!-- 1. HERO -->
   <section class="hero article-index-hero">
     <div class="wrap">
       <nav class="breadcrumbs" aria-label="Breadcrumb">
@@ -38,45 +175,196 @@ const breadcrumbJson = {
         <span class="crumb-sep">/</span>
         <span class="crumb-current">Research Analysis</span>
       </nav>
-      <p class="eyebrow">Services</p>
-      <h1 class="hero-title" style="font-size: clamp(32px, 4vw, 48px); margin-bottom: 16px;">Research Analysis</h1>
-      <p class="hero-sub">Statistical &amp; research support for psychology work — for students and researchers who need help with the numbers side, from a first thesis analysis to advanced psychometric work.</p>
+      <p class="eyebrow">Statistical &amp; Research Analysis Services</p>
+      <h1 class="hero-title" style="font-size: clamp(32px, 4.2vw, 52px); margin-bottom: 16px; max-width: 780px;">
+        Deadline pressing? Statistics section stuck? Let’s fix that.
+      </h1>
+      <p class="hero-sub" style="max-width: 640px;">
+        From a first t-test to full-scale psychometric validation, we handle the statistics side of your thesis, dissertation, or publication — accurately, transparently, and in a way you can stand behind at your defense.
+      </p>
+      <div class="hero-actions" style="margin-top: 28px;">
+        <a href="#intake" class="btn btn--primary">Schedule a Free Dataset Review</a>
+        <a href="#how-it-works" class="btn btn--text-onlight">See how it works →</a>
+      </div>
+
+      <div class="trust-banner">
+        {trustStats.map((t) => (
+          <div class="trust-stat">
+            <span class="trust-value">{t.value}</span>
+            <span class="trust-label">{t.label}</span>
+          </div>
+        ))}
+      </div>
     </div>
   </section>
 
-  <section class="section">
+  <!-- 2. CORE SERVICES -->
+  <section class="section" id="services">
     <div class="wrap">
-      <p style="color: var(--ink-600); max-width: 640px; margin-bottom: 40px;">Support in both R and SPSS, tailored to your level.</p>
-
-      <div class="card-grid">
-        <div class="article-card" style="cursor:default;">
-          <span class="article-meta">Beginners</span>
-          <h3>Getting started with analysis</h3>
-          <p>Help setting up your dataset, choosing the right test, running it in R or SPSS, and understanding what the output actually means for your write-up.</p>
-        </div>
-        <div class="article-card" style="cursor:default;">
-          <span class="article-meta">Psychometrics</span>
-          <h3>Scale development &amp; validation</h3>
-          <p>Reliability (Cronbach's alpha), factor analysis (EFA/CFA), and validity testing for researchers building or adapting a psychological scale.</p>
-        </div>
-        <div class="article-card" style="cursor:default;">
-          <span class="article-meta">Advanced</span>
-          <h3>R programming &amp; modeling</h3>
-          <p>Regression, mediation/moderation analysis, mixed models, and general R scripting support for advanced thesis or publication-level work.</p>
-        </div>
+      <div class="section-head">
+        <h2 class="section-title">A full statistical toolkit, not just three checkboxes</h2>
       </div>
 
-      <div class="request-cta-banner" style="margin-top: 48px;">
-        <p>Have a specific analysis or dataset in mind?</p>
-        <a href="/contact" class="btn btn--primary">Get in touch →</a>
+      <div class="service-grid">
+        {serviceCategories.map((cat) => (
+          <div class="service-block">
+            <span class="article-meta">{cat.tag}</span>
+            <h3>{cat.title}</h3>
+            <p class="service-desc">{cat.desc}</p>
+            <ul class="service-list">
+              {cat.items.map((item) => <li>{item}</li>)}
+            </ul>
+          </div>
+        ))}
       </div>
+
+      <div class="software-strip">
+        <span class="software-strip-label">Software proficiency</span>
+        <div class="software-chips">
+          {software.map((s) => <span class="software-chip">{s}</span>)}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. WHAT YOU GET -->
+  <section class="section section--alt">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 class="section-title">What you get, every time</h2>
+      </div>
+
+      <div class="deliverables-grid">
+        {deliverables.map((d) => (
+          <div class="deliverable-item">
+            <span class="deliverable-check" aria-hidden="true">✓</span>
+            <div>
+              <h3>{d.title}</h3>
+              <p>{d.desc}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. HOW IT WORKS -->
+  <section class="section" id="how-it-works">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 class="section-title">How it works</h2>
+      </div>
+
+      <div class="steps-grid">
+        {steps.map((s) => (
+          <div class="step-item">
+            <span class="approach-num">{s.num}</span>
+            <h3>{s.title}</h3>
+            <p>{s.desc}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. ETHICAL INTEGRITY -->
+  <section class="quote-block">
+  <div class="wrap quote-inner">
+    <!-- Mobile: 0.75rem (~12px) | Preferred: 1.5vw | Desktop: 0.95rem (~15.2px) -->
+    <p class="quote-text" style="font-size: clamp(1rem, 1.5vw, 1.5rem); line-height: 1.5;">
+      "We work as your statistical consultant, not your ghostwriter. Every engagement is built to comply with university policies on external academic support — you bring the research questions and interpretation, we bring the methodology, the code, and the plain-English explanation behind every number."
+    </p>
+    <p class="quote-attribution" style="font-size: clamp(0.65rem, 1vw, 0.85rem);">
+      The Psychology Square — Research Analysis Team
+    </p>
+  </div>
+</section>
+
+  <!-- 6. FAQ -->
+  <section class="section" id="faq">
+    <div class="wrap" style="max-width: 800px;">
+      <div class="section-head" style="margin-bottom: 32px;">
+        <h2 class="section-title">Frequently asked questions</h2>
+      </div>
+
+      <div class="faq-list">
+        {faqs.map((f) => (
+          <details class="faq-item">
+            <summary>{f.q}</summary>
+            <p>{f.a}</p>
+          </details>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. INTAKE FORM -->
+  <section class="section section--alt" id="intake">
+    <div class="wrap" style="max-width: 640px;">
+      <div class="section-head" style="display:block; margin-bottom: 28px;">
+        <h2 class="section-title">Ready to stop guessing at your statistics?</h2>
+        <p style="color: var(--ink-600); margin-top: 12px; font-size: 15px;">Tell us about your research and we’ll get back to you with a free, no-obligation dataset review and quote.</p>
+      </div>
+
+      <form action="https://formspree.io/f/mdaqlngp" method="POST" class="request-form">
+        <input type="hidden" name="_subject" value="New Research Analysis inquiry" />
+
+        <div class="form-row">
+          <label for="ra-name">
+            Your name
+            <input type="text" id="ra-name" name="name" required />
+          </label>
+          <label for="ra-email">
+            Your email
+            <input type="email" id="ra-email" name="email" required />
+          </label>
+        </div>
+
+        <label for="ra-level">
+          Research level
+          <select id="ra-level" name="research_level" required>
+            <option value="" disabled selected>Select your research level</option>
+            {researchLevels.map((l) => <option value={l}>{l}</option>)}
+          </select>
+        </label>
+
+        <div class="form-row">
+          <label for="ra-software">
+            Target software
+            <select id="ra-software" name="target_software">
+              <option value="" disabled selected>Select preferred software</option>
+              {softwareOptions.map((s) => <option value={s}>{s}</option>)}
+            </select>
+          </label>
+          <label for="ra-status">
+            Dataset status
+            <select id="ra-status" name="dataset_status">
+              <option value="" disabled selected>Select current status</option>
+              {datasetStatus.map((s) => <option value={s}>{s}</option>)}
+            </select>
+          </label>
+        </div>
+
+        <label for="ra-deadline">
+          Academic deadline (submission or defense date)
+          <input type="date" id="ra-deadline" name="deadline" />
+        </label>
+
+        <label for="ra-message">
+          Briefly describe your research question or the analysis you need
+          <textarea id="ra-message" name="message" rows="5" required></textarea>
+        </label>
+
+        <button type="submit" class="btn btn--primary">Schedule a Free Dataset Review</button>
+      </form>
+      <p class="form-note">We typically respond within one business day with next steps and a transparent quote.</p>
     </div>
   </section>
 
 </Layout>
 
 <style>
-  .article-index-hero{ padding: 72px 0 56px; }
+  .article-index-hero{ padding: 72px 0 40px; }
 
   .breadcrumbs{
     font-family: var(--font-mono); font-size: 12px; color: rgba(248,249,246,0.6);
@@ -85,4 +373,121 @@ const breadcrumbJson = {
   .breadcrumbs a:hover{ color: var(--gold-300); }
   .crumb-sep{ color: rgba(248,249,246,0.3); }
   .crumb-current{ color: rgba(248,249,246,0.85); }
+
+  /* Trust banner */
+  .trust-banner{
+    display:flex; flex-wrap:wrap; gap:36px;
+    margin-top: 24px; padding-top: 24px;
+    border-top: 1px solid var(--line-onDark);
+  }
+  .trust-stat{ display:flex; flex-direction:column; gap:4px; }
+  .trust-value{
+    font-family: var(--font-display); font-size: 26px; font-weight:600;
+    color: var(--gold-300);
+  }
+  .trust-label{ font-size: 13px; color: rgba(248,249,246,0.68); max-width: 220px; }
+
+  /* Core services */
+  .service-grid{
+    display:grid; grid-template-columns: repeat(3, 1fr); gap: 28px;
+  }
+  .service-block{
+    background: var(--paper-0); border: 1px solid var(--line);
+    padding: 28px; display:flex; flex-direction:column; gap: 12px;
+    transition: border-color .25s var(--ease), transform .25s var(--ease);
+  }
+  .service-block:hover{ border-color: var(--gold-500); transform: translateY(-3px); }
+  .service-block h3{ font-size: 19px; line-height: 1.3; }
+  .service-desc{ color: var(--ink-600); font-size: 14px; }
+  .service-list{ list-style:none; margin:4px 0 0; padding:0; display:flex; flex-direction:column; gap:9px; }
+  .service-list li{
+    font-size: 13.5px; color: var(--ink-900); padding-left: 18px; position: relative; line-height:1.4;
+  }
+  .service-list li::before{
+    content: '\2013'; position:absolute; left:0; color: var(--gold-500); font-weight:600;
+  }
+
+  .software-strip{
+    margin-top: 40px; display:flex; align-items:center; gap: 20px; flex-wrap:wrap;
+    padding-top: 28px; border-top: 1px solid var(--line);
+  }
+  .software-strip-label{
+    font-family: var(--font-mono); font-size: 12px; letter-spacing:0.06em; text-transform:uppercase;
+    color: var(--sage-500); white-space:nowrap;
+  }
+  .software-chips{ display:flex; flex-wrap:wrap; gap: 10px; }
+  .software-chip{
+    font-family: var(--font-mono); font-size: 12.5px; color: var(--navy-700);
+    border: 1px solid var(--line); padding: 8px 14px; border-radius: 999px;
+  }
+
+  /* Deliverables */
+  .deliverables-grid{
+    display:grid; grid-template-columns: repeat(2, 1fr); gap: 28px 40px;
+  }
+  .deliverable-item{ display:flex; gap:14px; align-items:flex-start; }
+  .deliverable-check{
+    flex:none; width:26px; height:26px; border-radius:50%;
+    background: var(--navy-950); color: var(--gold-300);
+    display:flex; align-items:center; justify-content:center;
+    font-size: 13px; margin-top: 2px;
+  }
+  .deliverable-item h3{ font-size: 16.5px; margin-bottom: 6px; }
+  .deliverable-item p{ color: var(--ink-600); font-size: 14px; }
+
+  /* Steps */
+  .steps-grid{
+    display:grid; grid-template-columns: repeat(4, 1fr); gap: 28px;
+  }
+  .step-item{ display:flex; flex-direction:column; gap:10px; }
+  .step-item h3{ font-size: 16.5px; line-height:1.3; }
+  .step-item p{ color: var(--ink-600); font-size: 14px; }
+  .approach-num{
+    font-family: var(--font-mono); font-size: 13px; color: var(--gold-500);
+  }
+
+  /* FAQ */
+  .faq-list{ display:flex; flex-direction:column; gap: 10px; }
+  .faq-item{
+    border: 1px solid var(--line); background: var(--paper-0); padding: 18px 22px; border-radius: 3px;
+  }
+  .faq-item summary{
+    cursor: pointer; font-weight: 600; font-size: 15.5px; list-style: none;
+    display:flex; justify-content:space-between; align-items:center; gap: 16px;
+  }
+  .faq-item summary::-webkit-details-marker{ display:none; }
+  .faq-item summary::after{
+    content: '+'; font-family: var(--font-mono); color: var(--gold-500); font-size: 20px; flex:none;
+  }
+  .faq-item[open] summary::after{ content: '\2212'; }
+  .faq-item p{ color: var(--ink-600); font-size: 14.5px; margin-top: 14px; line-height:1.6; }
+
+  /* Intake form */
+  .form-row{ display:grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .request-form{ display:flex; flex-direction:column; gap:18px; }
+  .request-form label{ display:flex; flex-direction:column; gap:6px; font-size: 14px; color: var(--ink-600); font-weight: 500; }
+  .request-form input,
+  .request-form select,
+  .request-form textarea{
+    font-family: var(--font-body); font-size: 15px; padding: 12px 14px;
+    border: 1px solid var(--line); border-radius: 3px; background: var(--paper-0); color: var(--ink-900);
+  }
+  .request-form input:focus,
+  .request-form select:focus,
+  .request-form textarea:focus{ outline: 2px solid var(--gold-500); outline-offset: 1px; }
+  .request-form button{ align-self: flex-start; border: none; cursor: pointer; }
+  .form-note{ margin-top: 20px; color: var(--sage-500); font-size: 14px; }
+
+  @media (max-width: 900px){
+    .service-grid{ grid-template-columns: 1fr; }
+    .steps-grid{ grid-template-columns: repeat(2, 1fr); }
+    .deliverables-grid{ grid-template-columns: 1fr; }
+  }
+  @media (max-width: 600px){
+    .article-index-hero{ padding: 24px 0 24px; }
+    .hero-actions{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+    .steps-grid{ grid-template-columns: 1fr; }
+    .form-row{ grid-template-columns: 1fr; }
+    .trust-banner{ gap: 24px; }
+  }
 </style>

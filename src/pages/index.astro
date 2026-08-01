@@ -1,11 +1,62 @@
 ---
 import Layout from '../layouts/Layout.astro';
+
+const faqs = [
+  {
+    q: 'What exactly is The Psychology Square, and what services do you provide?',
+    a: 'The Psychology Square is an online mental health platform offering professional virtual therapy, psychological assessments, and evidence-based mental health resources. We connect individuals directly with qualified psychologists for individual counseling, clinical evaluations, and structured psychoeducation.',
+  },
+  {
+    q: 'Are your services restricted to a specific region, or can I book from anywhere?',
+    a: 'Our telehealth services are accessible internationally to anyone with a stable internet connection. We accommodate different time zones, allowing clients globally to receive confidential psychological support from the comfort of their homes.',
+  },
+  {
+    q: 'What clinical qualifications do the therapists on your platform hold?',
+    a: 'All practitioners associated with The Psychology Square are credentialed mental health professionals holding advanced degrees in clinical or professional psychology. Every clinician possesses documented training in evidence-based therapeutic modalities and practical clinical experience.',
+  },
+  {
+    q: 'Which therapeutic frameworks and techniques do your psychologists utilize?',
+    a: 'Our clinicians apply tailored, science-backed modalities including Cognitive Behavioral Therapy (CBT), Psychodynamic Therapy, Interpersonal Therapy (IPT), and Acceptance and Commitment Therapy (ACT). Treatment plans are tailored specifically to individual case conceptualizations and empirical research.',
+  },
+  {
+    q: 'How does the virtual consultation process work from booking to session?',
+    a: 'After selecting a practitioner and scheduling a time slot through our platform, you will receive an instant booking confirmation containing a secure, end-to-end encrypted video meeting link. At your scheduled time, simply click the link to enter your private virtual therapy room—no extra software downloads required.',
+  },
+  {
+    q: 'What happens during the initial intake session?',
+    a: 'The first session serves as a clinical intake where your therapist gathers background information, assesses your primary concerns, and discusses your specific therapeutic goals. Together, you will formulate a clear roadmap and frequency structure for future treatment.',
+  },
+  {
+    q: 'How is my personal data and session privacy protected?',
+    a: 'We strictly adhere to clinical confidentiality protocols and data protection standards. All video calls and written communications utilize encrypted infrastructure, and clinical notes are stored securely, ensuring your data is never shared without explicit written consent unless required by law.',
+  },
+  {
+    q: 'What is your cancellation, rescheduling, and no-show policy?',
+a: 'You can reschedule a session with at least 24 hours\' prior notice, subject to available slots. No refunds will be provided for booked sessions, and cancellations remain non-refundable in all cases. Last-minute rescheduling or cancellations are not permitted, and no-shows or missed appointments forfeit the full session fee.',  },
+  {
+    q: 'Can I use The Psychology Square for immediate psychiatric emergencies or crisis intervention?',
+    a: 'No, our platform provides scheduled outpatient therapy and is not designed for crisis management. If you are experiencing acute suicidal ideation, severe self-harm urges, or a medical emergency, please contact your local emergency response service or visit the nearest hospital emergency department immediately.',
+  },
+  {
+    q: 'Can I get a formal psychological report or diagnosis through your platform?',
+    a: 'Yes, formal diagnostic evaluations and clinical assessments can be conducted by our qualified psychologists during designated intake and assessment sessions. However, standard informative articles or self-assessment screeners on our website serve purely educational purposes and do not constitute a formal diagnosis.',
+  },
+];
 ---
 <Layout
   title="Home"
   fullTitle="The Psychology Square — Online &amp; In-Person Therapy in Lahore"
   description="Individual and couples therapy in Johar Town, Lahore — online or in person. Licensed clinical psychologists, evidence-based, unhurried. Book a session today."
 >
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqs.map((f) => ({
+      "@type": "Question",
+      "name": f.q,
+      "acceptedAnswer": { "@type": "Answer", "text": f.a },
+    })),
+  })} />
 
   <section class="hero">
     <div class="wrap hero-inner">
@@ -116,18 +167,15 @@ import Layout from '../layouts/Layout.astro';
       <h2 class="section-title">Therapy that stays grounded in evidence, not slogans.</h2>
       <div class="practice-grid">
         <div class="practice-block">
-          <span class="block-index">01</span>
-          <h3>Structured, not clinical-cold</h3>
+          <h3>1. Structured, not clinical-cold</h3>
           <p>Sessions follow an evidence-based framework, but conversation comes first. You won't be handed a worksheet before you've been heard.</p>
         </div>
         <div class="practice-block">
-          <span class="block-index">02</span>
-          <h3>Online or in person, your choice</h3>
+          <h3>2. Online or in person, your choice</h3>
           <p>Join over video call from anywhere, or come in person to the Johar Town, Lahore office. Either way — a quiet, confidential hour.</p>
         </div>
         <div class="practice-block">
-          <span class="block-index">03</span>
-          <h3>Rooted in real training</h3>
+          <h3>3. Rooted in real training</h3>
           <p>Grounded in supervised clinical experience across hospital and addiction-treatment settings, not theory alone.</p>
         </div>
       </div>
@@ -189,6 +237,23 @@ import Layout from '../layouts/Layout.astro';
     </div>
   </section>
 
+  <!-- 6. FAQ -->
+  <section class="section" id="faq">
+    <div class="wrap" style="max-width: 800px;">
+      <div class="section-head" style="margin-bottom: 24px;">
+        <h2 class="section-title">Frequently asked questions</h2>
+      </div>
+
+      <div class="faq-list">
+        {faqs.map((f) => (
+          <details class="faq-item">
+            <summary>{f.q}</summary>
+            <p>{f.a}</p>
+          </details>
+        ))}
+      </div>
+    </div>
+  </section>
 </Layout>
 
 <style>
@@ -217,6 +282,22 @@ import Layout from '../layouts/Layout.astro';
   .explore-teaser:hover{ border-color: var(--gold-500); }
   .explore-teaser h3{ font-size: 16px; }
   .explore-teaser p{ color: var(--ink-600); font-size: 13.5px; flex:1; }
+
+  /* FAQ Accordion Styles copied from research.astro */
+  .faq-list{ display:flex; flex-direction:column; gap: 10px; }
+  .faq-item{
+    border: 1px solid var(--line); background: var(--paper-0); padding: 18px 22px; border-radius: 3px;
+  }
+  .faq-item summary{
+    cursor: pointer; font-weight: 600; font-size: 15.5px; list-style: none;
+    display:flex; justify-content:space-between; align-items:center; gap: 16px;
+  }
+  .faq-item summary::-webkit-details-marker{ display:none; }
+  .faq-item summary::after{
+    content: '+'; font-family: var(--font-mono); color: var(--gold-500); font-size: 20px; flex:none;
+  }
+  .faq-item[open] summary::after{ content: '\2212'; }
+  .faq-item p{ color: var(--ink-600); font-size: 14.5px; margin-top: 14px; line-height:1.6; }
 
   @media (max-width: 860px){ .explore-grid{ grid-template-columns: 1fr; } }
 </style>
