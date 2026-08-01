@@ -1,6 +1,5 @@
 import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
-import { sendNewBookingAdminEmail } from '../../lib/email';
 import { sendNewBookingAdminEmail, sendBookingReceivedClientEmail } from '../../lib/email';
 
 export const prerender = false;
