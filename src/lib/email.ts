@@ -114,3 +114,122 @@ export async function sendCertificateEmail(
     html,
   });
 }
+
+const CLINICIAN_NAMES: Record<string, string> = { sohail: 'Muhammad Sohail', sehar: 'Sehar Waheed' };
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+export async function sendBookingStatusEmail(
+  env: { RESEND_API_KEY?: string; EMAIL_FROM?: string },
+  args: {
+    toContact: string; toName: string; status: 'confirmed' | 'declined';
+    service: string; clinician: string; mode: string; preferredTime: string; reference: string;
+  }
+): Promise<{ ok: boolean; error?: string }> {
+  if (!env.RESEND_API_KEY || !env.EMAIL_FROM) {
+    return { ok: false, error: 'Email is not configured yet (missing RESEND_API_KEY or EMAIL_FROM).' };
+  }
+  // Bookings can be reached by phone as well as email — only attempt to
+  // email when the contact on file actually looks like an email address.
+  if (!EMAIL_RE.test(args.toContact)) {
+    return { ok: false, error: 'Contact on file is not an email address.' };
+  }
+
+  const clinicianName = CLINICIAN_NAMES[args.clinician] || args.clinician;
+  const serviceLabel = args.service === 'couples' ? 'Couples Therapy' : 'Individual Therapy';
+  const isConfirmed = args.status === 'confirmed';
+
+  const heading = isConfirmed ? 'Your session is confirmed' : 'About your booking';
+  const body = isConfirmed
+    ? `Your ${serviceLabel} session with ${escapeHtml(clinicianName)} (${escapeHtml(args.mode)}) for ${escapeHtml(args.preferredTime)} has been confirmed. We look forward to seeing you.`
+    : `Unfortunately we're unable to confirm your requested ${serviceLabel} session with ${escapeHtml(clinicianName)} for ${escapeHtml(args.preferredTime)}. Please get in touch or rebook for another time that works.`;
+
+  const html = emailShell(`
+    <h1 style="font-size:22px;margin:0 0 16px;">${heading}</h1>
+    <p style="font-size:15px;line-height:1.6;">Hi ${escapeHtml(args.toName)},</p>
+    <p style="font-size:15px;line-height:1.6;">${body}</p>
+    <p style="font-size:13px;color:#4B5760;margin-top:24px;">Booking reference: ${escapeHtml(args.reference)}</p>
+  `);
+
+  return sendEmail({
+    apiKey: env.RESEND_API_KEY,
+    from: env.EMAIL_FROM,
+    to: args.toContact,
+    subject: isConfirmed ? 'Your session is confirmed — The Psychology Square' : 'About your booking — The Psychology Square',
+    html,
+  });
+}
+
+export async function sendNewBookingAdminEmail(
+  env: { RESEND_API_KEY?: string; EMAIL_FROM?: string; ADMIN_EMAIL?: string },
+  args: {
+    reference: string;
+    clientName: string;
+    contact: string;
+    service: string;
+    mode: string;
+    clinician: string;
+    preferredTime: string;
+    amountPkr: number;
+    paymentMethod: string;
+    notes?: string;
+  }
+): Promise<{ ok: boolean; error?: string }> {
+  if (!env.RESEND_API_KEY || !env.EMAIL_FROM) {
+    return { ok: false, error: 'Email is not configured yet.' };
+  }
+
+  const adminAddress = env.ADMIN_EMAIL || env.EMAIL_FROM;
+
+  const html = emailShell(`
+    <h1 style="font-size:20px;margin:0 0 16px;">New Booking Submission</h1>
+    <p style="font-size:14px;line-height:1.5;">A new session booking has been submitted and requires review:</p>
+    <ul style="font-size:14px;line-height:1.6;padding-left:20px;">
+      <li><strong>Reference:</strong> ${escapeHtml(args.reference)}</li>
+      <li><strong>Client:</strong> ${escapeHtml(args.clientName)} (${escapeHtml(args.contact)})</li>
+      <li><strong>Service:</strong> ${escapeHtml(args.service)} (${escapeHtml(args.mode)})</li>
+      <li><strong>Clinician:</strong> ${escapeHtml(args.clinician)}</li>
+      <li><strong>Time:</strong> ${escapeHtml(args.preferredTime)}</li>
+      <li><strong>Amount:</strong> PKR ${args.amountPkr} via ${escapeHtml(args.paymentMethod)}</li>
+      ${args.notes ? `<li><strong>Notes:</strong> ${escapeHtml(args.notes)}</li>` : ''}
+    </ul>
+  `);
+
+  return sendEmail({
+    apiKey: env.RESEND_API_KEY,
+    from: env.EMAIL_FROM,
+    to: adminAddress,
+    subject: `[New Booking] ${args.reference} - ${args.clientName}`,
+    html,
+  });
+}
+
+export async function sendBookingReceivedClientEmail(
+  env: { RESEND_API_KEY?: string; EMAIL_FROM?: string },
+  args: { toContact: string; toName: string; reference: string }
+): Promise<{ ok: boolean; error?: string }> {
+  if (!env.RESEND_API_KEY || !env.EMAIL_FROM) {
+    return { ok: false, error: 'Email is not configured yet.' };
+  }
+
+  if (!EMAIL_RE.test(args.toContact)) {
+    return { ok: false, error: 'Contact on file is not an email address.' };
+  }
+
+  const html = emailShell(`
+    <h1 style="font-size:22px;margin:0 0 16px;">We received your booking request</h1>
+    <p style="font-size:15px;line-height:1.6;">Hi ${escapeHtml(args.toName)},</p>
+    <p style="font-size:15px;line-height:1.6;">
+      Thank you for scheduling with us. We've received your payment submission and details. 
+      Our team is reviewing your booking and will confirm your appointment shortly.
+    </p>
+    <p style="font-size:13px;color:#4B5760;margin-top:24px;">Your booking reference: <strong>${escapeHtml(args.reference)}</strong></p>
+  `);
+
+  return sendEmail({
+    apiKey: env.RESEND_API_KEY,
+    from: env.EMAIL_FROM,
+    to: args.toContact,
+    subject: `Booking Request Received (${args.reference}) — The Psychology Square`,
+    html,
+  });
+}
