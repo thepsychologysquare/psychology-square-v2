@@ -16,7 +16,28 @@ import Layout from '../layouts/Layout.astro';
       <form id="bookingForm" class="booking-form" novalidate>
 
         <div class="form-block">
-          <span class="form-step">01 — Choose a service</span>
+          <span class="form-step">01 — Online or in person?</span>
+          <div class="service-options" role="radiogroup" aria-label="Session format" id="formatOptions">
+            <label class="service-option">
+              <input type="radio" name="mode" value="online" checked />
+              <span class="service-option-body">
+                <span class="service-option-title">Online session</span>
+                <span class="service-option-price">Video call, from anywhere</span>
+              </span>
+            </label>
+            <label class="service-option">
+              <input type="radio" name="mode" value="in_person" />
+              <span class="service-option-body">
+                <span class="service-option-title">In-person session</span>
+                <span class="service-option-price">At our Johar Town, Lahore office</span>
+              </span>
+            </label>
+          </div>
+          <p class="format-note" id="formatNote" hidden>In-person slots depend on the clinician's current availability and aren't guaranteed at the time of booking. If your preferred in-person slot isn't available, we're happy to reschedule you to the next available in-person time.</p>
+        </div>
+
+        <div class="form-block">
+          <span class="form-step">02 — Choose a service</span>
           <div class="service-options" role="radiogroup" aria-label="Service type">
             <label class="service-option">
               <input type="radio" name="service" value="individual" checked />
@@ -36,7 +57,7 @@ import Layout from '../layouts/Layout.astro';
         </div>
 
         <div class="form-block">
-          <span class="form-step">02 — Choose a clinician</span>
+          <span class="form-step">03 — Choose a clinician</span>
           <div class="service-options" role="radiogroup" aria-label="Clinician" id="clinicianOptions">
             <label class="service-option">
               <input type="radio" name="clinician" value="sohail" checked />
@@ -54,7 +75,7 @@ import Layout from '../layouts/Layout.astro';
         </div>
 
         <div class="form-block">
-          <span class="form-step">03 — Pick a time</span>
+          <span class="form-step">04 — Pick a time</span>
           <p class="slot-status" id="slotStatus">Loading available times…</p>
           <div id="bookCalendar" class="book-calendar" hidden>
             <div class="cal-nav">
@@ -74,7 +95,7 @@ import Layout from '../layouts/Layout.astro';
         </div>
 
         <div class="form-block">
-          <span class="form-step">04 — Your details</span>
+          <span class="form-step">05 — Your details</span>
           <div class="field-grid">
             <div class="field">
               <label for="client_name">Full name</label>
@@ -92,7 +113,7 @@ import Layout from '../layouts/Layout.astro';
         </div>
 
         <div class="form-block">
-          <span class="form-step">05 — Send payment</span>
+          <span class="form-step">06 — Send payment</span>
           <div class="payment-methods" role="radiogroup" aria-label="Payment method">
             <label class="payment-option">
               <input type="radio" name="payment_method" value="jazzcash" checked />
@@ -115,7 +136,7 @@ import Layout from '../layouts/Layout.astro';
         </div>
 
         <div class="form-block">
-          <span class="form-step">06 — Attach your receipt</span>
+          <span class="form-step">07 — Attach your receipt</span>
           <div class="field">
             <label for="screenshot">Upload a screenshot of the payment</label>
             <input type="file" id="screenshot" name="screenshot" accept="image/*" required />
@@ -180,6 +201,11 @@ import Layout from '../layouts/Layout.astro';
   .upload-preview span{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .upload-remove-btn{
     background:none; border:none; color:#B4432E; font-size:13px; font-weight:600; cursor:pointer; flex:none; padding:0;
+  }
+
+  .format-note{
+    margin-top:2px; padding:12px 14px; background:rgba(199,164,74,0.08); border:1px solid rgba(199,164,74,0.35);
+    border-radius:2px; font-size:13.5px; line-height:1.55; color:var(--ink-900);
   }
 
   .service-options, .payment-methods{ display:flex; flex-direction:column; gap:10px; }
@@ -291,6 +317,16 @@ import Layout from '../layouts/Layout.astro';
   });
 
   uploadRemoveBtn.addEventListener('click', clearUpload);
+
+  const formatOptions = document.getElementById('formatOptions') as HTMLElement;
+  const formatNote = document.getElementById('formatNote') as HTMLParagraphElement;
+  function updateFormatNote() {
+    const mode = (formatOptions.querySelector('input[name="mode"]:checked') as HTMLInputElement)?.value ?? 'online';
+    formatNote.hidden = mode !== 'in_person';
+  }
+  formatOptions.addEventListener('change', updateFormatNote);
+  updateFormatNote();
+
   const confirmationPanel = document.getElementById('confirmationPanel')!;
   const confirmationRef = document.getElementById('confirmationRef')!;
   const clinicianOptions = document.getElementById('clinicianOptions') as HTMLElement;

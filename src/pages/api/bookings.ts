@@ -1,10 +1,12 @@
 import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
+import { sendNewBookingAdminEmail } from '../../lib/email';
 
 export const prerender = false;
 
 const SERVICES: Record<string, number> = { individual: 5000, couples: 7000 };
 const PAYMENT_METHODS = new Set(['jazzcash', 'bank_hbl', 'bank_ubl']);
+const MODES = new Set(['online', 'in_person']);
 const MAX_SCREENSHOT_BYTES = 5 * 1024 * 1024; // 5MB — typical screenshots are well under 1-2MB; this leaves comfortable headroom for high-DPI screens without allowing arbitrary large uploads
 const RATE_LIMIT_WINDOW_MINUTES = 10;
 const RATE_LIMIT_MAX_SUBMISSIONS = 4;
@@ -48,6 +50,7 @@ export const POST: APIRoute = async ({ request }) => {
   const clientName = String(formData.get('client_name') || '').trim();
   const contact = String(formData.get('contact') || '').trim();
   const service = String(formData.get('service') || '');
+  const mode = String(formData.get('mode') || 'online');
   const notes = String(formData.get('notes') || '').trim();
   const paymentMethod = String(formData.get('payment_method') || '');
   const slotId = Number(formData.get('slot_id'));
@@ -56,6 +59,7 @@ export const POST: APIRoute = async ({ request }) => {
   if (!clientName || clientName.length > 200) return jsonError('Please enter your name.', 400);
   if (!contact || contact.length > 200) return jsonError('Please enter an email or phone number.', 400);
   if (!(service in SERVICES)) return jsonError('Please choose a valid service.', 400);
+  if (!MODES.has(mode)) return jsonError('Please choose a valid session format.', 400);
   if (notes.length > 1000) return jsonError('Notes are too long.', 400);
   if (!PAYMENT_METHODS.has(paymentMethod)) return jsonError('Please choose a valid payment method.', 400);
   if (!Number.isInteger(slotId) || slotId <= 0) return jsonError('Please pick an available time slot.', 400);
@@ -99,8 +103,8 @@ export const POST: APIRoute = async ({ request }) => {
     await env.DB.prepare(
       `INSERT INTO bookings
         (id, created_at, client_name, contact, service, clinician, preferred_time, notes,
-         amount_pkr, payment_method, screenshot_key, screenshot_type, status, submitter_ip, slot_id)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?)`
+         amount_pkr, payment_method, screenshot_key, screenshot_type, status, submitter_ip, slot_id, mode)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?)`
     ).bind(
       reference,
       new Date().toISOString(),
@@ -115,13 +119,29 @@ export const POST: APIRoute = async ({ request }) => {
       screenshotKey,
       screenshot.type,
       ip,
-      slotId
+      slotId,
+      mode
     ).run();
   } catch {
     await env.SCREENSHOTS.delete(screenshotKey).catch(() => {});
     await env.DB.prepare(`UPDATE availability_slots SET status = 'open' WHERE id = ?`).bind(slotId).run();
     return jsonError('Could not save your booking. Please try again.', 500);
   }
+
+  // Best-effort — a failed notification email should never block the booking itself.
+  // The booking is already saved and visible on the dashboard regardless.
+  await sendNewBookingAdminEmail(env, {
+    reference,
+    clientName,
+    contact,
+    service,
+    mode,
+    clinician: slot!.clinician,
+    preferredTime: `${slot!.date} ${slot!.time}`,
+    amountPkr: SERVICES[service],
+    paymentMethod,
+    notes: notes || undefined,
+  }).catch(() => {});
 
   return new Response(JSON.stringify({ reference }), {
     status: 201,

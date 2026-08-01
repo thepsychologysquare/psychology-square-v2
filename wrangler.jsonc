@@ -31,7 +31,7 @@
 		}
 	],
 	"vars": {
-		"BOOKING_ADMIN_EMAIL": "thepsychologysquare@gmail.com",
+		"BOOKING_ADMIN_EMAIL": "info@thepsychologysquare.com",
 		"EMAIL_FROM": "The Psychology Square <info@thepsychologysquare.com>"
 	}
 }

@@ -15,7 +15,8 @@ CREATE TABLE IF NOT EXISTS bookings (
   screenshot_key TEXT NOT NULL,      -- R2 object key for the uploaded proof
   screenshot_type TEXT NOT NULL,     -- content-type, for serving it back correctly
   status TEXT NOT NULL DEFAULT 'pending',  -- 'pending' | 'confirmed' | 'declined'
-  submitter_ip TEXT                  -- used only for rate-limiting, not shown in the UI
+  submitter_ip TEXT,                 -- used only for rate-limiting, not shown in the UI
+  mode TEXT NOT NULL DEFAULT 'online'      -- 'online' | 'in_person'
 );
 
 CREATE INDEX IF NOT EXISTS idx_bookings_created_at ON bookings (created_at DESC);

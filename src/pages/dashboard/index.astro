@@ -66,6 +66,7 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
                 <th data-sort="client_name">Client</th>
                 <th data-sort="contact">Contact</th>
                 <th data-sort="service">Service</th>
+                <th data-sort="mode">Format</th>
                 <th data-sort="clinician">Clinician</th>
                 <th data-sort="amount_pkr">Amount</th>
                 <th data-sort="preferred_time">Time</th>
@@ -282,6 +283,9 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
   .status-badge.pending{ background:rgba(199,164,74,0.15); color:#8a6d1f; }
   .status-badge.confirmed{ background:rgba(124,152,133,0.18); color:#3f5c47; }
   .status-badge.declined{ background:rgba(180,67,46,0.12); color:#B4432E; }
+  .format-badge{ font-family:var(--font-mono); font-size:11px; letter-spacing:0.06em; text-transform:uppercase; padding:4px 10px; border-radius:20px; white-space:nowrap; }
+  .format-badge.online{ background:rgba(45,90,135,0.10); color:#2d5a87; }
+  .format-badge.in_person{ background:rgba(124,152,133,0.18); color:#3f5c47; }
 
 
   .pagination{ display:flex; align-items:center; justify-content:center; gap:16px; margin-top:18px; font-size:13.5px; color:var(--ink-600); }
@@ -397,6 +401,7 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
     return String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   }
   function clinicianName(c) { return c === 'sohail' ? 'Muhammad Sohail' : c === 'sehar' ? 'Sehar Waheed' : 'No preference'; }
+  function modeLabel(m) { return m === 'in_person' ? 'In person' : 'Online'; }
   function formatDate(iso) {
     const d = new Date(iso);
     return d.toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
@@ -502,6 +507,7 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
         <td>${escapeHtml(b.client_name)}${b.notes ? ` <span class="cell-notes-flag" title="${escapeHtml(b.notes)}">📝</span>` : ''}</td>
         <td>${escapeHtml(b.contact)}</td>
         <td>${b.service === 'individual' ? 'Individual' : 'Couples'}</td>
+        <td><span class="format-badge ${b.mode || 'online'}">${modeLabel(b.mode || 'online')}</span></td>
         <td>${clinicianName(b.clinician)}</td>
         <td>PKR ${b.amount_pkr.toLocaleString('en-US')}</td>
         <td>${escapeHtml(b.preferred_time)}</td>
@@ -680,10 +686,10 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
   pageNext.addEventListener('click', () => { page++; render(); });
 
   exportBtn.addEventListener('click', () => {
-    const cols = ['id', 'created_at', 'client_name', 'contact', 'service', 'clinician', 'preferred_time', 'amount_pkr', 'payment_method', 'status', 'notes'];
-    const header = ['Reference', 'Submitted', 'Name', 'Contact', 'Service', 'Clinician', 'Time', 'Amount (PKR)', 'Payment Method', 'Status', 'Notes'];
+    const cols = ['id', 'created_at', 'client_name', 'contact', 'service', 'mode', 'clinician', 'preferred_time', 'amount_pkr', 'payment_method', 'status', 'notes'];
+    const header = ['Reference', 'Submitted', 'Name', 'Contact', 'Service', 'Format', 'Clinician', 'Time', 'Amount (PKR)', 'Payment Method', 'Status', 'Notes'];
     const rows = filteredSorted().map((b) => cols.map((c) => {
-      const v = String(b[c] ?? '').replace(/"/g, '""');
+      const v = String(c === 'mode' ? modeLabel(b.mode || 'online') : (b[c] ?? '')).replace(/"/g, '""');
       return `"${v}"`;
     }).join(','));
     const csv = [header.join(','), ...rows].join('\r\n');
