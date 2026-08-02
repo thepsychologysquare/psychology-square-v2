@@ -14,13 +14,15 @@ const session = env?.CLIENT_SESSION_SECRET
   ? await getClientSession(Astro.request.headers.get('cookie'), env.CLIENT_SESSION_SECRET)
   : null;
 
-let enrollment: { name: string } | null = null;
+let enrollment: { name: string; status: string } | null = null;
 if (session && env?.DB) {
   enrollment = await env.DB.prepare(
-    `SELECT name FROM enrollments WHERE course_slug = ? AND email = ?`
-  ).bind(course.id, session.email).first<{ name: string }>();
+    `SELECT name, status FROM enrollments WHERE course_slug = ? AND email = ?`
+  ).bind(course.id, session.email).first<{ name: string; status: string }>();
 }
-const isEnrolled = !!enrollment;
+const isEnrolled = !!enrollment && enrollment.status === 'active';
+const isPendingPayment = !!enrollment && enrollment.status === 'pending';
+const isDeclinedPayment = !!enrollment && enrollment.status === 'declined';
 
 // A course built in the new Course Builder (D1-backed modules/steps) skips
 // the legacy Decap-based module player entirely and sends the learner to
@@ -85,16 +87,23 @@ const moduleQuestionsForClient = renderedModules.map((m) =>
 
       {!isEnrolled ? (
         <section class="enroll-gate" id="enrollGate">
-          <h2>Enroll to access this course</h2>
-          <p class="enroll-copy">Enrolling is free and takes a few seconds — you'll get a sign-in link by email, no password needed. The lessons and quiz unlock right after.</p>
-
-          {session ? (
-            <div id="enrollNowPanel">
-              <p class="signed-in-as">Signed in as <strong>{session.email}</strong></p>
-              <button type="button" class="btn btn--primary" id="enrollNowBtn">Enroll now</button>
-              <p class="enroll-error" id="enrollNowError" role="alert" hidden></p>
-            </div>
+          {course.data.isPaid ? (
+            <>
+              <h2>Enroll in this course</h2>
+              <p class="enroll-copy">
+                <strong>Rs. {course.data.pricePkr?.toLocaleString('en-US') ?? '—'}</strong> — pay via easypaisa, JazzCash, or bank transfer,
+                upload your payment screenshot, and we'll confirm your enrollment within 24 hours. Includes every lesson
+                and the same free, automatic digital certificate on completion.
+              </p>
+            </>
           ) : (
+            <>
+              <h2>Enroll to access this course</h2>
+              <p class="enroll-copy">Enrolling is free and takes a few seconds — you'll get a sign-in link by email, no password needed. The lessons and quiz unlock right after.</p>
+            </>
+          )}
+
+          {!session ? (
             <form id="enrollForm" class="enroll-form">
               <div class="field-row">
                 <div class="field">
@@ -106,18 +115,73 @@ const moduleQuestionsForClient = renderedModules.map((m) =>
                   <input type="email" id="enrollEmail" required autocomplete="email" placeholder="you@example.com" />
                 </div>
               </div>
-              <button type="submit" class="btn btn--primary" id="enrollBtn">Enroll &amp; email me a link</button>
+              <button type="submit" class="btn btn--primary" id="enrollBtn">
+                {course.data.isPaid ? 'Sign in to pay & enroll' : 'Enroll & email me a link'}
+              </button>
               <p class="enroll-error" id="enrollError" role="alert" hidden></p>
             </form>
+          ) : isPendingPayment ? (
+            <div class="pending-review-panel">
+              <p class="signed-in-as">Signed in as <strong>{session.email}</strong></p>
+              <p>We've received your payment and it's under review — you'll get an email as soon as it's confirmed, usually within 24 hours.</p>
+            </div>
+          ) : course.data.isPaid ? (
+            <div id="paymentPanel">
+              <p class="signed-in-as">Signed in as <strong>{session.email}</strong></p>
+              {isDeclinedPayment && (
+                <p class="notice-declined">We couldn't confirm your last payment — usually the screenshot was unclear. Please try again below.</p>
+              )}
+              <form id="paymentForm" class="enroll-form" enctype="multipart/form-data">
+                <div class="field">
+                  <label for="payName">Full name</label>
+                  <input type="text" id="payName" required autocomplete="name" placeholder="As it should appear on your certificate" />
+                </div>
+
+                <div class="field">
+                  <span class="field-label">Payment method</span>
+                  <div class="payment-methods" role="radiogroup" aria-label="Payment method">
+                    <label class="payment-option">
+                      <input type="radio" name="pay_method" value="jazzcash" checked />
+                      <span>JazzCash</span>
+                    </label>
+                    <label class="payment-option">
+                      <input type="radio" name="pay_method" value="bank_hbl" />
+                      <span>Bank transfer — HBL (Sehar Waheed)</span>
+                    </label>
+                    <label class="payment-option">
+                      <input type="radio" name="pay_method" value="bank_ubl" />
+                      <span>Bank transfer — UBL (Muhammad Sohail)</span>
+                    </label>
+                  </div>
+                  <div class="payment-details" id="payInstructions"></div>
+                </div>
+
+                <div class="field">
+                  <label for="paymentScreenshot">Upload a screenshot of the payment</label>
+                  <input type="file" id="paymentScreenshot" accept="image/*" required />
+                  <p class="field-hint">A clear screenshot of the transaction confirmation is all we need (under 5MB, images only).</p>
+                </div>
+
+                <button type="submit" class="btn btn--primary" id="paySubmitBtn">Submit payment for review</button>
+                <p class="enroll-error" id="payError" role="alert" hidden></p>
+              </form>
+            </div>
+          ) : (
+            <div id="enrollNowPanel">
+              <p class="signed-in-as">Signed in as <strong>{session.email}</strong></p>
+              <button type="button" class="btn btn--primary" id="enrollNowBtn">Enroll now</button>
+              <p class="enroll-error" id="enrollNowError" role="alert" hidden></p>
+            </div>
           )}
 
           <div id="enrollSent" class="enroll-sent" hidden>
             <h3>Check your email</h3>
-            <p>Click the link we just sent to finish enrolling — it expires in 15 minutes.</p>
+            <p>Click the link we just sent to finish signing in — it expires in 15 minutes.</p>
           </div>
         </section>
       ) : (
         <Fragment>
+
           {hasNewModules ? (
             <div class="new-course-cta">
               <h2>Continue your course</h2>
@@ -205,13 +269,14 @@ const moduleQuestionsForClient = renderedModules.map((m) =>
 
 <script type="application/json" id="quizData" set:html={JSON.stringify(clientQuiz)}></script>
 <script type="application/json" id="moduleQuestionsData" set:html={JSON.stringify(moduleQuestionsForClient)}></script>
-<script define:vars={{ courseSlug: course.id, currentUrl: Astro.url.pathname, isEnrolled, hasModules, totalModules: renderedModules.length, learnerEmail: session?.email || '' }}>
+<script define:vars={{ courseSlug: course.id, currentUrl: Astro.url.pathname, isEnrolled, hasModules, totalModules: renderedModules.length, learnerEmail: session?.email || '', isPaidCourse: course.data.isPaid }}>
   // ---------- Enroll gate ----------
   const enrollForm = document.getElementById('enrollForm');
   if (enrollForm) {
     const btn = document.getElementById('enrollBtn');
     const errorEl = document.getElementById('enrollError');
     const sentEl = document.getElementById('enrollSent');
+    const idleText = isPaidCourse ? 'Sign in to pay & enroll' : 'Enroll & email me a link';
 
     enrollForm.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -233,7 +298,7 @@ const moduleQuestionsForClient = renderedModules.map((m) =>
           errorEl.textContent = data.error || 'Something went wrong. Please try again.';
           errorEl.hidden = false;
           btn.disabled = false;
-          btn.textContent = 'Enroll & email me a link';
+          btn.textContent = idleText;
           return;
         }
         enrollForm.hidden = true;
@@ -242,7 +307,7 @@ const moduleQuestionsForClient = renderedModules.map((m) =>
         errorEl.textContent = 'Could not reach the server. Please check your connection and try again.';
         errorEl.hidden = false;
         btn.disabled = false;
-        btn.textContent = 'Enroll & email me a link';
+        btn.textContent = idleText;
       }
     });
   }
@@ -274,6 +339,75 @@ const moduleQuestionsForClient = renderedModules.map((m) =>
         errorEl.hidden = false;
         enrollNowBtn.disabled = false;
         enrollNowBtn.textContent = 'Enroll now';
+      }
+    });
+  }
+
+  // ---------- Paid-course payment form ----------
+  const paymentForm = document.getElementById('paymentForm');
+  if (paymentForm) {
+    const PAYMENT_ACCOUNTS = {
+      jazzcash: 'JazzCash\nAccount number: 0333-1597844\nName: Muhammad Sohail',
+      bank_hbl: 'Habib Bank Limited (HBL)\nAccount title: Sehar Waheed\nAccount number: 23057904517003\nIBAN: PK64HABB0023057904517003',
+      bank_ubl: 'United Bank Limited (UBL)\nAccount title: Muhammad Sohail\nAccount number: 1486274438499\nIBAN: PK93UNIL0109000274438499',
+    };
+    const payInstructions = document.getElementById('payInstructions');
+    const selectedPayMethod = () =>
+      paymentForm.querySelector('input[name="pay_method"]:checked')?.value || 'jazzcash';
+    const renderInstructions = () => {
+      payInstructions.textContent = PAYMENT_ACCOUNTS[selectedPayMethod()];
+      payInstructions.style.whiteSpace = 'pre-line';
+    };
+    renderInstructions();
+    paymentForm.querySelectorAll('input[name="pay_method"]').forEach((el) => el.addEventListener('change', renderInstructions));
+
+    const payBtn = document.getElementById('paySubmitBtn');
+    const payErrorEl = document.getElementById('payError');
+    const sentEl = document.getElementById('enrollSent');
+
+    paymentForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      payErrorEl.hidden = true;
+
+      const name = document.getElementById('payName').value.trim();
+      const screenshotInput = document.getElementById('paymentScreenshot');
+      const screenshot = screenshotInput.files && screenshotInput.files[0];
+      if (!screenshot) {
+        payErrorEl.textContent = 'Please attach a screenshot of your payment.';
+        payErrorEl.hidden = false;
+        return;
+      }
+
+      payBtn.disabled = true;
+      payBtn.textContent = 'Submitting…';
+
+      const fd = new FormData();
+      fd.set('course_slug', courseSlug);
+      fd.set('name', name);
+      fd.set('payment_method', selectedPayMethod());
+      fd.set('screenshot', screenshot);
+
+      try {
+        const res = await fetch('/api/courses/pay', { method: 'POST', body: fd });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          payErrorEl.textContent = data.error || 'Something went wrong. Please try again.';
+          payErrorEl.hidden = false;
+          payBtn.disabled = false;
+          payBtn.textContent = 'Submit payment for review';
+          return;
+        }
+        paymentForm.hidden = true;
+        if (sentEl) {
+          sentEl.hidden = false;
+          sentEl.querySelector('h3').textContent = "We've got your payment";
+          sentEl.querySelector('p').textContent = "We're reviewing it now — you'll get an email as soon as it's confirmed, usually within 24 hours.";
+        }
+      } catch {
+        payErrorEl.textContent = 'Could not reach the server. Please check your connection and try again.';
+        payErrorEl.hidden = false;
+        payBtn.disabled = false;
+        payBtn.textContent = 'Submit payment for review';
       }
     });
   }
@@ -479,6 +613,18 @@ const moduleQuestionsForClient = renderedModules.map((m) =>
   .enroll-error{ color:#B4432E; font-size:14px; margin-top:12px; }
   .enroll-sent h3{ font-family:var(--font-display); font-size:20px; margin-bottom:8px; }
   .enroll-sent p{ color:var(--ink-600); }
+
+  .pending-review-panel{ font-size:14.5px; color:var(--ink-600); }
+  .pending-review-panel p:last-child{ margin-top:4px; }
+  .notice-declined{ background:rgba(180,67,46,0.08); border:1px solid rgba(180,67,46,0.3); color:#B4432E; padding:12px 16px; border-radius:2px; font-size:14px; margin-bottom:20px; }
+
+  .field-label{ font-size:14px; font-weight:500; display:block; margin-bottom:6px; }
+  .field-hint{ font-size:13px; color:var(--ink-600); margin-top:6px; }
+  .payment-methods{ display:flex; flex-direction:column; gap:10px; }
+  .payment-option{ display:flex; align-items:center; gap:10px; min-width:0; border:1px solid var(--line); border-radius:2px; padding:12px 16px; cursor:pointer; }
+  .payment-option:has(input:checked){ border-color:var(--gold-500); background:rgba(199,164,74,0.06); }
+  .payment-option input{ accent-color:var(--gold-500); flex-shrink:0; }
+  .payment-details{ margin-top:10px; padding:16px; background:var(--paper-0); border:1px solid var(--line); border-radius:2px; font-family:var(--font-mono); font-size:13.5px; line-height:1.8; color:var(--ink-900); }
 
   .course-content{ font-size:16px; line-height:1.75; }
   .course-content :global(h2){ font-family:var(--font-display); font-size:24px; margin:40px 0 14px; }

@@ -17,7 +17,7 @@ const session = env?.CLIENT_SESSION_SECRET
 if (!session) return Astro.redirect(`/courses/${slug}`, 302);
 
 const enrollment = await env.DB.prepare(
-  `SELECT name FROM enrollments WHERE course_slug = ? AND email = ?`
+  `SELECT name FROM enrollments WHERE course_slug = ? AND email = ? AND status = 'active'`
 ).bind(course.id, session.email).first<{ name: string }>();
 if (!enrollment) return Astro.redirect(`/courses/${slug}`, 302);
 
@@ -90,6 +90,20 @@ const options: string[] = step.question_options ? JSON.parse(step.question_optio
           <button type="button" id="completeBtn" class="btn btn--primary">Mark complete &amp; continue</button>
         )}
       </div>
+
+      <section class="qa-section">
+        <h3>Questions &amp; answers</h3>
+        <p class="qa-hint">Ask us anything about this course — we review and answer questions personally rather than running an open comment thread.</p>
+        <div id="qaList" class="qa-list"></div>
+        <p id="qaEmpty" class="qa-hint" hidden>No published questions yet for this course.</p>
+
+        <form id="qaForm" class="qa-form">
+          <textarea id="qaQuestion" required maxlength="2000" placeholder="Ask a question about this course…" rows="3"></textarea>
+          <button type="submit" class="btn btn--text" id="qaSubmitBtn">Submit question</button>
+          <p class="qa-error" id="qaError" role="alert" hidden></p>
+          <p class="qa-sent" id="qaSent" hidden>Thanks — we'll review it and publish an answer here.</p>
+        </form>
+      </section>
     </main>
   </div>
 </Layout>
@@ -110,9 +124,20 @@ const options: string[] = step.question_options ? JSON.parse(step.question_optio
   .checkin-options { display: grid; gap: 0.4rem; margin-top: 0.5rem; }
   .learn-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; }
   @media (max-width: 800px) { .learn-layout { grid-template-columns: 1fr; } .learn-sidebar { position: static; } }
+
+  .qa-section { margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px solid #E2E5E8; }
+  .qa-hint { font-size: 0.85rem; color: #4B5760; }
+  .qa-list { display: grid; gap: 0.9rem; margin: 1rem 0; }
+  .qa-item { padding: 0.9rem 1rem; border: 1px solid #E2E5E8; border-radius: 8px; }
+  .qa-item .qa-q { font-weight: 600; margin: 0 0 0.4rem; }
+  .qa-item .qa-a { margin: 0; color: #333; }
+  .qa-form { margin-top: 1rem; display: grid; gap: 0.6rem; max-width: 560px; }
+  .qa-form textarea { font: inherit; padding: 0.6rem 0.7rem; border: 1px solid #E2E5E8; border-radius: 8px; resize: vertical; }
+  .qa-error { color: #B4432E; font-size: 0.85rem; }
+  .qa-sent { color: #3f5c47; font-size: 0.85rem; }
 </style>
 
-<script define:vars={{ courseSlug: course.id, stepId: step.id, nextStepUrl: nextStep ? `/courses/${course.id}/learn/${nextStep.id}` : null, quizUrl: `/courses/${course.id}#quizSection` }}>
+<script define:vars={{ courseSlug: course.id, stepId: step.id, stepTitle: step.title, learnerName: enrollment.name, nextStepUrl: nextStep ? `/courses/${course.id}/learn/${nextStep.id}` : null, quizUrl: `/courses/${course.id}#quizSection` }}>
   document.getElementById('completeBtn')?.addEventListener('click', async (e) => {
     const btn = e.target;
     btn.disabled = true;
@@ -133,5 +158,65 @@ const options: string[] = step.question_options ? JSON.parse(step.question_optio
       feedback.hidden = false;
       feedback.textContent = btn.dataset.correct === 'true' ? 'Correct!' : 'Not quite — take another look above.';
     });
+  });
+
+  // ---------- Moderated Q&A ----------
+  function escapeHtml(s) {
+    return String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+  (async () => {
+    const list = document.getElementById('qaList');
+    const empty = document.getElementById('qaEmpty');
+    try {
+      const res = await fetch(`/api/courses/questions?course=${encodeURIComponent(courseSlug)}`);
+      const data = await res.json();
+      const items = data.questions || [];
+      empty.hidden = items.length > 0;
+      list.innerHTML = items.map((q) => `
+        <div class="qa-item">
+          <p class="qa-q">Q: ${escapeHtml(q.question)}</p>
+          <p class="qa-a">A: ${escapeHtml(q.answer)}</p>
+        </div>
+      `).join('');
+    } catch {
+      empty.hidden = false;
+    }
+  })();
+
+  const qaForm = document.getElementById('qaForm');
+  qaForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const errorEl = document.getElementById('qaError');
+    const sentEl = document.getElementById('qaSent');
+    const btn = document.getElementById('qaSubmitBtn');
+    const textarea = document.getElementById('qaQuestion');
+    errorEl.hidden = true;
+    btn.disabled = true;
+    btn.textContent = 'Submitting…';
+    try {
+      const res = await fetch('/api/courses/questions', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          courseSlug, stepId, stepTitle,
+          name: learnerName, question: textarea.value.trim(),
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        errorEl.textContent = data.error || 'Something went wrong. Please try again.';
+        errorEl.hidden = false;
+        btn.disabled = false;
+        btn.textContent = 'Submit question';
+        return;
+      }
+      qaForm.hidden = true;
+      sentEl.hidden = false;
+    } catch {
+      errorEl.textContent = 'Could not reach the server. Please check your connection and try again.';
+      errorEl.hidden = false;
+      btn.disabled = false;
+      btn.textContent = 'Submit question';
+    }
   });
 </script>

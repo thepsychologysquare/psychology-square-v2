@@ -3,6 +3,7 @@ import { env } from 'cloudflare:workers';
 import { getEntry } from 'astro:content';
 import { makeCertificateId } from '../../../lib/certificate';
 import { sendCertificateEmail } from '../../../lib/email';
+import { generateCertificatePdfBase64 } from '../../../lib/certificatePdf';
 
 export const prerender = false;
 
@@ -34,7 +35,7 @@ export const POST: APIRoute = async ({ request }) => {
   // Server-side gate: only an enrolled email can submit for this course,
   // regardless of what the page's client-side JS did or didn't check.
   const enrollment = await env.DB.prepare(
-    `SELECT 1 FROM enrollments WHERE course_slug = ? AND email = ?`
+    `SELECT 1 FROM enrollments WHERE course_slug = ? AND email = ? AND status = 'active'`
   ).bind(courseSlug, email).first();
   if (!enrollment) return jsonError('Please enroll in this course before submitting the quiz.', 403);
 
@@ -81,12 +82,31 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   const certUrl = new URL(`/certificates/${certificateId}`, request.url).toString();
+
+  // Best-effort: a PDF generation hiccup should never block certificate
+  // issuance itself, which is already saved — the learner can still always
+  // download the PDF from the certificate page.
+  let pdfBase64: string | undefined;
+  try {
+    pdfBase64 = generateCertificatePdfBase64({
+      name,
+      courseTitle: course.data.title,
+      ceHours: course.data.estimatedHours,
+      scorePercent,
+      date: new Date(now).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+      certId: certificateId,
+    });
+  } catch {
+    pdfBase64 = undefined;
+  }
+
   const emailResult = await sendCertificateEmail(env, {
     toEmail: email,
     toName: name,
     courseTitle: course.data.title,
     certUrl,
     certificateId,
+    pdfBase64,
   });
 
   return new Response(JSON.stringify({

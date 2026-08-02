@@ -28,7 +28,9 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
       <div class="dash-tabs" id="dashTabs">
         <button class="tab-btn is-active" data-tab="bookings">Bookings</button>
         <button class="tab-btn" data-tab="availability">Availability</button>
+        <button class="tab-btn" data-tab="coursePayments">Course Payment Requests</button>
         <button class="tab-btn" data-tab="enrollments">Course Enrollments</button>
+        <button class="tab-btn" data-tab="qa">Q&amp;A</button>
         <button class="tab-btn" data-tab="certificates">Certificates</button>
       </div>
 
@@ -171,6 +173,37 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
         </div>
       </div>
 
+      <div id="tabCoursePayments" class="tab-panel" hidden>
+        <div class="dash-toolbar">
+          <input type="text" id="payReqSearchBox" placeholder="Search by name, email, or course" />
+          <div class="dash-filters" id="payReqFilters">
+            <button class="filter-btn is-active" data-status="all">All</button>
+            <button class="filter-btn" data-status="pending">Pending</button>
+            <button class="filter-btn" data-status="active">Confirmed</button>
+            <button class="filter-btn" data-status="declined">Declined</button>
+          </div>
+        </div>
+        <p id="payReqLoadingMsg" class="dash-empty">Loading…</p>
+        <p id="payReqEmptyMsg" class="dash-empty" hidden>No course payment requests yet.</p>
+        <div class="table-scroll">
+          <table class="bookings-table" id="payReqTable" hidden>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Course</th>
+                <th>Amount</th>
+                <th>Method</th>
+                <th>Submitted</th>
+                <th>Status</th>
+                <th class="col-actions">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="payReqBody"></tbody>
+          </table>
+        </div>
+      </div>
+
       <div id="tabEnrollments" class="tab-panel" hidden>
         <div class="dash-toolbar">
           <input type="text" id="enrollSearchBox" placeholder="Search by name, email, or course" />
@@ -195,6 +228,21 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
       </div>
 
       <!-- ===== CERTIFICATES TAB ===== -->
+      <div id="tabQa" class="tab-panel" hidden>
+        <div class="dash-toolbar">
+          <input type="text" id="qaSearchBox" placeholder="Search by name, email, course, or question" />
+          <div class="dash-filters" id="qaFilters">
+            <button class="filter-btn is-active" data-status="pending">Pending</button>
+            <button class="filter-btn" data-status="published">Published</button>
+            <button class="filter-btn" data-status="declined">Declined</button>
+            <button class="filter-btn" data-status="all">All</button>
+          </div>
+        </div>
+        <p id="qaLoadingMsg" class="dash-empty">Loading…</p>
+        <p id="qaEmptyMsg" class="dash-empty" hidden>No questions here.</p>
+        <div id="qaCards" class="qa-cards"></div>
+      </div>
+
       <div id="tabCertificates" class="tab-panel" hidden>
         <div class="course-stats" id="courseStats"></div>
 
@@ -446,6 +494,14 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
   .modal-open-link{ display:inline-block; margin-top:12px; font-size:13.5px; color:var(--ink-900); text-decoration:underline; }
   .modal-actions{ display:flex; justify-content:flex-end; gap:10px; margin-top:16px; }
 
+  .qa-cards{ display:grid; gap:16px; }
+  .qa-card{ border:1px solid var(--line); border-radius:2px; padding:18px 20px; background:var(--paper-0); }
+  .qa-card__meta{ font-family:var(--font-mono); font-size:12px; color:var(--ink-600); margin-bottom:8px; display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+  .qa-card__question{ font-size:15px; margin:0 0 12px; }
+  .qa-card textarea{ width:100%; min-height:70px; font:inherit; padding:10px; border:1px solid var(--line); border-radius:2px; resize:vertical; margin-bottom:10px; }
+  .qa-card__actions{ display:flex; gap:8px; flex-wrap:wrap; }
+  .qa-card__answer{ font-size:14px; color:var(--ink-900); background:var(--paper-50); padding:10px 12px; border-radius:2px; margin-bottom:10px; }
+
   @media (max-width:840px){
     .col-check, .col-actions{ position:static; }
   }
@@ -473,17 +529,23 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
   const tabs = document.getElementById('dashTabs');
   const tabBookings = document.getElementById('tabBookings');
   const tabAvailability = document.getElementById('tabAvailability');
+  const tabCoursePayments = document.getElementById('tabCoursePayments');
   const tabEnrollments = document.getElementById('tabEnrollments');
+  const tabQa = document.getElementById('tabQa');
   const tabCertificates = document.getElementById('tabCertificates');
 
   function activateTab(tab) {
     tabs.querySelectorAll('.tab-btn').forEach((b) => b.classList.toggle('is-active', b.dataset.tab === tab));
     tabBookings.hidden = tab !== 'bookings';
     tabAvailability.hidden = tab !== 'availability';
+    tabCoursePayments.hidden = tab !== 'coursePayments';
     tabEnrollments.hidden = tab !== 'enrollments';
+    tabQa.hidden = tab !== 'qa';
     tabCertificates.hidden = tab !== 'certificates';
     if (tab === 'availability') loadAvailability();
+    if (tab === 'coursePayments') loadCoursePaymentRequests();
     if (tab === 'enrollments') loadEnrollments();
+    if (tab === 'qa') loadQuestions();
     if (tab === 'certificates') loadCertificates();
     history.replaceState(null, '', `#${tab}`);
   }
@@ -492,7 +554,7 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
     if (!btn) return;
     activateTab(btn.dataset.tab);
   });
-  const initialTab = ['availability', 'enrollments', 'certificates'].includes(location.hash.slice(1))
+  const initialTab = ['availability', 'coursePayments', 'enrollments', 'qa', 'certificates'].includes(location.hash.slice(1))
     ? location.hash.slice(1) : 'bookings';
   activateTab(initialTab);
 
@@ -547,6 +609,205 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
     a.download = `course-enrollments-${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
+  });
+
+  // ===== Course Payment Requests =====
+  let allPayReqs = [];
+  let payReqFilter = 'all';
+  const payReqBody = document.getElementById('payReqBody');
+  const payReqTable = document.getElementById('payReqTable');
+  const payReqLoadingMsg = document.getElementById('payReqLoadingMsg');
+  const payReqEmptyMsg = document.getElementById('payReqEmptyMsg');
+  const payReqSearchBox = document.getElementById('payReqSearchBox');
+  const payReqFilters = document.getElementById('payReqFilters');
+
+  async function loadCoursePaymentRequests() {
+    payReqLoadingMsg.hidden = false;
+    payReqTable.hidden = true;
+    const res = await fetch('/api/admin/course-enrollments');
+    if (res.status === 401) { window.location.href = '/dashboard/login'; return; }
+    const data = await res.json();
+    allPayReqs = data.requests || [];
+    payReqLoadingMsg.hidden = true;
+    renderPayReqs();
+  }
+
+  function statusBadgeClass(status) {
+    return status === 'active' ? 'confirmed' : status;
+  }
+
+  function renderPayReqs() {
+    const term = (payReqSearchBox.value || '').toLowerCase();
+    const items = allPayReqs.filter((r) =>
+      (payReqFilter === 'all' || r.status === payReqFilter) &&
+      (!term || r.name.toLowerCase().includes(term) || r.email.toLowerCase().includes(term) || r.course_title.toLowerCase().includes(term))
+    );
+    payReqEmptyMsg.hidden = items.length > 0;
+    payReqTable.hidden = items.length === 0;
+    payReqBody.innerHTML = items.map((r) => `
+      <tr>
+        <td>${escapeHtml(r.name)}</td>
+        <td>${escapeHtml(r.email)}</td>
+        <td>${escapeHtml(r.course_title)}</td>
+        <td>PKR ${escapeHtml(r.amount_pkr)}</td>
+        <td>${escapeHtml(r.payment_method)}</td>
+        <td>${formatDate(r.payment_submitted_at)}</td>
+        <td><span class="status-badge ${statusBadgeClass(r.status)}">${r.status === 'active' ? 'confirmed' : r.status}</span></td>
+        <td class="col-actions">
+          <button class="icon-btn" data-shot="${r.id}" title="View screenshot">View</button>
+          ${r.status !== 'active' ? `<button class="icon-btn confirm" data-payid="${r.id}" data-paystatus="active" title="Confirm">✓</button>` : ''}
+          ${r.status !== 'declined' ? `<button class="icon-btn decline" data-payid="${r.id}" data-paystatus="declined" title="Decline">✕</button>` : ''}
+        </td>
+      </tr>
+    `).join('');
+  }
+  payReqSearchBox.addEventListener('input', renderPayReqs);
+  payReqFilters.addEventListener('click', (e) => {
+    const btn = e.target.closest('.filter-btn');
+    if (!btn) return;
+    payReqFilters.querySelectorAll('.filter-btn').forEach((b) => b.classList.remove('is-active'));
+    btn.classList.add('is-active');
+    payReqFilter = btn.dataset.status || 'all';
+    renderPayReqs();
+  });
+
+  payReqBody.addEventListener('click', async (e) => {
+    const shotBtn = e.target.closest('[data-shot]');
+    if (shotBtn) {
+      const win = window.open('', '_blank');
+      shotBtn.disabled = true;
+      const originalText = shotBtn.textContent;
+      shotBtn.textContent = 'Loading…';
+      try {
+        const res = await fetch(`/api/admin/course-screenshot/${shotBtn.dataset.shot}`, { credentials: 'same-origin' });
+        if (!res.ok) throw new Error(`Server said ${res.status}`);
+        const blob = await res.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        if (win) win.location.href = blobUrl;
+      } catch (err) {
+        if (win) win.close();
+        window.alert(`Could not load the screenshot: ${err.message || err}`);
+      } finally {
+        shotBtn.disabled = false;
+        shotBtn.textContent = originalText;
+      }
+      return;
+    }
+    const btn = e.target.closest('.icon-btn.confirm, .icon-btn.decline');
+    if (!btn) return;
+    const id = Number(btn.dataset.payid), status = btn.dataset.paystatus;
+    const ok = await showConfirm(`Mark this course payment as ${status === 'active' ? 'confirmed' : status}?`);
+    if (!ok) return;
+    btn.disabled = true;
+    await fetch('/api/admin/course-enrollments', {
+      method: 'PATCH', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ id, status }),
+    });
+    const reqItem = allPayReqs.find((r) => r.id === id);
+    if (reqItem) reqItem.status = status;
+    renderPayReqs();
+  });
+
+  // ===== Q&A =====
+  let allQuestions = [];
+  let qaFilter = 'pending';
+  const qaCards = document.getElementById('qaCards');
+  const qaLoadingMsg = document.getElementById('qaLoadingMsg');
+  const qaEmptyMsg = document.getElementById('qaEmptyMsg');
+  const qaSearchBox = document.getElementById('qaSearchBox');
+  const qaFilters = document.getElementById('qaFilters');
+
+  async function loadQuestions() {
+    qaLoadingMsg.hidden = false;
+    qaCards.hidden = true;
+    const res = await fetch('/api/admin/questions');
+    if (res.status === 401) { window.location.href = '/dashboard/login'; return; }
+    const data = await res.json();
+    allQuestions = data.questions || [];
+    qaLoadingMsg.hidden = true;
+    renderQuestions();
+  }
+
+  function renderQuestions() {
+    const term = (qaSearchBox.value || '').toLowerCase();
+    const items = allQuestions.filter((q) =>
+      (qaFilter === 'all' || q.status === qaFilter) &&
+      (!term || q.name.toLowerCase().includes(term) || q.email.toLowerCase().includes(term) ||
+        q.course_title.toLowerCase().includes(term) || q.question.toLowerCase().includes(term))
+    );
+    qaEmptyMsg.hidden = items.length > 0;
+    qaCards.hidden = items.length === 0;
+    qaCards.innerHTML = items.map((q) => `
+      <div class="qa-card" data-id="${escapeHtml(q.id)}">
+        <div class="qa-card__meta">
+          <span class="status-badge ${q.status === 'published' ? 'confirmed' : q.status}">${q.status}</span>
+          <span>${escapeHtml(q.name)} (${escapeHtml(q.email)})</span>
+          <span>&middot; ${escapeHtml(q.course_title)}${q.step_title ? ' &middot; ' + escapeHtml(q.step_title) : ''}</span>
+          <span>&middot; ${formatDate(q.created_at)}</span>
+        </div>
+        <p class="qa-card__question">${escapeHtml(q.question)}</p>
+        ${q.status === 'published' ? `<p class="qa-card__answer">${escapeHtml(q.answer)}</p>` : ''}
+        ${q.status === 'pending' ? `
+          <textarea class="qa-answer-input" placeholder="Write your answer…"></textarea>
+          <div class="qa-card__actions">
+            <button class="btn btn--primary btn--small qa-publish">Publish answer</button>
+            <button class="btn btn--text btn--small qa-decline">Decline</button>
+            <button class="btn btn--text btn--small qa-delete">Delete</button>
+          </div>
+        ` : `
+          <div class="qa-card__actions">
+            <button class="btn btn--text btn--small qa-delete">Delete</button>
+          </div>
+        `}
+      </div>
+    `).join('');
+  }
+  qaSearchBox.addEventListener('input', renderQuestions);
+  qaFilters.addEventListener('click', (e) => {
+    const btn = e.target.closest('.filter-btn');
+    if (!btn) return;
+    qaFilters.querySelectorAll('.filter-btn').forEach((b) => b.classList.remove('is-active'));
+    btn.classList.add('is-active');
+    qaFilter = btn.dataset.status || 'pending';
+    renderQuestions();
+  });
+
+  qaCards.addEventListener('click', async (e) => {
+    const card = e.target.closest('.qa-card');
+    if (!card) return;
+    const id = card.dataset.id;
+
+    if (e.target.closest('.qa-publish')) {
+      const answer = card.querySelector('.qa-answer-input').value.trim();
+      if (!answer) { window.alert('Please write an answer before publishing.'); return; }
+      await fetch('/api/admin/questions', {
+        method: 'PATCH', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ id, status: 'published', answer }),
+      });
+      const q = allQuestions.find((x) => x.id === id);
+      if (q) { q.status = 'published'; q.answer = answer; }
+      renderQuestions();
+      return;
+    }
+    if (e.target.closest('.qa-decline')) {
+      const ok = await showConfirm('Decline this question without publishing it?');
+      if (!ok) return;
+      await fetch('/api/admin/questions', {
+        method: 'PATCH', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ id, status: 'declined' }),
+      });
+      const q = allQuestions.find((x) => x.id === id);
+      if (q) q.status = 'declined';
+      renderQuestions();
+      return;
+    }
+    if (e.target.closest('.qa-delete')) {
+      const ok = await showConfirm('Delete this question permanently?');
+      if (!ok) return;
+      await fetch(`/api/admin/questions?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
+      allQuestions = allQuestions.filter((x) => x.id !== id);
+      renderQuestions();
+    }
   });
 
   // ===== Certificates =====

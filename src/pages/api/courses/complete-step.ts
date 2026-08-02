@@ -13,7 +13,7 @@ export const POST: APIRoute = async ({ request }) => {
   if (!courseSlug || !stepId) return new Response(JSON.stringify({ error: 'courseSlug and stepId are required' }), { status: 400 });
 
   const enrollment = await env.DB.prepare(
-    `SELECT 1 FROM enrollments WHERE course_slug = ? AND email = ?`
+    `SELECT 1 FROM enrollments WHERE course_slug = ? AND email = ? AND status = 'active'`
   ).bind(courseSlug, session.email).first();
   if (!enrollment) return new Response(JSON.stringify({ error: 'Not enrolled' }), { status: 403 });
 

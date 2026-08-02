@@ -76,7 +76,6 @@ a:focus-visible, button:focus-visible{
   z-index:100;
   background:var(--navy-950);
   border-bottom:1px solid var(--line-onDark);
-  padding: 0.75rem 1rem;
 }
 .header-inner{
   display:flex;
@@ -700,11 +699,11 @@ a:focus-visible, button:focus-visible{
    desktop values so pages don't feel oversized with dead space.
 --------------------------------------- */
 @media (max-width: 640px){
-  .hero{ padding:20px 0 20px; }
+  .hero{ padding:10px 0 10px; }
   .section{ padding:36px 0; }
   .practice, .services, .team, .quote-block{ padding:36px 0; }
   .contact{ padding:24px 0; }
-  .section-title{ margin-top:20px; }
+  .section-title{ margin-bottom:20px; }
   .practice-grid, .service-cards, .team-grid{ gap:16px; }
   .card-grid{ gap:16px; }
   .profile-hero{ padding: 40px 0 36px; }
