@@ -17,7 +17,10 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
           <span class="eyebrow">Signed in as {roleLabel}</span>
           <h1>Dashboard</h1>
         </div>
-        <button id="logoutBtn" class="btn btn--ghost dash-logout">Sign out</button>
+        <div style="display:flex; gap:0.5rem;">
+          <a href="/dashboard/courses" class="btn btn--ghost">Course Builder</a>
+          <button id="logoutBtn" class="btn btn--ghost dash-logout">Sign out</button>
+        </div>
       </div>
 
       <div id="newBookingBanner" class="new-booking-banner" hidden></div>

@@ -22,6 +22,27 @@ if (session && env?.DB) {
 }
 const isEnrolled = !!enrollment;
 
+// A course built in the new Course Builder (D1-backed modules/steps) skips
+// the legacy Decap-based module player entirely and sends the learner to
+// the step-by-step player instead. Courses with no rows here are untouched.
+let hasNewModules = false;
+if (isEnrolled && env?.DB) {
+  const row = await env.DB.prepare(
+    `SELECT COUNT(*) AS n FROM course_modules WHERE course_slug = ?`
+  ).bind(course.id).first<{ n: number }>();
+  hasNewModules = (row?.n || 0) > 0;
+}
+let newModulesAllComplete = false;
+if (hasNewModules && env?.DB) {
+  const totals = await env.DB.prepare(
+    `SELECT COUNT(*) AS n FROM course_steps s JOIN course_modules m ON s.module_id = m.id WHERE m.course_slug = ?`
+  ).bind(course.id).first<{ n: number }>();
+  const done = await env.DB.prepare(
+    `SELECT COUNT(*) AS n FROM step_completions WHERE course_slug = ? AND email = ?`
+  ).bind(course.id, session?.email || '').first<{ n: number }>();
+  newModulesAllComplete = (totals?.n || 0) > 0 && (done?.n || 0) >= (totals?.n || 0);
+}
+
 // Only rendered/sent to the browser at all once enrolled — an
 // unenrolled visitor's page source never contains the lesson content or
 // the quiz questions, not just a visually-hidden version of them.
@@ -97,7 +118,13 @@ const moduleQuestionsForClient = renderedModules.map((m) =>
         </section>
       ) : (
         <Fragment>
-          {hasModules ? (
+          {hasNewModules ? (
+            <div class="new-course-cta">
+              <h2>Continue your course</h2>
+              <p>You're enrolled — head into the step-by-step lessons below, then come back here for the final exam.</p>
+              <a href={`/courses/${course.id}/learn`} class="btn btn--primary">Continue course &rarr;</a>
+            </div>
+          ) : hasModules ? (
             <div class="course-player" id="coursePlayer">
               <aside class="module-sidebar">
                 <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
@@ -154,11 +181,11 @@ const moduleQuestionsForClient = renderedModules.map((m) =>
           <section class="quiz-section" id="quizSection">
             <h2>Complete the quiz</h2>
             <p class="quiz-intro">Score {course.data.passScorePercent}% or higher to earn your certificate. You can retake the quiz if needed.</p>
-            {hasModules && (
+            {(hasModules || (hasNewModules && !newModulesAllComplete)) && (
               <p class="quiz-locked-note" id="quizLockedNote">Complete all modules above to unlock the quiz.</p>
             )}
 
-            <form id="quizForm" class="quiz-form" hidden={hasModules}>
+            <form id="quizForm" class="quiz-form" hidden={hasModules || (hasNewModules && !newModulesAllComplete)}>
               <input type="hidden" id="learnerName" value={enrollment?.name || ''} />
               <input type="hidden" id="learnerEmail" value={session?.email || ''} />
 

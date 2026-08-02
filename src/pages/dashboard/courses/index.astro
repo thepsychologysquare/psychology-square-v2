@@ -1,0 +1,61 @@
+---
+export const prerender = false;
+import Layout from '../../../layouts/Layout.astro';
+import { env } from 'cloudflare:workers';
+import { getSession } from '../../../lib/adminAuth';
+import { getCollection } from 'astro:content';
+
+const session = await getSession(Astro.request.headers.get('cookie'), env?.ADMIN_SESSION_SECRET || '');
+if (!session) return Astro.redirect('/dashboard/login');
+
+const courses = (await getCollection('courses', ({ data }) => !data.draft)).sort(
+  (a, b) => a.data.order - b.data.order
+);
+
+const counts = new Map<string, number>();
+if (env?.DB) {
+  const rows = (await env.DB.prepare(
+    `SELECT course_slug, COUNT(*) AS n FROM course_modules GROUP BY course_slug`
+  ).all()).results as { course_slug: string; n: number }[];
+  for (const r of rows) counts.set(r.course_slug, r.n);
+}
+---
+<Layout title="Course Builder" description="The Psychology Square — course builder.">
+  <section class="dash-section">
+    <div class="wrap">
+      <div class="dash-header">
+        <div>
+          <span class="eyebrow">Course Builder</span>
+          <h1>Courses</h1>
+        </div>
+        <a href="/dashboard" class="btn btn--ghost">&larr; Back to dashboard</a>
+      </div>
+
+      <p class="course-builder-hint">Pick a course to manage its modules and steps. A course with no modules yet still uses its old single-page layout on the live site until you add its first module here.</p>
+
+      <ul class="course-builder-list">
+        {courses.map((c) => (
+          <li>
+            <a href={`/dashboard/courses/${c.id}`}>
+              <span class="course-builder-list__title">{c.data.title}</span>
+              <span class="course-builder-list__meta">{counts.get(c.id) || 0} module{counts.get(c.id) === 1 ? '' : 's'}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .course-builder-hint { color: #4B5760; margin: 0 0 1.5rem; max-width: 60ch; }
+  .course-builder-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.75rem; }
+  .course-builder-list a {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 1rem 1.25rem; border: 1px solid #E2E5E8; border-radius: 10px;
+    text-decoration: none; color: inherit; transition: border-color 0.15s;
+  }
+  .course-builder-list a:hover { border-color: #1F3A5F; }
+  .course-builder-list__title { font-weight: 600; }
+  .course-builder-list__meta { color: #4B5760; font-size: 0.9rem; }
+</style>

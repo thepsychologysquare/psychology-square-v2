@@ -1,0 +1,206 @@
+---
+export const prerender = false;
+import Layout from '../../../layouts/Layout.astro';
+import { env } from 'cloudflare:workers';
+import { getSession } from '../../../lib/adminAuth';
+import { getCollection } from 'astro:content';
+
+const session = await getSession(Astro.request.headers.get('cookie'), env?.ADMIN_SESSION_SECRET || '');
+if (!session) return Astro.redirect('/dashboard/login');
+
+const { slug } = Astro.params;
+const courses = await getCollection('courses', ({ data }) => !data.draft);
+const course = courses.find((c) => c.id === slug);
+if (!course) return Astro.redirect('/dashboard/courses');
+---
+<Layout title={`Building: ${course.data.title}`} description="The Psychology Square — course builder.">
+  <section class="dash-section">
+    <div class="wrap">
+      <div class="dash-header">
+        <div>
+          <span class="eyebrow">Course Builder</span>
+          <h1>{course.data.title}</h1>
+        </div>
+        <div style="display:flex; gap:0.5rem;">
+          <a href={`/courses/${course.id}/learn`} class="btn btn--ghost" target="_blank">Preview as learner &nearr;</a>
+          <a href="/dashboard/courses" class="btn btn--ghost">&larr; All courses</a>
+        </div>
+      </div>
+
+      <div id="outline" class="cb-outline"></div>
+
+      <form id="addModuleForm" class="cb-add-module">
+        <input type="text" id="newModuleTitle" placeholder="New module title (e.g. Week 1: Foundations)" required />
+        <button type="submit" class="btn btn--primary">Add module</button>
+      </form>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .cb-outline { display: grid; gap: 1.25rem; margin: 1.5rem 0; }
+  .cb-module { border: 1px solid #E2E5E8; border-radius: 10px; padding: 1rem 1.25rem; }
+  .cb-module__head { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; }
+  .cb-module__title { font-weight: 700; font-size: 1.05rem; flex: 1; background: none; border: none; padding: 0.25rem; }
+  .cb-module__title:focus { outline: 1px solid #1F3A5F; border-radius: 4px; }
+  .cb-icon-btn { border: 1px solid #E2E5E8; background: #fff; border-radius: 6px; width: 28px; height: 28px; cursor: pointer; font-size: 0.85rem; }
+  .cb-icon-btn:hover { border-color: #1F3A5F; }
+  .cb-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.5rem; }
+  .cb-step { border: 1px solid #EEF0F2; border-radius: 8px; padding: 0.6rem 0.75rem; }
+  .cb-step__row { display: flex; align-items: center; gap: 0.5rem; }
+  .cb-step__title { flex: 1; font-weight: 500; }
+  .cb-step__type { font-size: 0.75rem; color: #4B5760; border: 1px solid #E2E5E8; border-radius: 20px; padding: 0.1rem 0.5rem; }
+  .cb-step__edit { display: none; margin-top: 0.75rem; display: grid; gap: 0.5rem; }
+  .cb-step__edit.is-open { display: grid; }
+  .cb-step__edit textarea { min-height: 100px; font-family: inherit; padding: 0.5rem; border: 1px solid #E2E5E8; border-radius: 6px; }
+  .cb-step__edit input, .cb-step__edit select { padding: 0.4rem 0.5rem; border: 1px solid #E2E5E8; border-radius: 6px; }
+  .cb-add-step { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
+  .cb-add-step input { flex: 1; padding: 0.4rem 0.5rem; border: 1px solid #E2E5E8; border-radius: 6px; }
+  .cb-add-module { display: flex; gap: 0.5rem; max-width: 640px; }
+  .cb-add-module input { flex: 1; padding: 0.6rem 0.75rem; border: 1px solid #E2E5E8; border-radius: 6px; }
+  .cb-empty { color: #4B5760; }
+</style>
+
+<script define:vars={{ courseSlug: course.id }}>
+  const outlineEl = document.getElementById('outline');
+
+  async function api(method, body, qs) {
+    const url = '/api/admin/course-content' + (qs ? `?${qs}` : '');
+    const res = await fetch(url, {
+      method,
+      headers: body ? { 'content-type': 'application/json' } : undefined,
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    if (!res.ok) throw new Error('Request failed');
+    return res.json();
+  }
+
+  function stepEditHtml(step) {
+    return `
+      <div class="cb-step__edit" data-edit-for="${step.id}">
+        <select data-field="contentType">
+          <option value="text" ${step.content_type === 'text' ? 'selected' : ''}>Text lesson</option>
+          <option value="video" ${step.content_type === 'video' ? 'selected' : ''}>Video lesson</option>
+        </select>
+        <input type="text" data-field="videoUrl" placeholder="Video URL (embeddable link)" value="${step.video_url || ''}" />
+        <textarea data-field="contentBody" placeholder="Step content...">${step.content_body || ''}</textarea>
+        <input type="text" data-field="question" placeholder="Optional check-in question" value="${step.question || ''}" />
+        <button type="button" class="btn btn--primary cb-save-step" data-id="${step.id}">Save step</button>
+      </div>`;
+  }
+
+  function render(modules) {
+    if (modules.length === 0) {
+      outlineEl.innerHTML = '<p class="cb-empty">No modules yet — add the first one below.</p>';
+      return;
+    }
+    outlineEl.innerHTML = modules
+      .map(
+        (m, mi) => `
+      <div class="cb-module" data-module-id="${m.id}">
+        <div class="cb-module__head">
+          <button class="cb-icon-btn" data-action="move-module-up" data-id="${m.id}" ${mi === 0 ? 'disabled' : ''}>&uarr;</button>
+          <button class="cb-icon-btn" data-action="move-module-down" data-id="${m.id}" ${mi === modules.length - 1 ? 'disabled' : ''}>&darr;</button>
+          <input class="cb-module__title" data-action="rename-module" data-id="${m.id}" value="${m.title}" />
+          <button class="cb-icon-btn" data-action="delete-module" data-id="${m.id}" title="Delete module">&times;</button>
+        </div>
+        <ul class="cb-steps">
+          ${m.steps
+            .map(
+              (s, si) => `
+            <li class="cb-step" data-step-id="${s.id}">
+              <div class="cb-step__row">
+                <button class="cb-icon-btn" data-action="move-step-up" data-id="${s.id}" ${si === 0 ? 'disabled' : ''}>&uarr;</button>
+                <button class="cb-icon-btn" data-action="move-step-down" data-id="${s.id}" ${si === m.steps.length - 1 ? 'disabled' : ''}>&darr;</button>
+                <span class="cb-step__title">${si + 1}.${mi + 1} ${s.title}</span>
+                <span class="cb-step__type">${s.content_type}</span>
+                <button class="cb-icon-btn" data-action="toggle-edit" data-id="${s.id}">Edit</button>
+                <button class="cb-icon-btn" data-action="delete-step" data-id="${s.id}">&times;</button>
+              </div>
+              ${stepEditHtml(s)}
+            </li>`
+            )
+            .join('')}
+        </ul>
+        <form class="cb-add-step" data-action="add-step" data-module="${m.id}">
+          <input type="text" placeholder="New step title (e.g. What is CBT?)" required />
+          <button type="submit" class="btn btn--ghost">Add step</button>
+        </form>
+      </div>`
+      )
+      .join('');
+  }
+
+  async function load() {
+    const { modules } = await api('GET', null, `course=${encodeURIComponent(courseSlug)}`);
+    render(modules);
+  }
+
+  document.getElementById('addModuleForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const input = document.getElementById('newModuleTitle');
+    if (!input.value.trim()) return;
+    await api('POST', { kind: 'module', courseSlug, title: input.value.trim() });
+    input.value = '';
+    load();
+  });
+
+  outlineEl.addEventListener('submit', async (e) => {
+    const form = e.target.closest('[data-action="add-step"]');
+    if (!form) return;
+    e.preventDefault();
+    const input = form.querySelector('input');
+    if (!input.value.trim()) return;
+    await api('POST', { kind: 'step', moduleId: form.dataset.module, title: input.value.trim(), contentType: 'text' });
+    load();
+  });
+
+  outlineEl.addEventListener('click', async (e) => {
+    const btn = e.target.closest('[data-action]');
+    if (!btn) return;
+    const { action, id } = btn.dataset;
+
+    if (action === 'move-module-up' || action === 'move-module-down') {
+      await api('PATCH', { kind: 'module', id, move: action.endsWith('up') ? 'up' : 'down' });
+      load();
+    } else if (action === 'move-step-up' || action === 'move-step-down') {
+      await api('PATCH', { kind: 'step', id, move: action.endsWith('up') ? 'up' : 'down' });
+      load();
+    } else if (action === 'delete-module') {
+      if (confirm('Delete this module and all its steps?')) {
+        await api('DELETE', null, `kind=module&id=${id}`);
+        load();
+      }
+    } else if (action === 'delete-step') {
+      if (confirm('Delete this step?')) {
+        await api('DELETE', null, `kind=step&id=${id}`);
+        load();
+      }
+    } else if (action === 'toggle-edit') {
+      const panel = outlineEl.querySelector(`[data-edit-for="${id}"]`);
+      panel.classList.toggle('is-open');
+    } else if (btn.classList.contains('cb-save-step')) {
+      const panel = outlineEl.querySelector(`[data-edit-for="${id}"]`);
+      const get = (f) => panel.querySelector(`[data-field="${f}"]`).value;
+      await api('PATCH', {
+        kind: 'step',
+        id,
+        contentType: get('contentType'),
+        videoUrl: get('videoUrl'),
+        contentBody: get('contentBody'),
+        question: get('question') || null,
+        questionOptions: [],
+        questionCorrectIndex: 0,
+      });
+      load();
+    }
+  });
+
+  outlineEl.addEventListener('change', async (e) => {
+    const input = e.target.closest('[data-action="rename-module"]');
+    if (!input) return;
+    await api('PATCH', { kind: 'module', id: input.dataset.id, title: input.value.trim() });
+  });
+
+  load();
+</script>

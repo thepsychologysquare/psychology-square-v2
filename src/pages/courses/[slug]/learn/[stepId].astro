@@ -1,0 +1,137 @@
+---
+export const prerender = false;
+import Layout from '../../../../layouts/Layout.astro';
+import { env } from 'cloudflare:workers';
+import { getCollection } from 'astro:content';
+import { getClientSession } from '../../../../lib/clientAuth';
+import { getCourseOutline, getCompletedStepIds, textToHtml } from '../../../../lib/courseBuilder';
+
+const { slug, stepId } = Astro.params;
+const courses = await getCollection('courses', ({ data }) => !data.draft);
+const course = courses.find((c) => c.id === slug);
+if (!course || !env?.DB) return Astro.redirect(`/courses/${slug}`, 302);
+
+const session = env?.CLIENT_SESSION_SECRET
+  ? await getClientSession(Astro.request.headers.get('cookie'), env.CLIENT_SESSION_SECRET)
+  : null;
+if (!session) return Astro.redirect(`/courses/${slug}`, 302);
+
+const enrollment = await env.DB.prepare(
+  `SELECT name FROM enrollments WHERE course_slug = ? AND email = ?`
+).bind(course.id, session.email).first<{ name: string }>();
+if (!enrollment) return Astro.redirect(`/courses/${slug}`, 302);
+
+const outline = await getCourseOutline(env.DB, course.id);
+const flatSteps = outline.flatMap((m) => m.steps.map((s) => ({ ...s, moduleTitle: m.title })));
+const stepIndex = flatSteps.findIndex((s) => s.id === stepId);
+if (stepIndex === -1) return Astro.redirect(`/courses/${slug}/learn`, 302);
+
+const step = flatSteps[stepIndex];
+const prevStep = flatSteps[stepIndex - 1];
+const nextStep = flatSteps[stepIndex + 1];
+const isLastStep = stepIndex === flatSteps.length - 1;
+
+const completed = await getCompletedStepIds(env.DB, course.id, session.email);
+const options: string[] = step.question_options ? JSON.parse(step.question_options) : [];
+---
+<Layout title={`${step.title} — ${course.data.title}`} description={course.data.description}>
+  <div class="learn-layout wrap">
+    <aside class="learn-sidebar">
+      <a href={`/courses/${course.id}`} class="learn-sidebar__back">&larr; {course.data.title}</a>
+      <div class="progress-track"><div class="progress-fill" id="progressFill" style={`width:${(completed.size / flatSteps.length) * 100}%`}></div></div>
+      <p class="progress-label" id="progressLabel">{completed.size} of {flatSteps.length} steps complete</p>
+
+      {outline.map((m) => (
+        <div class="learn-sidebar__module">
+          <p class="learn-sidebar__module-title">{m.title}</p>
+          <ul>
+            {m.steps.map((s) => (
+              <li>
+                <a href={`/courses/${course.id}/learn/${s.id}`} class={s.id === step.id ? 'is-active' : ''}>
+                  <span class="learn-check" data-step-check={s.id}>{completed.has(s.id) ? '✓' : ''}</span>
+                  {s.title}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </aside>
+
+    <main class="learn-main">
+      <span class="eyebrow">{step.moduleTitle}</span>
+      <h1>{step.title}</h1>
+
+      {step.content_type === 'video' && step.video_url && (
+        <div class="module-video"><iframe src={step.video_url} title={step.title} allowfullscreen loading="lazy"></iframe></div>
+      )}
+
+      {step.content_body && <div class="course-content" set:html={textToHtml(step.content_body)} />}
+
+      {step.question && (
+        <div class="module-checkin">
+          <h3>Quick check-in</h3>
+          <p class="module-checkin__hint">Just for your own review — this doesn't affect your certificate.</p>
+          <p>{step.question}</p>
+          <div class="checkin-options">
+            {options.map((opt, i) => (
+              <button type="button" class="btn btn--ghost checkin-opt" data-correct={i === step.question_correct_index}>{opt}</button>
+            ))}
+          </div>
+          <p class="checkin-feedback" id="checkinFeedback" hidden></p>
+        </div>
+      )}
+
+      <div class="learn-nav">
+        {prevStep ? <a href={`/courses/${course.id}/learn/${prevStep.id}`} class="btn btn--text">&larr; Previous</a> : <span />}
+        {isLastStep ? (
+          <button type="button" id="completeBtn" class="btn btn--primary">Mark complete &amp; go to quiz</button>
+        ) : (
+          <button type="button" id="completeBtn" class="btn btn--primary">Mark complete &amp; continue</button>
+        )}
+      </div>
+    </main>
+  </div>
+</Layout>
+
+<style>
+  .learn-layout { display: grid; grid-template-columns: 280px 1fr; gap: 2rem; padding: 2rem 0; align-items: start; }
+  .learn-sidebar { position: sticky; top: 1rem; border: 1px solid #E2E5E8; border-radius: 10px; padding: 1rem; }
+  .learn-sidebar__back { display: block; margin-bottom: 1rem; font-size: 0.9rem; }
+  .learn-sidebar__module-title { font-weight: 700; margin: 1rem 0 0.4rem; font-size: 0.9rem; }
+  .learn-sidebar ul { list-style: none; margin: 0; padding: 0; }
+  .learn-sidebar a { display: flex; gap: 0.5rem; padding: 0.4rem 0.5rem; border-radius: 6px; text-decoration: none; color: inherit; font-size: 0.9rem; }
+  .learn-sidebar a.is-active { background: #EEF2F6; font-weight: 600; }
+  .learn-check { width: 1.2em; color: #1F3A5F; }
+  .progress-track { height: 6px; background: #EEF0F2; border-radius: 4px; overflow: hidden; }
+  .progress-fill { height: 100%; background: #1F3A5F; }
+  .progress-label { font-size: 0.8rem; color: #4B5760; margin: 0.4rem 0 0; }
+  .module-checkin { margin: 1.5rem 0; padding: 1rem; border: 1px solid #E2E5E8; border-radius: 10px; }
+  .checkin-options { display: grid; gap: 0.4rem; margin-top: 0.5rem; }
+  .learn-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; }
+  @media (max-width: 800px) { .learn-layout { grid-template-columns: 1fr; } .learn-sidebar { position: static; } }
+</style>
+
+<script define:vars={{ courseSlug: course.id, stepId: step.id, nextStepUrl: nextStep ? `/courses/${course.id}/learn/${nextStep.id}` : null, quizUrl: `/courses/${course.id}#quizSection` }}>
+  document.getElementById('completeBtn')?.addEventListener('click', async (e) => {
+    const btn = e.target;
+    btn.disabled = true;
+    btn.textContent = 'Saving…';
+    try {
+      await fetch('/api/courses/complete-step', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ courseSlug, stepId }),
+      });
+    } catch {}
+    window.location.href = nextStepUrl || quizUrl;
+  });
+
+  document.querySelectorAll('.checkin-opt').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const feedback = document.getElementById('checkinFeedback');
+      feedback.hidden = false;
+      feedback.textContent = btn.dataset.correct === 'true' ? 'Correct!' : 'Not quite — take another look above.';
+    });
+  });
+</script>

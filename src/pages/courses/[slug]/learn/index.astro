@@ -1,0 +1,14 @@
+---
+export const prerender = false;
+import { env } from 'cloudflare:workers';
+import { getCourseOutline } from '../../../../lib/courseBuilder';
+
+const { slug } = Astro.params;
+if (!env?.DB) return Astro.redirect(`/courses/${slug}`, 302);
+
+const outline = await getCourseOutline(env.DB, slug!);
+const firstStep = outline.find((m) => m.steps.length > 0)?.steps[0];
+if (!firstStep) return Astro.redirect(`/courses/${slug}`, 302);
+
+return Astro.redirect(`/courses/${slug}/learn/${firstStep.id}`, 302);
+---
