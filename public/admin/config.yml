@@ -121,7 +121,10 @@ collections:
         name: "author"
         widget: "select"
         options: ["Muhammad Sohail", "Sehar Waheed"]
+      - {label: "Paid course?", name: "isPaid", widget: "boolean", default: false, hint: "OFF = free, enroll instantly. ON = learner pays before lessons unlock (screenshot review, same as bookings). The certificate is always free either way."}
+      - {label: "Price (PKR)", name: "pricePkr", widget: "number", required: false, min: 0, hint: "Only used when 'Paid course?' is ON."}
       - {label: "Pass Score (%)", name: "passScorePercent", widget: "number", default: 80, min: 1, max: 100, hint: "Minimum quiz score required to earn the certificate."}
+
       - label: "Quiz Questions"
         name: "quiz"
         widget: "list"

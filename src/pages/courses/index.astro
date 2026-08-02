@@ -15,6 +15,8 @@ const categoryMeta: Record<string, string> = {
   'relationships': 'Relationships',
   'stress-burnout': 'Stress & Burnout',
 };
+
+const categoriesInUse = [...new Set(sorted.map((c) => c.data.category))];
 ---
 <Layout
   title="Courses"
@@ -24,7 +26,7 @@ const categoryMeta: Record<string, string> = {
     <div class="wrap">
       <span class="eyebrow">Continuing Education</span>
       <h1>Courses</h1>
-      <p class="lede">Short, practical courses. Pass the quiz at the end and we'll email you a verifiable certificate immediately.</p>
+      <p class="lede">Short, practical courses. Pass the quiz at the end and we'll email you a verifiable certificate immediately — free or paid, the certificate never costs extra.</p>
       <a href="/my-certificates" class="btn btn--text">View my certificates &rarr;</a>
     </div>
   </section>
@@ -34,10 +36,37 @@ const categoryMeta: Record<string, string> = {
       {sorted.length === 0 && (
         <p class="empty-state">No courses are available yet — check back soon.</p>
       )}
-      <div class="courses-grid">
+
+      {sorted.length > 0 && (
+        <div class="filter-bar" id="filterBar">
+          <div class="filter-group" id="tierFilters">
+            <button type="button" class="filter-chip is-active" data-tier="all">All</button>
+            <button type="button" class="filter-chip" data-tier="free">Free</button>
+            <button type="button" class="filter-chip" data-tier="paid">Paid</button>
+          </div>
+          <div class="filter-group" id="categoryFilters">
+            <button type="button" class="filter-chip is-active" data-category="all">All topics</button>
+            {categoriesInUse.map((cat) => (
+              <button type="button" class="filter-chip" data-category={cat}>{categoryMeta[cat] ?? cat}</button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div class="courses-grid" id="coursesGrid">
         {sorted.map((course) => (
-          <a href={`/courses/${course.id}`} class="course-card">
-            <span class="course-card__category">{categoryMeta[course.data.category] ?? course.data.category}</span>
+          <a
+            href={`/courses/${course.id}`}
+            class="course-card"
+            data-tier={course.data.isPaid ? 'paid' : 'free'}
+            data-category={course.data.category}
+          >
+            <div class="course-card__top">
+              <span class="course-card__category">{categoryMeta[course.data.category] ?? course.data.category}</span>
+              <span class={`tier-badge ${course.data.isPaid ? 'tier-badge--paid' : 'tier-badge--free'}`}>
+                {course.data.isPaid ? `Rs. ${course.data.pricePkr?.toLocaleString('en-US') ?? '—'}` : 'Free'}
+              </span>
+            </div>
             <h2>{course.data.title}</h2>
             <p>{course.data.description}</p>
             <div class="course-card__meta">
@@ -47,9 +76,69 @@ const categoryMeta: Record<string, string> = {
           </a>
         ))}
       </div>
+      <p class="filter-empty" id="filterEmptyMsg" hidden>No courses match those filters.</p>
+    </div>
+  </section>
+
+  <section class="transparency-section">
+    <div class="wrap">
+      <div class="transparency-block">
+        <h2>Free vs. paid — what's the difference?</h2>
+        <div class="transparency-grid">
+          <div class="transparency-card">
+            <span class="transparency-card__label">Free courses</span>
+            <p>Enroll instantly with just your email — no payment step. All lessons, the final quiz, and a verifiable digital certificate on completion, at no cost.</p>
+          </div>
+          <div class="transparency-card">
+            <span class="transparency-card__label">Paid courses</span>
+            <p>Enroll after a quick payment confirmation (easypaisa, JazzCash, or bank transfer — same as our therapy bookings). Includes every lesson and the same free, automatic digital certificate on completion. The payment only ever gates lesson access, never the credential.</p>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 </Layout>
+
+<script>
+  const grid = document.getElementById('coursesGrid');
+  const cards = grid ? Array.from(grid.querySelectorAll<HTMLAnchorElement>('.course-card')) : [];
+  const tierFilters = document.getElementById('tierFilters');
+  const categoryFilters = document.getElementById('categoryFilters');
+  const emptyMsg = document.getElementById('filterEmptyMsg');
+
+  let activeTier = 'all';
+  let activeCategory = 'all';
+
+  function applyFilters() {
+    let visibleCount = 0;
+    for (const card of cards) {
+      const matchesTier = activeTier === 'all' || card.dataset.tier === activeTier;
+      const matchesCategory = activeCategory === 'all' || card.dataset.category === activeCategory;
+      const visible = matchesTier && matchesCategory;
+      card.style.display = visible ? '' : 'none';
+      if (visible) visibleCount++;
+    }
+    if (emptyMsg) emptyMsg.hidden = visibleCount > 0;
+  }
+
+  tierFilters?.addEventListener('click', (e) => {
+    const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('.filter-chip');
+    if (!btn || !btn.dataset.tier) return;
+    tierFilters.querySelectorAll('.filter-chip').forEach((b) => b.classList.remove('is-active'));
+    btn.classList.add('is-active');
+    activeTier = btn.dataset.tier;
+    applyFilters();
+  });
+
+  categoryFilters?.addEventListener('click', (e) => {
+    const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('.filter-chip');
+    if (!btn || !btn.dataset.category) return;
+    categoryFilters.querySelectorAll('.filter-chip').forEach((b) => b.classList.remove('is-active'));
+    btn.classList.add('is-active');
+    activeCategory = btn.dataset.category;
+    applyFilters();
+  });
+</script>
 
 <style>
   .courses-hero{ padding:72px 0 40px; border-bottom:1px solid var(--line); }
@@ -57,8 +146,20 @@ const categoryMeta: Record<string, string> = {
   .courses-hero .lede{ max-width:560px; color:var(--ink-600); font-size:17px; line-height:1.6; margin-bottom:20px; }
   .eyebrow{ font-family:var(--font-mono); font-size:12px; letter-spacing:0.08em; text-transform:uppercase; color:var(--gold-500); }
 
-  .courses-grid-section{ padding:56px 0 96px; }
+  .courses-grid-section{ padding:56px 0 40px; }
   .empty-state{ color:var(--ink-600); }
+
+  .filter-bar{ display:flex; flex-direction:column; gap:12px; margin-bottom:32px; }
+  .filter-group{ display:flex; gap:8px; flex-wrap:wrap; }
+  .filter-chip{
+    font-family:var(--font-mono); font-size:12px; letter-spacing:0.05em; text-transform:uppercase;
+    padding:8px 14px; border:1px solid var(--line); border-radius:20px; background:transparent;
+    cursor:pointer; color:var(--ink-600); transition:border-color .15s ease, color .15s ease, background .15s ease;
+  }
+  .filter-chip:hover{ border-color:var(--gold-500); }
+  .filter-chip.is-active{ border-color:var(--gold-500); color:var(--ink-900); background:rgba(199,164,74,0.1); }
+  .filter-empty{ color:var(--ink-600); padding:32px 0; text-align:center; }
+
   .courses-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:24px; }
   .course-card{
     display:flex; flex-direction:column; gap:10px; padding:26px;
@@ -66,13 +167,31 @@ const categoryMeta: Record<string, string> = {
     text-decoration:none; color:inherit; transition:border-color .15s ease, transform .15s ease;
   }
   .course-card:hover{ border-color:var(--gold-500); transform:translateY(-2px); }
+  .course-card__top{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
   .course-card__category{
     font-family:var(--font-mono); font-size:11px; letter-spacing:0.06em; text-transform:uppercase; color:var(--gold-500);
   }
+  .tier-badge{
+    font-family:var(--font-mono); font-size:11px; letter-spacing:0.04em; font-weight:600;
+    padding:3px 10px; border-radius:20px; white-space:nowrap;
+  }
+  .tier-badge--free{ background:rgba(46,125,91,0.12); color:#2E7D5B; }
+  .tier-badge--paid{ background:rgba(199,164,74,0.15); color:#8a6d1f; }
   .course-card h2{ font-family:var(--font-display); font-size:20px; margin:2px 0 0; }
   .course-card p{ color:var(--ink-600); font-size:14.5px; line-height:1.55; flex-grow:1; }
   .course-card__meta{
     display:flex; gap:14px; font-family:var(--font-mono); font-size:12px; color:var(--ink-600);
     padding-top:12px; border-top:1px solid var(--line);
   }
+
+  .transparency-section{ padding:0 0 96px; }
+  .transparency-block{ border-top:1px solid var(--line); padding-top:48px; }
+  .transparency-block h2{ font-family:var(--font-display); font-size:24px; margin-bottom:20px; }
+  .transparency-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:20px; }
+  .transparency-card{ padding:22px 24px; border:1px solid var(--line); border-radius:2px; background:var(--paper-50); }
+  .transparency-card__label{
+    display:block; font-family:var(--font-mono); font-size:12px; letter-spacing:0.05em; text-transform:uppercase;
+    color:var(--gold-500); margin-bottom:10px;
+  }
+  .transparency-card p{ color:var(--ink-600); font-size:14.5px; line-height:1.6; margin:0; }
 </style>

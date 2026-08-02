@@ -73,6 +73,11 @@ const courses = defineCollection({
     ]).default('general'),
     estimatedHours: z.number().default(1),
     author: z.string(),
+    // Paid courses gate access to the lessons behind a manual payment-proof
+    // review (see /api/courses/pay and the "Course Enrollment Requests" tab
+    // in /dashboard). The certificate itself is always free either way.
+    isPaid: z.boolean().default(false),
+    pricePkr: z.number().min(0).optional(),
     passScorePercent: z.number().min(1).max(100).default(80),
     // Quiz questions: index of the correct option within that question's options array.
     quiz: z.array(z.object({

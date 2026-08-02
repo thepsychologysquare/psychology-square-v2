@@ -34,22 +34,27 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   // If this login was to enroll in a course, create the enrollment now --
-  // the person has just proven they own this email address.
+  // the person has just proven they own this email address. Paid courses
+  // are the exception: enrollment there is created by the payment-proof
+  // submission (/api/courses/pay) instead, starting out 'pending' until
+  // reviewed -- signing in alone should never unlock a paid course's lessons.
   if (payload.enrollCourseSlug && payload.enrollName) {
     const { getCollection } = await import('astro:content');
     const courses = await getCollection('courses');
     const course = courses.find((c) => c.id === payload.enrollCourseSlug);
-    await env.DB.prepare(
-      `INSERT INTO enrollments (course_slug, course_title, name, email, enrolled_at)
-       VALUES (?, ?, ?, ?, ?)
-       ON CONFLICT(course_slug, email) DO NOTHING`
-    ).bind(
-      payload.enrollCourseSlug,
-      course?.data.title || payload.enrollCourseSlug,
-      payload.enrollName,
-      payload.email,
-      new Date().toISOString()
-    ).run();
+    if (!course?.data.isPaid) {
+      await env.DB.prepare(
+        `INSERT INTO enrollments (course_slug, course_title, name, email, enrolled_at, status)
+         VALUES (?, ?, ?, ?, ?, 'active')
+         ON CONFLICT(course_slug, email) DO NOTHING`
+      ).bind(
+        payload.enrollCourseSlug,
+        course?.data.title || payload.enrollCourseSlug,
+        payload.enrollName,
+        payload.email,
+        new Date().toISOString()
+      ).run();
+    }
   }
 
   const cookie = await createClientSessionCookie(env.CLIENT_SESSION_SECRET, payload.email);

@@ -26,6 +26,9 @@ export const POST: APIRoute = async ({ request }) => {
   if (!course) {
     return new Response(JSON.stringify({ error: 'Course not found.' }), { status: 404 });
   }
+  if (course.data.isPaid) {
+    return new Response(JSON.stringify({ error: 'This course requires payment first — use the payment form on the course page.' }), { status: 400 });
+  }
 
   // Re-use the name from a prior enrollment if there is one, so we're not
   // asking for it again just because they didn't type it this time.

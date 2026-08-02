@@ -68,6 +68,13 @@ const formattedDate = certificate
               data-cert-id={certificate.id}
             >Download PDF</button>
             <button type="button" class="btn btn--text" id="copyLinkBtn">Copy verification link</button>
+            <a
+              class="btn btn--text btn--linkedin"
+              id="linkedinBtn"
+              href={`https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME&name=${encodeURIComponent(certificate.course_title)}&organizationName=${encodeURIComponent('The Psychology Square')}&issueYear=${new Date(certificate.issued_at).getFullYear()}&issueMonth=${new Date(certificate.issued_at).getMonth() + 1}&certUrl=${encodeURIComponent(`https://thepsychologysquare.com/certificates/${certificate.id}`)}&certId=${encodeURIComponent(certificate.id)}`}
+              target="_blank"
+              rel="noopener"
+            >Add to LinkedIn &rarr;</a>
             <a href="/my-certificates" class="btn btn--text">View all my certificates &rarr;</a>
           </div>
         </>
