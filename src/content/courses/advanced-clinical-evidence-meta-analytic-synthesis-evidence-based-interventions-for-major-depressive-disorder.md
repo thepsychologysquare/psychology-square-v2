@@ -16,20 +16,12 @@ author: Muhammad Sohail
 isPaid: false
 passScorePercent: 80
 quiz:
-  - question: 1. In Cipriani et al. (2018), what was the primary efficacy outcome
-      measured at approximately 8 weeks?
-    options:
-      - 1. Complete remission on the HAM-D 2. Response rate — proportion
-        achieving ≥50% reduction on a depression rating scale 3.
-        Patient-reported quality of life score 4. Time to relapse after
-        treatment discontinuation
-    correctIndex: 1
-  - question: 2. Which pair of drugs was identified as having one of the strongest
+  - question: 1. Which pair of drugs was identified as having one of the strongest
       efficacy profiles but also one of the worst acceptability (tolerability)
       profiles — illustrating an efficacy/tolerability trade-off?
     options:
-      - 1. Fluoxetine and reboxetine 2. Amitriptyline (alone) on both counts 3.
-        Agomelatine and escitalopram 4. Vortioxetine and sertraline
+      - 0. Fluoxetine and reboxetine 1. Amitriptyline (alone) on both counts 2.
+        Agomelatine and escitalopram 3. Vortioxetine and sertraline
     correctIndex: 1
 order: 0
 draft: false
