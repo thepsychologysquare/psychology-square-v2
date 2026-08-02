@@ -128,44 +128,20 @@ collections:
       - label: "Quiz Questions"
         name: "quiz"
         widget: "list"
-        hint: "Add at least one question. Mark the correct answer's position below (0 = first option, 1 = second, etc.)."
+        summary: "{{fields.question}}"
+        hint: "Add at least one question. For each, add your options one at a time with the 'Add Option' button below, then mark which one is correct."
         fields:
           - {label: "Question", name: "question", widget: "string"}
-          - {label: "Options", name: "options", widget: "list", hint: "List each answer choice, in order."}
-          - {label: "Correct Option Number", name: "correctIndex", widget: "number", hint: "0 for the first option, 1 for the second, and so on."}
+          - label: "Options"
+            name: "options"
+            widget: "list"
+            summary: "{{fields.option}}"
+            hint: "Click 'Add Option' for each answer choice — one at a time, don't type them all into one box. Add at least 2."
+            field: {label: "Option", name: "option", widget: "string"}
+          - {label: "Correct Option", name: "correctIndex", widget: "number", hint: "Which option is correct, counting from 0: the 1st option = 0, 2nd = 1, 3rd = 2, 4th = 3, and so on."}
       - {label: "Order", name: "order", widget: "number", default: 0, required: false, hint: "Lower numbers show first."}
       - {label: "Draft", name: "draft", widget: "boolean", default: false, hint: "Turn ON to hide this course from the live site until it's ready."}
-      - {label: "Course Content (legacy, used only if no modules exist below)", name: "body", widget: "markdown", required: false, hint: "Older courses without modules use this single page. New courses should use the separate 'Course Modules' collection instead."}
-
-  - name: "courseModules"
-    label: "Course Modules"
-    folder: "src/content/course-modules"
-    create: true
-    slug: "{{courseSlug}}--{{slug}}"
-    fields:
-      - {label: "Course Slug", name: "courseSlug", widget: "string", hint: "Must exactly match the course's URL slug (the filename of the course, e.g. 'cbt-fundamentals-for-clinicians')."}
-      - {label: "Module Title", name: "title", widget: "string"}
-      - label: "Module Type"
-        name: "type"
-        widget: "select"
-        default: "text"
-        options:
-          - {label: "Text lesson", value: "text"}
-          - {label: "Video lesson", value: "video"}
-      - {label: "Video URL", name: "videoUrl", widget: "string", required: false, hint: "Embeddable video URL (e.g. a YouTube/Vimeo embed link). Only used when Module Type is Video."}
-      - {label: "Order", name: "order", widget: "number", default: 0, hint: "Lower numbers show first in the sidebar."}
-      - label: "Check-in Questions (optional)"
-        name: "questions"
-        widget: "list"
-        required: false
-        hint: "Optional, ungraded questions shown at the end of this module for reinforcement. These do NOT affect the certificate score."
-        fields:
-          - {label: "Question", name: "question", widget: "string"}
-          - {label: "Options", name: "options", widget: "list"}
-          - {label: "Correct Option Number", name: "correctIndex", widget: "number", hint: "0 for the first option, 1 for the second, and so on."}
-      - {label: "Draft", name: "draft", widget: "boolean", default: false}
-      - {label: "Module Content", name: "body", widget: "markdown", hint: "The lesson text (or notes/transcript for a video lesson)."}
-
+      - {label: "Course Content (legacy, used only if this course has no modules)", name: "body", widget: "markdown", required: false, hint: "Older courses without modules use this single page. To add step-by-step lessons for a new course, save this course first, then open '/dashboard/courses' and use the Course Builder — that's the only place modules/steps are created now."}
   - name: "assessments"
     label: "Assessments"
     folder: "src/content/assessments"
