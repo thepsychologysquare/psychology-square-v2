@@ -11,21 +11,20 @@ quiz:
   - question: What is the main benefit of expanding your emotional vocabulary (e.g.,
       distinguishing between 'stressed' and 'unsupported')?
     options:
-      - 0) It helps you convince others that you are right.  1) It allows you to
-        identify the root cause of an emotion and address it effectively.  2) It
-        prevents you from feeling negative emotions entirely.  3) It speeds up
-        your reaction time in high-stress situations.
-    correctIndex: 0
+      - It helps you convince others that you are right.
+      - It allows you to identify the root cause of an emotion and address it effectively.
+      - It prevents you from feeling negative emotions entirely.
+      - It speeds up your reaction time in high-stress situations.
+    correctIndex: 1
   - question: You receive a critical email from a colleague that makes you feel
       defensive. According to self-regulation principles, what is the best
       immediate response?
     options:
-      - 0) Immediately reply explaining why their critique is incorrect so they
-        don't get the wrong idea.  1) Ignore the email completely to avoid
-        confrontation.  2) Pause for a short period before responding to let
-        your logical brain engage.  3) Forward the email to your manager to
-        handle.
-    correctIndex: 1
+      - Immediately reply explaining why their critique is incorrect so they don't get the wrong idea.
+      - Ignore the email completely to avoid confrontation.
+      - Pause for a short period before responding to let your logical brain engage.
+      - Forward the email to your manager to handle.
+    correctIndex: 2
 order: 0
 draft: false
 ---
