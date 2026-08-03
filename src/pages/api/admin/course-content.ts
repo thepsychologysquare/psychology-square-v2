@@ -62,6 +62,18 @@ export const PATCH: APIRoute = async ({ request }) => {
   if (!(await requireAdmin(request))) return new Response('Unauthorized', { status: 401 });
   const body = await request.json();
   const { kind, id, move } = body;
+
+  // Batch reorder from drag-and-drop: { kind, reorder: [id1, id2, ...] } in
+  // the new desired order. Used instead of one PATCH per up/down click.
+  if (body.reorder && Array.isArray(body.reorder)) {
+    const table = kind === 'module' ? 'course_modules' : 'course_steps';
+    const statements = body.reorder.map((rowId: string, index: number) =>
+      env.DB.prepare(`UPDATE ${table} SET sequence_order = ? WHERE id = ?`).bind(index, rowId)
+    );
+    if (statements.length > 0) await env.DB.batch(statements);
+    return new Response(JSON.stringify({ ok: true }));
+  }
+
   if (!kind || !id) return new Response(JSON.stringify({ error: 'kind and id are required' }), { status: 400 });
 
   const table = kind === 'module' ? 'course_modules' : 'course_steps';

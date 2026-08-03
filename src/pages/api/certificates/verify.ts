@@ -39,9 +39,8 @@ export const POST: APIRoute = async ({ request }) => {
   // submission (/api/courses/pay) instead, starting out 'pending' until
   // reviewed -- signing in alone should never unlock a paid course's lessons.
   if (payload.enrollCourseSlug && payload.enrollName) {
-    const { getCollection } = await import('astro:content');
-    const courses = await getCollection('courses');
-    const course = courses.find((c) => c.id === payload.enrollCourseSlug);
+    const { getCourseBySlug } = await import('../../../lib/courses');
+    const course = await getCourseBySlug(env, payload.enrollCourseSlug);
     if (!course?.data.isPaid) {
       await env.DB.prepare(
         `INSERT INTO enrollments (course_slug, course_title, name, email, enrolled_at, status)

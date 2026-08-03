@@ -1,0 +1,51 @@
+---
+// A dedicated admin chrome — no public site header/nav/footer. Used by the
+// Course Builder Studio so editing a course doesn't waste vertical space on
+// "Home | Articles | Services | Book Now" or risk a stray click navigating
+// you away mid-edit.
+import '../styles/global.css';
+
+export interface Props {
+  title: string;
+  backHref?: string;
+  backLabel?: string;
+}
+const { title, backHref = '/dashboard/courses', backLabel = 'All courses' } = Astro.props;
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{title} — Studio</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+</head>
+<body class="studio-body">
+  <div class="studio-shell">
+    <a href={backHref} class="studio-back">&larr; {backLabel}</a>
+    <slot name="header" />
+    <slot />
+  </div>
+</body>
+</html>
+
+<style is:global>
+  .studio-body {
+    margin: 0;
+    background: var(--paper-50);
+    color: var(--ink-900);
+    font-family: var(--font-body);
+    min-height: 100vh;
+  }
+  .studio-shell { display: flex; flex-direction: column; min-height: 100vh; }
+  .studio-back {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 13px; font-weight: 600; color: var(--ink-600);
+    text-decoration: none; padding: 14px 24px 0;
+  }
+  .studio-back:hover { color: var(--navy-950); }
+</style>

@@ -93,55 +93,11 @@ collections:
       - {label: "Order", name: "order", widget: "number", default: 0, required: false, hint: "Lower numbers show first. Leave as 0 if you don't care about order."}
       - {label: "Draft", name: "draft", widget: "boolean", default: false, hint: "Turn ON to hide this worksheet from the live site until it's ready."}
 
-  - name: "courses"
-    label: "Courses"
-    folder: "src/content/courses"
-    create: true
-    slug: "{{slug}}"
-    fields:
-      - {label: "Title", name: "title", widget: "string"}
-      - {label: "Description", name: "description", widget: "text", hint: "One or two sentences — shows on the course card."}
-      - {label: "Featured Image", name: "image", widget: "image", required: false}
-      - {label: "Image Alt Text", name: "imageAlt", widget: "string", required: false}
-      - label: "Topic"
-        name: "category"
-        widget: "select"
-        default: "general"
-        options:
-          - {label: "General", value: "general"}
-          - {label: "Anxiety", value: "anxiety"}
-          - {label: "Depression", value: "depression"}
-          - {label: "ADHD", value: "adhd"}
-          - {label: "Addiction & Recovery", value: "addiction-recovery"}
-          - {label: "Trauma", value: "trauma"}
-          - {label: "Relationships", value: "relationships"}
-          - {label: "Stress & Burnout", value: "stress-burnout"}
-      - {label: "Estimated Hours", name: "estimatedHours", widget: "number", default: 1, hint: "Roughly how long this course takes to complete."}
-      - label: "Author"
-        name: "author"
-        widget: "select"
-        options: ["Muhammad Sohail", "Sehar Waheed"]
-      - {label: "Paid course?", name: "isPaid", widget: "boolean", default: false, hint: "OFF = free, enroll instantly. ON = learner pays before lessons unlock (screenshot review, same as bookings). The certificate is always free either way."}
-      - {label: "Price (PKR)", name: "pricePkr", widget: "number", required: false, min: 0, hint: "Only used when 'Paid course?' is ON."}
-      - {label: "Pass Score (%)", name: "passScorePercent", widget: "number", default: 80, min: 1, max: 100, hint: "Minimum quiz score required to earn the certificate."}
-
-      - label: "Quiz Questions"
-        name: "quiz"
-        widget: "list"
-        summary: "{{fields.question}}"
-        hint: "Add at least one question. For each, add your options one at a time with the 'Add Option' button below, then mark which one is correct."
-        fields:
-          - {label: "Question", name: "question", widget: "string"}
-          - label: "Options"
-            name: "options"
-            widget: "list"
-            summary: "{{fields.option}}"
-            hint: "Click 'Add Option' for each answer choice — one at a time, don't type them all into one box. Add at least 2."
-            field: {label: "Option", name: "option", widget: "string"}
-          - {label: "Correct Option", name: "correctIndex", widget: "number", hint: "Which option is correct, counting from 0: the 1st option = 0, 2nd = 1, 3rd = 2, 4th = 3, and so on."}
-      - {label: "Order", name: "order", widget: "number", default: 0, required: false, hint: "Lower numbers show first."}
-      - {label: "Draft", name: "draft", widget: "boolean", default: false, hint: "Turn ON to hide this course from the live site until it's ready."}
-      - {label: "Course Content (legacy, used only if this course has no modules)", name: "body", widget: "markdown", required: false, hint: "Older courses without modules use this single page. To add step-by-step lessons for a new course, save this course first, then open '/dashboard/courses' and use the Course Builder — that's the only place modules/steps are created now."}
+  # The "courses" collection used to live here. Course creation and
+  # editing (title, slug, description, pricing, quiz, modules, lessons --
+  # everything) now happens entirely in /dashboard/courses, backed by D1.
+  # Removed from Decap on purpose so there is only one place to manage a
+  # course. See migrations-2026-08-course-entity.sql / src/lib/courses.ts.
   - name: "assessments"
     label: "Assessments"
     folder: "src/content/assessments"

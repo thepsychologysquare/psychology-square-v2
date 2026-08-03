@@ -22,6 +22,10 @@
 		{
 			"binding": "SCREENSHOTS",
 			"bucket_name": "psychology-square-payment-proofs"
+		},
+		{
+			"binding": "COURSE_ASSETS",
+			"bucket_name": "psychology-square-course-assets"
 		}
 	],
 	"kv_namespaces": [

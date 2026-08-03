@@ -1,8 +1,10 @@
 ---
-import { getCollection } from 'astro:content';
+export const prerender = false;
+import { env } from 'cloudflare:workers';
+import { listCourses } from '../../lib/courses';
 import Layout from '../../layouts/Layout.astro';
 
-const allCourses = await getCollection('courses', ({ data }) => !data.draft);
+const allCourses = await listCourses(env, { includeDrafts: false });
 const sorted = allCourses.sort((a, b) => a.data.order - b.data.order);
 
 const categoryMeta: Record<string, string> = {

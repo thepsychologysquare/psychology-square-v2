@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
-import { getCollection } from 'astro:content';
+import { getCourseBySlug } from '../../../lib/courses';
 import { getClientSession } from '../../../lib/clientAuth';
 
 export const prerender = false;
@@ -49,8 +49,7 @@ export const POST: APIRoute = async ({ request }) => {
     return new Response(JSON.stringify({ error: 'Please write a question (5-2000 characters).' }), { status: 400 });
   }
 
-  const courses = await getCollection('courses', ({ data }) => !data.draft);
-  const course = courses.find((c) => c.id === courseSlug);
+  const course = await getCourseBySlug(env, courseSlug);
   if (!course) return new Response(JSON.stringify({ error: 'Course not found.' }), { status: 404 });
 
   await env.DB.prepare(

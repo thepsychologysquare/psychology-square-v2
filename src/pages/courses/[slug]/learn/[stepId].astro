@@ -2,14 +2,13 @@
 export const prerender = false;
 import Layout from '../../../../layouts/Layout.astro';
 import { env } from 'cloudflare:workers';
-import { getCollection } from 'astro:content';
 import { getClientSession } from '../../../../lib/clientAuth';
 import { getCourseOutline, getCompletedStepIds, textToHtml } from '../../../../lib/courseBuilder';
+import { getCourseBySlug } from '../../../../lib/courses';
 
 const { slug, stepId } = Astro.params;
-const courses = await getCollection('courses', ({ data }) => !data.draft);
-const course = courses.find((c) => c.id === slug);
-if (!course || !env?.DB) return Astro.redirect(`/courses/${slug}`, 302);
+const course = await getCourseBySlug(env, slug!);
+if (!course || course.data.draft || !env?.DB) return Astro.redirect(`/courses/${slug}`, 302);
 
 const session = env?.CLIENT_SESSION_SECRET
   ? await getClientSession(Astro.request.headers.get('cookie'), env.CLIENT_SESSION_SECRET)

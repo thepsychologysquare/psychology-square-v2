@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
-import { getEntry } from 'astro:content';
+import { getCourseBySlug } from '../../../lib/courses';
 import { makeCertificateId } from '../../../lib/certificate';
 import { sendCertificateEmail } from '../../../lib/email';
 import { generateCertificatePdfBase64 } from '../../../lib/certificatePdf';
@@ -39,7 +39,7 @@ export const POST: APIRoute = async ({ request }) => {
   ).bind(courseSlug, email).first();
   if (!enrollment) return jsonError('Please enroll in this course before submitting the quiz.', 403);
 
-  const course = await getEntry('courses', courseSlug);
+  const course = await getCourseBySlug(env, courseSlug);
   if (!course || course.data.draft) {
     return jsonError('That course could not be found.', 404);
   }

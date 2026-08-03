@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
-import { getCollection } from 'astro:content';
+import { getCourseBySlug } from '../../../lib/courses';
 import { getClientSession } from '../../../lib/clientAuth';
 import { sendCoursePaymentReceivedEmail, sendNewCoursePaymentAdminEmail } from '../../../lib/email';
 
@@ -55,8 +55,7 @@ export const POST: APIRoute = async ({ request }) => {
     return jsonError('Please attach an image file.', 400);
   }
 
-  const courses = await getCollection('courses', ({ data }) => !data.draft);
-  const course = courses.find((c) => c.id === courseSlug);
+  const course = await getCourseBySlug(env, courseSlug);
   if (!course) return jsonError('Course not found.', 404);
   if (!course.data.isPaid) return jsonError('This course does not require payment.', 400);
 

@@ -4,11 +4,11 @@ import { getCollection, render } from 'astro:content';
 import { env } from 'cloudflare:workers';
 import Layout from '../../layouts/Layout.astro';
 import { getClientSession } from '../../lib/clientAuth';
+import { getCourseBySlug } from '../../lib/courses';
 
 const { slug } = Astro.params;
-const courses = await getCollection('courses', ({ data }) => !data.draft);
-const course = courses.find((c) => c.id === slug);
-if (!course) return Astro.redirect('/courses', 302);
+const course = await getCourseBySlug(env, slug!);
+if (!course || course.data.draft) return Astro.redirect('/courses', 302);
 
 const session = env?.CLIENT_SESSION_SECRET
   ? await getClientSession(Astro.request.headers.get('cookie'), env.CLIENT_SESSION_SECRET)
@@ -48,7 +48,11 @@ if (hasNewModules && env?.DB) {
 // Only rendered/sent to the browser at all once enrolled — an
 // unenrolled visitor's page source never contains the lesson content or
 // the quiz questions, not just a visually-hidden version of them.
-const { Content } = isEnrolled ? await render(course) : { Content: null };
+// `render()` needs a real Decap-authored entry (with compiled body internals).
+// A course created entirely in the Studio never had a markdown file, so it
+// always ships with modules — meaning this legacy single-page path (guarded
+// by !hasNewModules further down) never actually needs to render it.
+const { Content } = isEnrolled && !hasNewModules && course.body ? await render(course as any) : { Content: null };
 const clientQuiz = isEnrolled
   ? course.data.quiz.map((q) => ({ question: q.question, options: q.options }))
   : [];
