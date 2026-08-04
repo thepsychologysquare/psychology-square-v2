@@ -21,19 +21,25 @@ if (session && env?.DB) {
 }
 
 const expired = Astro.url.searchParams.get('expired') === '1';
+const redirect = Astro.url.searchParams.get('redirect');
+const isPlainLogin = !!redirect;
 ---
-<Layout title="My Certificates" description="View every certificate you've earned from The Psychology Square.">
+<Layout title={isPlainLogin ? 'Sign in' : 'My Certificates'} description="Sign in to The Psychology Square — enroll in courses and view your certificates.">
   <section class="my-certs">
     <div class="wrap wrap--narrow">
       {!session && (
         <div class="login-panel">
-          <span class="eyebrow">My Certificates</span>
-          <h1>View your certificates</h1>
-          <p class="lede">Enter the email you used when completing a course. We'll send you a one-time link — no password needed.</p>
+          <span class="eyebrow">{isPlainLogin ? 'Sign in' : 'My Certificates'}</span>
+          <h1>{isPlainLogin ? 'Sign in to your account' : 'View your certificates'}</h1>
+          <p class="lede">
+            {isPlainLogin
+              ? "Enter your email and we'll send you a one-time sign-in link — no password needed."
+              : "Enter the email you used when completing a course. We'll send you a one-time link — no password needed."}
+          </p>
 
           {expired && <p class="notice">That link has expired or was already used. Please request a new one below.</p>}
 
-          <form id="magicLinkForm" class="magic-form">
+          <form id="magicLinkForm" class="magic-form" data-redirect={redirect || ''}>
             <div class="field">
               <label for="email">Email address</label>
               <input type="email" id="email" name="email" required autocomplete="email" placeholder="you@example.com" />
@@ -48,6 +54,7 @@ const expired = Astro.url.searchParams.get('expired') === '1';
           </div>
         </div>
       )}
+
 
       {session && (
         <div class="dashboard">
@@ -97,12 +104,13 @@ const expired = Astro.url.searchParams.get('expired') === '1';
       btn.textContent = 'Sending…';
 
       const email = (document.getElementById('email') as HTMLInputElement).value.trim();
+      const redirect = form.dataset.redirect || undefined;
 
       try {
         const res = await fetch('/api/certificates/request-link', {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ email }),
+          body: JSON.stringify({ email, redirect }),
         });
         const data = await res.json();
 

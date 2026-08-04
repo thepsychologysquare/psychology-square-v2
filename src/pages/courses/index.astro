@@ -41,7 +41,7 @@ const categoriesInUse = [...new Set(sorted.map((c) => c.data.category))];
             <button type="button" id="logoutBtn" class="btn btn--text">Log out</button>
           </div>
         ) : (
-          <a href="/my-certificates" class="btn btn--text">Login &rarr;</a>
+          <a href="/my-certificates?redirect=/courses" class="btn btn--text">Login &rarr;</a>
         )}
       </div>
       <h1>Courses</h1>
