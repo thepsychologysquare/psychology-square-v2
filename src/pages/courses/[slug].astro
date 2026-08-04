@@ -667,17 +667,6 @@ const moduleQuestionsForClient = renderedModules.map((m) =>
   .module-checkin{ margin-top:32px; padding:22px; border:1px solid var(--line); border-radius:2px; background:var(--paper-50); }
   .module-checkin h3{ font-family:var(--font-display); font-size:17px; margin-bottom:4px; }
   .module-checkin__hint{ font-size:13px; color:var(--ink-600); margin-bottom:16px; }
-  .checkin-question{ margin-bottom:18px; }
-  .checkin-question__text{ font-weight:600; font-size:14px; margin-bottom:10px; }
-  .checkin-option{
-    display:block; width:100%; text-align:left; font-family:var(--font-body); font-size:14px;
-    padding:9px 12px; margin-bottom:6px; border:1px solid var(--line); border-radius:2px;
-    background:var(--paper-0); cursor:pointer;
-  }
-  .checkin-option:disabled{ cursor:default; }
-  .checkin-option.is-correct{ border-color:#2E7D5B; background:rgba(46,125,91,0.1); }
-  .checkin-option.is-incorrect{ border-color:#B4432E; background:rgba(180,67,46,0.1); }
-
   .quiz-locked-note{ font-size:14px; color:var(--ink-600); font-style:italic; margin-bottom:8px; }
 
   .quiz-section{ margin-top:56px; padding-top:40px; border-top:1px solid var(--line); }
@@ -693,11 +682,6 @@ const moduleQuestionsForClient = renderedModules.map((m) =>
   }
   input:focus-visible{ outline:2px solid var(--gold-500); outline-offset:1px; }
 
-  .quiz-question{ border:none; padding:0; margin:0 0 26px; }
-  .quiz-question legend{ font-weight:600; margin-bottom:10px; padding:0; }
-  .quiz-option{ display:flex; align-items:center; gap:10px; padding:8px 0; font-size:15px; cursor:pointer; }
-  .quiz-option input{ margin:0; }
-
   .btn{ font-family:var(--font-body); cursor:pointer; border:none; }
   .btn--primary{ background:var(--gold-500); color:var(--navy-950, var(--ink-900)); padding:12px 26px; border-radius:2px; margin-top:6px; }
   .btn--primary:disabled{ opacity:0.6; cursor:default; }
@@ -705,6 +689,34 @@ const moduleQuestionsForClient = renderedModules.map((m) =>
   .quiz-error{ color:#B4432E; font-size:14px; margin-top:12px; }
 
   .quiz-result{ margin-top:8px; }
+</style>
+
+<!--
+  Astro scopes styles by tagging server-rendered elements with a hash
+  attribute. Elements built at runtime via document.createElement /
+  innerHTML (the check-in buttons and quiz options below) never get that
+  attribute, so scoped rules silently don't match them — this is what was
+  causing quiz/check-in options to fall back to inline default layout
+  (all on one line). These rules are marked is:global so they apply to
+  those dynamically-created elements too.
+-->
+<style is:global>
+  .checkin-question{ margin-bottom:18px; }
+  .checkin-question__text{ font-weight:600; font-size:14px; margin-bottom:10px; }
+  .checkin-option{
+    display:block; width:100%; text-align:left; font-family:var(--font-body); font-size:14px;
+    padding:9px 12px; margin-bottom:6px; border:1px solid var(--line); border-radius:2px;
+    background:var(--paper-0); cursor:pointer;
+  }
+  .checkin-option:disabled{ cursor:default; }
+  .checkin-option.is-correct{ border-color:#2E7D5B; background:rgba(46,125,91,0.1); }
+  .checkin-option.is-incorrect{ border-color:#B4432E; background:rgba(180,67,46,0.1); }
+
+  .quiz-question{ border:none; padding:0; margin:0 0 26px; display:block; }
+  .quiz-question legend{ font-weight:600; margin-bottom:10px; padding:0; }
+  .quiz-option{ display:flex; align-items:center; gap:10px; padding:8px 0; font-size:15px; cursor:pointer; }
+  .quiz-option input{ margin:0; }
+
   .result{ padding:28px; border:1px solid var(--line); border-radius:2px; }
   .result--pass{ background:var(--paper-50); }
   .result h3{ font-family:var(--font-display); font-size:22px; margin-bottom:8px; }

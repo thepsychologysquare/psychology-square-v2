@@ -171,6 +171,7 @@ const outline = env?.DB ? await getCourseOutline(env.DB, slug!) : [];
               <span class="tree-step__drag" title="Drag to reorder">&#8942;&#8942;</span>
               <span class="tree-step__title">${escapeHtml(s.title)}</span>
               <span class="tree-step__type">${s.content_type}</span>
+              <button type="button" class="tree-step__del" data-action="delete-step" data-id="${s.id}" title="Delete lesson">&times;</button>
             </li>`
             )
             .join('')}
@@ -484,6 +485,15 @@ const outline = env?.DB ? await getCourseOutline(env.DB, slug!) : [];
     const stepEl = e.target.closest('.tree-step');
     const addStepBtn = e.target.closest('[data-action="add-step"]');
     const delModuleBtn = e.target.closest('[data-action="delete-module"]');
+    const delStepBtn = e.target.closest('[data-action="delete-step"]');
+
+    if (delStepBtn) {
+      if (!confirm('Delete this lesson? This cannot be undone.')) return;
+      await api(`/api/admin/course-content?kind=step&id=${delStepBtn.dataset.id}`, 'DELETE');
+      if (activeView.kind === 'step' && activeView.stepId === delStepBtn.dataset.id) selectSettings();
+      await reloadOutline();
+      return;
+    }
 
     if (stepEl) {
       selectStep(stepEl.dataset.stepId);
@@ -657,6 +667,8 @@ const outline = env?.DB ? await getCourseOutline(env.DB, slug!) : [];
   .tree-step__drag { cursor: grab; color: var(--ink-600); font-size: 12px; user-select: none; }
   .tree-step__title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .tree-step__type { font-size: 10px; color: var(--ink-600); border: 1px solid var(--line); border-radius: 20px; padding: 0 5px; flex-shrink: 0; }
+  .tree-step__del { background: none; border: none; color: var(--ink-600); cursor: pointer; font-size: 14px; padding: 2px 6px; border-radius: 5px; flex-shrink: 0; }
+  .tree-step__del:hover { background: rgba(179,38,30,0.1); color: #B3261E; }
   .tree-step.is-dragging, .tree-module.is-dragging { opacity: 0.4; }
   .tree-drop-line { height: 2px; background: var(--gold-500); margin: 2px 8px; border-radius: 2px; }
 

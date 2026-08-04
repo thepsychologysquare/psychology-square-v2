@@ -183,12 +183,17 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
             <button class="filter-btn" data-status="declined">Declined</button>
           </div>
         </div>
+        <div id="payReqBulkBar" class="bulk-bar" hidden>
+          <span id="payReqBulkCount"></span>
+          <button id="payReqBulkDelete" class="btn btn--ghost bulk-delete-btn">Delete selected</button>
+        </div>
         <p id="payReqLoadingMsg" class="dash-empty">Loading…</p>
         <p id="payReqEmptyMsg" class="dash-empty" hidden>No course payment requests yet.</p>
         <div class="table-scroll">
           <table class="bookings-table" id="payReqTable" hidden>
             <thead>
               <tr>
+                <th class="col-check"><input type="checkbox" id="payReqSelectAll" /></th>
                 <th>Name</th>
                 <th>Email</th>
                 <th>Course</th>
@@ -207,7 +212,11 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
       <div id="tabEnrollments" class="tab-panel" hidden>
         <div class="dash-toolbar">
           <input type="text" id="enrollSearchBox" placeholder="Search by name, email, or course" />
-          <button id="enrollExportBtn" class="btn btn--text export-btn">Download as Excel (.csv)</button>
+          <button id="enrollExportBtn" class="btn btn--ghost export-btn">Download as Excel (.csv)</button>
+        </div>
+        <div id="enrollBulkBar" class="bulk-bar" hidden>
+          <span id="enrollBulkCount"></span>
+          <button id="enrollBulkDelete" class="btn btn--ghost bulk-delete-btn">Delete selected</button>
         </div>
         <p id="enrollLoadingMsg" class="dash-empty">Loading…</p>
         <p id="enrollEmptyMsg" class="dash-empty" hidden>No enrollments yet.</p>
@@ -215,6 +224,7 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
           <table class="bookings-table" id="enrollTable" hidden>
             <thead>
               <tr>
+                <th class="col-check"><input type="checkbox" id="enrollSelectAll" /></th>
                 <th>Name</th>
                 <th>Email</th>
                 <th>Course</th>
@@ -239,6 +249,11 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
             <button class="filter-btn" data-status="all">All</button>
           </div>
         </div>
+        <div class="qa-select-all"><label><input type="checkbox" id="qaSelectAll" /> Select all</label></div>
+        <div id="qaBulkBar" class="bulk-bar" hidden>
+          <span id="qaBulkCount"></span>
+          <button id="qaBulkDelete" class="btn btn--ghost bulk-delete-btn">Delete selected</button>
+        </div>
         <p id="qaLoadingMsg" class="dash-empty">Loading…</p>
         <p id="qaEmptyMsg" class="dash-empty" hidden>No questions here.</p>
         <div id="qaCards" class="qa-cards"></div>
@@ -249,7 +264,11 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
 
         <div class="dash-toolbar">
           <input type="text" id="certSearchBox" placeholder="Search by name, email, course, or certificate ID" />
-          <button id="certExportBtn" class="btn btn--text export-btn">Download as Excel (.csv)</button>
+          <button id="certExportBtn" class="btn btn--ghost export-btn">Download as Excel (.csv)</button>
+        </div>
+        <div id="certBulkBar" class="bulk-bar" hidden>
+          <span id="certBulkCount"></span>
+          <button id="certBulkDelete" class="btn btn--ghost bulk-delete-btn">Delete selected</button>
         </div>
         <p id="certLoadingMsg" class="dash-empty">Loading…</p>
         <p id="certEmptyMsg" class="dash-empty" hidden>No certificates issued yet.</p>
@@ -257,6 +276,7 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
           <table class="bookings-table" id="certTable" hidden>
             <thead>
               <tr>
+                <th class="col-check"><input type="checkbox" id="certSelectAll" /></th>
                 <th>Certificate ID</th>
                 <th>Name</th>
                 <th>Email</th>
@@ -327,21 +347,25 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
   .btn--ghost.is-active{ border-color:var(--gold-500); background:rgba(199,164,74,0.12); }
 
   .dash-toolbar{ display:flex; gap:12px; flex-wrap:wrap; align-items:center; margin-bottom:16px; }
-  #searchBox{
+  #searchBox, #payReqSearchBox, #enrollSearchBox, #qaSearchBox, #certSearchBox{
     flex:1; min-width:240px; font-family:var(--font-body); font-size:14.5px;
-    padding:10px 14px; border:1px solid var(--line); border-radius:2px;
+    padding:10px 14px; border:1px solid var(--line); border-radius:2px; color:var(--ink-900); background:#fff;
   }
-  #searchBox:focus-visible{ outline:2px solid var(--gold-500); }
+  #searchBox:focus-visible, #payReqSearchBox:focus-visible, #enrollSearchBox:focus-visible, #qaSearchBox:focus-visible, #certSearchBox:focus-visible{ outline:2px solid var(--gold-500); }
   .dash-filters{ display:flex; gap:8px; flex-wrap:wrap; }
   .filter-btn{
     font-family:var(--font-mono); font-size:12px; letter-spacing:0.06em; text-transform:uppercase;
     padding:8px 14px; border:1px solid var(--line); border-radius:2px; background:transparent; cursor:pointer; color:var(--ink-600);
   }
   .filter-btn.is-active{ border-color:var(--gold-500); color:var(--ink-900); background:rgba(199,164,74,0.08); }
-  .export-btn{ white-space:nowrap; }
+  .export-btn{ white-space:nowrap; color:var(--ink-900); background:transparent; border:1px solid var(--line); padding:9px 16px; border-radius:2px; }
+  .export-btn:hover{ border-color:var(--gold-500); background:rgba(199,164,74,0.08); }
   .date-range{ display:flex; align-items:center; gap:6px; }
   .date-range input{ font-family:var(--font-body); font-size:13.5px; padding:8px 10px; border:1px solid var(--line); border-radius:2px; }
 
+  .qa-select-all{ font-size:13px; color:var(--ink-600); margin-bottom:10px; }
+  .qa-select-all label{ display:flex; align-items:center; gap:6px; cursor:pointer; }
+  .qa-row-check{ margin-right:8px; }
   .bulk-bar{
     display:flex; align-items:center; gap:12px; margin-bottom:16px; padding:10px 14px;
     border:1px solid var(--gold-500); border-radius:2px; background:rgba(199,164,74,0.08); font-size:13.5px;
@@ -560,6 +584,40 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
     ? location.hash.slice(1) : 'bookings';
   activateTab(initialTab);
 
+  // ===== Generic bulk-select helper (checkboxes + bulk delete bar) =====
+  function makeBulkSelector({ selectAllEl, bulkBarEl, bulkCountEl, bulkDeleteBtn, rowCheckSelector, containerEl, getItems, setItems, idOf, deleteUrl, confirmMsg, render }) {
+    const selected = new Set();
+    function sync() {
+      bulkBarEl.hidden = selected.size === 0;
+      bulkCountEl.textContent = `${selected.size} selected`;
+      const boxes = containerEl.querySelectorAll(rowCheckSelector);
+      selectAllEl.checked = boxes.length > 0 && [...boxes].every((c) => c.checked);
+    }
+    containerEl.addEventListener('change', (e) => {
+      const c = e.target.closest(rowCheckSelector);
+      if (!c) return;
+      if (c.checked) selected.add(c.dataset.selid); else selected.delete(c.dataset.selid);
+      sync();
+    });
+    selectAllEl.addEventListener('change', () => {
+      containerEl.querySelectorAll(rowCheckSelector).forEach((c) => {
+        c.checked = selectAllEl.checked;
+        if (selectAllEl.checked) selected.add(c.dataset.selid); else selected.delete(c.dataset.selid);
+      });
+      sync();
+    });
+    bulkDeleteBtn.addEventListener('click', async () => {
+      if (!selected.size) return;
+      const ok = await showConfirm(confirmMsg(selected.size));
+      if (!ok) return;
+      await Promise.all([...selected].map((id) => fetch(deleteUrl(id), { method: 'DELETE' })));
+      setItems(getItems().filter((item) => !selected.has(String(idOf(item)))));
+      selected.clear();
+      render();
+    });
+    return { resetSelection: () => { selected.clear(); sync(); }, sync };
+  }
+
   // ===== Course Enrollments =====
   let allEnrollments = [];
   const enrollBody = document.getElementById('enrollBody');
@@ -589,6 +647,7 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
     enrollTable.hidden = items.length === 0;
     enrollBody.innerHTML = items.map((e) => `
       <tr>
+        <td class="col-check"><input type="checkbox" class="enroll-row-check" data-selid="${e.id}" /></td>
         <td>${escapeHtml(e.name)}</td>
         <td>${escapeHtml(e.email)}</td>
         <td>${escapeHtml(e.course_title)}</td>
@@ -597,8 +656,23 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
         <td class="col-actions"><button class="icon-btn delete" data-enrollid="${e.id}" title="Delete">🗑</button></td>
       </tr>
     `).join('');
+    enrollBulk.sync();
   }
   enrollSearchBox.addEventListener('input', renderEnrollments);
+  const enrollBulk = makeBulkSelector({
+    selectAllEl: document.getElementById('enrollSelectAll'),
+    bulkBarEl: document.getElementById('enrollBulkBar'),
+    bulkCountEl: document.getElementById('enrollBulkCount'),
+    bulkDeleteBtn: document.getElementById('enrollBulkDelete'),
+    rowCheckSelector: '.enroll-row-check',
+    containerEl: enrollBody,
+    getItems: () => allEnrollments,
+    setItems: (v) => { allEnrollments = v; },
+    idOf: (e) => e.id,
+    deleteUrl: (id) => `/api/admin/enrollments?id=${id}`,
+    confirmMsg: (n) => `Delete ${n} enrollment(s) permanently? This does not affect any certificate already issued.`,
+    render: renderEnrollments,
+  });
 
   enrollBody.addEventListener('click', async (e) => {
     const btn = e.target.closest('[data-enrollid]');
@@ -661,6 +735,7 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
     payReqTable.hidden = items.length === 0;
     payReqBody.innerHTML = items.map((r) => `
       <tr>
+        <td class="col-check"><input type="checkbox" class="payreq-row-check" data-selid="${r.id}" /></td>
         <td>${escapeHtml(r.name)}</td>
         <td>${escapeHtml(r.email)}</td>
         <td>${escapeHtml(r.course_title)}</td>
@@ -676,8 +751,23 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
         </td>
       </tr>
     `).join('');
+    payReqBulk.sync();
   }
   payReqSearchBox.addEventListener('input', renderPayReqs);
+  const payReqBulk = makeBulkSelector({
+    selectAllEl: document.getElementById('payReqSelectAll'),
+    bulkBarEl: document.getElementById('payReqBulkBar'),
+    bulkCountEl: document.getElementById('payReqBulkCount'),
+    bulkDeleteBtn: document.getElementById('payReqBulkDelete'),
+    rowCheckSelector: '.payreq-row-check',
+    containerEl: payReqBody,
+    getItems: () => allPayReqs,
+    setItems: (v) => { allPayReqs = v; },
+    idOf: (r) => r.id,
+    deleteUrl: (id) => `/api/admin/enrollments?id=${id}`,
+    confirmMsg: (n) => `Delete ${n} payment request(s) permanently? This does not affect any certificate already issued.`,
+    render: renderPayReqs,
+  });
   payReqFilters.addEventListener('click', (e) => {
     const btn = e.target.closest('.filter-btn');
     if (!btn) return;
@@ -767,6 +857,7 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
     qaCards.innerHTML = items.map((q) => `
       <div class="qa-card" data-id="${escapeHtml(q.id)}">
         <div class="qa-card__meta">
+          <input type="checkbox" class="qa-row-check" data-selid="${escapeHtml(q.id)}" />
           <span class="status-badge ${q.status === 'published' ? 'confirmed' : q.status}">${q.status}</span>
           <span>${escapeHtml(q.name)} (${escapeHtml(q.email)})</span>
           <span>&middot; ${escapeHtml(q.course_title)}${q.step_title ? ' &middot; ' + escapeHtml(q.step_title) : ''}</span>
@@ -788,8 +879,23 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
         `}
       </div>
     `).join('');
+    qaBulk.sync();
   }
   qaSearchBox.addEventListener('input', renderQuestions);
+  const qaBulk = makeBulkSelector({
+    selectAllEl: document.getElementById('qaSelectAll'),
+    bulkBarEl: document.getElementById('qaBulkBar'),
+    bulkCountEl: document.getElementById('qaBulkCount'),
+    bulkDeleteBtn: document.getElementById('qaBulkDelete'),
+    rowCheckSelector: '.qa-row-check',
+    containerEl: qaCards,
+    getItems: () => allQuestions,
+    setItems: (v) => { allQuestions = v; },
+    idOf: (q) => q.id,
+    deleteUrl: (id) => `/api/admin/questions?id=${encodeURIComponent(id)}`,
+    confirmMsg: (n) => `Delete ${n} question(s) permanently?`,
+    render: renderQuestions,
+  });
   qaFilters.addEventListener('click', (e) => {
     const btn = e.target.closest('.filter-btn');
     if (!btn) return;
@@ -885,6 +991,7 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
     certTable.hidden = items.length === 0;
     certBody.innerHTML = items.map((c) => `
       <tr>
+        <td class="col-check"><input type="checkbox" class="cert-row-check" data-selid="${escapeHtml(c.id)}" /></td>
         <td><code>${escapeHtml(c.id)}</code></td>
         <td>${escapeHtml(c.name)}</td>
         <td>${escapeHtml(c.email)}</td>
@@ -896,8 +1003,23 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
         <td class="col-actions"><button class="icon-btn delete" data-certdelete="${escapeHtml(c.id)}" title="Delete">🗑</button></td>
       </tr>
     `).join('');
+    certBulk.sync();
   }
   certSearchBox.addEventListener('input', renderCertificates);
+  const certBulk = makeBulkSelector({
+    selectAllEl: document.getElementById('certSelectAll'),
+    bulkBarEl: document.getElementById('certBulkBar'),
+    bulkCountEl: document.getElementById('certBulkCount'),
+    bulkDeleteBtn: document.getElementById('certBulkDelete'),
+    rowCheckSelector: '.cert-row-check',
+    containerEl: certBody,
+    getItems: () => allCertificates,
+    setItems: (v) => { allCertificates = v; },
+    idOf: (c) => c.id,
+    deleteUrl: (id) => `/api/admin/certificates?id=${encodeURIComponent(id)}`,
+    confirmMsg: (n) => `Delete ${n} certificate(s) permanently? This cannot be undone and learners will lose access to them.`,
+    render: renderCertificates,
+  });
 
   certBody.addEventListener('click', async (e) => {
     const btn = e.target.closest('[data-certdelete]');
