@@ -2,6 +2,7 @@
 export const prerender = false;
 import { env } from 'cloudflare:workers';
 import { listCourses } from '../../lib/courses';
+import { getClientSession } from '../../lib/clientAuth';
 import Layout from '../../layouts/Layout.astro';
 
 const allCourses = await listCourses(env, { includeDrafts: false });
@@ -18,6 +19,10 @@ const categoryMeta: Record<string, string> = {
   'stress-burnout': 'Stress & Burnout',
 };
 
+const session = env?.CLIENT_SESSION_SECRET
+  ? await getClientSession(Astro.request.headers.get('cookie'), env.CLIENT_SESSION_SECRET)
+  : null;
+
 const categoriesInUse = [...new Set(sorted.map((c) => c.data.category))];
 ---
 <Layout
@@ -26,10 +31,21 @@ const categoriesInUse = [...new Set(sorted.map((c) => c.data.category))];
 >
   <section class="courses-hero">
     <div class="wrap">
-      <span class="eyebrow">Continuing Education</span>
+      <div class="hero-top">
+        <span class="eyebrow">Continuing Education</span>
+        {session ? (
+          <div class="session-status">
+            <span class="session-status__dot" aria-hidden="true"></span>
+            <span>Signed in as <strong>{session.email}</strong></span>
+            <a href="/my-certificates">My certificates</a>
+            <button type="button" id="logoutBtn" class="btn btn--text">Log out</button>
+          </div>
+        ) : (
+          <a href="/my-certificates" class="btn btn--text">Login &rarr;</a>
+        )}
+      </div>
       <h1>Courses</h1>
       <p class="lede">Short, practical courses. Pass the quiz at the end and we'll email you a verifiable certificate immediately — free or paid, the certificate never costs extra.</p>
-      <a href="/my-certificates" class="btn btn--text">View my certificates &rarr;</a>
     </div>
   </section>
 
@@ -102,6 +118,14 @@ const categoriesInUse = [...new Set(sorted.map((c) => c.data.category))];
 </Layout>
 
 <script>
+  const logoutBtn = document.getElementById('logoutBtn');
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', async () => {
+      await fetch('/api/certificates/logout', { method: 'POST' });
+      window.location.reload();
+    });
+  }
+
   const grid = document.getElementById('coursesGrid');
   const cards = grid ? Array.from(grid.querySelectorAll<HTMLAnchorElement>('.course-card')) : [];
   const tierFilters = document.getElementById('tierFilters');
@@ -144,6 +168,13 @@ const categoriesInUse = [...new Set(sorted.map((c) => c.data.category))];
 
 <style>
   .courses-hero{ padding:72px 0 40px; border-bottom:1px solid var(--line); }
+  .hero-top{ display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+  .session-status{ display:flex; align-items:center; gap:10px; font-size:13.5px; color:var(--ink-600); flex-wrap:wrap; }
+  .session-status__dot{ width:8px; height:8px; border-radius:50%; background:#2E7D5B; flex-shrink:0; }
+  .session-status strong{ color:var(--ink-900); }
+  .session-status a{ color:var(--gold-500); text-decoration:none; }
+  .session-status a:hover{ text-decoration:underline; }
+  .session-status .btn--text{ font-size:13.5px; }
   .courses-hero h1{ font-family:var(--font-display); font-size:clamp(32px,4vw,44px); margin:6px 0 14px; }
   .courses-hero .lede{ max-width:560px; color:var(--ink-600); font-size:17px; line-height:1.6; margin-bottom:20px; }
   .eyebrow{ font-family:var(--font-mono); font-size:12px; letter-spacing:0.08em; text-transform:uppercase; color:var(--gold-500); }
