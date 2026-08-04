@@ -52,7 +52,7 @@ export const POST: APIRoute = async ({ request }) => {
   await sendMagicLinkEmail(env, {
     toEmail: email,
     link,
-    purpose: enrollCourseSlug ? 'enroll' : 'view-certificates',
+    purpose: enrollCourseSlug ? 'enroll' : redirectPath ? 'sign-in' : 'view-certificates',
   });
 
   return new Response(JSON.stringify({ ok: true }), {

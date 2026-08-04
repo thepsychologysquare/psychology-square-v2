@@ -66,19 +66,22 @@ function emailShell(bodyHtml: string): string {
 
 export async function sendMagicLinkEmail(
   env: { RESEND_API_KEY?: string; EMAIL_FROM?: string },
-  args: { toEmail: string; link: string; purpose?: 'enroll' | 'view-certificates'; courseTitle?: string }
+  args: { toEmail: string; link: string; purpose?: 'enroll' | 'view-certificates' | 'sign-in'; courseTitle?: string }
 ): Promise<{ ok: boolean; error?: string }> {
   if (!env.RESEND_API_KEY || !env.EMAIL_FROM) {
     return { ok: false, error: 'Email is not configured yet (missing RESEND_API_KEY or EMAIL_FROM).' };
   }
 
   const isEnroll = args.purpose === 'enroll';
-  const heading = isEnroll ? 'Confirm your enrollment' : 'View your certificates';
+  const isSignIn = args.purpose === 'sign-in';
+  const heading = isEnroll ? 'Confirm your enrollment' : isSignIn ? 'Sign in to your account' : 'View your certificates';
   const body = isEnroll
     ? `Click the button below to confirm your email and finish enrolling${args.courseTitle ? ` in <strong>${args.courseTitle}</strong>` : ''}. This link works once and expires in 15 minutes.`
+    : isSignIn
+    ? `Click the button below to sign in to your account. This link works once and expires in 15 minutes.`
     : `Click the button below to see every certificate you've earned with us. This link works once and expires in 15 minutes.`;
-  const buttonText = isEnroll ? 'Confirm enrollment' : 'View my certificates';
-  const subject = isEnroll ? 'Confirm your course enrollment — The Psychology Square' : 'Your certificates link — The Psychology Square';
+  const buttonText = isEnroll ? 'Confirm enrollment' : isSignIn ? 'Sign in' : 'View my certificates';
+  const subject = isEnroll ? 'Confirm your course enrollment — The Psychology Square' : isSignIn ? 'Your sign-in link — The Psychology Square' : 'Your certificates link — The Psychology Square';
 
   const html = emailShell(`
     <h1 style="font-size:22px;margin:0 0 16px;">${heading}</h1>
