@@ -1,0 +1,753 @@
+---
+export const prerender = false;
+import DashboardLayout from '../../../layouts/DashboardLayout.astro';
+import { env } from 'cloudflare:workers';
+import { getSession } from '../../../lib/adminAuth';
+import { getCourseBySlug } from '../../../lib/courses';
+import { getCourseOutline } from '../../../lib/courseBuilder';
+
+const session = await getSession(Astro.request.headers.get('cookie'), env?.ADMIN_SESSION_SECRET || '');
+if (!session) return Astro.redirect('/dashboard/login');
+
+const { slug } = Astro.params;
+const course = await getCourseBySlug(env, slug!);
+if (!course) return Astro.redirect('/dashboard/courses');
+
+const outline = env?.DB ? await getCourseOutline(env.DB, slug!) : [];
+---
+<DashboardLayout title={course.data.title}>
+  <Fragment slot="header">
+    <header class="studio-header">
+      <div class="studio-header__row">
+        <div class="studio-header__title">
+          <span class="eyebrow">Course Builder</span>
+          <h1>{course.data.title}</h1>
+          <span class={`badge ${course.data.draft ? 'badge--draft' : 'badge--published'}`} id="statusBadge">
+            {course.data.draft ? 'Draft' : 'Published'}
+          </span>
+        </div>
+        <div class="studio-header__actions">
+          <span class="autosave-status" id="autosaveStatus">All changes saved</span>
+          <a href={`/courses/${course.id}/learn`} target="_blank" class="btn btn--ghost">Preview as learner &nearr;</a>
+          <button type="button" class="btn btn--primary" id="togglePublishBtn">
+            {course.data.draft ? 'Publish' : 'Unpublish'}
+          </button>
+          <button type="button" class="btn btn--danger" id="deleteCourseBtn">Delete course</button>
+        </div>
+      </div>
+    </header>
+  </Fragment>
+
+  <div class="studio-workspace">
+    <aside class="studio-tree">
+      <button type="button" class="tree-item tree-item--settings is-active" id="settingsNavBtn" data-view="settings">
+        <span class="tree-item__icon">&#9881;</span> Course settings
+      </button>
+
+      <div class="tree-modules" id="treeModules"></div>
+
+      <form id="addModuleForm" class="add-module-form">
+        <input type="text" id="newModuleTitle" placeholder="+ Add module (e.g. Week 1: Foundations)" required />
+      </form>
+    </aside>
+
+    <section class="studio-canvas" id="studioCanvas">
+      <!-- populated by script -->
+    </section>
+  </div>
+</DashboardLayout>
+
+<style>
+  .studio-header { background: var(--navy-950); color: #fff; padding: 18px 0; }
+  .studio-header__row { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding: 0 24px; }
+  .studio-header__title { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .eyebrow { display: none; }
+  h1 { font-family: var(--font-display); font-size: 21px; margin: 0; color: #fff; }
+  .studio-header__actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .autosave-status { font-size: 12.5px; color: rgba(255,255,255,0.55); }
+
+  .badge { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 3px 9px; border-radius: 20px; }
+  .badge--draft { background: rgba(199,164,74,0.24); color: var(--gold-300); }
+  .badge--published { background: rgba(124,152,133,0.28); color: #b7d6bf; }
+
+  .btn { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13.5px; padding: 8px 16px; border-radius: 7px; text-decoration: none; border: none; cursor: pointer; transition: all 0.15s var(--ease); }
+  .btn--primary { background: var(--gold-500); color: var(--navy-950); }
+  .btn--primary:hover { background: var(--gold-300); }
+  .btn--ghost { background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.2); }
+  .btn--ghost:hover { border-color: rgba(255,255,255,0.5); }
+  .btn--danger { background: transparent; color: #E8998B; border: 1px solid rgba(232,153,139,0.5); }
+  .btn--danger:hover { background: rgba(232,153,139,0.12); border-color: #E8998B; }
+
+  .studio-workspace { display: flex; align-items: flex-start; min-height: calc(100vh - 64px); }
+  .studio-tree {
+    width: 30%; max-width: 340px; min-width: 240px; flex-shrink: 0;
+    border-right: 1px solid var(--line); background: #fff;
+    padding: 16px 12px; height: calc(100vh - 64px); overflow-y: auto; position: sticky; top: 0;
+  }
+  .studio-canvas { flex: 1; min-width: 0; padding: 28px 40px; }
+
+  .tree-item {
+    display: flex; align-items: center; gap: 8px; width: 100%; text-align: left;
+    background: none; border: none; padding: 10px 12px; border-radius: 8px; font: inherit; font-size: 14px; font-weight: 600;
+    color: var(--ink-900); cursor: pointer; margin-bottom: 4px;
+  }
+  .tree-item:hover { background: var(--paper-50); }
+  .tree-item.is-active { background: rgba(199,164,74,0.14); color: var(--navy-950); }
+  .tree-item--settings { margin-bottom: 14px; border-bottom: 1px solid var(--line); border-radius: 0; padding-bottom: 14px; }
+  .tree-item__icon { font-size: 15px; }
+
+  .add-module-form { margin-top: 8px; }
+  .add-module-form input {
+    width: 100%; padding: 9px 10px; border: 1px dashed var(--line); border-radius: 8px; font-size: 13px; background: transparent;
+  }
+  .add-module-form input:focus { outline: none; border-style: solid; border-color: var(--navy-950); background: #fff; }
+</style>
+
+<script define:vars={{ courseSlug: course.id, courseData: course.data, initialOutline: outline }}>
+  const treeModulesEl = document.getElementById('treeModules');
+  const canvasEl = document.getElementById('studioCanvas');
+  const settingsNavBtn = document.getElementById('settingsNavBtn');
+  const autosaveStatusEl = document.getElementById('autosaveStatus');
+  const statusBadgeEl = document.getElementById('statusBadge');
+  const togglePublishBtn = document.getElementById('togglePublishBtn');
+
+  let outline = initialOutline; // [{id, title, sequence_order, steps:[{id, title, content_type, content_body, video_url, question, question_options, question_correct_index}]}]
+  let course = JSON.parse(JSON.stringify(courseData));
+  let activeView = { kind: 'settings' }; // { kind: 'settings' } | { kind: 'step', stepId }
+  let saveTimer = null;
+
+  function setSaving() { autosaveStatusEl.textContent = 'Saving...'; }
+  function setSaved() { autosaveStatusEl.textContent = 'All changes saved'; }
+
+  async function api(url, method, body) {
+    const res = await fetch(url, {
+      method,
+      headers: body ? { 'content-type': 'application/json' } : undefined,
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Request failed');
+    }
+    return res.json();
+  }
+
+  function debounceSave(fn, ms = 700) {
+    clearTimeout(saveTimer);
+    setSaving();
+    saveTimer = setTimeout(async () => {
+      try {
+        await fn();
+        setSaved();
+      } catch (e) {
+        autosaveStatusEl.textContent = 'Could not save — check your connection';
+      }
+    }, ms);
+  }
+
+  async function reloadOutline() {
+    const data = await api(`/api/admin/course-content?course=${encodeURIComponent(courseSlug)}`, 'GET');
+    outline = data.modules;
+  }
+
+  // ---------- Tree rendering ----------
+  function renderTree() {
+    settingsNavBtn.classList.toggle('is-active', activeView.kind === 'settings');
+
+    treeModulesEl.innerHTML = outline
+      .map(
+        (m) => `
+      <div class="tree-module" draggable="true" data-module-id="${m.id}">
+        <div class="tree-module__head">
+          <span class="tree-module__drag" title="Drag to reorder">&#8942;&#8942;</span>
+          <input class="tree-module__title" data-action="rename-module" data-id="${m.id}" value="${escapeAttr(m.title)}" />
+          <button class="tree-module__del" data-action="delete-module" data-id="${m.id}" title="Delete module">&times;</button>
+        </div>
+        <ul class="tree-steps" data-module-id="${m.id}">
+          ${m.steps
+            .map(
+              (s) => `
+            <li class="tree-step ${activeView.kind === 'step' && activeView.stepId === s.id ? 'is-active' : ''}" draggable="true" data-step-id="${s.id}" data-module-id="${m.id}">
+              <span class="tree-step__drag" title="Drag to reorder">&#8942;&#8942;</span>
+              <span class="tree-step__title">${escapeHtml(s.title)}</span>
+              <span class="tree-step__type">${s.content_type}</span>
+            </li>`
+            )
+            .join('')}
+        </ul>
+        <button type="button" class="add-step-btn" data-action="add-step" data-module="${m.id}">+ Add lesson</button>
+      </div>`
+      )
+      .join('');
+  }
+
+  function escapeHtml(s) {
+    return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+  function escapeAttr(s) {
+    return escapeHtml(s).replace(/"/g, '&quot;');
+  }
+
+  // ---------- Canvas: Course settings ----------
+  const categories = [
+    ['general', 'General'], ['anxiety', 'Anxiety'], ['depression', 'Depression'], ['adhd', 'ADHD'],
+    ['addiction-recovery', 'Addiction & Recovery'], ['trauma', 'Trauma'], ['relationships', 'Relationships'], ['stress-burnout', 'Stress & Burnout'],
+  ];
+
+  function renderSettingsCanvas() {
+    canvasEl.innerHTML = `
+      <div class="canvas-head">
+        <span class="canvas-eyebrow">Course settings</span>
+        <h2>Title, description &amp; pricing</h2>
+      </div>
+      <div class="canvas-card">
+        <div class="field">
+          <label>Title</label>
+          <input type="text" data-field="title" value="${escapeAttr(course.title)}" />
+        </div>
+        <div class="field">
+          <label>Description</label>
+          <textarea data-field="description" rows="3">${escapeHtml(course.description)}</textarea>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Topic</label>
+            <select data-field="category">
+              ${categories.map(([v, l]) => `<option value="${v}" ${course.category === v ? 'selected' : ''}>${l}</option>`).join('')}
+            </select>
+          </div>
+          <div class="field field--narrow">
+            <label>Est. hours</label>
+            <input type="number" data-field="estimatedHours" min="0.5" step="0.5" value="${course.estimatedHours}" />
+          </div>
+          <div class="field field--narrow">
+            <label>Pass score (%)</label>
+            <input type="number" data-field="passScorePercent" min="1" max="100" value="${course.passScorePercent}" />
+          </div>
+        </div>
+        <div class="field">
+          <label>Cover image</label>
+          ${course.image ? `<img src="${escapeAttr(course.image)}" class="cover-preview" alt="" />` : ''}
+          <input type="file" id="courseImageFile" accept="image/*" />
+          <p class="field-hint" id="courseImageStatus"></p>
+        </div>
+        <div class="field-row">
+          <div class="field field--toggle">
+            <label class="toggle"><input type="checkbox" data-field="isPaid" ${course.isPaid ? 'checked' : ''} /> <span>Paid course</span></label>
+          </div>
+          <div class="field field--narrow" id="priceFieldWrap" ${course.isPaid ? '' : 'hidden'}>
+            <label>Price (PKR)</label>
+            <input type="number" data-field="pricePkr" min="0" value="${course.pricePkr ?? 0}" />
+          </div>
+        </div>
+      </div>
+
+      <div class="canvas-head">
+        <span class="canvas-eyebrow">Certificate quiz</span>
+        <h2>Quiz questions</h2>
+        <p class="canvas-hint">Learners must score ${course.passScorePercent}% or higher to earn the certificate.</p>
+      </div>
+      <div class="canvas-card" id="quizCard">
+        <div id="quizList"></div>
+        <button type="button" class="btn-add" id="addQuestionBtn">+ Add question</button>
+      </div>
+    `;
+
+    wireSettingsInputs();
+    renderQuizEditor();
+  }
+
+  function wireSettingsInputs() {
+    canvasEl.querySelectorAll('[data-field]').forEach((el) => {
+      const field = el.dataset.field;
+      const evt = el.tagName === 'SELECT' || el.type === 'checkbox' ? 'change' : 'input';
+      el.addEventListener(evt, () => {
+        let value = el.type === 'checkbox' ? el.checked : el.value;
+        if (['estimatedHours', 'passScorePercent', 'pricePkr'].includes(field)) value = parseFloat(value) || 0;
+        course[field] = value;
+        if (field === 'isPaid') document.getElementById('priceFieldWrap').hidden = !value;
+        debounceSave(() => saveCourseField({ [field]: value }));
+      });
+    });
+
+    const imageInput = document.getElementById('courseImageFile');
+    imageInput?.addEventListener('change', async () => {
+      const file = imageInput.files?.[0];
+      if (!file) return;
+      const statusEl = document.getElementById('courseImageStatus');
+      statusEl.textContent = 'Uploading...';
+      const fd = new FormData();
+      fd.append('image', file);
+      try {
+        const res = await fetch('/api/admin/course-image', { method: 'POST', body: fd });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Upload failed');
+        course.image = data.url;
+        statusEl.textContent = 'Uploaded ✓';
+        debounceSave(() => saveCourseField({ image: data.url }), 100);
+        renderSettingsCanvas();
+      } catch (e) {
+        statusEl.textContent = e.message || 'Upload failed';
+      }
+    });
+  }
+
+  async function saveCourseField(patch) {
+    await api('/api/admin/courses', 'PATCH', { slug: courseSlug, ...patch });
+  }
+
+  function renderQuizEditor() {
+    const listEl = document.getElementById('quizList');
+    if (!listEl) return;
+    listEl.innerHTML = (course.quiz || [])
+      .map(
+        (q, qi) => `
+      <div class="quiz-question" data-qi="${qi}">
+        <div class="quiz-question__head">
+          <span class="quiz-question__num">Q${qi + 1}</span>
+          <button type="button" class="quiz-del" data-action="del-question" data-qi="${qi}">&times;</button>
+        </div>
+        <input type="text" class="quiz-question-input" data-action="edit-question" data-qi="${qi}" value="${escapeAttr(q.question)}" placeholder="Question text" />
+        <div class="quiz-options">
+          ${q.options
+            .map(
+              (opt, oi) => `
+            <div class="quiz-option">
+              <input type="radio" name="correct-${qi}" data-action="set-correct" data-qi="${qi}" data-oi="${oi}" ${q.correctIndex === oi ? 'checked' : ''} title="Mark as correct answer" />
+              <input type="text" class="quiz-option-input" data-action="edit-option" data-qi="${qi}" data-oi="${oi}" value="${escapeAttr(opt)}" placeholder="Option ${oi + 1}" />
+              <button type="button" class="quiz-del quiz-del--small" data-action="del-option" data-qi="${qi}" data-oi="${oi}" ${q.options.length <= 2 ? 'disabled' : ''}>&times;</button>
+            </div>`
+            )
+            .join('')}
+          <button type="button" class="add-step-btn" data-action="add-option" data-qi="${qi}">+ Add option</button>
+        </div>
+      </div>`
+      )
+      .join('') || '<p class="canvas-hint">No questions yet — add at least one.</p>';
+  }
+
+  document.getElementById('addQuestionBtn')?.addEventListener('click', () => {}); // reattached in delegated handler below
+
+  canvasEl.addEventListener('click', (e) => {
+    if (e.target.id === 'addQuestionBtn') {
+      course.quiz = [...(course.quiz || []), { question: '', options: ['', ''], correctIndex: 0 }];
+      renderQuizEditor();
+      debounceSave(() => saveCourseField({ quiz: course.quiz }));
+      return;
+    }
+    const btn = e.target.closest('[data-action]');
+    if (!btn) return;
+    const { action, qi, oi } = btn.dataset;
+    if (action === 'del-question') {
+      course.quiz.splice(+qi, 1);
+      renderQuizEditor();
+      debounceSave(() => saveCourseField({ quiz: course.quiz }));
+    } else if (action === 'del-option') {
+      course.quiz[+qi].options.splice(+oi, 1);
+      if (course.quiz[+qi].correctIndex >= course.quiz[+qi].options.length) course.quiz[+qi].correctIndex = 0;
+      renderQuizEditor();
+      debounceSave(() => saveCourseField({ quiz: course.quiz }));
+    } else if (action === 'add-option') {
+      course.quiz[+qi].options.push('');
+      renderQuizEditor();
+      debounceSave(() => saveCourseField({ quiz: course.quiz }));
+    }
+  });
+
+  canvasEl.addEventListener('input', (e) => {
+    const el = e.target.closest('[data-action="edit-question"], [data-action="edit-option"]');
+    if (!el) return;
+    const { action, qi, oi } = el.dataset;
+    if (action === 'edit-question') course.quiz[+qi].question = el.value;
+    else course.quiz[+qi].options[+oi] = el.value;
+    debounceSave(() => saveCourseField({ quiz: course.quiz }));
+  });
+
+  canvasEl.addEventListener('change', (e) => {
+    const el = e.target.closest('[data-action="set-correct"]');
+    if (!el) return;
+    course.quiz[+el.dataset.qi].correctIndex = +el.dataset.oi;
+    debounceSave(() => saveCourseField({ quiz: course.quiz }));
+  });
+
+  // ---------- Canvas: Lesson editor ----------
+  function findStep(stepId) {
+    for (const m of outline) {
+      const s = m.steps.find((s) => s.id === stepId);
+      if (s) return { module: m, step: s };
+    }
+    return null;
+  }
+
+  function renderStepCanvas(stepId) {
+    const found = findStep(stepId);
+    if (!found) return renderSettingsCanvas();
+    const { module, step } = found;
+
+    canvasEl.innerHTML = `
+      <div class="canvas-head">
+        <span class="canvas-eyebrow">${escapeHtml(module.title)}</span>
+        <h2>
+          <input type="text" class="lesson-title-input" data-field="title" value="${escapeAttr(step.title)}" />
+        </h2>
+      </div>
+
+      <div class="canvas-card">
+        <div class="lesson-type-tabs">
+          <button type="button" class="type-tab ${step.content_type === 'text' ? 'is-active' : ''}" data-type="text">Text</button>
+          <button type="button" class="type-tab ${step.content_type === 'video' ? 'is-active' : ''}" data-type="video">Video</button>
+        </div>
+
+        <div class="field" id="videoUrlField" ${step.content_type === 'video' ? '' : 'hidden'}>
+          <label>Video URL <span class="field-optional">(embeddable link)</span></label>
+          <input type="text" data-field="videoUrl" value="${escapeAttr(step.video_url || '')}" placeholder="https://www.youtube.com/embed/..." />
+        </div>
+
+        <div class="field">
+          <label>Lesson content</label>
+          <textarea class="lesson-body" data-field="contentBody" rows="16" placeholder="Write the lesson here. Blank lines separate paragraphs.">${escapeHtml(step.content_body || '')}</textarea>
+        </div>
+
+        <details class="checkin-details" ${step.question ? 'open' : ''}>
+          <summary>Optional check-in question <span class="field-optional">(ungraded — for the learner's own review only)</span></summary>
+          <div class="field">
+            <input type="text" data-field="question" value="${escapeAttr(step.question || '')}" placeholder="e.g. What's one distortion you noticed this week?" />
+          </div>
+        </details>
+      </div>
+    `;
+
+    wireStepInputs(step.id);
+  }
+
+  function wireStepInputs(stepId) {
+    const patch = {};
+    canvasEl.querySelectorAll('[data-field]').forEach((el) => {
+      el.addEventListener('input', () => {
+        patch[el.dataset.field] = el.value;
+        debounceSave(async () => {
+          await api('/api/admin/course-content', 'PATCH', { kind: 'step', id: stepId, ...patch });
+          const found = findStep(stepId);
+          if (found) Object.assign(found.step, {
+            title: patch.title ?? found.step.title,
+            content_body: patch.contentBody ?? found.step.content_body,
+            video_url: patch.videoUrl ?? found.step.video_url,
+            question: patch.question ?? found.step.question,
+          });
+          if (patch.title !== undefined) renderTree();
+        });
+      });
+    });
+
+    canvasEl.querySelectorAll('.type-tab').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const type = btn.dataset.type;
+        canvasEl.querySelectorAll('.type-tab').forEach((b) => b.classList.toggle('is-active', b === btn));
+        document.getElementById('videoUrlField').hidden = type !== 'video';
+        debounceSave(async () => {
+          await api('/api/admin/course-content', 'PATCH', { kind: 'step', id: stepId, contentType: type });
+          const found = findStep(stepId);
+          if (found) found.step.content_type = type;
+          renderTree();
+        });
+      });
+    });
+  }
+
+  // ---------- Navigation ----------
+  function selectSettings() {
+    activeView = { kind: 'settings' };
+    renderTree();
+    renderSettingsCanvas();
+  }
+  function selectStep(stepId) {
+    activeView = { kind: 'step', stepId };
+    renderTree();
+    renderStepCanvas(stepId);
+  }
+
+  settingsNavBtn.addEventListener('click', selectSettings);
+
+  document.getElementById('addModuleForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const input = document.getElementById('newModuleTitle');
+    if (!input.value.trim()) return;
+    await api('/api/admin/course-content', 'POST', { kind: 'module', courseSlug, title: input.value.trim() });
+    input.value = '';
+    await reloadOutline();
+    renderTree();
+  });
+
+  treeModulesEl.addEventListener('submit', (e) => e.preventDefault());
+
+  treeModulesEl.addEventListener('click', async (e) => {
+    const stepEl = e.target.closest('.tree-step');
+    const addStepBtn = e.target.closest('[data-action="add-step"]');
+    const delModuleBtn = e.target.closest('[data-action="delete-module"]');
+
+    if (stepEl) {
+      selectStep(stepEl.dataset.stepId);
+      return;
+    }
+    if (addStepBtn) {
+      const title = prompt('New lesson title (e.g. "What is CBT?")');
+      if (!title || !title.trim()) return;
+      const { id } = await api('/api/admin/course-content', 'POST', {
+        kind: 'step', moduleId: addStepBtn.dataset.module, title: title.trim(), contentType: 'text',
+      });
+      await reloadOutline();
+      renderTree();
+      selectStep(id);
+      return;
+    }
+    if (delModuleBtn) {
+      if (!confirm('Delete this module and all its lessons? This cannot be undone.')) return;
+      await api(`/api/admin/course-content?kind=module&id=${delModuleBtn.dataset.id}`, 'DELETE');
+      if (activeView.kind === 'step' && !findStep(activeView.stepId)) selectSettings();
+      await reloadOutline();
+      renderTree();
+    }
+  });
+
+  treeModulesEl.addEventListener('change', (e) => {
+    const input = e.target.closest('[data-action="rename-module"]');
+    if (!input) return;
+    const id = input.dataset.id;
+    debounceSave(async () => {
+      await api('/api/admin/course-content', 'PATCH', { kind: 'module', id, title: input.value.trim() });
+      const m = outline.find((m) => m.id === id);
+      if (m) m.title = input.value.trim();
+    });
+  });
+
+  // ---------- Publish toggle ----------
+  togglePublishBtn.addEventListener('click', async () => {
+    const nextDraft = !course.draft;
+    togglePublishBtn.disabled = true;
+    await saveCourseField({ draft: nextDraft });
+    course.draft = nextDraft;
+    togglePublishBtn.textContent = nextDraft ? 'Publish' : 'Unpublish';
+    statusBadgeEl.textContent = nextDraft ? 'Draft' : 'Published';
+    statusBadgeEl.className = `badge ${nextDraft ? 'badge--draft' : 'badge--published'}`;
+    togglePublishBtn.disabled = false;
+  });
+
+  // ---------- Delete course (cascades: modules/steps, enrollments,
+  // attempts, certificates, questions, feedback — everything tied to it) ----------
+  const deleteCourseBtn = document.getElementById('deleteCourseBtn');
+  deleteCourseBtn.addEventListener('click', async () => {
+    const typed = window.prompt(
+      `This permanently deletes "${course.title}" and everything tied to it — modules, lessons, enrollments, certificates, Q&A, and feedback. This cannot be undone.\n\nType the course title to confirm:`
+    );
+    if (typed === null) return;
+    if (typed.trim() !== course.title) {
+      window.alert('That didn\'t match the course title — nothing was deleted.');
+      return;
+    }
+    deleteCourseBtn.disabled = true;
+    deleteCourseBtn.textContent = 'Deleting…';
+    try {
+      const res = await fetch(`/api/admin/courses?slug=${encodeURIComponent(courseSlug)}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Delete failed');
+      window.location.href = '/dashboard/courses';
+    } catch {
+      window.alert('Could not delete the course. Please try again.');
+      deleteCourseBtn.disabled = false;
+      deleteCourseBtn.textContent = 'Delete course';
+    }
+  });
+
+  // ---------- Drag and drop (native HTML5 DnD — no extra dependencies) ----------
+  let dragged = null; // { type: 'module'|'step', id, moduleId? }
+
+  treeModulesEl.addEventListener('dragstart', (e) => {
+    const moduleEl = e.target.closest('.tree-module');
+    const stepEl = e.target.closest('.tree-step');
+    if (stepEl) {
+      dragged = { type: 'step', id: stepEl.dataset.stepId, moduleId: stepEl.dataset.moduleId };
+      stepEl.classList.add('is-dragging');
+    } else if (moduleEl) {
+      dragged = { type: 'module', id: moduleEl.dataset.moduleId };
+      moduleEl.classList.add('is-dragging');
+    }
+    e.dataTransfer.effectAllowed = 'move';
+  });
+
+  treeModulesEl.addEventListener('dragend', () => {
+    treeModulesEl.querySelectorAll('.is-dragging').forEach((el) => el.classList.remove('is-dragging'));
+    dragged = null;
+  });
+
+  treeModulesEl.addEventListener('dragover', (e) => {
+    if (!dragged) return;
+    e.preventDefault();
+  });
+
+  treeModulesEl.addEventListener('drop', async (e) => {
+    if (!dragged) return;
+    e.preventDefault();
+
+    if (dragged.type === 'module') {
+      const targetEl = e.target.closest('.tree-module');
+      if (!targetEl || targetEl.dataset.moduleId === dragged.id) return;
+      const ids = outline.map((m) => m.id);
+      const from = ids.indexOf(dragged.id);
+      const to = ids.indexOf(targetEl.dataset.moduleId);
+      ids.splice(to, 0, ids.splice(from, 1)[0]);
+      outline = ids.map((id) => outline.find((m) => m.id === id));
+      renderTree();
+      await api('/api/admin/course-content', 'PATCH', { kind: 'module', reorder: ids });
+      return;
+    }
+
+    if (dragged.type === 'step') {
+      const targetStepEl = e.target.closest('.tree-step');
+      const targetListEl = e.target.closest('.tree-steps');
+      const targetModuleId = targetStepEl?.dataset.moduleId || targetListEl?.dataset.moduleId;
+      if (!targetModuleId) return;
+
+      const fromModule = outline.find((m) => m.id === dragged.moduleId);
+      const toModule = outline.find((m) => m.id === targetModuleId);
+      if (!fromModule || !toModule) return;
+
+      const stepObj = fromModule.steps.find((s) => s.id === dragged.id);
+      fromModule.steps = fromModule.steps.filter((s) => s.id !== dragged.id);
+
+      let insertAt = toModule.steps.length;
+      if (targetStepEl) {
+        insertAt = toModule.steps.findIndex((s) => s.id === targetStepEl.dataset.stepId);
+        if (insertAt === -1) insertAt = toModule.steps.length;
+      }
+      toModule.steps.splice(insertAt, 0, stepObj);
+
+      renderTree();
+      await api('/api/admin/course-content', 'PATCH', { kind: 'step', reorder: toModule.steps.map((s) => s.id) });
+      if (fromModule.id !== toModule.id && fromModule.steps.length > 0) {
+        await api('/api/admin/course-content', 'PATCH', { kind: 'step', reorder: fromModule.steps.map((s) => s.id) });
+      }
+    }
+  });
+
+  // ---------- Init ----------
+  renderTree();
+  renderSettingsCanvas();
+</script>
+
+<style is:global>
+  /* ---------- Sidebar module/lesson tree (rendered dynamically by renderTree()) ---------- */
+  .tree-module { margin-bottom: 6px; }
+  .tree-module__head { display: flex; align-items: center; gap: 4px; padding: 6px 6px 6px 4px; border-radius: 8px; }
+  .tree-module__head:hover { background: var(--paper-50); }
+  .tree-module__drag { cursor: grab; color: var(--ink-600); padding: 2px 4px; font-size: 13px; user-select: none; }
+  .tree-module__title {
+    flex: 1; font-weight: 700; font-size: 13.5px; background: none; border: none; padding: 4px 6px; border-radius: 5px; min-width: 0;
+    font-family: var(--font-body); color: var(--ink-900);
+  }
+  .tree-module__title:focus { outline: 1px solid var(--navy-950); background: #fff; }
+  .tree-module__del { background: none; border: none; color: var(--ink-600); cursor: pointer; font-size: 15px; padding: 2px 6px; border-radius: 5px; }
+  .tree-module__del:hover { background: rgba(179,38,30,0.1); color: #B3261E; }
+
+  .tree-steps { list-style: none; margin: 2px 0 4px; padding: 0 0 0 18px; display: grid; gap: 2px; }
+  .tree-step {
+    display: flex; align-items: center; gap: 6px; padding: 6px 8px; border-radius: 7px; cursor: pointer;
+    font-size: 13px; color: var(--ink-900); border: 1px solid transparent;
+  }
+  .tree-step:hover { background: var(--paper-50); }
+  .tree-step.is-active { background: rgba(199,164,74,0.16); border-color: rgba(199,164,74,0.4); font-weight: 600; }
+  .tree-step__drag { cursor: grab; color: var(--ink-600); font-size: 12px; user-select: none; }
+  .tree-step__title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tree-step__type { font-size: 10px; color: var(--ink-600); border: 1px solid var(--line); border-radius: 20px; padding: 0 5px; flex-shrink: 0; }
+  .tree-step.is-dragging, .tree-module.is-dragging { opacity: 0.4; }
+  .tree-drop-line { height: 2px; background: var(--gold-500); margin: 2px 8px; border-radius: 2px; }
+
+  .add-step-btn {
+    display: block; width: 100%; text-align: left; background: none; border: none; padding: 6px 8px 6px 18px;
+    color: var(--ink-600); font-size: 12.5px; font-weight: 600; cursor: pointer; border-radius: 6px; font-family: var(--font-body);
+  }
+  .add-step-btn:hover { background: var(--paper-50); color: var(--navy-950); }
+
+  .empty-canvas { color: var(--ink-600); text-align: center; padding: 80px 20px; font-size: 14.5px; }
+
+  /* ---------- Canvas: section headers ---------- */
+  .canvas-head { margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
+  .canvas-eyebrow {
+    display: block; font-family: var(--font-mono); font-size: 11.5px; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--gold-500); margin-bottom: 6px;
+  }
+  .canvas-head h2 { font-family: var(--font-display); font-size: 24px; margin: 0; color: var(--navy-950); font-weight: 600; }
+  .canvas-hint { color: var(--ink-600); font-size: 13.5px; margin: 6px 0 0; }
+
+  /* ---------- Canvas: form card ---------- */
+  .canvas-card {
+    background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 28px 30px;
+    display: grid; gap: 20px; margin-bottom: 40px; max-width: 760px; width: 100%; box-sizing: border-box;
+    box-shadow: 0 1px 2px rgba(11,20,31,0.04), 0 8px 24px rgba(11,20,31,0.05);
+  }
+
+  .field { display: grid; gap: 7px; min-width: 0; }
+  .field-row { display: flex; gap: 16px; flex-wrap: wrap; }
+  .field-row .field { flex: 1; min-width: 140px; }
+  .field--narrow { max-width: 140px; }
+  .field--toggle { flex: 1 1 100%; }
+  label { font-size: 13px; font-weight: 700; color: var(--navy-950); letter-spacing: 0.01em; }
+  .field-optional { font-weight: 400; color: var(--ink-600); }
+  .field-hint { margin: 2px 0 0; font-size: 12px; color: var(--ink-600); }
+
+  input[type="text"], input[type="number"], select, textarea {
+    padding: 12px 14px; border: 1px solid var(--line); border-radius: 8px; font: inherit; font-size: 15px;
+    background: var(--paper-0); color: var(--ink-900); width: 100%; box-sizing: border-box;
+    transition: border-color 0.15s var(--ease), background 0.15s var(--ease);
+  }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--gold-500); background: #fff; box-shadow: 0 0 0 3px rgba(199,164,74,0.15); }
+  textarea {
+    resize: vertical; font-family: var(--font-body); line-height: 1.6;
+    min-height: 110px; max-height: 480px; overflow-y: auto;
+  }
+  textarea[data-field="description"] { min-height: 130px; }
+  .lesson-body { min-height: 420px; max-height: 720px; font-size: 15px; }
+  .cover-preview { max-width: 220px; border-radius: 8px; display: block; margin-bottom: 6px; }
+
+  @media (max-width: 640px) {
+    .canvas-card { padding: 20px; border-radius: 10px; }
+    .field-row { flex-direction: column; }
+    .field-row .field { min-width: 0; }
+  }
+
+  .toggle { display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 600; }
+  .toggle input { width: 16px; height: 16px; }
+
+  .lesson-title-input {
+    font-family: var(--font-display); font-size: 22px; font-weight: 600; border: none; background: none; padding: 2px 0; width: 100%;
+  }
+  .lesson-title-input:focus { outline: none; border-bottom: 1px solid var(--navy-950); }
+
+  .lesson-type-tabs { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; width: fit-content; }
+  .type-tab { padding: 8px 18px; border: none; background: #fff; font: inherit; font-size: 13.5px; font-weight: 600; color: var(--ink-600); cursor: pointer; }
+  .type-tab.is-active { background: var(--navy-950); color: #fff; }
+
+  .checkin-details summary { cursor: pointer; font-size: 13.5px; font-weight: 600; color: var(--navy-950); margin-bottom: 8px; }
+  .checkin-details[open] summary { margin-bottom: 12px; }
+
+  /* ---------- Quiz builder ---------- */
+  .quiz-question { border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; margin-bottom: 16px; display: grid; gap: 12px; background: var(--paper-0); }
+  .quiz-question__head { display: flex; justify-content: space-between; align-items: center; }
+  .quiz-question__num { font-size: 12px; font-weight: 700; color: var(--ink-600); text-transform: uppercase; }
+  .quiz-question-input { font-weight: 700; font-size: 15px; }
+  .quiz-options { display: grid; gap: 10px; padding-left: 4px; }
+  .quiz-option { display: flex; align-items: center; gap: 10px; width: 100%; }
+  .quiz-option-input { flex: 1; min-width: 0; }
+  .quiz-del { background: none; border: none; color: var(--ink-600); cursor: pointer; font-size: 17px; padding: 2px 8px; border-radius: 5px; }
+  .quiz-del:hover:not(:disabled) { background: rgba(179,38,30,0.1); color: #B3261E; }
+  .quiz-del:disabled { opacity: 0.3; cursor: not-allowed; }
+  .quiz-del--small { font-size: 14px; }
+
+  /* Secondary "add" button for use on light card backgrounds (btn--ghost is
+     dark-navy-header-only and unreadable here) */
+  .btn-add {
+    display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-body);
+    font-weight: 600; font-size: 13.5px; padding: 10px 18px; border-radius: 8px;
+    border: 1px dashed var(--line); background: var(--paper-0); color: var(--navy-950);
+    cursor: pointer; transition: all 0.15s var(--ease);
+  }
+  .btn-add:hover { border-color: var(--gold-500); background: rgba(199,164,74,0.08); border-style: solid; }
+</style>
