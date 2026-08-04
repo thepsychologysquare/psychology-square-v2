@@ -93,10 +93,34 @@ const outline = env?.DB ? await getCourseOutline(env.DB, slug!) : [];
   .tree-item--settings { margin-bottom: 14px; border-bottom: 1px solid var(--line); border-radius: 0; padding-bottom: 14px; }
   .tree-item__icon { font-size: 15px; }
 
+<<<<<<< Updated upstream
   .tree-module { margin-bottom: 6px; }
   .tree-module__head { display: flex; align-items: center; gap: 4px; padding: 6px 6px 6px 4px; border-radius: 8px; }
   .tree-module__head:hover { background: var(--paper-50); }
   .tree-module__drag { cursor: grab; color: var(--ink-600); padding: 2px 4px; font-size: 13px; user-select: none; }
+=======
+<<<<<<< HEAD
+  .tree-module {
+    margin-bottom: 12px;
+    background: #f8fafc;
+    border: 1px solid var(--studio-border);
+    border-radius: 8px;
+    padding: 6px;
+  }
+  .tree-module__head {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px;
+  }
+  .tree-module__drag {
+    cursor: grab;
+    color: #94a3b8;
+    padding: 4px 2px;
+    font-size: 12px;
+    user-select: none;
+  }
+>>>>>>> Stashed changes
   .tree-module__title {
     flex: 1; font-weight: 700; font-size: 13.5px; background: none; border: none; padding: 4px 6px; border-radius: 5px; min-width: 0;
   }
@@ -123,13 +147,323 @@ const outline = env?.DB ? await getCourseOutline(env.DB, slug!) : [];
   }
   .add-step-btn:hover { background: var(--paper-50); color: var(--navy-950); }
 
+<<<<<<< Updated upstream
   .add-module-form { margin-top: 8px; }
+=======
+  .add-module-form {
+    margin-top: 14px;
+  }
+  .input-with-icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  .input-with-icon svg {
+    position: absolute;
+    left: 10px;
+    color: var(--studio-text-muted);
+    pointer-events: none;
+  }
+=======
+  .add-module-form { margin-top: 8px; }
+>>>>>>> f13f708 ([slug].astro edit)
+>>>>>>> Stashed changes
   .add-module-form input {
     width: 100%; padding: 9px 10px; border: 1px dashed var(--line); border-radius: 8px; font-size: 13px; background: transparent;
   }
+<<<<<<< Updated upstream
   .add-module-form input:focus { outline: none; border-style: solid; border-color: var(--navy-950); background: #fff; }
 
   .empty-canvas { color: var(--ink-600); text-align: center; padding: 80px 20px; }
+=======
+<<<<<<< HEAD
+
+  /* Right Main Canvas Content */
+  .studio-canvas {
+    flex: 1;
+    min-width: 0;
+    padding: 36px 48px;
+    max-width: 960px;
+  }
+
+  .canvas-head {
+    margin-bottom: 24px;
+  }
+  .canvas-eyebrow {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--studio-accent);
+    margin-bottom: 4px;
+  }
+  .canvas-head h2 {
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0;
+    color: var(--studio-text-main);
+    letter-spacing: -0.02em;
+  }
+  .canvas-hint {
+    color: var(--studio-text-muted);
+    font-size: 13px;
+    margin: 4px 0 0;
+  }
+
+  /* Structural Cards & Input Blocks */
+  .canvas-card {
+    background: var(--studio-card-bg);
+    border: 1px solid var(--studio-border);
+    border-radius: 12px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-bottom: 32px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .field-row {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .field-row .field {
+    flex: 1;
+    min-width: 160px;
+  }
+  .field--narrow {
+    max-width: 160px;
+  }
+
+  label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--studio-text-main);
+  }
+  .field-optional {
+    font-weight: 400;
+    color: var(--studio-text-muted);
+  }
+
+  /* Professional Input Styling (Fixing extendable/ugly textboxes) */
+  input[type="text"],
+  input[type="number"],
+  select,
+  textarea {
+    padding: 10px 14px;
+    border: 1px solid var(--studio-border);
+    border-radius: 8px;
+    font: inherit;
+    font-size: 14px;
+    background: #ffffff;
+    color: var(--studio-text-main);
+    width: 100%;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    box-sizing: border-box;
+  }
+
+  input:focus,
+  select:focus,
+  textarea:focus {
+    outline: none;
+    border-color: var(--studio-accent);
+    box-shadow: 0 0 0 3px var(--studio-accent-soft);
+  }
+
+  textarea.lesson-body {
+    min-height: 280px;
+    line-height: 1.6;
+    resize: vertical;
+    font-family: inherit;
+  }
+
+  .cover-preview {
+    max-width: 240px;
+    border-radius: 8px;
+    border: 1px solid var(--studio-border);
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  /* Clean Custom Checkbox / Toggle */
+  .toggle-control {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    user-select: none;
+    padding: 10px 14px;
+    background: #f8fafc;
+    border: 1px solid var(--studio-border);
+    border-radius: 8px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .toggle-control input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--studio-accent);
+    cursor: pointer;
+  }
+
+  .lesson-title-input {
+    font-size: 22px;
+    font-weight: 700;
+    border: none;
+    background: transparent;
+    padding: 4px 0;
+    width: 100%;
+    color: var(--studio-text-main);
+    border-bottom: 2px solid transparent;
+  }
+  .lesson-title-input:focus {
+    outline: none;
+    border-bottom-color: var(--studio-accent);
+    box-shadow: none;
+  }
+
+  /* Segmented Type Controller */
+  .segmented-control {
+    display: inline-flex;
+    background: #f1f5f9;
+    padding: 3px;
+    border-radius: 8px;
+    gap: 2px;
+    width: fit-content;
+  }
+  .segmented-tab {
+    padding: 6px 16px;
+    border: none;
+    background: transparent;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--studio-text-muted);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .segmented-tab.is-active {
+    background: #ffffff;
+    color: var(--studio-text-main);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  }
+
+  /* Professional Quiz Builder UI */
+  .quiz-list {
+    display: flex;
+    flex-direction: flex-start;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .quiz-card {
+    background: #ffffff;
+    border: 1px solid var(--studio-border);
+    border-radius: 10px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .quiz-card__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .quiz-card__badge {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--studio-accent);
+    background: var(--studio-accent-soft);
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+
+  .quiz-options-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 4px;
+  }
+
+  /* Radio Card Choice Row */
+  .option-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 10px;
+    border: 1px solid var(--studio-border);
+    border-radius: 8px;
+    background: #f8fafc;
+    transition: all 0.15s ease;
+  }
+  .option-row:focus-within {
+    border-color: var(--studio-accent);
+    background: #ffffff;
+  }
+  .option-row.is-correct {
+    border-color: rgba(16, 185, 129, 0.4);
+    background: rgba(16, 185, 129, 0.05);
+  }
+  .option-row input[type="radio"] {
+    accent-color: var(--studio-success);
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+  }
+  .option-row input[type="text"] {
+    border: none;
+    background: transparent;
+    padding: 4px;
+    font-size: 13.5px;
+  }
+  .option-row input[type="text"]:focus {
+    box-shadow: none;
+  }
+
+  .icon-btn-del {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 16px;
+    line-height: 1;
+    transition: all 0.15s ease;
+  }
+  .icon-btn-del:hover:not(:disabled) {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--studio-danger);
+  }
+  .icon-btn-del:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+
+  .checkin-details {
+    background: #f8fafc;
+    border: 1px solid var(--studio-border);
+    border-radius: 8px;
+    padding: 12px 16px;
+  }
+  .checkin-details summary {
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--studio-text-main);
+  }
+=======
+  .add-module-form input:focus { outline: none; border-style: solid; border-color: var(--navy-950); background: #fff; }
+>>>>>>> f13f708 ([slug].astro edit)
+>>>>>>> Stashed changes
 </style>
 
 <script define:vars={{ courseSlug: course.id, courseData: course.data, initialOutline: outline }}>
@@ -276,9 +610,22 @@ const outline = env?.DB ? await getCourseOutline(env.DB, slug!) : [];
         <h2>Quiz questions</h2>
         <p class="canvas-hint">Learners must score ${course.passScorePercent}% or higher to earn the certificate.</p>
       </div>
+<<<<<<< Updated upstream
       <div class="canvas-card" id="quizCard">
         <div id="quizList"></div>
         <button type="button" class="btn btn--ghost" id="addQuestionBtn">+ Add question</button>
+=======
+<<<<<<< HEAD
+
+      <div class="canvas-card">
+        <div id="quizList" class="quiz-list"></div>
+        <button type="button" class="btn btn--outline" id="addQuestionBtn" style="width: fit-content;">+ Add Question</button>
+=======
+      <div class="canvas-card" id="quizCard">
+        <div id="quizList"></div>
+        <button type="button" class="btn-add" id="addQuestionBtn">+ Add question</button>
+>>>>>>> f13f708 ([slug].astro edit)
+>>>>>>> Stashed changes
       </div>
     `;
 
@@ -636,6 +983,7 @@ const outline = env?.DB ? await getCourseOutline(env.DB, slug!) : [];
   renderTree();
   renderSettingsCanvas();
 </script>
+<<<<<<< Updated upstream
 
 <style>
   .canvas-head { margin-bottom: 14px; }
@@ -646,15 +994,77 @@ const outline = env?.DB ? await getCourseOutline(env.DB, slug!) : [];
   .canvas-card { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 24px; display: grid; gap: 18px; margin-bottom: 36px; max-width: 760px; }
 
   .field { display: grid; gap: 6px; }
+=======
+<<<<<<< HEAD
+=======
+
+<style is:global>
+  /* ---------- Sidebar module/lesson tree (rendered dynamically by renderTree()) ---------- */
+  .tree-module { margin-bottom: 6px; }
+  .tree-module__head { display: flex; align-items: center; gap: 4px; padding: 6px 6px 6px 4px; border-radius: 8px; }
+  .tree-module__head:hover { background: var(--paper-50); }
+  .tree-module__drag { cursor: grab; color: var(--ink-600); padding: 2px 4px; font-size: 13px; user-select: none; }
+  .tree-module__title {
+    flex: 1; font-weight: 700; font-size: 13.5px; background: none; border: none; padding: 4px 6px; border-radius: 5px; min-width: 0;
+    font-family: var(--font-body); color: var(--ink-900);
+  }
+  .tree-module__title:focus { outline: 1px solid var(--navy-950); background: #fff; }
+  .tree-module__del { background: none; border: none; color: var(--ink-600); cursor: pointer; font-size: 15px; padding: 2px 6px; border-radius: 5px; }
+  .tree-module__del:hover { background: rgba(179,38,30,0.1); color: #B3261E; }
+
+  .tree-steps { list-style: none; margin: 2px 0 4px; padding: 0 0 0 18px; display: grid; gap: 2px; }
+  .tree-step {
+    display: flex; align-items: center; gap: 6px; padding: 6px 8px; border-radius: 7px; cursor: pointer;
+    font-size: 13px; color: var(--ink-900); border: 1px solid transparent;
+  }
+  .tree-step:hover { background: var(--paper-50); }
+  .tree-step.is-active { background: rgba(199,164,74,0.16); border-color: rgba(199,164,74,0.4); font-weight: 600; }
+  .tree-step__drag { cursor: grab; color: var(--ink-600); font-size: 12px; user-select: none; }
+  .tree-step__title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tree-step__type { font-size: 10px; color: var(--ink-600); border: 1px solid var(--line); border-radius: 20px; padding: 0 5px; flex-shrink: 0; }
+  .tree-step.is-dragging, .tree-module.is-dragging { opacity: 0.4; }
+  .tree-drop-line { height: 2px; background: var(--gold-500); margin: 2px 8px; border-radius: 2px; }
+
+  .add-step-btn {
+    display: block; width: 100%; text-align: left; background: none; border: none; padding: 6px 8px 6px 18px;
+    color: var(--ink-600); font-size: 12.5px; font-weight: 600; cursor: pointer; border-radius: 6px; font-family: var(--font-body);
+  }
+  .add-step-btn:hover { background: var(--paper-50); color: var(--navy-950); }
+
+  .empty-canvas { color: var(--ink-600); text-align: center; padding: 80px 20px; font-size: 14.5px; }
+
+  /* ---------- Canvas: section headers ---------- */
+  .canvas-head { margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
+  .canvas-eyebrow {
+    display: block; font-family: var(--font-mono); font-size: 11.5px; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--gold-500); margin-bottom: 6px;
+  }
+  .canvas-head h2 { font-family: var(--font-display); font-size: 24px; margin: 0; color: var(--navy-950); font-weight: 600; }
+  .canvas-hint { color: var(--ink-600); font-size: 13.5px; margin: 6px 0 0; }
+
+  /* ---------- Canvas: form card ---------- */
+  .canvas-card {
+    background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 28px 30px;
+    display: grid; gap: 20px; margin-bottom: 40px; max-width: 760px; width: 100%; box-sizing: border-box;
+    box-shadow: 0 1px 2px rgba(11,20,31,0.04), 0 8px 24px rgba(11,20,31,0.05);
+  }
+
+  .field { display: grid; gap: 7px; min-width: 0; }
+>>>>>>> Stashed changes
   .field-row { display: flex; gap: 16px; flex-wrap: wrap; }
   .field-row .field { flex: 1; min-width: 140px; }
   .field--narrow { max-width: 140px; }
   .field--toggle { flex: 1 1 100%; }
+<<<<<<< Updated upstream
   label { font-size: 13px; font-weight: 600; color: var(--navy-950); }
+=======
+  label { font-size: 13px; font-weight: 700; color: var(--navy-950); letter-spacing: 0.01em; }
+>>>>>>> Stashed changes
   .field-optional { font-weight: 400; color: var(--ink-600); }
   .field-hint { margin: 2px 0 0; font-size: 12px; color: var(--ink-600); }
 
   input[type="text"], input[type="number"], select, textarea {
+<<<<<<< Updated upstream
     padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; font: inherit; font-size: 14.5px;
     background: var(--paper-0); color: var(--ink-900); width: 100%;
   }
@@ -663,6 +1073,27 @@ const outline = env?.DB ? await getCourseOutline(env.DB, slug!) : [];
   .lesson-body { min-height: 360px; font-size: 15px; }
   .cover-preview { max-width: 220px; border-radius: 8px; display: block; margin-bottom: 6px; }
 
+=======
+    padding: 12px 14px; border: 1px solid var(--line); border-radius: 8px; font: inherit; font-size: 15px;
+    background: var(--paper-0); color: var(--ink-900); width: 100%; box-sizing: border-box;
+    transition: border-color 0.15s var(--ease), background 0.15s var(--ease);
+  }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--gold-500); background: #fff; box-shadow: 0 0 0 3px rgba(199,164,74,0.15); }
+  textarea {
+    resize: vertical; font-family: var(--font-body); line-height: 1.6;
+    min-height: 110px; max-height: 480px; overflow-y: auto;
+  }
+  textarea[data-field="description"] { min-height: 130px; }
+  .lesson-body { min-height: 420px; max-height: 720px; font-size: 15px; }
+  .cover-preview { max-width: 220px; border-radius: 8px; display: block; margin-bottom: 6px; }
+
+  @media (max-width: 640px) {
+    .canvas-card { padding: 20px; border-radius: 10px; }
+    .field-row { flex-direction: column; }
+    .field-row .field { min-width: 0; }
+  }
+
+>>>>>>> Stashed changes
   .toggle { display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 600; }
   .toggle input { width: 16px; height: 16px; }
 
@@ -678,6 +1109,7 @@ const outline = env?.DB ? await getCourseOutline(env.DB, slug!) : [];
   .checkin-details summary { cursor: pointer; font-size: 13.5px; font-weight: 600; color: var(--navy-950); margin-bottom: 8px; }
   .checkin-details[open] summary { margin-bottom: 12px; }
 
+<<<<<<< Updated upstream
   .quiz-question { border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; margin-bottom: 12px; display: grid; gap: 10px; }
   .quiz-question__head { display: flex; justify-content: space-between; align-items: center; }
   .quiz-question__num { font-size: 12px; font-weight: 700; color: var(--ink-600); text-transform: uppercase; }
@@ -685,8 +1117,33 @@ const outline = env?.DB ? await getCourseOutline(env.DB, slug!) : [];
   .quiz-options { display: grid; gap: 6px; padding-left: 4px; }
   .quiz-option { display: flex; align-items: center; gap: 8px; }
   .quiz-option-input { flex: 1; }
+=======
+  /* ---------- Quiz builder ---------- */
+  .quiz-question { border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; margin-bottom: 16px; display: grid; gap: 12px; background: var(--paper-0); }
+  .quiz-question__head { display: flex; justify-content: space-between; align-items: center; }
+  .quiz-question__num { font-size: 12px; font-weight: 700; color: var(--ink-600); text-transform: uppercase; }
+  .quiz-question-input { font-weight: 700; font-size: 15px; }
+  .quiz-options { display: grid; gap: 10px; padding-left: 4px; }
+  .quiz-option { display: flex; align-items: center; gap: 10px; width: 100%; }
+  .quiz-option-input { flex: 1; min-width: 0; }
+>>>>>>> Stashed changes
   .quiz-del { background: none; border: none; color: var(--ink-600); cursor: pointer; font-size: 17px; padding: 2px 8px; border-radius: 5px; }
   .quiz-del:hover:not(:disabled) { background: rgba(179,38,30,0.1); color: #B3261E; }
   .quiz-del:disabled { opacity: 0.3; cursor: not-allowed; }
   .quiz-del--small { font-size: 14px; }
+<<<<<<< Updated upstream
 </style>
+=======
+
+  /* Secondary "add" button for use on light card backgrounds (btn--ghost is
+     dark-navy-header-only and unreadable here) */
+  .btn-add {
+    display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-body);
+    font-weight: 600; font-size: 13.5px; padding: 10px 18px; border-radius: 8px;
+    border: 1px dashed var(--line); background: var(--paper-0); color: var(--navy-950);
+    cursor: pointer; transition: all 0.15s var(--ease);
+  }
+  .btn-add:hover { border-color: var(--gold-500); background: rgba(199,164,74,0.08); border-style: solid; }
+</style>
+>>>>>>> f13f708 ([slug].astro edit)
+>>>>>>> Stashed changes
