@@ -86,3 +86,39 @@ export const PATCH: APIRoute = async ({ request }) => {
   await updateCourse(env, slug, patch);
   return new Response(JSON.stringify({ ok: true }));
 };
+
+export const DELETE: APIRoute = async ({ request, url }) => {
+  const session = await requireAdmin(request);
+  if (!session) return new Response('Unauthorized', { status: 401 });
+  if (!env?.DB) return new Response(JSON.stringify({ error: 'Database unavailable' }), { status: 500 });
+
+  const slug = url.searchParams.get('slug');
+  if (!slug) return new Response(JSON.stringify({ error: 'slug is required' }), { status: 400 });
+
+  const course = await getCourseBySlug(env, slug);
+  if (!course) return new Response(JSON.stringify({ error: 'Not found' }), { status: 404 });
+
+  // Full cascade -- removes the course and every record tied to it, across
+  // both the legacy Decap-course tables (enrollments/attempts/certificates/
+  // questions/feedback, all keyed by course_slug) and the dashboard-native
+  // Course Builder tables (modules -> steps -> step_completions). Run as a
+  // batch so it's all-or-nothing.
+  const moduleIds = (
+    await env.DB.prepare(`SELECT id FROM course_modules WHERE course_slug = ?`).bind(slug).all()
+  ).results as { id: string }[];
+
+  const statements = [
+    env.DB.prepare(`DELETE FROM step_completions WHERE course_slug = ?`).bind(slug),
+    ...moduleIds.map((m) => env.DB.prepare(`DELETE FROM course_steps WHERE module_id = ?`).bind(m.id)),
+    env.DB.prepare(`DELETE FROM course_modules WHERE course_slug = ?`).bind(slug),
+    env.DB.prepare(`DELETE FROM course_questions WHERE course_slug = ?`).bind(slug),
+    env.DB.prepare(`DELETE FROM course_feedback WHERE course_slug = ?`).bind(slug),
+    env.DB.prepare(`DELETE FROM course_attempts WHERE course_slug = ?`).bind(slug),
+    env.DB.prepare(`DELETE FROM certificates WHERE course_slug = ?`).bind(slug),
+    env.DB.prepare(`DELETE FROM enrollments WHERE course_slug = ?`).bind(slug),
+    env.DB.prepare(`DELETE FROM courses WHERE slug = ?`).bind(slug),
+  ];
+  await env.DB.batch(statements);
+
+  return new Response(JSON.stringify({ ok: true }));
+};

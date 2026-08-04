@@ -38,3 +38,17 @@ export const GET: APIRoute = async ({ request }) => {
     headers: { 'content-type': 'application/json' },
   });
 };
+
+export const DELETE: APIRoute = async ({ request, url }) => {
+  const session = await getSession(request.headers.get('cookie'), env?.ADMIN_SESSION_SECRET || '');
+  if (!session) return new Response(JSON.stringify({ error: 'Not signed in.' }), { status: 401 });
+
+  const id = url.searchParams.get('id');
+  if (!id) return new Response(JSON.stringify({ error: 'Missing id.' }), { status: 400 });
+
+  await env.DB.prepare(`DELETE FROM certificates WHERE id = ?`).bind(id).run();
+  return new Response(JSON.stringify({ ok: true }), {
+    status: 200,
+    headers: { 'content-type': 'application/json' },
+  });
+};

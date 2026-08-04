@@ -19,3 +19,19 @@ export const GET: APIRoute = async ({ request }) => {
     headers: { 'content-type': 'application/json' },
   });
 };
+
+export const DELETE: APIRoute = async ({ request, url }) => {
+  const session = await getSession(request.headers.get('cookie'), env?.ADMIN_SESSION_SECRET || '');
+  if (!session) return new Response(JSON.stringify({ error: 'Not signed in.' }), { status: 401 });
+
+  const id = Number(url.searchParams.get('id'));
+  if (!Number.isInteger(id)) return new Response(JSON.stringify({ error: 'Missing id.' }), { status: 400 });
+
+  // Deleting an enrollment record only -- any certificate the learner
+  // already earned lives in its own table and is untouched here.
+  await env.DB.prepare(`DELETE FROM enrollments WHERE id = ?`).bind(id).run();
+  return new Response(JSON.stringify({ ok: true }), {
+    status: 200,
+    headers: { 'content-type': 'application/json' },
+  });
+};

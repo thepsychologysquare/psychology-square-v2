@@ -32,6 +32,7 @@ const outline = env?.DB ? await getCourseOutline(env.DB, slug!) : [];
           <button type="button" class="btn btn--primary" id="togglePublishBtn">
             {course.data.draft ? 'Publish' : 'Unpublish'}
           </button>
+          <button type="button" class="btn btn--danger" id="deleteCourseBtn">Delete course</button>
         </div>
       </div>
     </header>
@@ -74,6 +75,8 @@ const outline = env?.DB ? await getCourseOutline(env.DB, slug!) : [];
   .btn--primary:hover { background: var(--gold-300); }
   .btn--ghost { background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.2); }
   .btn--ghost:hover { border-color: rgba(255,255,255,0.5); }
+  .btn--danger { background: transparent; color: #E8998B; border: 1px solid rgba(232,153,139,0.5); }
+  .btn--danger:hover { background: rgba(232,153,139,0.12); border-color: #E8998B; }
 
   .studio-workspace { display: flex; align-items: flex-start; min-height: calc(100vh - 64px); }
   .studio-tree {
@@ -527,6 +530,31 @@ const outline = env?.DB ? await getCourseOutline(env.DB, slug!) : [];
     statusBadgeEl.textContent = nextDraft ? 'Draft' : 'Published';
     statusBadgeEl.className = `badge ${nextDraft ? 'badge--draft' : 'badge--published'}`;
     togglePublishBtn.disabled = false;
+  });
+
+  // ---------- Delete course (cascades: modules/steps, enrollments,
+  // attempts, certificates, questions, feedback — everything tied to it) ----------
+  const deleteCourseBtn = document.getElementById('deleteCourseBtn');
+  deleteCourseBtn.addEventListener('click', async () => {
+    const typed = window.prompt(
+      `This permanently deletes "${course.title}" and everything tied to it — modules, lessons, enrollments, certificates, Q&A, and feedback. This cannot be undone.\n\nType the course title to confirm:`
+    );
+    if (typed === null) return;
+    if (typed.trim() !== course.title) {
+      window.alert('That didn\'t match the course title — nothing was deleted.');
+      return;
+    }
+    deleteCourseBtn.disabled = true;
+    deleteCourseBtn.textContent = 'Deleting…';
+    try {
+      const res = await fetch(`/api/admin/courses?slug=${encodeURIComponent(courseSlug)}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Delete failed');
+      window.location.href = '/dashboard/courses';
+    } catch {
+      window.alert('Could not delete the course. Please try again.');
+      deleteCourseBtn.disabled = false;
+      deleteCourseBtn.textContent = 'Delete course';
+    }
   });
 
   // ---------- Drag and drop (native HTML5 DnD — no extra dependencies) ----------

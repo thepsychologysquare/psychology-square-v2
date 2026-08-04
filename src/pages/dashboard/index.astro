@@ -220,6 +220,7 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
                 <th>Course</th>
                 <th>Enrolled</th>
                 <th>Completed</th>
+                <th class="col-actions">Actions</th>
               </tr>
             </thead>
             <tbody id="enrollBody"></tbody>
@@ -264,6 +265,7 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
                 <th>Hours</th>
                 <th>Issued</th>
                 <th class="col-actions">Verify</th>
+                <th class="col-actions">Actions</th>
               </tr>
             </thead>
             <tbody id="certBody"></tbody>
@@ -592,10 +594,23 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
         <td>${escapeHtml(e.course_title)}</td>
         <td>${formatDate(e.enrolled_at)}</td>
         <td>${e.completed > 0 ? '✓ Completed' : '—'}</td>
+        <td class="col-actions"><button class="icon-btn delete" data-enrollid="${e.id}" title="Delete">🗑</button></td>
       </tr>
     `).join('');
   }
   enrollSearchBox.addEventListener('input', renderEnrollments);
+
+  enrollBody.addEventListener('click', async (e) => {
+    const btn = e.target.closest('[data-enrollid]');
+    if (!btn) return;
+    const id = Number(btn.dataset.enrollid);
+    const ok = await showConfirm('Delete this enrollment permanently? This does not affect any certificate already issued.');
+    if (!ok) return;
+    btn.disabled = true;
+    await fetch(`/api/admin/enrollments?id=${id}`, { method: 'DELETE' });
+    allEnrollments = allEnrollments.filter((x) => x.id !== id);
+    renderEnrollments();
+  });
 
   enrollExportBtn.addEventListener('click', () => {
     const header = ['Name', 'Email', 'Course', 'Enrolled At', 'Completed'];
@@ -657,6 +672,7 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
           <button class="icon-btn" data-shot="${r.id}" title="View screenshot">View</button>
           ${r.status !== 'active' ? `<button class="icon-btn confirm" data-payid="${r.id}" data-paystatus="active" title="Confirm">✓</button>` : ''}
           ${r.status !== 'declined' ? `<button class="icon-btn decline" data-payid="${r.id}" data-paystatus="declined" title="Decline">✕</button>` : ''}
+          <button class="icon-btn delete" data-paydelete="${r.id}" title="Delete">🗑</button>
         </td>
       </tr>
     `).join('');
@@ -694,7 +710,18 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
       return;
     }
     const btn = e.target.closest('.icon-btn.confirm, .icon-btn.decline');
-    if (!btn) return;
+    if (!btn) {
+      const delBtn = e.target.closest('[data-paydelete]');
+      if (!delBtn) return;
+      const delId = Number(delBtn.dataset.paydelete);
+      const ok = await showConfirm('Delete this payment request permanently? This does not affect any certificate already issued.');
+      if (!ok) return;
+      delBtn.disabled = true;
+      await fetch(`/api/admin/enrollments?id=${delId}`, { method: 'DELETE' });
+      allPayReqs = allPayReqs.filter((r) => r.id !== delId);
+      renderPayReqs();
+      return;
+    }
     const id = Number(btn.dataset.payid), status = btn.dataset.paystatus;
     const ok = await showConfirm(`Mark this course payment as ${status === 'active' ? 'confirmed' : status}?`);
     if (!ok) return;
@@ -866,10 +893,23 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
         <td>${c.ce_hours}</td>
         <td>${formatDate(c.issued_at)}</td>
         <td><a href="/certificates/${encodeURIComponent(c.id)}" target="_blank" rel="noopener">View →</a></td>
+        <td class="col-actions"><button class="icon-btn delete" data-certdelete="${escapeHtml(c.id)}" title="Delete">🗑</button></td>
       </tr>
     `).join('');
   }
   certSearchBox.addEventListener('input', renderCertificates);
+
+  certBody.addEventListener('click', async (e) => {
+    const btn = e.target.closest('[data-certdelete]');
+    if (!btn) return;
+    const id = btn.dataset.certdelete;
+    const ok = await showConfirm('Delete this certificate permanently? This cannot be undone and the learner will lose access to it.');
+    if (!ok) return;
+    btn.disabled = true;
+    await fetch(`/api/admin/certificates?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
+    allCertificates = allCertificates.filter((c) => c.id !== id);
+    renderCertificates();
+  });
 
   certExportBtn.addEventListener('click', () => {
     const header = ['Certificate ID', 'Name', 'Email', 'Course', 'Score %', 'Hours', 'Issued At'];
