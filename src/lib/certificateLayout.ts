@@ -102,34 +102,6 @@ function ensureFontsRegistered(doc: PdfLike) {
   fontsRegistered = true;
 }
 
-function fitWrappedLines(
-  doc: PdfLike,
-  text: string,
-  maxWidth: number,
-  font: string,
-  style: string,
-  maxSize: number,
-  minSize: number,
-  maxLines: number
-): { size: number; lines: string[] } {
-  doc.setFont(font, style);
-  let size = maxSize;
-  doc.setFontSize(size);
-  let lines: string[] = doc.splitTextToSize(text, maxWidth);
-  // Mirrors the HTML: text is drawn at its natural (CSS clamp) max size and
-  // just wraps, same as a browser reflowing a block of text — it is NOT
-  // shrunk to squeeze onto fewer lines than it naturally needs. Only once
-  // it still overflows the allotted line count at the SMALLEST readable
-  // size do we accept shrinking further, purely as a safety net against a
-  // pathologically long value breaking the page layout.
-  while (lines.length > maxLines && size > minSize) {
-    size -= 1;
-    doc.setFontSize(size);
-    lines = doc.splitTextToSize(text, maxWidth);
-  }
-  return { size, lines };
-}
-
 /** Draws the small two-square brand mark (echoes the site header's logomark)
  * centered on (cx, cy) at the given overall size. */
 function drawMark(doc: PdfLike, cx: number, cy: number, size: number) {
@@ -197,46 +169,76 @@ export function drawCertificate(doc: PdfLike, args: CertificatePdfArgs): void {
   const topBlockBottom = logoY + 78;
 
   // ---- Fixed bottom block: signatures + footer ---------------------------
-  // The footer (certificate ID + verification link) is always pinned this
-  // far from the page bottom. The signature row's fixed-from-bottom values
-  // below are its LOWEST allowed position (a safety ceiling for very long
-  // content) — see the clamp further down for its normal, content-hugging
-  // position.
-  const footerLinkY = pageHeight - 20;
-  const footerIdY = footerLinkY - 12;
-  const sigRoleYMax = footerIdY - 28;
-  const sigNameYMax = sigRoleYMax - 15;
-  const sigLineYMax = sigNameYMax - 12;
+  // Both the footer AND the signature row are pinned to fixed positions —
+  // always, regardless of how much name/course-title content there is.
+  // They must never move. The name/course/date block above them is the
+  // ONLY part of the layout that adapts: if it's too tall to fit in the
+  // fixed gap between the header and the signature row, it shrinks (both
+  // font sizes, together) until it fits — it never pushes the signatures
+  // down or off the page.
+  const footerY = pageHeight - innerInset - 8;
+  const sigRoleY = footerY - 24;
+  const sigNameY = sigRoleY - 15;
+  const sigLineY = sigNameY - 12;
   const sigMaxH = 28;
   const sigBottomGap = 5;
+  const sigImgBottomY = sigLineY - sigBottomGap;
 
-  // ---- Name / course title: auto-fit, then flow top-down like the HTML --
-  // Width and max sizes below are proportional matches to the live CSS —
-  // .certificate__inner's 56px side padding is ~6% of the certificate
-  // box's width, and the name/course/title clamp() max values are ~3.00%/
-  // 2.36%/3.43% of that same box width — carried over here as fractions of
-  // the PDF page width so wrapping happens at the same relative point the
-  // browser wraps at, not just "whatever fits densely on one line."
+  // ---- Name / course title: fixed-size by default (matches the CSS
+  // clamp() max for a normal desktop viewport) and wraps to however many
+  // lines it needs, exactly like the browser — the HTML does not shrink
+  // text just because it's long, clamp() only depends on viewport width.
+  // The one thing the HTML page doesn't have to worry about that this PDF
+  // does: a truly fixed-height page. So as a last resort — ONLY when the
+  // wrapped block would run into the (fixed, non-negotiable) signature
+  // row above — both sizes shrink together, in lockstep, until the whole
+  // block fits in the space actually available.
   const maxTextWidth = pageWidth * 0.88;
   const contentTop = topBlockBottom + 26;
+  const minGapAboveSignatures = 20;
+  const availableContentHeight = (sigLineY - minGapAboveSignatures) - contentTop;
 
   const label1 = 'This certifies that';
   const label2 = 'has successfully completed';
-
-  const { size: nameSize, lines: nameLines } = fitWrappedLines(
-    doc, args.name, maxTextWidth, FONT_SERIF, 'bolditalic', 25, 15, 2
-  );
-
-  const { size: courseSize, lines: courseLines } = fitWrappedLines(
-    doc, args.courseTitle, maxTextWidth, FONT_SERIF, 'bold', 20, 13, 2
-  );
-
   const label1H = 15;
-  const nameLineH = nameSize * 1.2;
   const label2H = 15;
-  const courseLineH = courseSize * 1.22;
+  const dateH = 15;
   const gapSmall = 6;
   const gapMed = 9;
+  const baseNameSize = pageWidth * 0.03004; // ~25pt on A4 landscape
+  const baseCourseSize = pageWidth * 0.02361; // ~20pt on A4 landscape
+  const minNameSize = 11;
+  const minCourseSize = 9;
+
+  function measure(nameSize: number, courseSize: number) {
+    doc.setFont(FONT_SERIF, 'bolditalic');
+    doc.setFontSize(nameSize);
+    const nameLines: string[] = doc.splitTextToSize(args.name, maxTextWidth);
+    doc.setFont(FONT_SERIF, 'bold');
+    doc.setFontSize(courseSize);
+    const courseLines: string[] = doc.splitTextToSize(args.courseTitle, maxTextWidth);
+    const blockHeight =
+      label1H + gapSmall +
+      nameLines.length * (nameSize * 1.2) + gapMed +
+      label2H + gapSmall +
+      courseLines.length * (courseSize * 1.22) + gapMed +
+      dateH;
+    return { nameLines, courseLines, blockHeight };
+  }
+
+  let nameSize = baseNameSize;
+  let courseSize = baseCourseSize;
+  let { nameLines, courseLines, blockHeight } = measure(nameSize, courseSize);
+  // Shrink both sizes together (same ratio each step) so the name and
+  // course title always stay proportional to one another, same as they
+  // are at full size — only the overall scale changes.
+  while (blockHeight > availableContentHeight && nameSize > minNameSize && courseSize > minCourseSize) {
+    nameSize -= 0.5;
+    courseSize -= 0.4;
+    ({ nameLines, courseLines, blockHeight } = measure(nameSize, courseSize));
+  }
+  const nameLineH = nameSize * 1.2;
+  const courseLineH = courseSize * 1.22;
 
   // cursorY always tracks the top of the NEXT element; each block below
   // advances it by that element's own height plus the gap that follows.
@@ -272,24 +274,13 @@ export function drawCertificate(doc: PdfLike, args: CertificatePdfArgs): void {
   }
   cursorY += gapMed;
 
-  const dateH = 15;
   doc.setFont(MONO, 'normal');
   doc.setFontSize(11);
   doc.setTextColor(...INK_LIGHT);
   doc.text(`Issued ${args.date}`, centerX, cursorY + dateH * 0.72, { align: 'center' });
-  cursorY += dateH;
 
   // ---- Signatures ---------------------------------------------------------
-  // Normally sit a fixed, HTML-like gap right below the content above. Only
-  // for unusually long content does that push past the safety ceiling
-  // (sigLineYMax etc.) — in which case we clamp to the ceiling instead, so
-  // signatures never crowd the footer or run off the page.
-  const naturalGapToSignatures = 44;
-  const sigLineYFinal = Math.min(cursorY + naturalGapToSignatures, sigLineYMax);
-  const sigNameYFinal = Math.min(sigLineYFinal + 17, sigNameYMax);
-  const sigRoleYFinal = Math.min(sigNameYFinal + 15, sigRoleYMax);
-  const sigImgBottomY = sigLineYFinal - sigBottomGap;
-
+  // Fixed position — see note above. Does not depend on cursorY at all.
   const drawSignature = (
     colX: number,
     sig: { dataUri: string; width: number; height: number },
@@ -309,27 +300,30 @@ export function drawCertificate(doc: PdfLike, args: CertificatePdfArgs): void {
 
     doc.setDrawColor(...LINE);
     doc.setLineWidth(0.7);
-    doc.line(colX - 62, sigLineYFinal, colX + 62, sigLineYFinal);
+    doc.line(colX - 62, sigLineY, colX + 62, sigLineY);
 
     doc.setFont(FONT_SANS, 'bold');
     doc.setFontSize(14);
     doc.setTextColor(...INK);
-    doc.text(personName, colX, sigNameYFinal, { align: 'center' });
+    doc.text(personName, colX, sigNameY, { align: 'center' });
 
     doc.setFont(MONO, 'bold');
     doc.setFontSize(10);
     doc.setTextColor(...NAVY_TEXT);
-    doc.text(role.toUpperCase(), colX, sigRoleYFinal, { align: 'center' });
+    doc.text(role.toUpperCase(), colX, sigRoleY, { align: 'center' });
   };
 
   drawSignature(centerX - 118, SIGNATURE_SOHAIL, 'Muhammad Sohail', 'CEO');
   drawSignature(centerX + 118, SIGNATURE_SEHAR, 'Sehar Waheed', 'Co-CEO');
 
   // ---- Very bottom: certificate ID + verification link ------------------
-  // Deliberately tiny and tight to the edge — informational, not decorative.
+  // Positioned on the same line (left-aligned and right-aligned), inset cleanly from the inner border.
+  const footerMarginLeft = innerInset + 12;
+  const footerMarginRight = pageWidth - innerInset - 12;
+
   doc.setFont(MONO, 'bold');
-  doc.setFontSize(9);
+  doc.setFontSize(8);
   doc.setTextColor(...INK_LIGHT);
-  doc.text(`Certificate ID: ${args.certId}`, centerX, footerIdY, { align: 'center' });
-  doc.text(`thepsychologysquare.com/certificates/${args.certId}`, centerX, footerLinkY, { align: 'center' });
+  doc.text(`Certificate ID: ${args.certId}`, footerMarginLeft, footerY, { align: 'left' });
+  doc.text(`thepsychologysquare.com/certificates/${args.certId}`, footerMarginRight, footerY, { align: 'right' });
 }
