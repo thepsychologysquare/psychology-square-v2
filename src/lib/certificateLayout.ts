@@ -204,7 +204,24 @@ export function drawCertificate(doc: PdfLike, args: CertificatePdfArgs): void {
   const label1 = 'This certifies that';
   const label2 = 'has successfully completed';
 
-  const nameSize = fitSingleLine(doc, args.name, maxTextWidth, FONT_SERIF, 'bolditalic', 27, 15);
+  const nameSize = (() => {
+    let size = fitSingleLine(doc, args.name, maxTextWidth, FONT_SERIF, 'bolditalic', 27, 15);
+    doc.setFont(FONT_SERIF, 'bolditalic');
+    doc.setFontSize(size);
+    // Mirror the HTML: the name isn't forced onto one line — it wraps
+    // naturally, same as the course title below. Only shrink further if it
+    // still doesn't fit in 2 lines at the minimum readable size.
+    let lines = doc.splitTextToSize(args.name, maxTextWidth);
+    while (lines.length > 2 && size > 13) {
+      size -= 1;
+      doc.setFontSize(size);
+      lines = doc.splitTextToSize(args.name, maxTextWidth);
+    }
+    return size;
+  })();
+  doc.setFont(FONT_SERIF, 'bolditalic');
+  doc.setFontSize(nameSize);
+  const nameLines: string[] = doc.splitTextToSize(args.name, maxTextWidth);
 
   let courseSize = fitSingleLine(doc, args.courseTitle, maxTextWidth, FONT_SERIF, 'bold', 19, 13);
   doc.setFont(FONT_SERIF, 'bold');
@@ -218,7 +235,7 @@ export function drawCertificate(doc: PdfLike, args: CertificatePdfArgs): void {
   }
 
   const label1H = 15;
-  const nameH = nameSize * 1.2;
+  const nameLineH = nameSize * 1.2;
   const label2H = 15;
   const courseLineH = courseSize * 1.22;
   const gapSmall = 6;
@@ -237,8 +254,11 @@ export function drawCertificate(doc: PdfLike, args: CertificatePdfArgs): void {
   doc.setFont(FONT_SERIF, 'bolditalic');
   doc.setFontSize(nameSize);
   doc.setTextColor(...INK);
-  doc.text(args.name, centerX, cursorY + nameH * 0.78, { align: 'center' });
-  cursorY += nameH + gapMed;
+  for (const line of nameLines) {
+    doc.text(line, centerX, cursorY + nameLineH * 0.78, { align: 'center' });
+    cursorY += nameLineH;
+  }
+  cursorY += gapMed;
 
   doc.setFont(FONT_SANS, 'normal');
   doc.setFontSize(12.5);
