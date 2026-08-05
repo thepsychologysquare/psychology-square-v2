@@ -39,7 +39,13 @@ const ogImage = new URL('/images/og-cover.jpg', canonicalURL.origin);
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <!-- ital axis added for Fraunces 600: the certificate name
+       (.certificate__name) is font-style:italic + font-weight:600, and
+       without the italic axis loaded the browser was faking it by
+       skewing the upright weight — different (wider) glyph metrics than
+       genuine italic, which is what was throwing off the PDF's line-wrap
+       parity with this page despite matching font-size/box-width. -->
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
 
   <script type="application/ld+json" set:html={JSON.stringify({
     "@context": "https://schema.org",
