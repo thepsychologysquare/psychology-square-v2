@@ -32,6 +32,7 @@ import {
   SIGNATURE_SEHAR,
   FONT_MONO_REGULAR_BASE64,
   FONT_MONO_BOLD_BASE64,
+  FONT_SERIF_REGULAR_BASE64,
   FONT_SERIF_BOLD_BASE64,
   FONT_SERIF_BOLDITALIC_BASE64,
   FONT_SANS_REGULAR_BASE64,
@@ -82,8 +83,12 @@ function ensureFontsRegistered(doc: PdfLike) {
   doc.addFileToVFS('IBMPlexMono-Bold.ttf', FONT_MONO_BOLD_BASE64);
   doc.addFont('IBMPlexMono-Bold.ttf', MONO, 'bold');
 
-  // Fraunces is only ever drawn at weight 600 (site's h1-h3/heading weight)
-  // in 'bold' and 'bolditalic' styles — no 'normal' style is used below.
+  // Fraunces: 'normal' (Regular/400) is used only by the plain-<div> title
+  // ("Certificate of Completion"), which doesn't inherit the site's h1-h3
+  // font-weight:600 rule. 'bold'/'bolditalic' (SemiBold/600) are used for
+  // the name and course title, which DO set font-weight:600 explicitly.
+  doc.addFileToVFS('Fraunces-Regular.ttf', FONT_SERIF_REGULAR_BASE64);
+  doc.addFont('Fraunces-Regular.ttf', FONT_SERIF, 'normal');
   doc.addFileToVFS('Fraunces-SemiBold.ttf', FONT_SERIF_BOLD_BASE64);
   doc.addFont('Fraunces-SemiBold.ttf', FONT_SERIF, 'bold');
   doc.addFileToVFS('Fraunces-SemiBoldItalic.ttf', FONT_SERIF_BOLDITALIC_BASE64);
@@ -173,7 +178,7 @@ export function drawCertificate(doc: PdfLike, args: CertificatePdfArgs): void {
   doc.text('T H E   P S Y C H O L O G Y   S Q U A R E', centerX, logoY + 30, { align: 'center' });
 
   doc.setTextColor(...INK);
-  doc.setFont(FONT_SERIF, 'bold');
+  doc.setFont(FONT_SERIF, 'normal');
   doc.setFontSize(30);
   doc.text('Certificate of Completion', centerX, logoY + 64, { align: 'center' });
 
