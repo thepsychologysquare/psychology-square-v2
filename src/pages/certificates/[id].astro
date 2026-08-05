@@ -25,7 +25,7 @@ const formattedDate = certificate
   description="Verify a certificate issued by The Psychology Square."
 >
   <section class="cert-page">
-    <div class="wrap wrap--narrow">
+    <div class="wrap wrap--cert">
       {!certificate && (
         <div class="not-found">
           <h1>Certificate not found</h1>
@@ -42,7 +42,6 @@ const formattedDate = certificate
             <span class="certificate__corner certificate__corner--tr" aria-hidden="true"><span class="mini-mark"><i></i><i></i></span></span>
             <span class="certificate__corner certificate__corner--bl" aria-hidden="true"><span class="mini-mark"><i></i><i></i></span></span>
             <span class="certificate__corner certificate__corner--br" aria-hidden="true"><span class="mini-mark"><i></i><i></i></span></span>
-            <div class="certificate__watermark" aria-hidden="true"><i></i><i></i></div>
 
             <div class="certificate__inner">
               <div class="certificate__mark" aria-hidden="true"><i></i><i></i></div>
@@ -163,7 +162,7 @@ const formattedDate = certificate
 
 <style>
   .cert-page{ padding:64px 0 96px; }
-  .wrap--narrow{ max-width:760px; margin:0 auto; padding:0 24px; }
+  .wrap--cert{ max-width:980px; margin:0 auto; padding:0 24px; }
 
   .not-found{ text-align:center; padding:80px 0; }
   .not-found h1{ font-family:var(--font-display); font-size:32px; margin-bottom:12px; }
@@ -175,13 +174,15 @@ const formattedDate = certificate
     margin-bottom:24px;
   }
 
-  /* ---- Certificate card: double frame + corner marks + watermark ---- */
+  /* ---- Certificate card: A4-landscape proportioned, double frame + corner marks ---- */
   .certificate{
     position:relative;
     border:2px solid var(--gold-500);
     border-radius:2px;
     background:var(--paper-0);
-    overflow:hidden;
+    aspect-ratio:1.4142/1; /* A4 landscape, same shape as the downloaded PDF */
+    display:flex;
+    flex-direction:column;
   }
   .certificate::before{
     content:'';
@@ -191,19 +192,11 @@ const formattedDate = certificate
   }
   .certificate__inner{
     position:relative; z-index:2;
-    padding:52px 44px 8px;
+    flex:1;
+    display:flex; flex-direction:column; justify-content:center;
+    padding:40px 56px;
     text-align:center;
   }
-
-  .certificate__watermark{
-    position:absolute; z-index:1; pointer-events:none;
-    left:50%; top:50%; width:78%; aspect-ratio:1/1;
-    transform:translate(-50%,-50%);
-    opacity:0.04;
-  }
-  .certificate__watermark i{ position:absolute; display:block; }
-  .certificate__watermark i:first-child{ inset:0 14% 14% 0; border:6px solid var(--gold-500); }
-  .certificate__watermark i:last-child{ inset:14% 0 0 14%; border:6px solid var(--sage-500); }
 
   .mini-mark{ position:relative; display:block; width:14px; height:14px; }
   .mini-mark i{ position:absolute; display:block; border:1.5px solid var(--gold-500); }
@@ -221,7 +214,7 @@ const formattedDate = certificate
   .certificate__mark i:first-child{ inset:0 9px 9px 0; }
   .certificate__mark i:last-child{ inset:9px 0 0 9px; border-color:var(--sage-500); }
 
-  .certificate__eyebrow{ font-family:var(--font-mono); font-size:12px; letter-spacing:0.16em; text-transform:uppercase; color:var(--gold-500); margin-bottom:14px; }
+  .certificate__eyebrow{ font-family:var(--font-mono); font-size:12px; letter-spacing:0.16em; text-transform:uppercase; color:var(--navy-700); margin-bottom:14px; }
   .certificate__title{ font-family:var(--font-display); font-size:clamp(26px,4vw,32px); margin-bottom:18px; }
   .certificate__rule{ width:52px; height:1px; background:var(--gold-500); margin:0 auto 26px; }
 
@@ -246,7 +239,7 @@ const formattedDate = certificate
   .certificate__sig-img{ height:38px; width:auto; max-width:150px; object-fit:contain; display:block; }
   .certificate__sig-line{ width:120px; border-top:1px solid var(--line); margin-top:6px; }
   .certificate__sig-name{ font-family:var(--font-body); font-weight:600; font-size:13.5px; color:var(--ink-900); margin-top:9px; }
-  .certificate__sig-role{ font-family:var(--font-mono); font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:var(--gold-500); margin-top:2px; }
+  .certificate__sig-role{ font-family:var(--font-mono); font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:var(--navy-700); margin-top:2px; }
 
   .certificate__footer{
     position:relative; z-index:2;
@@ -261,7 +254,12 @@ const formattedDate = certificate
   .btn--text{ background:none; color:var(--ink-900); text-decoration:underline; }
 
   @media (max-width: 600px) {
-    .certificate__inner{ padding:40px 22px 6px; }
+    /* A landscape A4 ratio is too cramped on a phone-width screen — let the
+       card grow to fit its content naturally instead, same as any other
+       responsive card; the fixed ratio is mainly for desktop viewing and
+       matching the shape of the downloaded PDF. */
+    .certificate{ aspect-ratio:auto; }
+    .certificate__inner{ padding:36px 22px; }
     .certificate__footer{ flex-direction:column; gap:4px; text-align:center; padding:10px 22px; }
     .certificate__signatures{ gap:32px; }
   }

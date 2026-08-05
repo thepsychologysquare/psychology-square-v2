@@ -48,6 +48,7 @@ const GOLD_SOFT: [number, number, number] = [227, 200, 120];
 const SAGE: [number, number, number] = [124, 152, 133];
 const INK: [number, number, number] = [19, 26, 34];
 const INK_LIGHT: [number, number, number] = [75, 87, 96];
+const NAVY_TEXT: [number, number, number] = [28, 49, 76]; // --navy-700: readable brand color for small text on light paper
 const PAPER: [number, number, number] = [248, 249, 246];
 const LINE: [number, number, number] = [214, 209, 197];
 
@@ -76,24 +77,19 @@ function fitSingleLine(
 }
 
 /** Draws the small two-square brand mark (echoes the site header's logomark)
- * centered on (cx, cy) at the given overall size. `lineWidth` defaults to
- * scaling with size (right for the small corner/header marks); pass an
- * explicit thin value for the big background watermark so its stroke stays
- * hairline-thin even at a huge size — otherwise a size-scaled stroke at low
- * opacity still reads as a solid, oddly-placed box rather than a faint mark. */
-function drawMark(doc: PdfLike, cx: number, cy: number, size: number, opacity = 1, lineWidth?: number) {
+ * centered on (cx, cy) at the given overall size. Deliberately no opacity/
+ * GState here — that jsPDF API did not behave consistently in production
+ * (rendered fully opaque instead of faint), which is what caused the
+ * previous giant, badly-offset rectangles. Corner marks are small enough
+ * that full-opacity strokes still read as a subtle accent. */
+function drawMark(doc: PdfLike, cx: number, cy: number, size: number) {
   const sq = size * 0.72;
-  const gState = opacity < 1 ? new doc.GState({ opacity }) : null;
-  if (gState) doc.setGState(gState);
-
   doc.setDrawColor(...GOLD);
-  doc.setLineWidth(lineWidth ?? Math.max(0.8, size * 0.045));
+  doc.setLineWidth(Math.max(0.8, size * 0.045));
   doc.rect(cx - sq * 0.62, cy - sq * 0.62, sq, sq);
 
   doc.setDrawColor(...SAGE);
   doc.rect(cx - sq * 0.12, cy - sq * 0.12, sq, sq);
-
-  if (gState) doc.setGState(new doc.GState({ opacity: 1 }));
 }
 
 export function drawCertificate(doc: PdfLike, args: CertificatePdfArgs): void {
@@ -104,13 +100,6 @@ export function drawCertificate(doc: PdfLike, args: CertificatePdfArgs): void {
   // ---- Paper + frame ----------------------------------------------------
   doc.setFillColor(...PAPER);
   doc.rect(0, 0, pageWidth, pageHeight, 'F');
-
-  // Faint oversized watermark of the brand mark, centered — the "not quite
-  // so bare" touch the design asked for, without becoming a cliché seal.
-  // Deliberately hairline-thin and very low opacity, and large enough to
-  // bleed past the frame: a thick stroke or a size that lands neatly inside
-  // the text block reads as a stray box, not a watermark.
-  drawMark(doc, centerX, pageHeight / 2 + 4, pageHeight * 1.05, 0.035, 2.2);
 
   const outerInset = 24;
   doc.setDrawColor(...GOLD);
@@ -130,13 +119,16 @@ export function drawCertificate(doc: PdfLike, args: CertificatePdfArgs): void {
     [pageWidth - cornerInset, cornerInset],
     [cornerInset, pageHeight - cornerInset],
     [pageWidth - cornerInset, pageHeight - cornerInset],
-  ].forEach(([x, y]) => drawMark(doc, x, y, cornerSize, 0.55));
+  ].forEach(([x, y]) => drawMark(doc, x, y, cornerSize));
 
   // ---- Fixed top block: logomark, eyebrow, title, rule ------------------
   const logoY = 54;
   drawMark(doc, centerX, logoY, 20);
 
-  doc.setTextColor(...GOLD);
+  // Brand name in a dark, readable navy rather than gold — gold-on-cream
+  // reads fine as a thin border/rule but fails as small text (this brand's
+  // gold is designed for use on the dark navy header, not on light paper).
+  doc.setTextColor(...NAVY_TEXT);
   doc.setFont('courier', 'bold');
   doc.setFontSize(12.5);
   doc.text('T H E   P S Y C H O L O G Y   S Q U A R E', centerX, logoY + 30, { align: 'center' });
@@ -268,7 +260,7 @@ export function drawCertificate(doc: PdfLike, args: CertificatePdfArgs): void {
 
     doc.setFont('courier', 'normal');
     doc.setFontSize(7.5);
-    doc.setTextColor(...GOLD);
+    doc.setTextColor(...NAVY_TEXT);
     doc.text(role.toUpperCase(), colX, sigRoleY, { align: 'center' });
   };
 
