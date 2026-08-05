@@ -8,13 +8,11 @@
 //
 // FONTS: jsPDF's built-in fonts are Helvetica/Times/Courier only — nothing
 // like the site's Fraunces (serif display) or Inter (sans body). We embed
-// the real IBM Plex Mono files below, so every monospace element (eyebrow,
-// date, footer, signature roles) is the exact same typeface as the website.
-// Fraunces and Inter are NOT embedded: their actual font files (the specific
-// weights/italics this design needs) aren't available to generate this PDF
-// with — 'times' and 'helvetica' stand in for them as the closest built-in
-// shapes. See the note where FONT_SERIF/FONT_SANS are defined below for
-// exactly what's needed to close that gap for real.
+// the real font files for all three families used on the certificate below
+// (Fraunces SemiBold/SemiBoldItalic, Inter Regular/Bold, IBM Plex Mono
+// Regular/Bold), so every element — heading, name, body copy, signature
+// names, eyebrow, date, footer — is the exact same typeface as the website,
+// not a built-in stand-in.
 //
 // LAYOUT: everything is either (a) pinned at a fixed distance from an edge
 // of the page (the logo/header at the top; the certificate ID/verification
@@ -34,6 +32,10 @@ import {
   SIGNATURE_SEHAR,
   FONT_MONO_REGULAR_BASE64,
   FONT_MONO_BOLD_BASE64,
+  FONT_SERIF_BOLD_BASE64,
+  FONT_SERIF_BOLDITALIC_BASE64,
+  FONT_SANS_REGULAR_BASE64,
+  FONT_SANS_BOLD_BASE64,
 } from './certificateAssets';
 
 export interface CertificatePdfArgs {
@@ -60,12 +62,11 @@ const NAVY_TEXT: [number, number, number] = [28, 49, 76]; // --navy-700: readabl
 const PAPER: [number, number, number] = [248, 249, 246];
 const LINE: [number, number, number] = [214, 209, 197];
 
-// Real embedded font (exact match to the site's --font-mono).
+// Real embedded fonts — exact matches to the site's --font-mono,
+// --font-display, and --font-body, respectively.
 const MONO = 'IBMPlexMono';
-// Closest jsPDF built-ins standing in for the site's Fraunces/Inter, until
-// those exact font files are embedded too (see file header).
-const FONT_SERIF = 'times';
-const FONT_SANS = 'helvetica';
+const FONT_SERIF = 'Fraunces';
+const FONT_SANS = 'Inter';
 
 /** Any jsPDF instance — kept loose so this compiles against the same
  * `jspdf` package whether it's imported server-side or client-side. */
@@ -80,6 +81,19 @@ function ensureFontsRegistered(doc: PdfLike) {
   doc.addFont('IBMPlexMono-Regular.ttf', MONO, 'normal');
   doc.addFileToVFS('IBMPlexMono-Bold.ttf', FONT_MONO_BOLD_BASE64);
   doc.addFont('IBMPlexMono-Bold.ttf', MONO, 'bold');
+
+  // Fraunces is only ever drawn at weight 600 (site's h1-h3/heading weight)
+  // in 'bold' and 'bolditalic' styles — no 'normal' style is used below.
+  doc.addFileToVFS('Fraunces-SemiBold.ttf', FONT_SERIF_BOLD_BASE64);
+  doc.addFont('Fraunces-SemiBold.ttf', FONT_SERIF, 'bold');
+  doc.addFileToVFS('Fraunces-SemiBoldItalic.ttf', FONT_SERIF_BOLDITALIC_BASE64);
+  doc.addFont('Fraunces-SemiBoldItalic.ttf', FONT_SERIF, 'bolditalic');
+
+  doc.addFileToVFS('Inter-Regular.ttf', FONT_SANS_REGULAR_BASE64);
+  doc.addFont('Inter-Regular.ttf', FONT_SANS, 'normal');
+  doc.addFileToVFS('Inter-Bold.ttf', FONT_SANS_BOLD_BASE64);
+  doc.addFont('Inter-Bold.ttf', FONT_SANS, 'bold');
+
   fontsRegistered = true;
 }
 
@@ -281,12 +295,12 @@ export function drawCertificate(doc: PdfLike, args: CertificatePdfArgs): void {
     doc.line(colX - 62, sigLineYFinal, colX + 62, sigLineYFinal);
 
     doc.setFont(FONT_SANS, 'bold');
-    doc.setFontSize(12.5);
+    doc.setFontSize(14);
     doc.setTextColor(...INK);
     doc.text(personName, colX, sigNameYFinal, { align: 'center' });
 
     doc.setFont(MONO, 'bold');
-    doc.setFontSize(9);
+    doc.setFontSize(10);
     doc.setTextColor(...NAVY_TEXT);
     doc.text(role.toUpperCase(), colX, sigRoleYFinal, { align: 'center' });
   };
@@ -296,8 +310,8 @@ export function drawCertificate(doc: PdfLike, args: CertificatePdfArgs): void {
 
   // ---- Very bottom: certificate ID + verification link ------------------
   // Deliberately tiny and tight to the edge — informational, not decorative.
-  doc.setFont(MONO, 'normal');
-  doc.setFontSize(8);
+  doc.setFont(MONO, 'bold');
+  doc.setFontSize(9);
   doc.setTextColor(...INK_LIGHT);
   doc.text(`Certificate ID: ${args.certId}`, centerX, footerIdY, { align: 'center' });
   doc.text(`thepsychologysquare.com/certificates/${args.certId}`, centerX, footerLinkY, { align: 'center' });
