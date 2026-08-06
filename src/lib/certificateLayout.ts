@@ -318,8 +318,8 @@ export function drawCertificate(doc: PdfLike, args: CertificatePdfArgs): void {
 
   // ---- Very bottom: certificate ID + verification link ------------------
   // Positioned on the same line (left-aligned and right-aligned), inset cleanly from the inner border.
-  const footerMarginLeft = innerInset + 12;
-  const footerMarginRight = pageWidth - innerInset - 12;
+  const footerMarginLeft = innerInset + 18;
+  const footerMarginRight = pageWidth - innerInset - 18;
 
   doc.setFont(MONO, 'bold');
   doc.setFontSize(8);
