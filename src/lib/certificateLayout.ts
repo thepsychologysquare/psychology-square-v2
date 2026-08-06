@@ -149,9 +149,6 @@ export function drawCertificate(doc: PdfLike, args: CertificatePdfArgs): void {
   const logoY = 54;
   drawMark(doc, centerX, logoY, 20);
 
-  // Brand name in a dark, readable navy rather than gold — gold-on-cream
-  // reads fine as a thin border/rule but fails as small text (this brand's
-  // gold is designed for use on the dark navy header, not on light paper).
   doc.setTextColor(...NAVY_TEXT);
   doc.setFont(MONO, 'bold');
   doc.setFontSize(12.5);
@@ -169,13 +166,6 @@ export function drawCertificate(doc: PdfLike, args: CertificatePdfArgs): void {
   const topBlockBottom = logoY + 78;
 
   // ---- Fixed bottom block: signatures + footer ---------------------------
-  // Both the footer AND the signature row are pinned to fixed positions —
-  // always, regardless of how much name/course-title content there is.
-  // They must never move. The name/course/date block above them is the
-  // ONLY part of the layout that adapts: if it's too tall to fit in the
-  // fixed gap between the header and the signature row, it shrinks (both
-  // font sizes, together) until it fits — it never pushes the signatures
-  // down or off the page.
   const footerY = pageHeight - innerInset - 8;
   const sigRoleY = footerY - 24;
   const sigNameY = sigRoleY - 15;
@@ -184,15 +174,6 @@ export function drawCertificate(doc: PdfLike, args: CertificatePdfArgs): void {
   const sigBottomGap = 5;
   const sigImgBottomY = sigLineY - sigBottomGap;
 
-  // ---- Name / course title: fixed-size by default (matches the CSS
-  // clamp() max for a normal desktop viewport) and wraps to however many
-  // lines it needs, exactly like the browser — the HTML does not shrink
-  // text just because it's long, clamp() only depends on viewport width.
-  // The one thing the HTML page doesn't have to worry about that this PDF
-  // does: a truly fixed-height page. So as a last resort — ONLY when the
-  // wrapped block would run into the (fixed, non-negotiable) signature
-  // row above — both sizes shrink together, in lockstep, until the whole
-  // block fits in the space actually available.
   const maxTextWidth = pageWidth * 0.88;
   const contentTop = topBlockBottom + 26;
   const minGapAboveSignatures = 20;
@@ -211,7 +192,8 @@ export function drawCertificate(doc: PdfLike, args: CertificatePdfArgs): void {
   const minCourseSize = 9;
 
   function measure(nameSize: number, courseSize: number) {
-    doc.setFont(FONT_SERIF, 'bolditalic');
+    // 1. Changed from 'bolditalic' to 'bold' here
+    doc.setFont(FONT_SERIF, 'bold');
     doc.setFontSize(nameSize);
     const nameLines: string[] = doc.splitTextToSize(args.name, maxTextWidth);
     doc.setFont(FONT_SERIF, 'bold');
@@ -229,9 +211,7 @@ export function drawCertificate(doc: PdfLike, args: CertificatePdfArgs): void {
   let nameSize = baseNameSize;
   let courseSize = baseCourseSize;
   let { nameLines, courseLines, blockHeight } = measure(nameSize, courseSize);
-  // Shrink both sizes together (same ratio each step) so the name and
-  // course title always stay proportional to one another, same as they
-  // are at full size — only the overall scale changes.
+
   while (blockHeight > availableContentHeight && nameSize > minNameSize && courseSize > minCourseSize) {
     nameSize -= 0.5;
     courseSize -= 0.4;
@@ -240,8 +220,6 @@ export function drawCertificate(doc: PdfLike, args: CertificatePdfArgs): void {
   const nameLineH = nameSize * 1.2;
   const courseLineH = courseSize * 1.22;
 
-  // cursorY always tracks the top of the NEXT element; each block below
-  // advances it by that element's own height plus the gap that follows.
   let cursorY = contentTop;
 
   doc.setFont(FONT_SANS, 'normal');
@@ -250,7 +228,8 @@ export function drawCertificate(doc: PdfLike, args: CertificatePdfArgs): void {
   doc.text(label1, centerX, cursorY + label1H * 0.75, { align: 'center' });
   cursorY += label1H + gapSmall;
 
-  doc.setFont(FONT_SERIF, 'bolditalic');
+  // 2. Changed from 'bolditalic' to 'bold' here
+  doc.setFont(FONT_SERIF, 'bold');
   doc.setFontSize(nameSize);
   doc.setTextColor(...INK);
   for (const line of nameLines) {
@@ -280,7 +259,6 @@ export function drawCertificate(doc: PdfLike, args: CertificatePdfArgs): void {
   doc.text(`Issued ${args.date}`, centerX, cursorY + dateH * 0.72, { align: 'center' });
 
   // ---- Signatures ---------------------------------------------------------
-  // Fixed position — see note above. Does not depend on cursorY at all.
   const drawSignature = (
     colX: number,
     sig: { dataUri: string; width: number; height: number },
@@ -317,7 +295,6 @@ export function drawCertificate(doc: PdfLike, args: CertificatePdfArgs): void {
   drawSignature(centerX + 118, SIGNATURE_SEHAR, 'Sehar Waheed', 'Co-CEO');
 
   // ---- Very bottom: certificate ID + verification link ------------------
-  // Positioned on the same line (left-aligned and right-aligned), inset cleanly from the inner border.
   const footerMarginLeft = innerInset + 35;
   const footerMarginRight = pageWidth - innerInset - 35;
 
