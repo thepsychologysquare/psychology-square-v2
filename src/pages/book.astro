@@ -102,8 +102,12 @@ import Layout from '../layouts/Layout.astro';
               <input type="text" id="client_name" name="client_name" required autocomplete="name" />
             </div>
             <div class="field">
-              <label for="contact">Email or phone</label>
-              <input type="text" id="contact" name="contact" required placeholder="you@email.com or 03XX-XXXXXXX" />
+              <label for="email">Email</label>
+              <input type="email" id="email" name="email" required autocomplete="email" placeholder="you@email.com" />
+            </div>
+            <div class="field">
+              <label for="phone">Phone</label>
+              <input type="tel" id="phone" name="phone" required autocomplete="tel" placeholder="03XX-XXXXXXX" />
             </div>
           </div>
           <div class="field">
@@ -179,7 +183,8 @@ import Layout from '../layouts/Layout.astro';
   .form-step{ font-family:var(--font-mono); font-size:12px; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-600); }
 
   .field{ display:flex; flex-direction:column; gap:6px; }
-  .field-grid{ display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
+  .field-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:16px; }
+  @media (max-width:700px){ .field-grid{ grid-template-columns:1fr 1fr; } }
   @media (max-width:520px){ .field-grid{ grid-template-columns:1fr; } }
 
   label{ font-size:14px; font-weight:500; color:var(--ink-900); }

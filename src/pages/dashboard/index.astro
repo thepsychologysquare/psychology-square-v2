@@ -71,7 +71,8 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
                 <th class="col-check"><input type="checkbox" id="selectAll" /></th>
                 <th data-sort="id">Reference</th>
                 <th data-sort="client_name">Client</th>
-                <th data-sort="contact">Contact</th>
+                <th data-sort="email">Email</th>
+                <th data-sort="phone">Phone</th>
                 <th data-sort="service">Service</th>
                 <th data-sort="clinician">Clinician</th>
                 <th data-sort="amount_pkr">Amount</th>
@@ -1144,7 +1145,7 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
 
   function matchesSearch(b, term) {
     if (!term) return true;
-    const hay = `${b.client_name} ${b.contact} ${b.id}`.toLowerCase();
+    const hay = `${b.client_name} ${b.email} ${b.phone} ${b.id}`.toLowerCase();
     return hay.includes(term.toLowerCase());
   }
   function matchesDateRange(b) {
@@ -1184,7 +1185,8 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
         <td><input type="checkbox" class="row-check" data-id="${b.id}" ${selected.has(b.id) ? 'checked' : ''} /></td>
         <td class="cell-ref">${b.id}</td>
         <td>${escapeHtml(b.client_name)}${b.notes ? ` <span class="cell-notes-flag" title="${escapeHtml(b.notes)}">📝</span>` : ''}</td>
-        <td>${escapeHtml(b.contact)}</td>
+        <td>${escapeHtml(b.email)}</td>
+        <td>${escapeHtml(b.phone)}</td>
         <td>${b.service === 'individual' ? 'Individual' : 'Couples'}</td>
         <td>${clinicianName(b.clinician)}</td>
         <td>PKR ${b.amount_pkr.toLocaleString('en-US')}</td>
@@ -1364,8 +1366,8 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
   pageNext.addEventListener('click', () => { page++; render(); });
 
   exportBtn.addEventListener('click', () => {
-    const cols = ['id', 'created_at', 'client_name', 'contact', 'service', 'clinician', 'preferred_time', 'amount_pkr', 'payment_method', 'status', 'notes'];
-    const header = ['Reference', 'Submitted', 'Name', 'Contact', 'Service', 'Clinician', 'Time', 'Amount (PKR)', 'Payment Method', 'Status', 'Notes'];
+    const cols = ['id', 'created_at', 'client_name', 'email', 'phone', 'service', 'clinician', 'preferred_time', 'amount_pkr', 'payment_method', 'status', 'notes'];
+    const header = ['Reference', 'Submitted', 'Name', 'Email', 'Phone', 'Service', 'Clinician', 'Time', 'Amount (PKR)', 'Payment Method', 'Status', 'Notes'];
     const rows = filteredSorted().map((b) => cols.map((c) => {
       const v = String(b[c] ?? '').replace(/"/g, '""');
       return `"${v}"`;

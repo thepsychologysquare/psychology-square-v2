@@ -10,10 +10,10 @@ export const GET: APIRoute = async ({ request }) => {
   if (!session) return new Response(JSON.stringify({ error: 'Not signed in.' }), { status: 401 });
 
   const query = session.role === 'admin'
-    ? `SELECT id, created_at, client_name, contact, service, clinician, preferred_time,
+    ? `SELECT id, created_at, client_name, email, phone, service, clinician, preferred_time,
               notes, amount_pkr, payment_method, screenshot_type, status, mode
        FROM bookings ORDER BY created_at DESC LIMIT 500`
-    : `SELECT id, created_at, client_name, contact, service, clinician, preferred_time,
+    : `SELECT id, created_at, client_name, email, phone, service, clinician, preferred_time,
               notes, amount_pkr, payment_method, screenshot_type, status, mode
        FROM bookings WHERE clinician = ? ORDER BY created_at DESC LIMIT 500`;
 
@@ -44,12 +44,12 @@ export const PATCH: APIRoute = async ({ request }) => {
   // Clinicians may only touch their own bookings; admin may touch any.
   // RETURNING gives us the updated row back in the same query, so we know
   // exactly who to email without a second round trip.
-  const returning = `RETURNING id, client_name, contact, service, clinician, preferred_time, mode, status`;
+  const returning = `RETURNING id, client_name, email, phone, service, clinician, preferred_time, mode, status`;
   const updated = session.role === 'admin'
     ? await env.DB.prepare(`UPDATE bookings SET status = ? WHERE id = ? ${returning}`)
-        .bind(status, id).first<{ id: string; client_name: string; contact: string; service: string; clinician: string; preferred_time: string; mode: string; status: string }>()
+        .bind(status, id).first<{ id: string; client_name: string; email: string; phone: string; service: string; clinician: string; preferred_time: string; mode: string; status: string }>()
     : await env.DB.prepare(`UPDATE bookings SET status = ? WHERE id = ? AND clinician = ? ${returning}`)
-        .bind(status, id, session.role).first<{ id: string; client_name: string; contact: string; service: string; clinician: string; preferred_time: string; mode: string; status: string }>();
+        .bind(status, id, session.role).first<{ id: string; client_name: string; email: string; phone: string; service: string; clinician: string; preferred_time: string; mode: string; status: string }>();
 
   if (!updated) {
     return new Response(JSON.stringify({ error: 'Not found.' }), { status: 404 });
@@ -59,7 +59,7 @@ export const PATCH: APIRoute = async ({ request }) => {
   // update itself, which has already been saved.
   if (status === 'confirmed' || status === 'declined') {
     await sendBookingStatusEmail(env, {
-      toContact: updated.contact,
+      toEmail: updated.email,
       toName: updated.client_name,
       status,
       service: updated.service,

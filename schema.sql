@@ -5,7 +5,8 @@ CREATE TABLE IF NOT EXISTS bookings (
   id TEXT PRIMARY KEY,               -- short reference code shown to the client, e.g. TPS-4F9A2
   created_at TEXT NOT NULL,          -- ISO timestamp
   client_name TEXT NOT NULL,
-  contact TEXT NOT NULL,             -- email or phone, whichever they gave
+  email TEXT NOT NULL,               -- client's email address
+  phone TEXT NOT NULL,               -- client's phone number
   service TEXT NOT NULL,             -- 'individual' | 'couples'
   clinician TEXT NOT NULL,           -- 'sohail' | 'sehar' | 'no-preference'
   preferred_time TEXT NOT NULL,      -- free-text slot the client typed/picked

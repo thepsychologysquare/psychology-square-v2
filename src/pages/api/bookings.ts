@@ -10,6 +10,8 @@ const MODES = new Set(['online', 'in_person']);
 const MAX_SCREENSHOT_BYTES = 5 * 1024 * 1024; // 5MB — typical screenshots are well under 1-2MB; this leaves comfortable headroom for high-DPI screens without allowing arbitrary large uploads
 const RATE_LIMIT_WINDOW_MINUTES = 10;
 const RATE_LIMIT_MAX_SUBMISSIONS = 4;
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PHONE_RE = /^[0-9+()\-\s]{7,20}$/;
 
 function jsonError(message: string, status: number) {
   return new Response(JSON.stringify({ error: message }), {
@@ -48,7 +50,8 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   const clientName = String(formData.get('client_name') || '').trim();
-  const contact = String(formData.get('contact') || '').trim();
+  const email = String(formData.get('email') || '').trim();
+  const phone = String(formData.get('phone') || '').trim();
   const service = String(formData.get('service') || '');
   const mode = String(formData.get('mode') || 'online');
   const notes = String(formData.get('notes') || '').trim();
@@ -57,7 +60,8 @@ export const POST: APIRoute = async ({ request }) => {
   const screenshot = formData.get('screenshot');
 
   if (!clientName || clientName.length > 200) return jsonError('Please enter your name.', 400);
-  if (!contact || contact.length > 200) return jsonError('Please enter an email or phone number.', 400);
+  if (!email || email.length > 200 || !EMAIL_RE.test(email)) return jsonError('Please enter a valid email address.', 400);
+  if (!phone || phone.length > 40 || !PHONE_RE.test(phone)) return jsonError('Please enter a valid phone number.', 400);
   if (!(service in SERVICES)) return jsonError('Please choose a valid service.', 400);
   if (!MODES.has(mode)) return jsonError('Please choose a valid session format.', 400);
   if (notes.length > 1000) return jsonError('Notes are too long.', 400);
@@ -102,14 +106,15 @@ export const POST: APIRoute = async ({ request }) => {
   try {
     await env.DB.prepare(
       `INSERT INTO bookings
-        (id, created_at, client_name, contact, service, clinician, preferred_time, notes,
+        (id, created_at, client_name, email, phone, service, clinician, preferred_time, notes,
          amount_pkr, payment_method, screenshot_key, screenshot_type, status, submitter_ip, slot_id, mode)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?)`
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?)`
     ).bind(
       reference,
       new Date().toISOString(),
       clientName,
-      contact,
+      email,
+      phone,
       service,
       slot!.clinician,
       `${slot!.date} ${slot!.time}`,
@@ -133,7 +138,8 @@ export const POST: APIRoute = async ({ request }) => {
   await sendNewBookingAdminEmail(env, {
     reference,
     clientName,
-    contact,
+    email,
+    phone,
     service,
     mode,
     clinician: slot!.clinician,
@@ -144,7 +150,7 @@ export const POST: APIRoute = async ({ request }) => {
   }).catch(() => {});
   
   await sendBookingReceivedClientEmail(env, {
-  toContact: contact,
+  toEmail: email,
   toName: clientName,
   reference,
 }).catch(() => {});

@@ -134,17 +134,17 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export async function sendBookingStatusEmail(
   env: { RESEND_API_KEY?: string; EMAIL_FROM?: string },
   args: {
-    toContact: string; toName: string; status: 'confirmed' | 'declined';
+    toEmail: string; toName: string; status: 'confirmed' | 'declined';
     service: string; clinician: string; mode: string; preferredTime: string; reference: string;
   }
 ): Promise<{ ok: boolean; error?: string }> {
   if (!env.RESEND_API_KEY || !env.EMAIL_FROM) {
     return { ok: false, error: 'Email is not configured yet (missing RESEND_API_KEY or EMAIL_FROM).' };
   }
-  // Bookings can be reached by phone as well as email — only attempt to
-  // email when the contact on file actually looks like an email address.
-  if (!EMAIL_RE.test(args.toContact)) {
-    return { ok: false, error: 'Contact on file is not an email address.' };
+  // The booking form collects email as its own mandatory field, but this is
+  // kept as a defensive check in case of malformed/legacy data.
+  if (!EMAIL_RE.test(args.toEmail)) {
+    return { ok: false, error: 'Contact on file is not a valid email address.' };
   }
 
   const clinicianName = CLINICIAN_NAMES[args.clinician] || args.clinician;
@@ -166,7 +166,7 @@ export async function sendBookingStatusEmail(
   return sendEmail({
     apiKey: env.RESEND_API_KEY,
     from: env.EMAIL_FROM,
-    to: args.toContact,
+    to: args.toEmail,
     subject: isConfirmed ? 'Your session is confirmed — The Psychology Square' : 'About your booking — The Psychology Square',
     html,
   });
@@ -177,7 +177,8 @@ export async function sendNewBookingAdminEmail(
   args: {
     reference: string;
     clientName: string;
-    contact: string;
+    email: string;
+    phone: string;
     service: string;
     mode: string;
     clinician: string;
@@ -198,7 +199,9 @@ export async function sendNewBookingAdminEmail(
     <p style="font-size:14px;line-height:1.5;">A new session booking has been submitted and requires review:</p>
     <ul style="font-size:14px;line-height:1.6;padding-left:20px;">
       <li><strong>Reference:</strong> ${escapeHtml(args.reference)}</li>
-      <li><strong>Client:</strong> ${escapeHtml(args.clientName)} (${escapeHtml(args.contact)})</li>
+      <li><strong>Client:</strong> ${escapeHtml(args.clientName)}</li>
+      <li><strong>Email:</strong> ${escapeHtml(args.email)}</li>
+      <li><strong>Phone:</strong> ${escapeHtml(args.phone)}</li>
       <li><strong>Service:</strong> ${escapeHtml(args.service)} (${escapeHtml(args.mode)})</li>
       <li><strong>Clinician:</strong> ${escapeHtml(args.clinician)}</li>
       <li><strong>Time:</strong> ${escapeHtml(args.preferredTime)}</li>
@@ -307,14 +310,14 @@ export async function sendCourseEnrollmentStatusEmail(
 
 export async function sendBookingReceivedClientEmail(
   env: { RESEND_API_KEY?: string; EMAIL_FROM?: string },
-  args: { toContact: string; toName: string; reference: string }
+  args: { toEmail: string; toName: string; reference: string }
 ): Promise<{ ok: boolean; error?: string }> {
   if (!env.RESEND_API_KEY || !env.EMAIL_FROM) {
     return { ok: false, error: 'Email is not configured yet.' };
   }
 
-  if (!EMAIL_RE.test(args.toContact)) {
-    return { ok: false, error: 'Contact on file is not an email address.' };
+  if (!EMAIL_RE.test(args.toEmail)) {
+    return { ok: false, error: 'Contact on file is not a valid email address.' };
   }
 
   const html = emailShell(`
@@ -330,7 +333,7 @@ export async function sendBookingReceivedClientEmail(
   return sendEmail({
     apiKey: env.RESEND_API_KEY,
     from: env.EMAIL_FROM,
-    to: args.toContact,
+    to: args.toEmail,
     subject: `Booking Request Received (${args.reference}) — The Psychology Square`,
     html,
   });
