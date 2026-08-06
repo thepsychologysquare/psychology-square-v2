@@ -190,10 +190,22 @@ import Layout from '../layouts/Layout.astro';
   label{ font-size:14px; font-weight:500; color:var(--ink-900); }
   .optional{ font-weight:400; color:var(--ink-600); }
 
-  input[type="text"], input[type="file"], select, textarea{
-    font-family:var(--font-body); font-size:15px; padding:12px 14px;
-    border:1px solid var(--line); border-radius:2px; background:var(--paper-0); color:var(--ink-900);
-  }
+input[type="text"], 
+input[type="email"], 
+input[type="tel"], 
+input[type="file"], 
+select, 
+textarea {
+  font-family: var(--font-body); 
+  font-size: 16px; /* Prevents mobile browser auto-zoom */
+  padding: 12px 14px;
+  border: 1px solid var(--line); 
+  border-radius: 2px; 
+  background: var(--paper-0); 
+  color: var(--ink-900);
+  width: 100%; /* Ensures consistent full width inside grid cells */
+  box-sizing: border-box;
+}
   input:focus-visible, select:focus-visible, textarea:focus-visible{ outline:2px solid var(--gold-500); outline-offset:1px; }
   textarea{ resize:vertical; font-family:var(--font-body); }
   .field-hint{ font-size:13px; color:var(--ink-600); }
