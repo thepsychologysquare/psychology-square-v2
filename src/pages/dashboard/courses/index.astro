@@ -97,4 +97,12 @@ if (env?.DB) {
   .badge--draft { background: rgba(199,164,74,0.16); color: #8a6d1f; }
   .badge--published { background: rgba(124,152,133,0.18); color: #3d5b46; }
   .badge--paid { background: rgba(28,49,76,0.08); color: var(--navy-700); }
+
+  @media (max-width: 640px) {
+    .studio-list-header__row { align-items: stretch; }
+    .studio-list-header__row .btn { width: 100%; justify-content: center; }
+    .course-list__link { flex-direction: column; align-items: flex-start; gap: 10px; padding: 16px 18px; }
+    .course-list__desc { white-space: normal; max-width: 100%; }
+    .course-list__meta { flex-direction: row; gap: 12px; text-align: left; }
+  }
 </style>

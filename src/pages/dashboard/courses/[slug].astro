@@ -86,6 +86,17 @@ const outline = env?.DB ? await getCourseOutline(env.DB, slug!) : [];
   }
   .studio-canvas { flex: 1; min-width: 0; padding: 28px 40px; }
 
+  @media (max-width: 860px) {
+    .studio-header__row { padding: 0 16px; }
+    .studio-workspace { flex-direction: column; min-height: 0; }
+    .studio-tree {
+      width: 100%; max-width: 100%; min-width: 0;
+      height: auto; max-height: 40vh; position: static;
+      border-right: none; border-bottom: 1px solid var(--line);
+    }
+    .studio-canvas { padding: 20px 16px 64px; }
+  }
+
   .tree-item {
     display: flex; align-items: center; gap: 8px; width: 100%; text-align: left;
     background: none; border: none; padding: 10px 12px; border-radius: 8px; font: inherit; font-size: 14px; font-weight: 600;
@@ -723,6 +734,11 @@ const outline = env?.DB ? await getCourseOutline(env.DB, slug!) : [];
     .canvas-card { padding: 20px; border-radius: 10px; }
     .field-row { flex-direction: column; }
     .field-row .field { min-width: 0; }
+    .canvas-head h2 { font-size: 20px; }
+    .lesson-body { min-height: 260px; }
+    .lesson-type-tabs { width: 100%; }
+    .type-tab { flex: 1; padding: 8px 10px; }
+    .quiz-question { padding: 14px 16px; }
   }
 
   .toggle { display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 600; }

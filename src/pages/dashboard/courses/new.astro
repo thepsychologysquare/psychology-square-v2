@@ -132,6 +132,13 @@ if (!session) return Astro.redirect('/dashboard/login');
   .btn--primary:disabled { opacity: 0.6; cursor: wait; }
   .btn--ghost { background: transparent; color: var(--ink-600); border: 1px solid var(--line); }
   .btn--ghost:hover { border-color: var(--navy-950); color: var(--navy-950); }
+
+  @media (max-width: 640px) {
+    .new-main { padding: 16px 0 64px; }
+    .new-form { padding: 18px; border-radius: 10px; gap: 16px; }
+    .form-actions { flex-direction: column-reverse; }
+    .form-actions .btn { width: 100%; justify-content: center; }
+  }
 </style>
 
 <script>
