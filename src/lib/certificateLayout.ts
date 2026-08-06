@@ -98,7 +98,7 @@ export function drawCertificate(doc: PdfLike, args: CertificatePdfArgs): void {
     [pageWidth - cornerInset, pageHeight - cornerInset],
   ].forEach(([x, y]) => drawMark(doc, x, y, cornerSize));
 
-  // ---- Fixed top block --------------------------------------------------
+  // ---- Fixed top logo header ---------------------------------------------
   const logoY = 54;
   drawMark(doc, centerX, logoY, 20);
 
@@ -107,18 +107,9 @@ export function drawCertificate(doc: PdfLike, args: CertificatePdfArgs): void {
   doc.setFontSize(12.5);
   doc.text('T H E   P S Y C H O L O G Y   S Q U A R E', centerX, logoY + 30, { align: 'center' });
 
-  doc.setTextColor(...INK);
-  doc.setFont(FONT_SERIF, 'normal');
-  doc.setFontSize(30);
-  doc.text('Certificate of Completion', centerX, logoY + 64, { align: 'center' });
+  const topBlockBottom = logoY + 40; // End of fixed header section
 
-  doc.setDrawColor(...GOLD);
-  doc.setLineWidth(1);
-  doc.line(centerX - 26, logoY + 78, centerX + 26, logoY + 78);
-
-  const topBlockBottom = logoY + 78;
-
-  // ---- Fixed bottom block: signatures + footer ---------------------------
+  // ---- Fixed bottom signatures + footer ----------------------------------
   const footerY = pageHeight - innerInset - 8;
   const sigRoleY = footerY - 24;
   const sigNameY = sigRoleY - 15;
@@ -131,9 +122,16 @@ export function drawCertificate(doc: PdfLike, args: CertificatePdfArgs): void {
   const maxTextWidth = pageWidth * 0.88;
   const label1 = 'This certifies that';
   const label2 = 'has successfully completed';
+  
+  // Heights and spacing metrics
+  const mainTitleH = 32;
+  const goldLineH = 14;
   const label1H = 15;
   const label2H = 15;
   const dateH = 15;
+  
+  const gapTitleToLine = 12;
+  const gapLineToLabel = 18;
   const gapSmall = 6;
   const gapMed = 9;
 
@@ -142,7 +140,7 @@ export function drawCertificate(doc: PdfLike, args: CertificatePdfArgs): void {
   const minNameSize = 11;
   const minCourseSize = 9;
 
-  // Total height available strictly between the header gold rule and signature line
+  // Total available space between top header and signature line
   const availableZoneHeight = sigLineY - topBlockBottom;
 
   function measure(nameSize: number, courseSize: number) {
@@ -154,6 +152,8 @@ export function drawCertificate(doc: PdfLike, args: CertificatePdfArgs): void {
     const courseLines: string[] = doc.splitTextToSize(args.courseTitle, maxTextWidth);
     
     const blockHeight =
+      mainTitleH + gapTitleToLine +
+      goldLineH + gapLineToLabel +
       label1H + gapSmall +
       nameLines.length * (nameSize * 1.2) + gapMed +
       label2H + gapSmall +
@@ -167,7 +167,7 @@ export function drawCertificate(doc: PdfLike, args: CertificatePdfArgs): void {
   let courseSize = baseCourseSize;
   let { nameLines, courseLines, blockHeight } = measure(nameSize, courseSize);
 
-  // Shrink font size dynamically if content exceeds available space
+  // Auto-shrink dynamic content if running close to available boundaries
   while (blockHeight > availableZoneHeight - 20 && nameSize > minNameSize && courseSize > minCourseSize) {
     nameSize -= 0.5;
     courseSize -= 0.4;
@@ -177,16 +177,31 @@ export function drawCertificate(doc: PdfLike, args: CertificatePdfArgs): void {
   const nameLineH = nameSize * 1.2;
   const courseLineH = courseSize * 1.22;
 
-  // Vertically center the content block exactly inside the middle zone
+  // Vertically center the full combined chunk in the middle space
   let cursorY = topBlockBottom + (availableZoneHeight - blockHeight) / 2;
 
-  // ---- Render Centered Content ------------------------------------------
+  // ---- Render Full Centered Chunk ---------------------------------------
+  // 1. Certificate of Completion Title
+  doc.setTextColor(...INK);
+  doc.setFont(FONT_SERIF, 'normal');
+  doc.setFontSize(30);
+  doc.text('Certificate of Completion', centerX, cursorY + mainTitleH * 0.75, { align: 'center' });
+  cursorY += mainTitleH + gapTitleToLine;
+
+  // 2. Gold Line
+  doc.setDrawColor(...GOLD);
+  doc.setLineWidth(1);
+  doc.line(centerX - 26, cursorY, centerX + 26, cursorY);
+  cursorY += goldLineH + gapLineToLabel;
+
+  // 3. "This certifies that"
   doc.setFont(FONT_SANS, 'normal');
   doc.setFontSize(12.5);
   doc.setTextColor(...INK_LIGHT);
   doc.text(label1, centerX, cursorY + label1H * 0.75, { align: 'center' });
   cursorY += label1H + gapSmall;
 
+  // 4. Name
   doc.setFont(FONT_SERIF, 'bold');
   doc.setFontSize(nameSize);
   doc.setTextColor(...INK);
@@ -196,12 +211,14 @@ export function drawCertificate(doc: PdfLike, args: CertificatePdfArgs): void {
   }
   cursorY += gapMed;
 
+  // 5. "has successfully completed"
   doc.setFont(FONT_SANS, 'normal');
   doc.setFontSize(12.5);
   doc.setTextColor(...INK_LIGHT);
   doc.text(label2, centerX, cursorY + label2H * 0.75, { align: 'center' });
   cursorY += label2H + gapSmall;
 
+  // 6. Course Title
   doc.setFont(FONT_SERIF, 'bold');
   doc.setFontSize(courseSize);
   doc.setTextColor(...INK);
@@ -211,6 +228,7 @@ export function drawCertificate(doc: PdfLike, args: CertificatePdfArgs): void {
   }
   cursorY += gapMed;
 
+  // 7. Issued Date
   doc.setFont(MONO, 'normal');
   doc.setFontSize(11);
   doc.setTextColor(...INK_LIGHT);
