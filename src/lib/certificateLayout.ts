@@ -1,31 +1,4 @@
 // Single source of truth for the certificate PDF's visual layout.
-//
-// This used to be copy-pasted in two places (the server-side emailer and the
-// client-side "Download PDF" button), which is exactly how they'd drift out
-// of sync. Now both call drawCertificate() below — one implementation, so
-// the emailed PDF and the one a learner downloads are byte-for-byte the
-// same drawing logic, not just "similar".
-//
-// FONTS: jsPDF's built-in fonts are Helvetica/Times/Courier only — nothing
-// like the site's Fraunces (serif display) or Inter (sans body). We embed
-// the real font files for all three families used on the certificate below
-// (Fraunces SemiBold/SemiBoldItalic, Inter Regular/Bold, IBM Plex Mono
-// Regular/Bold), so every element — heading, name, body copy, signature
-// names, eyebrow, date, footer — is the exact same typeface as the website,
-// not a built-in stand-in.
-//
-// LAYOUT: everything is either (a) pinned at a fixed distance from an edge
-// of the page (the logo/header at the top; the certificate ID/verification
-// footer at the very bottom), or (b) auto-fit — name and course title are
-// measured with doc.getTextWidth() and shrunk (course title also wraps, up
-// to 2 lines) until they fit, so a long name or long title can never run
-// off the page the way it used to. The name/course block flows immediately
-// under the header, the same as the HTML page's natural top-down layout;
-// the signature row sits a fixed gap below that content, UNLESS the content
-// is long enough that this would push signatures too close to the footer,
-// in which case they clamp to a fixed position near the bottom instead —
-// so short certificates look like the compact HTML page, and pathological
-// long ones still can't overlap or overflow.
 
 import {
   SIGNATURE_SOHAIL,
@@ -42,51 +15,34 @@ import {
 export interface CertificatePdfArgs {
   name: string;
   courseTitle: string;
-  date: string; // already formatted, e.g. "August 2, 2026"
+  date: string; // e.g. "August 2, 2026"
   certId: string;
-  /**
-   * Kept for backward compatibility with callers/DB records that still pass
-   * these — the certificate no longer prints score or hours (design
-   * decision: a completion certificate, not a transcript), so both are
-   * accepted but ignored here.
-   */
   ceHours?: number;
   scorePercent?: number;
 }
 
-// Brand palette (mirrors src/styles/global.css custom properties).
+// Brand palette
 const GOLD: [number, number, number] = [199, 164, 74];
 const SAGE: [number, number, number] = [124, 152, 133];
 const INK: [number, number, number] = [19, 26, 34];
 const INK_LIGHT: [number, number, number] = [75, 87, 96];
-const NAVY_TEXT: [number, number, number] = [28, 49, 76]; // --navy-700: readable brand color for small text on light paper
+const NAVY_TEXT: [number, number, number] = [28, 49, 76];
 const PAPER: [number, number, number] = [248, 249, 246];
 const LINE: [number, number, number] = [214, 209, 197];
 
-// Real embedded fonts — exact matches to the site's --font-mono,
-// --font-display, and --font-body, respectively.
 const MONO = 'IBMPlexMono';
 const FONT_SERIF = 'Fraunces';
 const FONT_SANS = 'Inter';
 
-/** Any jsPDF instance — kept loose so this compiles against the same
- * `jspdf` package whether it's imported server-side or client-side. */
 type PdfLike = any;
 
 let fontsRegistered = false;
 function ensureFontsRegistered(doc: PdfLike) {
-  // jsPDF fonts are registered per-document, but the VFS file names are
-  // global-module-safe to add repeatedly — guard anyway to skip the (small)
-  // repeat cost within the same process.
   doc.addFileToVFS('IBMPlexMono-Regular.ttf', FONT_MONO_REGULAR_BASE64);
   doc.addFont('IBMPlexMono-Regular.ttf', MONO, 'normal');
   doc.addFileToVFS('IBMPlexMono-Bold.ttf', FONT_MONO_BOLD_BASE64);
   doc.addFont('IBMPlexMono-Bold.ttf', MONO, 'bold');
 
-  // Fraunces: 'normal' (Regular/400) is used only by the plain-<div> title
-  // ("Certificate of Completion"), which doesn't inherit the site's h1-h3
-  // font-weight:600 rule. 'bold'/'bolditalic' (SemiBold/600) are used for
-  // the name and course title, which DO set font-weight:600 explicitly.
   doc.addFileToVFS('Fraunces-Regular.ttf', FONT_SERIF_REGULAR_BASE64);
   doc.addFont('Fraunces-Regular.ttf', FONT_SERIF, 'normal');
   doc.addFileToVFS('Fraunces-SemiBold.ttf', FONT_SERIF_BOLD_BASE64);
@@ -102,8 +58,6 @@ function ensureFontsRegistered(doc: PdfLike) {
   fontsRegistered = true;
 }
 
-/** Draws the small two-square brand mark (echoes the site header's logomark)
- * centered on (cx, cy) at the given overall size. */
 function drawMark(doc: PdfLike, cx: number, cy: number, size: number) {
   const sq = size * 0.72;
   doc.setDrawColor(...GOLD);
@@ -135,7 +89,6 @@ export function drawCertificate(doc: PdfLike, args: CertificatePdfArgs): void {
   doc.setLineWidth(0.6);
   doc.rect(innerInset, innerInset, pageWidth - innerInset * 2, pageHeight - innerInset * 2);
 
-  // Small corner marks just inside the frame, echoing the logomark.
   const cornerInset = innerInset + 15;
   const cornerSize = 11;
   [
@@ -145,7 +98,7 @@ export function drawCertificate(doc: PdfLike, args: CertificatePdfArgs): void {
     [pageWidth - cornerInset, pageHeight - cornerInset],
   ].forEach(([x, y]) => drawMark(doc, x, y, cornerSize));
 
-  // ---- Fixed top block: logomark, eyebrow, title, rule ------------------
+  // ---- Fixed top block --------------------------------------------------
   const logoY = 54;
   drawMark(doc, centerX, logoY, 20);
 
@@ -174,11 +127,8 @@ export function drawCertificate(doc: PdfLike, args: CertificatePdfArgs): void {
   const sigBottomGap = 5;
   const sigImgBottomY = sigLineY - sigBottomGap;
 
+  // ---- Dynamic vertical centering calculations --------------------------
   const maxTextWidth = pageWidth * 0.88;
-  const contentTop = topBlockBottom + 26;
-  const minGapAboveSignatures = 20;
-  const availableContentHeight = (sigLineY - minGapAboveSignatures) - contentTop;
-
   const label1 = 'This certifies that';
   const label2 = 'has successfully completed';
   const label1H = 15;
@@ -186,25 +136,30 @@ export function drawCertificate(doc: PdfLike, args: CertificatePdfArgs): void {
   const dateH = 15;
   const gapSmall = 6;
   const gapMed = 9;
-  const baseNameSize = pageWidth * 0.03004; // ~25pt on A4 landscape
-  const baseCourseSize = pageWidth * 0.02361; // ~20pt on A4 landscape
+
+  const baseNameSize = pageWidth * 0.03004;
+  const baseCourseSize = pageWidth * 0.02361;
   const minNameSize = 11;
   const minCourseSize = 9;
 
+  // Total height available strictly between the header gold rule and signature line
+  const availableZoneHeight = sigLineY - topBlockBottom;
+
   function measure(nameSize: number, courseSize: number) {
-    // 1. Changed from 'bolditalic' to 'bold' here
     doc.setFont(FONT_SERIF, 'bold');
     doc.setFontSize(nameSize);
     const nameLines: string[] = doc.splitTextToSize(args.name, maxTextWidth);
     doc.setFont(FONT_SERIF, 'bold');
     doc.setFontSize(courseSize);
     const courseLines: string[] = doc.splitTextToSize(args.courseTitle, maxTextWidth);
+    
     const blockHeight =
       label1H + gapSmall +
       nameLines.length * (nameSize * 1.2) + gapMed +
       label2H + gapSmall +
       courseLines.length * (courseSize * 1.22) + gapMed +
       dateH;
+
     return { nameLines, courseLines, blockHeight };
   }
 
@@ -212,23 +167,26 @@ export function drawCertificate(doc: PdfLike, args: CertificatePdfArgs): void {
   let courseSize = baseCourseSize;
   let { nameLines, courseLines, blockHeight } = measure(nameSize, courseSize);
 
-  while (blockHeight > availableContentHeight && nameSize > minNameSize && courseSize > minCourseSize) {
+  // Shrink font size dynamically if content exceeds available space
+  while (blockHeight > availableZoneHeight - 20 && nameSize > minNameSize && courseSize > minCourseSize) {
     nameSize -= 0.5;
     courseSize -= 0.4;
     ({ nameLines, courseLines, blockHeight } = measure(nameSize, courseSize));
   }
+
   const nameLineH = nameSize * 1.2;
   const courseLineH = courseSize * 1.22;
 
-  let cursorY = contentTop;
+  // Vertically center the content block exactly inside the middle zone
+  let cursorY = topBlockBottom + (availableZoneHeight - blockHeight) / 2;
 
+  // ---- Render Centered Content ------------------------------------------
   doc.setFont(FONT_SANS, 'normal');
   doc.setFontSize(12.5);
   doc.setTextColor(...INK_LIGHT);
   doc.text(label1, centerX, cursorY + label1H * 0.75, { align: 'center' });
   cursorY += label1H + gapSmall;
 
-  // 2. Changed from 'bolditalic' to 'bold' here
   doc.setFont(FONT_SERIF, 'bold');
   doc.setFontSize(nameSize);
   doc.setTextColor(...INK);
@@ -294,7 +252,7 @@ export function drawCertificate(doc: PdfLike, args: CertificatePdfArgs): void {
   drawSignature(centerX - 118, SIGNATURE_SOHAIL, 'Muhammad Sohail', 'CEO');
   drawSignature(centerX + 118, SIGNATURE_SEHAR, 'Sehar Waheed', 'Co-CEO');
 
-  // ---- Very bottom: certificate ID + verification link ------------------
+  // ---- Footer -----------------------------------------------------------
   const footerMarginLeft = innerInset + 35;
   const footerMarginRight = pageWidth - innerInset - 35;
 
