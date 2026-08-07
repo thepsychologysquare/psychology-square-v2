@@ -1,5 +1,51 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { Image } from 'astro:assets';
+
+const topicImages = import.meta.glob<{ default: ImageMetadata }>(
+  '/src/assets/topics/*.{jpg,jpeg,png,webp}',
+  { eager: true }
+);
+function getTopicImage(slug: string) {
+  const entry = Object.entries(topicImages).find(([path]) => path.includes(`/${slug}.`));
+  return entry?.[1].default;
+}
+
+const topics = [
+  { name: 'Anxiety', slug: 'anxiety', href: '/articles/category/anxiety', bg: 'var(--sage-500)' },
+  { name: 'Depression', slug: 'depression', href: '/articles/category/depression', bg: 'var(--navy-700)' },
+  { name: 'ADHD', slug: 'adhd', href: '/articles/category/adhd', bg: 'var(--gold-500)' },
+  { name: 'Addiction & Recovery', slug: 'addiction-recovery', href: '/articles/category/addiction-recovery', bg: 'var(--navy-950)' },
+  { name: 'Trauma', slug: 'trauma', href: '/articles/category/trauma', bg: 'var(--ink-600)' },
+  { name: 'Relationships', slug: 'relationships', href: '/articles/category/relationships', bg: 'var(--gold-300)' },
+  { name: 'Stress & Burnout', slug: 'stress-burnout', href: '/articles/category/stress-burnout', bg: 'var(--navy-800)' },
+];
+
+const serviceImages = import.meta.glob<{ default: ImageMetadata }>(
+  '/src/assets/services/*.{jpg,jpeg,png,webp}',
+  { eager: true }
+);
+function getServiceImage(slug: string) {
+  const entry = Object.entries(serviceImages).find(([path]) => path.includes(`/${slug}.`));
+  return entry?.[1].default;
+}
+
+const therapyServices = [
+  {
+    name: 'Individual Therapy',
+    slug: 'individual-therapy',
+    bg: 'var(--sage-500)',
+    description: "One-to-one sessions for working through what's weighing on you — patterns, symptoms, or a season that feels heavier than it should.",
+    meta: 'PKR 5,000 / session · Online & In-Person',
+  },
+  {
+    name: 'Couples Therapy',
+    slug: 'couples-therapy',
+    bg: 'var(--navy-700)',
+    description: "Joint sessions for partners working through communication, conflict, or disconnection — with both people's experience given equal room.",
+    meta: 'PKR 7,000 / session · Online & In-Person',
+  },
+];
 
 const faqs = [
   {
@@ -32,7 +78,8 @@ const faqs = [
   },
   {
     q: 'What is your cancellation, rescheduling, and no-show policy?',
-a: 'You can reschedule a session with at least 24 hours\' prior notice, subject to available slots. No refunds will be provided for booked sessions, and cancellations remain non-refundable in all cases. Last-minute rescheduling or cancellations are not permitted, and no-shows or missed appointments forfeit the full session fee.',  },
+    a: 'You can reschedule a session with at least 24 hours\' prior notice, subject to available slots. No refunds will be provided for booked sessions, and cancellations remain non-refundable in all cases. Last-minute rescheduling or cancellations are not permitted, and no-shows or missed appointments forfeit the full session fee.',
+  },
   {
     q: 'Can I use The Psychology Square for immediate psychiatric emergencies or crisis intervention?',
     a: 'No, our platform provides scheduled outpatient therapy and is not designed for crisis management. If you are experiencing acute suicidal ideation, severe self-harm urges, or a medical emergency, please contact your local emergency response service or visit the nearest hospital emergency department immediately.',
@@ -116,40 +163,52 @@ a: 'You can reschedule a session with at least 24 hours\' prior notice, subject 
     </div>
   </section>
 
-  <section class="services" id="services">
-    <div class="wrap">
-      <p class="eyebrow eyebrow--dark">Services</p>
-      <h2 class="section-title">Two formats. One space.</h2>
-
-      <div class="service-cards">
-        <article class="service-card">
-          <div class="service-card-top">
-            <span class="service-sq" aria-hidden="true"></span>
-            <h3>Individual Therapy</h3>
+  <section class="section therapy-section" id="therapy-services">
+    <div class="wrap therapy-grid">
+      <div class="therapy-left">
+        <div class="therapy-portrait" style={!getServiceImage('therapy-hero') ? 'background:var(--navy-800);' : undefined}>
+          {getServiceImage('therapy-hero') && (
+            <Image src={getServiceImage('therapy-hero')!} alt="Therapy at The Psychology Square" width={760} format="webp" quality={65} loading="lazy" class="therapy-portrait-photo" />
+          )}
+          <span class="therapy-portrait-mark">TPS</span>
+          <div class="therapy-portrait-caption">
+            <span class="therapy-portrait-kicker">Individual &amp; Couples Therapy</span>
+            <span class="therapy-portrait-names">Sohail &amp; Sehar</span>
           </div>
-          <p>One-to-one sessions, online or in person, for working through what's weighing on you — patterns, symptoms, or simply a season that feels heavier than it should.</p>
-          <span class="price-badge">PKR 5,000 / session</span>
-        </article>
-        <article class="service-card">
-          <div class="service-card-top">
-            <span class="service-sq" aria-hidden="true"></span>
-            <h3>Couples Therapy</h3>
-          </div>
-          <p>Joint sessions, online or in person, for partners working through communication, conflict, or disconnection — with both people's experience given equal room.</p>
-          <span class="price-badge">PKR 7,000 / session</span>
-        </article>
+        </div>
+        <h2 class="therapy-title">Therapy, Held Steadily</h2>
+        <p class="therapy-sub">Join us in session, online or in person in Johar Town, Lahore, for evidence-based therapy that stays unhurried and grounded in what you're actually carrying.</p>
+        
+        <div class="therapy-action-block">
+          <a href="/book" class="btn btn--primary contact-btn">Book Now</a>
+        </div>
       </div>
 
-      <div class="issues">
-        <p class="issues-label">Commonly addressed</p>
-        <ul class="issue-tags">
-          <li>Anxiety</li>
-          <li>Depression</li>
-          <li>Addiction &amp; Recovery</li>
-          <li>Trauma &amp; Distress</li>
-          <li>Relationship Conflict</li>
-          <li>Stress &amp; Burnout</li>
-        </ul>
+      <div class="therapy-right">
+        <h3 class="therapy-list-title">Our Services</h3>
+        <div class="therapy-list">
+          {therapyServices.map((s) => {
+            const img = getServiceImage(s.slug);
+            return (
+              <div class="therapy-card">
+                <div class="therapy-card-thumb" style={img ? undefined : `background:${s.bg};`}>
+                  {img && (
+                    <Image src={img} alt={s.name} width={220} format="webp" quality={60} loading="lazy" class="therapy-card-photo" />
+                  )}
+                </div>
+                <div class="therapy-card-body">
+                  <h4>{s.name}</h4>
+                  <p>{s.description}</p>
+                  <span class="therapy-card-meta">{s.meta}</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        
+        <div class="therapy-action-block">
+          <a href="/team" class="btn btn--primary contact-btn">Meet the Team</a>
+        </div>
       </div>
     </div>
   </section>
@@ -206,38 +265,31 @@ a: 'You can reschedule a session with at least 24 hours\' prior notice, subject 
     </div>
   </section>
 
-  <section class="section" id="explore-more">
+  <section class="section topics-section" id="explore-topics">
     <div class="wrap">
-      <div class="section-head">
-        <div>
-          <p class="eyebrow" style="color: var(--sage-500); margin-bottom: 10px;">Explore More</p>
-          <h2 class="section-title">Beyond the session room.</h2>
-        </div>
+      <h2 class="section-title topics-title">Explore Topics</h2>
+      <div class="topics-scroll" id="topicsScroll">
+        {topics.map((t) => {
+          const img = getTopicImage(t.slug);
+          return (
+            <a class="topic-card topic-card-explore" href={t.href}>
+              <div class="topic-card-img" style={img ? undefined : `background:${t.bg};`}>
+                {img && (
+                  <Image src={img} alt={t.name} width={760} format="webp" quality={60} loading="lazy" class="topic-card-photo" />
+                )}
+              </div>
+              <span class="topic-card-label">{t.name}</span>
+            </a>
+          );
+        })}
       </div>
-      <div class="explore-grid">
-        <a class="featured-article-box" href="/articles/adhd-in-adults">
-          <span class="article-meta">Featured Article · ADHD</span>
-          <h3>What ADHD Actually Looks Like in Adults</h3>
-          <p>Beyond the childhood stereotype — how attention, emotion regulation, and self-image show up differently once you're grown.</p>
-          <span class="section-link">Read the article →</span>
-        </a>
-        <div class="explore-side">
-          <a class="explore-teaser" href="/services">
-            <h3>Services</h3>
-            <p>Therapy, plus research &amp; statistical analysis support for students and researchers.</p>
-            <span class="section-link">View services →</span>
-          </a>
-          <a class="explore-teaser" href="/resources">
-            <h3>Resources</h3>
-            <p>Printable worksheets to use on your own or bring to a session.</p>
-            <span class="section-link">View resources →</span>
-          </a>
-        </div>
+      <div class="topics-nav">
+        <button type="button" class="topics-arrow" data-dir="-1" aria-label="Previous topics">←</button>
+        <button type="button" class="topics-arrow" data-dir="1" aria-label="Next topics">→</button>
       </div>
     </div>
   </section>
 
-  <!-- 6. FAQ -->
   <section class="section" id="faq">
     <div class="wrap" style="max-width: 800px;">
       <div class="section-head" style="margin-bottom: 24px;">
@@ -257,6 +309,7 @@ a: 'You can reschedule a session with at least 24 hours\' prior notice, subject 
 </Layout>
 
 <style>
+  .issues { margin:20px;}
   .since-badge{
     display:inline-flex; align-items:center; gap:8px;
     font-family:var(--font-mono); font-size:12px; letter-spacing:0.08em; text-transform:uppercase;
@@ -264,6 +317,137 @@ a: 'You can reschedule a session with at least 24 hours\' prior notice, subject 
     padding:6px 14px; border-radius:20px; margin-bottom:18px;
   }
   .since-badge::before{ content:''; width:6px; height:6px; border-radius:50%; background:var(--gold-500); }
+
+  .topics-title{ margin-bottom:24px; }
+  .topics-scroll{
+    display:flex; gap:20px; overflow-x:auto; scroll-snap-type:x proximity;
+    padding-bottom:4px; scrollbar-width:none;
+  }
+  .topics-scroll::-webkit-scrollbar{ display:none; }
+  .topic-card{
+    flex:0 0 auto; width:190px; scroll-snap-align:start;
+    background:var(--paper-0); border:1px solid var(--line);
+    overflow:hidden; transition:transform .25s var(--ease), border-color .25s var(--ease) ;
+    padding: 0px;
+  }
+  .topic-card:hover{ transform:translateY(-3px); border-color:var(--gold-500); }
+  .topic-card-img{
+    aspect-ratio:1/1; overflow:hidden; background:var(--paper-50);
+  }
+  .topic-card-img img{ width:100%; height:100%; object-fit:cover; object-position:center; display:block; }
+  .topic-card-label{
+    display:block; padding:16px 12px; text-align:center;
+    font-weight:600; font-size:14.5px; color:var(--ink-900);
+    background: white;
+  }
+  .topics-nav{ display:flex; justify-content:flex-end; gap:12px; margin-top:24px; }
+  .topics-arrow{
+    width:44px; height:44px; border-radius:50%; border:1px solid var(--line);
+    background:#ffffff; color:var(--ink-900); font-size:16px;
+    display:flex; align-items:center; justify-content:center;
+    transition:border-color .25s var(--ease), background .25s var(--ease), color .25s var(--ease);
+  }
+  .topics-arrow:hover{ border-color:var(--gold-500); background:var(--gold-500); color:var(--navy-950); }
+
+  /* Therapy services spotlight */
+  .therapy-grid{ display:grid; grid-template-columns: 320px 1fr; gap:48px; align-items:start; }
+  .therapy-left{ display:flex; flex-direction:column; }
+  .therapy-portrait{
+    position:relative; width:75%; aspect-ratio:1/1; overflow:hidden;
+    border-radius:4px; margin-bottom:24px; background:var(--paper-50);
+  }
+  .therapy-portrait-photo{ width:100%; height:100%; object-fit:cover; object-position:center; display:block; }
+  .therapy-portrait-mark{
+    position:absolute; top:14px; right:16px; font-family:var(--font-mono); font-size:11px;
+    letter-spacing:0.1em; color:rgba(248,249,246,0.85);
+  }
+  .therapy-portrait-caption{
+    position:absolute; left:0; right:0; bottom:0; padding:20px 18px 18px;
+    display:flex; flex-direction:column; gap:4px;
+    background:linear-gradient(to top, rgba(11,20,31,0.88), rgba(11,20,31,0.05) 70%);
+  }
+  .therapy-portrait-kicker{ font-size:13px; color:rgba(248,249,246,0.85); }
+  .therapy-portrait-names{ font-family:var(--font-display); font-size:24px; font-weight:600; color:var(--paper-0); }
+  .therapy-title{ font-size:clamp(22px,2.4vw,28px); margin-bottom:12px; }
+  .therapy-sub{ color:var(--ink-600); font-size:15px; margin-bottom:22px; }
+
+  .therapy-right{ display:flex; flex-direction:column; }
+  .therapy-list-title{ font-size:18px; margin-bottom:18px; }
+  .therapy-list{ display:flex; flex-direction:column; gap:16px; }
+  .therapy-card{
+    display:flex; gap:18px; background:var(--paper-0); border:1px solid var(--line);
+    border-radius:4px; padding:16px; transition:border-color .25s var(--ease), transform .25s var(--ease);
+  }
+  .therapy-card:hover{ border-color:var(--gold-500); transform:translateY(-2px); }
+  .therapy-card-thumb{
+    flex:none; width:96px; height:96px; border-radius:3px; overflow:hidden; background:var(--paper-50);
+  }
+  .therapy-card-photo{ width:100%; height:100%; object-fit:cover; object-position:center; display:block; }
+  .therapy-card-body{ display:flex; flex-direction:column; gap:6px; min-width:0; }
+  .therapy-card-body h4{ font-family:var(--font-display); font-size:17px; font-weight:600; margin:0; }
+  .therapy-card-body p{ color:var(--ink-600); font-size:14px; line-height:1.5; }
+  .therapy-card-meta{ font-size:13px; color:var(--navy-700); font-weight:600; }
+  .therapy-list-cta{ display:flex; justify-content:flex-end; margin-top:20px; }
+
+  .therapy-action-block {
+    margin-top: 2rem;
+    display: flex;
+  }
+
+  /* Desktop Styles: Force parallel alignment and custom positioning */
+  @media (min-width: 769px) {
+    .therapy-grid {
+      display: grid;
+      gap: 3rem;
+      align-items: stretch;
+    }
+
+    .therapy-left, .therapy-right {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 100%;
+    }
+
+    /* Keeps baseline execution buttons horizontally parallel */
+    .therapy-action-block {
+      margin-top: auto; 
+      width: 100%;
+    }
+
+    /* Left column: Aligns 'Book Now' to the far right */
+    .therapy-left .therapy-action-block {
+      justify-content: flex-start;
+    }
+
+    /* Right column: Aligns 'Meet the Team' to the far left */
+    .therapy-right .therapy-action-block {
+      justify-content: flex-end;
+    }
+  }
+
+  /* Mobile Styles: Normal stacked execution layout */
+  @media (max-width: 768px) {
+    .therapy-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 4rem;
+    }
+
+    .therapy-action-block {
+      justify-content: flex-start;
+      margin-top: 1.5rem;
+    }
+  }
+
+  @media (max-width:860px){
+    .therapy-grid{ grid-template-columns:1fr; gap:32px; }
+    .therapy-portrait{ max-width:320px; }
+  }
+  @media (max-width:520px){
+    .therapy-card{ flex-direction:column; }
+    .therapy-card-thumb{ width:100%; height:160px; }
+  }
 
   .explore-grid{ display:grid; grid-template-columns: 1.4fr 1fr; gap: 28px; align-items:stretch; }
   .featured-article-box{
@@ -279,7 +463,7 @@ a: 'You can reschedule a session with at least 24 hours\' prior notice, subject 
     background: var(--paper-0); border: 1px solid var(--line); padding: 22px; flex:1;
     display:flex; flex-direction:column; gap:8px; transition: border-color .25s var(--ease);
   }
-  .explore-teaser:hover{ border-color: var(--gold-500); }
+  .explore-teaser:hover { border-color: var(--gold-500); }
   .explore-teaser h3{ font-size: 16px; }
   .explore-teaser p{ color: var(--ink-600); font-size: 13.5px; flex:1; }
 
@@ -300,9 +484,25 @@ a: 'You can reschedule a session with at least 24 hours\' prior notice, subject 
   .faq-item p{ color: var(--ink-600); font-size: 14.5px; margin-top: 14px; line-height:1.6; }
 
   @media (max-width: 860px){ .explore-grid{ grid-template-columns: 1fr; } }
+  @media (max-width: 640px){
+    .topic-card{ width:150px; }
+    .topics-arrow{ width:38px; height:38px; }
+  }
 </style>
 
 <script>
+  const topicsScroll = document.getElementById('topicsScroll');
+  if (topicsScroll) {
+    document.querySelectorAll('.topics-arrow').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const dir = Number(btn.getAttribute('data-dir'));
+        const card = topicsScroll.querySelector('.topic-card');
+        const step = card ? card.getBoundingClientRect().width + 20 : 210;
+        topicsScroll.scrollBy({ left: dir * step * 2, behavior: 'smooth' });
+      });
+    });
+  }
+
   const grid = document.getElementById('gridSignature');
   if (grid) {
     const total = 36;

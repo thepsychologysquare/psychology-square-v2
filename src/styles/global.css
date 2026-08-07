@@ -187,23 +187,52 @@ a:focus-visible, button:focus-visible{
   margin-bottom: 20px;
 }
 .hero-actions{display:flex; gap:15px; align-items:center; flex-wrap:wrap;}
-.btn{
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
-  font-weight:600;
-  font-size:14.5px;
-  padding:13px 26px;
-  border-radius:2px;
-  transition:all .25s var(--ease);
+/* ==========================================
+   UNIFIED GLOBAL BUTTONS
+   ========================================== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 14.5px;
+  padding: 14px 28px; /* Upgraded to new generous spacing */
+  border-radius: 999px; /* Fully rounded pill shape globally */
+  border: 1px solid transparent; /* Layout shift safety buffer */
+  transition: all .25s var(--ease);
+  width: fit-content;
 }
-.btn--primary{background:var(--gold-500); color:var(--navy-950);}
-.btn--primary:hover{background:var(--gold-300);}
-.btn--text{color:rgba(248,249,246,0.85); padding:13px 4px;}
-.btn--text:hover{color:var(--gold-300);}
-.btn--text-onlight{color:var(--navy-950); padding:13px 4px; text-decoration:underline; text-underline-offset:3px;}
-.btn--text-onlight:hover{color:var(--gold-500);}
 
+/* --- Core Color Variants --- */
+.btn--primary { 
+  background: var(--gold-500); 
+  color: var(--navy-950); 
+}
+.btn--primary:hover { 
+  background: var(--gold-300); 
+}
+
+/* --- Inline Text Variants --- */
+.btn--text { 
+  color: rgba(248,249,246,0.85); 
+  padding: 14px 4px; /* Balanced padding alignment */
+  border-radius: 0; 
+}
+.btn--text:hover { 
+  color: var(--gold-300); 
+}
+
+.btn--text-onlight { 
+  color: var(--navy-950); 
+  padding: 14px 4px; 
+  text-decoration: underline; 
+  text-underline-offset: 3px; 
+  border-radius: 0; 
+}
+.btn--text-onlight:hover { 
+  color: var(--gold-500); 
+}
 
 .hero-signature{
   --cell:30px; --gap:8px;
@@ -783,4 +812,160 @@ img {
   background: rgba(199, 164, 74, 0.12);
   border-color: rgba(199, 164, 74, 0.4);
   transform: translateY(-2px);
+}
+
+
+
+
+
+
+
+
+/* ==========================================================================
+   1. Root Layout Variables & Responsive Adjustments
+   ========================================================================== */
+:root {
+    --_containers---desktop-width: min(100% - 64px, 1200px);
+    --_containers---hero-slider: max(calc(100vh - 70px), 680px);
+}
+
+@media screen and (max-width: 991px) {
+    body {
+        --_containers---desktop-width: min(100% - 64px, 1200px);
+        --_containers---hero-slider: max(calc(100vh - 70px), 750px);
+    }
+}
+
+@media screen and (max-width: 767px) {
+    body {
+        --_containers---desktop-width: calc(100% - 32px);
+        --_containers---hero-slider: max(calc(100vh - 70px), 700px);
+    }
+}
+
+/* ==========================================================================
+   2. Swiper & Container Structure
+   ========================================================================== */
+.topics-container.swiper-wrapper {
+    display: flex;
+    flex-direction: row;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    transition-property: transform;
+    box-sizing: content-box;
+}
+
+.topics-slide.swiper-slide {
+    flex-shrink: 0;
+    width: auto;
+    height: 100%;
+    position: relative;
+    transition-property: transform;
+}
+
+span.swiper-notification {
+    position: absolute;
+    left: 0;
+    top: 0;
+    pointer-events: none;
+    opacity: 0;
+    z-index: -1000;
+}
+
+/* ==========================================================================
+   3. Topic Card Component & Zoom Interactions
+   ========================================================================== */
+.topic-card {
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    overflow: hidden;
+    color: var(--ink-900); /* Uses global.css text token */
+    background: var(--paper-0); /* Matches article-card structure */
+    border: 1px solid var(--line);
+    padding: 24px;
+    border-radius: 4px;
+    transition: border-color 0.25s var(--ease), transform 0.25s var(--ease);
+}
+
+.topic-card__img {
+    width: 100%;
+    height: 180px; /* Explicit height for uniform layout */
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    border-radius: 2px;
+    transition: transform 0.25s var(--ease);
+}
+
+/* Hover behaviors styled to match your global interactive tokens */
+.topic-card:hover {
+    border-color: var(--gold-500);
+    transform: translateY(-3px);
+}
+
+.topic-card:hover .topic-card__img {
+    transform: scale(1.05);
+}
+
+.topic-card__title {
+    margin-top: 14px;
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 16px;
+    line-height: 1.4;
+    color: var(--navy-950);
+    transition: color 0.2s var(--ease);
+}
+
+.topic-card:hover .topic-card__title {
+    color: var(--gold-500);
+}
+
+/* Focus indicator for keyboard navigators matching site standard */
+.topic-card:focus-visible {
+    outline: 2px solid var(--gold-500);
+    outline-offset: 3px;
+}
+
+/* ==========================================================================
+   4. Layout Utilities & Line Clamping
+   ========================================================================== */
+.line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3; 
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+  
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2; 
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+  
+.podcast-line-clamp {
+    display: -webkit-box;
+    -webkit-line-clamp: 2; 
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+  
+@media(max-width: 767px) {
+    .podcast-line-clamp {
+        -webkit-line-clamp: 1; 
+    }   
+}
+
+@media (max-width: 640px) {
+    .topic-card {
+        padding: 16px;
+        gap: 12px;
+    }
 }
