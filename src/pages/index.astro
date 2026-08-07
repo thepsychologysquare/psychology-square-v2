@@ -171,7 +171,7 @@ const faqs = [
       </div>
 
       <div class="therapy-right">
-        <h3 class="therapy-list-title">Our Services</h3>
+        <h3 class="therapy-title">Our Services</h3>
         <div class="therapy-list">
           {therapyServices.map((s) => {
             const img = getServiceImage(s.slug);
@@ -208,7 +208,6 @@ const faqs = [
 
   <section class="practice" id="practice">
     <div class="wrap practice-inner">
-      <p class="eyebrow eyebrow--dark">The Approach</p>
       <h2 class="section-title">Therapy that stays grounded in evidence, not slogans.</h2>
       <div class="practice-grid">
         <div class="practice-block">
@@ -295,16 +294,21 @@ const faqs = [
     </div>
   </section>
 
-  <section class="section" id="faq">
-    <div class="wrap" style="max-width: 800px;">
-      <div class="section-head" style="margin-bottom: 24px;">
-        <h2 class="section-title">Frequently asked questions</h2>
+  <section class="section faq-section" id="faq">
+    <div class="wrap" style="max-width: 960px;">
+      <div class="section-head faq-head">
+        <div>
+          <h2 class="section-title">Frequently asked questions</h2>
+        </div>
       </div>
 
-      <div class="faq-list">
+      <div class="faq-columns">
         {faqs.map((f) => (
           <details class="faq-item">
-            <summary>{f.q}</summary>
+            <summary>
+              <span>{f.q}</span>
+              <span class="faq-icon" aria-hidden="true"></span>
+            </summary>
             <p>{f.a}</p>
           </details>
         ))}
@@ -357,11 +361,11 @@ const faqs = [
   }
 
   @media (max-width:840px){
-    .meet{ padding:56px 0; }
+    .meet{ padding:24px 0; }
     .meet-row, .meet-row--reverse{ grid-template-columns:1fr; gap:24px; }
     .meet-row--reverse .meet-photo{ order:0; }
     .meet-row--reverse .meet-copy{ order:0; }
-    .meet-row + .meet-row{ margin-top:56px; }
+    .meet-row + .meet-row{ margin-top:24px; }
     .meet-photo{ aspect-ratio:4/4; max-width: 250px; }
   }
   .issues { margin:20px;}
@@ -496,7 +500,7 @@ const faqs = [
   }
 
   @media (max-width:860px){
-    .therapy-grid{ grid-template-columns:1fr; gap:32px; }
+    .therapy-grid{ grid-template-columns:1fr; gap:10px; }
     .therapy-portrait{ max-width:320px; }
   }
   @media (max-width:520px){
@@ -522,21 +526,62 @@ const faqs = [
   .explore-teaser h3{ font-size: 16px; }
   .explore-teaser p{ color: var(--ink-600); font-size: 13.5px; flex:1; }
 
-  /* FAQ Accordion Styles copied from research.astro */
-  .faq-list{ display:flex; flex-direction:column; gap: 10px; }
-  .faq-item{
-    border: 1px solid var(--line); background: var(--paper-0); padding: 18px 22px; border-radius: 3px;
+  /* FAQ — compact two-column accordion */
+  .faq-section{ padding: 24px 0; }
+  .faq-head{
+    display:flex; justify-content:space-between; align-items:flex-end; gap:16px;
+    margin-bottom: 22px;
   }
+  .faq-count{
+    font-family: var(--font-mono); font-size:11.5px; letter-spacing:0.06em; text-transform:uppercase;
+    color: var(--sage-500); background: rgba(124,152,133,0.1); border:1px solid rgba(124,152,133,0.3);
+    padding: 6px 12px; border-radius:999px; white-space:nowrap;
+  }
+
+  .faq-columns{ columns: 2; column-gap: 20px; }
+  .faq-item{
+    break-inside: avoid;
+    border: 1px solid var(--line);
+    border-left: 2px solid transparent;
+    background: white;
+    padding: 13px 16px;
+    border-radius: 3px;
+    margin-bottom: 10px;
+    transition: border-color .2s var(--ease), background .2s var(--ease);
+  }
+  .faq-item:hover{ border-color: var(--gold-500); }
+  .faq-item[open]{ border-left-color: var(--gold-500); background: var(--paper-50); }
+
   .faq-item summary{
-    cursor: pointer; font-weight: 600; font-size: 15.5px; list-style: none;
-    display:flex; justify-content:space-between; align-items:center; gap: 16px;
+    min-height: 44px;
+    cursor:pointer; list-style:none; display:flex; align-items:flex-start; justify-content:space-between; gap:12px;
+    font-weight:600; font-size:14px; line-height:1.4; color: var(--ink-900);
   }
   .faq-item summary::-webkit-details-marker{ display:none; }
-  .faq-item summary::after{
-    content: '+'; font-family: var(--font-mono); color: var(--gold-500); font-size: 20px; flex:none;
+  .faq-item summary span:first-child{
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+  .faq-icon{ flex:none; width:16px; height:16px; margin-top:2px; position:relative; }
+  .faq-icon::before, .faq-icon::after{
+    content:''; position:absolute; background: var(--gold-500); transition: transform .2s var(--ease);
   }
-  .faq-item[open] summary::after{ content: '\2212'; }
-  .faq-item p{ color: var(--ink-600); font-size: 14.5px; margin-top: 14px; line-height:1.6; }
+  .faq-icon::before{ left:0; top:7px; width:16px; height:2px; }
+  .faq-icon::after{ left:7px; top:0; width:2px; height:16px; }
+  .faq-item[open] .faq-icon::after{ transform: scaleY(0); }
+
+  .faq-item p{
+    color: var(--ink-600); font-size:13px; line-height:1.55; margin-top:9px; padding-top:9px;
+    border-top: 1px solid var(--line);
+  }
+
+  @media (max-width: 760px){
+    .faq-columns{ columns:1; }
+    .faq-head{ flex-direction:column; align-items:flex-start; gap:8px; }
+  }
 
   @media (max-width: 860px){ .explore-grid{ grid-template-columns: 1fr; } }
   @media (max-width: 640px){
@@ -547,7 +592,7 @@ const faqs = [
   /* Book a session — restyled */
   .book-section{ padding:24px 0; background:var(--paper-50); border-top:1px solid var(--line); }
   .book-grid{ display:grid; grid-template-columns:1.1fr 0.9fr; gap:56px; align-items:start; }
-  .book-title{ font-size:clamp(30px,3.4vw,42px); margin:14px 0 14px; }
+  .book-title{ font-size:clamp(30px,3.4vw,42px); }
   .book-sub{ color:var(--ink-600); font-size:16px; max-width:42ch; margin-bottom:26px; }
   .book-actions{ display:flex; align-items:center; gap:16px; flex-wrap:wrap; margin-bottom:36px; }
   .btn--outline{ background:transparent; border:1px solid var(--navy-700); color:var(--navy-950); }
@@ -577,8 +622,8 @@ const faqs = [
   .visual-caption--dark{ color:var(--ink-600); }
 
   @media (max-width:860px){
-    .book-section{ padding:56px 0; }
-    .book-grid{ grid-template-columns:1fr; gap:32px; }
+    .book-section{ padding:24px 0; }
+    .book-grid{ grid-template-columns:1fr; gap:10px; }
     .book-visual{ position:static; order:-1; max-width:320px; margin:0 auto; }
     .book-card{ max-width:none; }
   }

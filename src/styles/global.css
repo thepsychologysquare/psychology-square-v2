@@ -729,7 +729,7 @@ a:focus-visible, button:focus-visible{
 --------------------------------------- */
 @media (max-width: 640px){
   .hero{ padding:24px 0 24px; }
-  .section{ padding:36px 0; }
+  .section{ padding:24px 0; }
   .practice, .services, .team, .quote-block{ padding:36px 0; }
   .contact{ padding:24px 0; }
   .section-title{ margin-bottom:20px; }
