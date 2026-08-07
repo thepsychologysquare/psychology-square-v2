@@ -114,7 +114,6 @@ const faqs = [
         <p class="hero-sub">Individual and couples therapy, held online over video call or in person in Johar Town, Lahore. Evidence-based, unhurried, and built around what you're actually carrying.</p>
         <div class="hero-actions">
           <a href="/book" class="btn btn--primary">Book Now</a>
-          <a href="#team" class="btn btn--text">Meet your therapists →</a>
         </div>
       </div>
       <div class="hero-visual" aria-hidden="true">
@@ -124,41 +123,32 @@ const faqs = [
     </div>
   </section>
 
-  <section class="team" id="team">
+  <section class="meet" id="team">
     <div class="wrap">
-      <p class="eyebrow eyebrow--dark">Who you'll work with</p>
-      <h2 class="section-title">Two clinicians. One practice.</h2>
+      <div class="meet-row">
+        <div class="meet-photo">
+          <img src="/images/sohail.jpg" alt="Muhammad Sohail" loading="lazy" onerror="this.classList.add('img-error')">
+          <span class="meet-photo-fallback">MS</span>
+        </div>
+        <div class="meet-copy">
+        <p class="eyebrow">Founder and CEO</p>
+          <h2 class="meet-title">Muhammad Sohail</h2>
+          <p class="meet-sub">He lectures on psychology at Rashid Latif Khan University (RLKU), holds an M.S. in Clinical Psychology, and is a member of the American Psychological Association (APA). Through individual and couples sessions, he's helped clients navigate what they're actually carrying — steadily, and without the jargon.</p>
+          <a href="/team/sohail" class="btn btn--primary">View Profile</a>
+        </div>
+      </div>
 
-      <div class="team-grid">
-        <a class="team-teaser" href="/team/sohail">
-          <div class="avatar">
-            <img src="/images/sohail.jpg" alt="Muhammad Sohail" loading="lazy" onerror="this.classList.add('img-error')">
-            <span class="avatar-fallback">MS</span>
-          </div>
-          <h3>Muhammad Sohail</h3>
-          <span class="team-role">Founder &amp; CEO · Clinical Psychologist</span>
-          <ul class="team-credentials">
-            <li>Lecturer of Psychology, Rashid Latif Khan University (RLKU)</li>
-            <li>M.S. in Clinical Psychology</li>
-            <li>Member, American Psychological Association (APA)</li>
-          </ul>
-          <span class="profile-link">View full profile →</span>
-        </a>
-
-        <a class="team-teaser" href="/team/sehar">
-          <div class="avatar">
-            <img src="/images/sehar.jpg" alt="Sehar Waheed" loading="lazy" onerror="this.classList.add('img-error')">
-            <span class="avatar-fallback">SW</span>
-          </div>
-          <h3>Sehar Waheed</h3>
-          <span class="team-role">Co-CEO · Clinical Psychologist &amp; Counselor</span>
-          <ul class="team-credentials">
-            <li>Clinical Psychologist / Counselor, University of Management and Technology (UMT)</li>
-            <li>M.S. in Clinical Psychology</li>
-            <li>Member, American Psychological Association (APA)</li>
-          </ul>
-          <span class="profile-link">View full profile →</span>
-        </a>
+      <div class="meet-row meet-row--reverse">
+        <div class="meet-photo">
+          <img src="/images/sehar.jpg" alt="Sehar Waheed" loading="lazy" onerror="this.classList.add('img-error')">
+          <span class="meet-photo-fallback">SW</span>
+        </div>
+        <div class="meet-copy">
+          <p class="eyebrow">Co-CEO</p>
+          <h2 class="meet-title">Sehar Waheed</h2>
+          <p class="meet-sub">She counsels at the University of Management and Technology (UMT), holds an M.S. in Clinical Psychology, and is a member of the American Psychological Association (APA). Her sessions stay collaborative — conversation first, framework second.</p>
+          <a href="/team/sehar" class="btn btn--primary">View Profile</a>
+        </div>
       </div>
     </div>
   </section>
@@ -237,27 +227,46 @@ const faqs = [
     </div>
   </section>
 
-  <section class="contact" id="contact">
-    <div class="wrap contact-inner">
-      <p class="eyebrow eyebrow--dark">Get in touch</p>
-      <h2 class="section-title">Book a session.</h2>
-      <p class="format-note">Available online (video call) and in person — Johar Town, Lahore, Pakistan</p>
+  <section class="book-section" id="contact">
+    <div class="wrap book-grid">
+      <div class="book-left">
+        <h2 class="book-title">Book a session.</h2>
+        <p class="book-sub">Available online over video call, or in person in Johar Town, Lahore. Reach out and we'll sort the details together.</p>
+        <div class="book-actions">
+          <a href="/contact" class="btn btn--outline">Send a message →</a>
+          <a href="/book" class="btn btn--primary book-btn-badge">
+            <span class="book-badge">Book Now</span>
+          </a>
+        </div>
 
-      <div class="policy-block">
-        <h3>Read before booking</h3>
-        <ul class="policy-list">
-          <li><strong>Informed Consent</strong> — We work collaboratively toward your goals. You're welcome to ask about the process or approach at any time.</li>
-          <li><strong>Confidentiality</strong> — What's shared in session is private and protected, with standard legal exceptions such as risk of serious harm to yourself or others.</li>
-          <li><strong>Environment</strong> — For online sessions, please join from a quiet, private, and secure location.</li>
-        </ul>
-        <p class="policy-note">Payment is arranged directly by email and confirmed before the session — reach out and we'll sort the details together, including for the appointment time.</p>
+        <div class="book-card">
+          <span class="book-card-tag">Before you book</span>
+          <h3>What to know</h3>
+          <p>Sessions are confidential, with standard legal exceptions like risk of serious harm. Join online from a quiet, private space. Payment is arranged and confirmed by email ahead of your slot.</p>
+          <div class="book-card-actions">
+            <a href="mailto:info@thepsychologysquare.com" class="btn btn--text-onlight">Email us →</a>
+          </div>
+        </div>
       </div>
 
-      <div class="booking-actions">
-        <a href="/book" class="btn btn--primary contact-btn">Book Now</a>
-        <a href="mailto:info@thepsychologysquare.com" class="btn btn--outline">Email us →</a>
-        <a href="/contact" class="btn btn--outline">Send a message →</a>
-      </div>
+      <div class="book-visual">
+  <div class="book-visual-panel">
+    {getServiceImage('booking-hero') ? (
+      <Image
+        src={getServiceImage('booking-hero')!}
+        alt="A person booking an online therapy session"
+        width={640}
+        format="webp"
+        quality={65}
+        loading="lazy"
+        class="book-visual-photo"
+      />
+    ) : (
+      <div class="grid-signature" id="gridSignatureContact"></div>
+    )}
+  </div>
+  <p class="visual-caption visual-caption--dark">Confidential &amp; Unhurried</p>
+</div>
     </div>
   </section>
 
@@ -305,6 +314,56 @@ const faqs = [
 </Layout>
 
 <style>
+  .meet{ padding:96px 0; border-bottom:1px solid var(--line); }
+  .meet-row{
+    display:grid;
+    grid-template-columns:0.85fr 1fr;
+    gap:64px;
+    align-items:center;
+  }
+  .meet-row + .meet-row{ margin-top:96px; }
+  .meet-row--reverse{ grid-template-columns:1fr 0.85fr; }
+  .meet-row--reverse .meet-photo{ order:2; }
+  .meet-row--reverse .meet-copy{ order:1; }
+
+  .meet-photo{
+    position:relative;
+    aspect-ratio:4/4;
+    border-radius:6px;
+    overflow:hidden;
+    background:var(--navy-800);
+    max-width: 375px;
+  }
+  .meet-photo img{ display:block; width:100%; height:100%; object-fit:cover; }
+  .meet-photo img.img-error{ display:none; }
+  .meet-photo-fallback{
+    position:absolute; inset:0; display:none; align-items:center; justify-content:center;
+    font-family:var(--font-display); font-size:56px; color:var(--gold-300);
+  }
+  .meet-photo img.img-error + .meet-photo-fallback{ display:flex; }
+
+  .meet-title{
+    font-size:clamp(24px, 2.4vw, 32px);
+    line-height:1.28;
+    font-weight:600;
+    margin-bottom:20px;
+  }
+  .meet-sub{
+    font-size:16px;
+    line-height:1.7;
+    color:var(--ink-600);
+    margin-bottom:28px;
+    max-width:46ch;
+  }
+
+  @media (max-width:840px){
+    .meet{ padding:56px 0; }
+    .meet-row, .meet-row--reverse{ grid-template-columns:1fr; gap:24px; }
+    .meet-row--reverse .meet-photo{ order:0; }
+    .meet-row--reverse .meet-copy{ order:0; }
+    .meet-row + .meet-row{ margin-top:56px; }
+    .meet-photo{ aspect-ratio:4/4; max-width: 250px; }
+  }
   .issues { margin:20px;}
   .since-badge{
     display:inline-flex; align-items:center; gap:8px;
@@ -484,6 +543,45 @@ const faqs = [
     .topic-card{ width:150px; }
     .topics-arrow{ width:38px; height:38px; }
   }
+
+  /* Book a session — restyled */
+  .book-section{ padding:24px 0; background:var(--paper-50); border-top:1px solid var(--line); }
+  .book-grid{ display:grid; grid-template-columns:1.1fr 0.9fr; gap:56px; align-items:start; }
+  .book-title{ font-size:clamp(30px,3.4vw,42px); margin:14px 0 14px; }
+  .book-sub{ color:var(--ink-600); font-size:16px; max-width:42ch; margin-bottom:26px; }
+  .book-actions{ display:flex; align-items:center; gap:16px; flex-wrap:wrap; margin-bottom:36px; }
+  .btn--outline{ background:transparent; border:1px solid var(--navy-700); color:var(--navy-950); }
+  .btn--outline:hover{ border-color:var(--gold-500); color:var(--gold-500); }
+  .book-btn-badge{ padding:6px; border-radius:999px; }
+  .book-badge{ padding:10px 24px; }
+
+  .book-card{
+    background:var(--paper-0); border:1px solid var(--line); border-radius:10px;
+    padding:26px 28px; max-width:480px;
+  }
+  .book-card-tag{
+    display:inline-block; font-family:var(--font-mono); font-size:11px; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--sage-500); background:rgba(124,152,133,0.12); padding:5px 12px; border-radius:999px; margin-bottom:14px;
+  }
+  .book-card h3{ font-size:19px; margin-bottom:8px; }
+  .book-card p{ color:var(--ink-600); font-size:14.5px; line-height:1.6; }
+  .book-card-actions{ margin-top:16px; }
+
+  .book-visual{ display:flex; flex-direction:column; align-items:center; gap:16px; position:sticky; top:100px; }
+  .book-visual-panel{
+    width:100%; aspect-ratio:1/1; border-radius:16px; background:var(--navy-950);
+    display:flex; align-items:center; justify-content:center; overflow:hidden;
+  }
+  .book-visual-photo{ width:100%; height:100%; object-fit:cover; object-position:center; display:block; }
+  .book-visual-panel .grid-signature{ --cell:26px; }
+  .visual-caption--dark{ color:var(--ink-600); }
+
+  @media (max-width:860px){
+    .book-section{ padding:56px 0; }
+    .book-grid{ grid-template-columns:1fr; gap:32px; }
+    .book-visual{ position:static; order:-1; max-width:320px; margin:0 auto; }
+    .book-card{ max-width:none; }
+  }
 </style>
 
 <script>
@@ -499,16 +597,18 @@ const faqs = [
     });
   }
 
-  const grid = document.getElementById('gridSignature');
-  if (grid) {
-    const total = 36;
-    const filledGold = new Set([2, 9, 14, 21, 27, 30]);
-    const filledSage = new Set([7, 16, 24]);
-    for (let i = 0; i < total; i++) {
+  function paintSignature(id, filledGoldArr, filledSageArr) {
+    const grid = document.getElementById(id);
+    if (!grid) return;
+    const filledGold = new Set(filledGoldArr);
+    const filledSage = new Set(filledSageArr);
+    for (let i = 0; i < 36; i++) {
       const cell = document.createElement('span');
       if (filledGold.has(i)) cell.classList.add('filled');
       if (filledSage.has(i)) cell.classList.add('filled-sage');
       grid.appendChild(cell);
     }
   }
+  paintSignature('gridSignature', [2, 9, 14, 21, 27, 30], [7, 16, 24]);
+  paintSignature('gridSignatureContact', [4, 11, 17, 22, 29], [8, 15, 26, 31]);
 </script>

@@ -60,7 +60,7 @@ a:focus-visible, button:focus-visible{
 
 .eyebrow{
   font-family:var(--font-mono);
-  font-size:12px;
+  font-size:15px;
   letter-spacing:0.14em;
   text-transform:uppercase;
   color:var(--gold-500);
@@ -728,7 +728,7 @@ a:focus-visible, button:focus-visible{
    desktop values so pages don't feel oversized with dead space.
 --------------------------------------- */
 @media (max-width: 640px){
-  .hero{ padding:10px 0 10px; }
+  .hero{ padding:24px 0 24px; }
   .section{ padding:36px 0; }
   .practice, .services, .team, .quote-block{ padding:36px 0; }
   .contact{ padding:24px 0; }
