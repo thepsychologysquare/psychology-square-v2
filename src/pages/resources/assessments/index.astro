@@ -59,7 +59,7 @@ const breadcrumbJson = {
   <script type="application/ld+json" set:html={JSON.stringify(itemListJson)} />
   <script type="application/ld+json" set:html={JSON.stringify(breadcrumbJson)} />
 
-  <section class="hero article-index-hero">
+  <section class="hero">
     <div class="wrap">
       <nav class="breadcrumbs" aria-label="Breadcrumb">
         <a href="/">Home</a>
@@ -150,8 +150,6 @@ const breadcrumbJson = {
 </Layout>
 
 <style>
-  .article-index-hero{ padding: 72px 0 56px; }
-
   .breadcrumbs{
     font-family: var(--font-mono); font-size: 12px; color: rgba(248,249,246,0.6);
     margin-bottom: 20px; display:flex; flex-wrap:wrap; gap:6px; align-items:center;
@@ -256,7 +254,6 @@ const breadcrumbJson = {
   @media (max-width: 700px){
     .toolbar{ flex-direction: column; }
     .filter-panel{ right: 0; left: 0; width: auto; }
-    .article-index-hero{ padding: 24px 0 24px;
  }
 </style>
 

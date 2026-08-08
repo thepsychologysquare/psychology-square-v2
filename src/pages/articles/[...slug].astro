@@ -172,15 +172,24 @@ const mainImgSrc = typeof article.data.image === 'string' ? article.data.image :
     font-size: 12px;
     letter-spacing: 0.02em;
     color: var(--ink-600);
-    margin-bottom: 28px;
     display:flex;
     flex-wrap:wrap;
     gap:6px;
     align-items:center;
+    margin-top: 65px;
+    margin-bottom: 10px;
+
   }
   .breadcrumbs a:hover{ color: var(--gold-500); }
   .crumb-sep{ color: var(--line); }
   .crumb-current{ color: var(--ink-900); }
+
+  @media (max-width: 768px) {
+  .breadcrumbs {
+    margin-top: 50px; /* Mobile adjustment */
+  }
+}
+  
 
   .article-title{
     font-size: clamp(30px, 4vw, 44px);

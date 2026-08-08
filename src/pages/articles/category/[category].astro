@@ -35,7 +35,7 @@ const categoryArticles = allArticles
 ---
 
 <Layout title={meta.name} description={meta.blurb}>
-  <section class="hero article-index-hero">
+  <section class="hero">
     <div class="wrap">
       <p class="eyebrow">
         <a href="/articles" style="color: var(--gold-500);">Articles</a> / {meta.name}
@@ -73,7 +73,6 @@ const categoryArticles = allArticles
 </Layout>
 
 <style>
-  .article-index-hero{ padding: 72px 0 56px; }
   .card-image-wrap{ width: 100%; aspect-ratio: 16 / 9; overflow: hidden; background-color: var(--paper-50); border-bottom: 1px solid var(--line); }
   .card-image-wrap img{ width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s var(--ease); }
   .article-card:hover .card-image-wrap img{ transform: scale(1.03); }

@@ -47,7 +47,7 @@ const contactPageSchema = {
 >
   <script type="application/ld+json" set:html={JSON.stringify(contactPageSchema)} />
 
-  <section class="hero article-index-hero">
+  <section class="hero">
     <div class="wrap">
       <p class="eyebrow">Get In Touch</p>
       <h1 class="hero-title" style="font-size: clamp(32px, 4vw, 48px); margin-bottom: 16px;">
@@ -96,8 +96,6 @@ const contactPageSchema = {
 </Layout>
 
 <style>
-  .article-index-hero{ padding: 72px 0 56px; }
-
   .request-form{ display:flex; flex-direction:column; gap:18px; }
   .request-form label{ display:flex; flex-direction:column; gap:6px; font-size: 14px; color: var(--ink-600); font-weight: 500; }
   .request-form input,
@@ -118,7 +116,6 @@ const contactPageSchema = {
   .form-note{ margin-top: 20px; color: var(--sage-500); font-size: 14px; }
 
   @media (max-width: 600px){
-    .article-index-hero{ padding: 24px 0 24px;}
     .hero-actions {
     display: flex;
     gap: 10px;

@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import { Image } from 'astro:assets';
 
 export interface Props {
   title: string;
@@ -14,6 +15,69 @@ const {
 const pageTitle = fullTitle ?? `${title} — The Psychology Square`;
 const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://www.thepsychologysquare.com');
 const ogImage = new URL('/images/og-cover.jpg', canonicalURL.origin);
+
+// --- Glob loaders for dynamic images across categories ---
+const topicImages = import.meta.glob<{ default: ImageMetadata }>(
+  '/src/assets/topics/*.{jpg,jpeg,png,webp}',
+  { eager: true }
+);
+function getTopicImage(slug: string) {
+  const entry = Object.entries(topicImages).find(([path]) => path.includes(`/${slug}.`));
+  return entry?.[1].default;
+}
+
+const resourceImages = import.meta.glob<{ default: ImageMetadata }>(
+  '/src/assets/resources/*.{jpg,jpeg,png,webp}',
+  { eager: true }
+);
+function getResourceImage(slug: string) {
+  const entry = Object.entries(resourceImages).find(([path]) => path.includes(`/${slug}.`));
+  return entry?.[1].default;
+}
+
+const serviceImages = import.meta.glob<{ default: ImageMetadata }>(
+  '/src/assets/services/*.{jpg,jpeg,png,webp}',
+  { eager: true }
+);
+function getServiceImage(slug: string) {
+  const entry = Object.entries(serviceImages).find(([path]) => path.includes(`/${slug}.`));
+  return entry?.[1].default;
+}
+
+const teamImages = import.meta.glob<{ default: ImageMetadata }>(
+  '/src/assets/team/*.{jpg,jpeg,png,webp}',
+  { eager: true }
+);
+function getTeamImage(slug: string) {
+  const entry = Object.entries(teamImages).find(([path]) => path.includes(`/${slug}.`));
+  return entry?.[1].default;
+}
+
+const courseImages = import.meta.glob<{ default: ImageMetadata }>(
+  '/src/assets/courses/*.{jpg,jpeg,png,webp}',
+  { eager: true }
+);
+function getCourseImage(slug: string) {
+  const entry = Object.entries(courseImages).find(([path]) => path.includes(`/${slug}.`));
+  return entry?.[1].default;
+}
+
+// --- Nav content metadata ---
+const navCategoryMeta: Record<string, string> = {
+  'anxiety': 'Anxiety',
+  'depression': 'Depression',
+  'adhd': 'ADHD',
+  'addiction-recovery': 'Addiction & Recovery',
+  'trauma': 'Trauma',
+  'relationships': 'Relationships',
+  'stress-burnout': 'Stress & Burnout',
+};
+const navAllArticleCategories = Object.keys(navCategoryMeta).map((slug, i) => ({
+  slug,
+  label: navCategoryMeta[slug],
+  img: getTopicImage(slug),
+  graphic: `bg-placeholder-${(i % 9) + 1}`,
+}));
 ---
 <!DOCTYPE html>
 <html lang="en">
@@ -39,12 +103,6 @@ const ogImage = new URL('/images/og-cover.jpg', canonicalURL.origin);
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <!-- ital axis added for Fraunces 600: the certificate name
-       (.certificate__name) is font-style:italic + font-weight:600, and
-       without the italic axis loaded the browser was faking it by
-       skewing the upright weight — different (wider) glyph metrics than
-       genuine italic, which is what was throwing off the PDF's line-wrap
-       parity with this page despite matching font-size/box-width. -->
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
 
   <script type="application/ld+json" set:html={JSON.stringify({
@@ -70,166 +128,475 @@ const ogImage = new URL('/images/og-cover.jpg', canonicalURL.origin);
   })} />
 </head>
 <body>
-<header class="site-header">
-  <div class="wrap header-inner">
-    <a href="/" class="wordmark">
+
+  <div class="header-strip-layer">
+  <header class="header-floating-wrapper">
+    <div class="wrap header-inner-pill">
+      <!-- Brand Wordmark with Previous Logo Markup Structure Applied to Left -->
+      <a href="/" class="wordmark" style="display: inline-flex; align-items: center; gap: 10px;">
+        <span class="mark" aria-hidden="true">
+          <span class="mark-sq mark-sq--1"></span>
+          <span class="mark-sq mark-sq--2"></span>
+        </span>
+        The Psychology Square
+      </a>
+
+      <!-- Primary Navigation Controls (UNTOUCHED DESKTOP NAV) -->
+      <nav class="site-nav" aria-label="Primary Navigation">
+        <div class="nav-item"><a href="/" class="nav-link-standard">Home</a></div>
+        
+        <!-- Resources Dropdown -->
+        <div class="nav-item">
+          <a href="/resources" class="nav-trigger">Resources <span class="arrow-icon"></span></a>
+          <div class="mega-panel mega-panel--grid">
+            <div class="mega-panel-container">
+              <h2 class="mega-panel-heading">Worksheets & Assessments</h2>
+              <div class="mega-panel-row-grid">
+                <a href="/resources/worksheets" class="course-panel-card">
+                  <div class={`course-card-graphic ${getResourceImage('worksheets') ? '' : 'bg-placeholder-5'}`}>
+                    {getResourceImage('worksheets') ? (
+                      <Image src={getResourceImage('worksheets')!} alt="Printable Worksheets" width={360} format="webp" quality={60} loading="lazy" style="width:100%; height:100%; object-fit:cover;" />
+                    ) : null}
+                  </div>
+                  <span class="course-card-name">Printable Worksheets</span>
+                </a>
+                <a href="/resources/assessments" class="course-panel-card">
+                  <div class={`course-card-graphic ${getResourceImage('assessments') ? '' : 'bg-placeholder-6'}`}>
+                    {getResourceImage('assessments') ? (
+                      <Image src={getResourceImage('assessments')!} alt="Scales & Assessment Tools" width={360} format="webp" quality={60} loading="lazy" style="width:100%; height:100%; object-fit:cover;" />
+                    ) : null}
+                  </div>
+                  <span class="course-card-name">Scales & Assessment Tools</span>
+                </a>
+              </div>
+              <div class="mega-row-footer">
+                <a href="/resources" class="mega-view-all-pill">View All Resources</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Articles Dropdown -->
+        <div class="nav-item">
+          <a href="/articles" class="nav-trigger">Articles <span class="arrow-icon"></span></a>
+          <div class="mega-panel mega-panel--grid">
+            <div class="mega-panel-container">
+              <h2 class="mega-panel-heading">Articles by Topic</h2>
+              <div class="topic-slider">
+                <button type="button" class="topic-slider-arrow topic-slider-arrow--prev" data-slider-prev aria-label="Scroll topics left">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                </button>
+                <div class="topic-slider-track" data-slider-track>
+                  {navAllArticleCategories.map((cat) => (
+                    <a href={`/articles/category/${cat.slug}`} class="course-panel-card topic-slider-item">
+                      <div class={`course-card-graphic ${cat.img ? '' : cat.graphic}`}>
+                        {cat.img && (
+                          <Image src={cat.img} alt={cat.label} width={360} format="webp" quality={60} loading="lazy" style="width:100%; height:100%; object-fit:cover;" />
+                        )}
+                      </div>
+                      <span class="course-card-name">{cat.label}</span>
+                    </a>
+                  ))}
+                </div>
+                <button type="button" class="topic-slider-arrow topic-slider-arrow--next" data-slider-next aria-label="Scroll topics right">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </button>
+              </div>
+              <div class="mega-row-footer">
+                <a href="/articles" class="mega-view-all-pill">View All Articles</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Services Dropdown -->
+        <div class="nav-item">
+          <a href="/services" class="nav-trigger">Services <span class="arrow-icon"></span></a>
+          <div class="mega-panel mega-panel--grid">
+            <div class="mega-panel-container">
+              <h2 class="mega-panel-heading">Our Services</h2>
+              <div class="mega-panel-row-grid">
+                <a href="/services/therapy" class="course-panel-card">
+                  <div class={`course-card-graphic ${getServiceImage('therapy') ? '' : 'bg-placeholder-4'}`}>
+                    {getServiceImage('therapy') ? (
+                      <Image src={getServiceImage('therapy')!} alt="Individual & Couples Therapy" width={360} format="webp" quality={60} loading="lazy" style="width:100%; height:100%; object-fit:cover;" />
+                    ) : null}
+                  </div>
+                  <span class="course-card-name">Individual & Couples Therapy</span>
+                </a>
+                <a href="/services/research-analysis" class="course-panel-card">
+                  <div class={`course-card-graphic ${getServiceImage('research-analysis') ? '' : 'bg-placeholder-5'}`}>
+                    {getServiceImage('research-analysis') ? (
+                      <Image src={getServiceImage('research-analysis')!} alt="Statistical & Psychometric Support" width={360} format="webp" quality={60} loading="lazy" style="width:100%; height:100%; object-fit:cover;" />
+                    ) : null}
+                  </div>
+                  <span class="course-card-name">Statistical & Psychometric Support</span>
+                </a>
+              </div>
+              <div class="mega-row-footer">
+                <a href="/services" class="mega-view-all-pill">Explore Services</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Team Dropdown -->
+        <div class="nav-item">
+          <a href="/team" class="nav-trigger">Team <span class="arrow-icon"></span></a>
+          <div class="mega-panel mega-panel--team">
+            <div class="mega-panel-container">
+              <h2 class="mega-panel-heading">Our Practitioners</h2>
+              <div class="team-panel-pair">
+                <a href="/team/sohail" class="shop-mini-card">
+                  <div class={`shop-card-thumb ${getTeamImage('sohail') ? '' : 'bg-team-sohail'}`} style="overflow:hidden;">
+                    {getTeamImage('sohail') ? (
+                      <Image src={getTeamImage('sohail')!} alt="Muhammad Sohail" width={180} format="webp" quality={60} loading="lazy" style="width:100%; height:100%; object-fit:cover;" />
+                    ) : null}
+                  </div>
+                  <span class="shop-card-label">Muhammad Sohail</span>
+                </a>
+                <a href="/team/sehar" class="shop-mini-card">
+                  <div class={`shop-card-thumb ${getTeamImage('sehar') ? '' : 'bg-team-sehar'}`} style="overflow:hidden;">
+                    {getTeamImage('sehar') ? (
+                      <Image src={getTeamImage('sehar')!} alt="Sehar Waheed" width={180} format="webp" quality={60} loading="lazy" style="width:100%; height:100%; object-fit:cover;" />
+                    ) : null}
+                  </div>
+                  <span class="shop-card-label">Sehar Waheed</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Online Courses -->
+        <div class="nav-item">
+          <a href="/courses" class="nav-trigger">Courses <span class="arrow-icon"></span></a>
+          <div class="mega-panel mega-panel--grid">
+            <div class="mega-panel-container">
+              <h2 class="mega-panel-heading">Courses</h2>
+              <div class="mega-panel-row-grid">
+                <a href="/courses" class="course-panel-card">
+                  <div class={`course-card-graphic ${getCourseImage('courses') ? '' : 'bg-placeholder-7'}`}>
+                    {getCourseImage('courses') ? (
+                      <Image src={getCourseImage('courses')!} alt="Browse All Courses" width={360} format="webp" quality={60} loading="lazy" style="width:100%; height:100%; object-fit:cover;" />
+                    ) : null}
+                  </div>
+                  <span class="course-card-name">Browse All Courses</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="nav-item"><a href="/contact" class="nav-link-standard">Contact</a></div>
+      </nav>
+
+      <!-- Header Booking CTA -->
+      <a href="/book" class="header-subscribe-btn">
+        <svg class="icon-bookmark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+        Book Session
+      </a>
+
+      <button class="menu-toggle-square-btn" id="hamburgerBtn" aria-label="Open Navigation Menu" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="18" x2="20" y2="18"></line></svg>
+      </button>
+    </div>
+  </header>
+</div>
+
+<!-- ISOLATED RESPONSIVE OVERLAY DRAWER -->
+<div class="mobile-navigation-drawer" id="mobileDrawer">
+  <div class="mobile-menu-header">
+    <span class="wordmark" style="display: inline-flex; align-items: center; gap: 10px;">
       <span class="mark" aria-hidden="true">
         <span class="mark-sq mark-sq--1"></span>
         <span class="mark-sq mark-sq--2"></span>
       </span>
-      The Psychology&nbsp;Square
-    </a>
-
-    <nav class="site-nav" aria-label="Primary">
-      <div class="nav-item"><a href="/">Home</a></div>
-      <div class="nav-item">
-        <a href="/articles">Articles</a>
-        <div class="mega-panel">
-          <div class="mega-panel-grid">
-            <a class="mega-card" href="/articles/category/anxiety">
-              <span class="mega-card-title">Anxiety</span>
-              <span class="mega-card-blurb">Practical tools for managing worry and panic.</span>
-            </a>
-            <a class="mega-card" href="/articles/category/depression">
-              <span class="mega-card-title">Depression</span>
-              <span class="mega-card-blurb">Understanding low mood and paths forward.</span>
-            </a>
-            <a class="mega-card" href="/articles/category/adhd">
-              <span class="mega-card-title">ADHD</span>
-              <span class="mega-card-blurb">Attention, focus, and daily life strategies.</span>
-            </a>
-            <a class="mega-card" href="/articles/category/addiction-recovery">
-              <span class="mega-card-title">Addiction &amp; Recovery</span>
-              <span class="mega-card-blurb">Grounded guidance through recovery.</span>
-            </a>
-            <a class="mega-card" href="/articles/category/trauma">
-              <span class="mega-card-title">Trauma</span>
-              <span class="mega-card-blurb">How trauma shows up, and what helps.</span>
-            </a>
-            <a class="mega-card" href="/articles/category/relationships">
-              <span class="mega-card-title">Relationships</span>
-              <span class="mega-card-blurb">Conflict, communication, and repair.</span>
-            </a>
-            <a class="mega-card" href="/articles/category/stress-burnout">
-              <span class="mega-card-title">Stress &amp; Burnout</span>
-              <span class="mega-card-blurb">Recognizing and recovering from burnout.</span>
-            </a>
-            <a class="mega-card mega-card--all" href="/articles">
-              <span class="mega-card-title">View all articles →</span>
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <div class="nav-item">
-        <a href="/resources">Resources</a>
-        <div class="mega-panel mega-panel--narrow">
-          <div class="mega-panel-grid mega-panel-grid--single">
-            <a class="mega-card" href="/resources/worksheets">
-              <span class="mega-card-title">Worksheets</span>
-              <span class="mega-card-blurb">Printable tools for between sessions.</span>
-            </a>
-            <a class="mega-card" href="/resources/assessments">
-              <span class="mega-card-title">Assessments</span>
-              <span class="mega-card-blurb">Public scales and how to score them.</span>
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <div class="nav-item">
-        <a href="/services">Services</a>
-        <div class="mega-panel mega-panel--narrow">
-          <div class="mega-panel-grid mega-panel-grid--single">
-            <a class="mega-card" href="/services/therapy">
-              <span class="mega-card-title">Therapy</span>
-              <span class="mega-card-blurb">Individual &amp; couples sessions.</span>
-            </a>
-            <a class="mega-card" href="/services/research-analysis">
-              <span class="mega-card-title">Research Analysis</span>
-              <span class="mega-card-blurb">Stats, psychometrics &amp; R support.</span>
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <div class="nav-item">
-        <a href="/team">Team</a>
-        <div class="mega-panel mega-panel--narrow">
-          <div class="mega-panel-grid mega-panel-grid--single">
-            <a class="mega-card" href="/team/sohail">
-              <span class="mega-card-title">Muhammad Sohail</span>
-              <span class="mega-card-blurb">Founder &amp; CEO · Clinical Psychologist</span>
-            </a>
-            <a class="mega-card" href="/team/sehar">
-              <span class="mega-card-title">Sehar Waheed</span>
-              <span class="mega-card-blurb">Co-CEO · Clinical Psychologist &amp; Counselor</span>
-            </a>
-          </div>
-        </div>
-      </div>
-      <div class="nav-item"><a href="/courses">Courses</a></div>
-      <div class="nav-item"><a href="/contact">Contact</a></div>
-    </nav>
-
-    <a href="/book" class="header-cta">Book Now</a>
-
-    <button class="hamburger-btn" id="hamburgerBtn" aria-label="Open menu" aria-expanded="false">
-      <span></span><span></span><span></span>
+      The Psychology Square
+    </span>
+    <button class="menu-close-square-btn" id="menuCloseBtn" aria-label="Close menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
     </button>
   </div>
-</header>
 
-<button class="drawer-overlay" id="drawerOverlay" aria-hidden="true"></button>
-<div class="mobile-drawer" id="mobileDrawer">
-  <div class="mobile-drawer-header">
-    <span class="wordmark-mini">The Psychology&nbsp;Square</span>
-    <button class="drawer-close-btn" id="drawerCloseBtn" aria-label="Close menu">✕</button>
+  <div class="mobile-drawer-content">
+    <div class="mobile-nav-links-container">
+      <!-- Home -->
+      <div class="mobile-nav-item mobile-single-link">
+        <a href="/" class="mobile-link-standard">Home</a>
+      </div>
+      
+      <!-- Resources Accordion -->
+      <div class="mobile-nav-item mobile-accordion-item">
+        <button class="mobile-accordion-trigger" type="button">Resources <span class="mobile-arrow-icon"></span></button>
+        <div class="mobile-accordion-panel">
+          <div class="mobile-stack-list">
+            <a href="/resources/worksheets" class="mobile-stack-card">
+              <div class={`mobile-stack-thumb ${getResourceImage('worksheets') ? '' : 'bg-placeholder-5'}`} style="overflow:hidden;">
+                {getResourceImage('worksheets') ? (
+                  <Image src={getResourceImage('worksheets')!} alt="Printable Worksheets" width={120} format="webp" quality={60} loading="lazy" style="width:100%; height:100%; object-fit:cover;" />
+                ) : null}
+              </div>
+              <div class="mobile-stack-meta">
+                <span class="mobile-stack-title">Printable Worksheets</span>
+                <span class="mobile-stack-btn">View All</span>
+              </div>
+            </a>
+            <a href="/resources/assessments" class="mobile-stack-card">
+              <div class={`mobile-stack-thumb ${getResourceImage('assessments') ? '' : 'bg-placeholder-6'}`} style="overflow:hidden;">
+                {getResourceImage('assessments') ? (
+                  <Image src={getResourceImage('assessments')!} alt="Scales & Assessments" width={120} format="webp" quality={60} loading="lazy" style="width:100%; height:100%; object-fit:cover;" />
+                ) : null}
+              </div>
+              <div class="mobile-stack-meta">
+                <span class="mobile-stack-title">Scales & Assessments</span>
+                <span class="mobile-stack-btn">View All</span>
+              </div>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Articles Accordion -->
+      <div class="mobile-nav-item mobile-accordion-item">
+        <button class="mobile-accordion-trigger" type="button">Articles <span class="mobile-arrow-icon"></span></button>
+        <div class="mobile-accordion-panel">
+          <div class="topic-slider topic-slider--mobile">
+            <button type="button" class="topic-slider-arrow topic-slider-arrow--prev" data-slider-prev aria-label="Scroll topics left">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            </button>
+            <div class="topic-slider-track mobile-swipe-carousel" data-slider-track>
+              {navAllArticleCategories.map((cat) => (
+                <a href={`/articles/category/${cat.slug}`} class="mobile-carousel-card topic-slider-item">
+                  <div class={`mobile-carousel-thumb ${cat.img ? '' : cat.graphic}`}>
+                    {cat.img && (
+                      <Image src={cat.img} alt={cat.label} width={360} format="webp" quality={60} loading="lazy" style="width:100%; height:100%; object-fit:cover;" />
+                    )}
+                  </div>
+                  <span class="mobile-carousel-label">{cat.label}</span>
+                </a>
+              ))}
+            </div>
+            <button type="button" class="topic-slider-arrow topic-slider-arrow--next" data-slider-next aria-label="Scroll topics right">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Services Accordion -->
+      <div class="mobile-nav-item mobile-accordion-item">
+        <button class="mobile-accordion-trigger" type="button">Services <span class="mobile-arrow-icon"></span></button>
+        <div class="mobile-accordion-panel">
+          <div class="mobile-swipe-carousel">
+            <a href="/services/therapy" class="mobile-carousel-card">
+              <div class={`mobile-carousel-thumb ${getServiceImage('therapy') ? '' : 'bg-placeholder-4'}`} style="overflow:hidden;">
+                {getServiceImage('therapy') ? (
+                  <Image src={getServiceImage('therapy')!} alt="Therapy" width={180} format="webp" quality={60} loading="lazy" style="width:100%; height:100%; object-fit:cover;" />
+                ) : null}
+              </div>
+              <span class="mobile-carousel-label">Therapy</span>
+            </a>
+            <a href="/services/research-analysis" class="mobile-carousel-card">
+              <div class={`mobile-carousel-thumb ${getServiceImage('research-analysis') ? '' : 'bg-placeholder-5'}`} style="overflow:hidden;">
+                {getServiceImage('research-analysis') ? (
+                  <Image src={getServiceImage('research-analysis')!} alt="Research Analysis" width={180} format="webp" quality={60} loading="lazy" style="width:100%; height:100%; object-fit:cover;" />
+                ) : null}
+              </div>
+              <span class="mobile-carousel-label">Research Analysis</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Team Accordion -->
+      <div class="mobile-nav-item mobile-accordion-item">
+        <button class="mobile-accordion-trigger" type="button">Team <span class="mobile-arrow-icon"></span></button>
+        <div class="mobile-accordion-panel">
+          <div class="mobile-stack-list">
+            <a href="/team/sohail" class="mobile-stack-card">
+              <div class={`mobile-stack-thumb mobile-avatar ${getTeamImage('sohail') ? '' : 'bg-team-sohail'}`} style="overflow:hidden;">
+                {getTeamImage('sohail') ? (
+                  <Image src={getTeamImage('sohail')!} alt="Muhammad Sohail" width={120} format="webp" quality={60} loading="lazy" style="width:100%; height:100%; object-fit:cover;" />
+                ) : null}
+              </div>
+              <div class="mobile-stack-meta"><span class="mobile-stack-title">Muhammad Sohail</span></div>
+            </a>
+            <a href="/team/sehar" class="mobile-stack-card">
+              <div class={`mobile-stack-thumb mobile-avatar ${getTeamImage('sehar') ? '' : 'bg-team-sehar'}`} style="overflow:hidden;">
+                {getTeamImage('sehar') ? (
+                  <Image src={getTeamImage('sehar')!} alt="Sehar Waheed" width={120} format="webp" quality={60} loading="lazy" style="width:100%; height:100%; object-fit:cover;" />
+                ) : null}
+              </div>
+              <div class="mobile-stack-meta"><span class="mobile-stack-title">Sehar Waheed</span></div>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Courses Accordion -->
+      <div class="mobile-nav-item mobile-accordion-item">
+        <button class="mobile-accordion-trigger" type="button">Courses <span class="mobile-arrow-icon"></span></button>
+        <div class="mobile-accordion-panel">
+          <div class="mobile-swipe-carousel">
+            <a href="/courses" class="mobile-carousel-card mobile-wide-card">
+              <div class={`mobile-carousel-thumb ${getCourseImage('courses') ? '' : 'bg-placeholder-7'}`} style="overflow:hidden;">
+                {getCourseImage('courses') ? (
+                  <Image src={getCourseImage('courses')!} alt="Browse All Courses" width={180} format="webp" quality={60} loading="lazy" style="width:100%; height:100%; object-fit:cover;" />
+                ) : null}
+              </div>
+              <span class="mobile-carousel-label">Browse All Courses</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contact -->
+      <div class="mobile-nav-item mobile-single-link">
+        <a href="/contact" class="mobile-link-standard">Contact</a>
+      </div>
+      
+      <!-- Mobile Dedicated Action Link -->
+      <div class="mobile-menu-booking-wrapper">
+        <a href="/book" class="mobile-footer-cta-btn">Book Online Session</a>
+      </div>
+    </div>
   </div>
-  <nav class="mobile-nav">
-    <a href="/" class="mobile-nav-link">Home</a>
-    <details class="mobile-nav-group">
-      <summary>Articles</summary>
-      <div class="mobile-nav-links">
-        <a href="/articles/category/anxiety">Anxiety</a>
-        <a href="/articles/category/depression">Depression</a>
-        <a href="/articles/category/adhd">ADHD</a>
-        <a href="/articles/category/addiction-recovery">Addiction &amp; Recovery</a>
-        <a href="/articles/category/trauma">Trauma</a>
-        <a href="/articles/category/relationships">Relationships</a>
-        <a href="/articles/category/stress-burnout">Stress &amp; Burnout</a>
-        <a href="/articles">View all articles →</a>
-      </div>
-    </details>
-    <details class="mobile-nav-group">
-      <summary>Resources</summary>
-      <div class="mobile-nav-links">
-        <a href="/resources/worksheets">Worksheets</a>
-        <a href="/resources/assessments">Assessments</a>
-        <a href="/resources">View all resources →</a>
-      </div>
-    </details>
-    <details class="mobile-nav-group">
-      <summary>Services</summary>
-      <div class="mobile-nav-links">
-        <a href="/services/therapy">Therapy</a>
-        <a href="/services/research-analysis">Research Analysis</a>
-        <a href="/services">View all services →</a>
-      </div>
-    </details>
-    <details class="mobile-nav-group">
-      <summary>Team</summary>
-      <div class="mobile-nav-links">
-        <a href="/team/sohail">Muhammad Sohail</a>
-        <a href="/team/sehar">Sehar Waheed</a>
-        <a href="/team">View all team →</a>
-      </div>
-    </details>
-    <a href="/courses" class="mobile-nav-link">Courses</a>
-    <a href="/contact" class="mobile-nav-link">Contact</a>
-  </nav>
-  <a href="/book" class="btn btn--primary mobile-drawer-cta">Book Now</a>
 </div>
+
+<script>
+  const hamburgerBtn = document.getElementById('hamburgerBtn');
+  const menuCloseBtn = document.getElementById('menuCloseBtn');
+  const mobileDrawer = document.getElementById('mobileDrawer');
+
+  if (hamburgerBtn && mobileDrawer && menuCloseBtn) {
+    hamburgerBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      mobileDrawer.classList.add('is-active');
+      hamburgerBtn.setAttribute('aria-expanded', 'true');
+      document.body.classList.add('nav-menu-locked');
+    });
+
+    menuCloseBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      mobileDrawer.classList.remove('is-active');
+      hamburgerBtn.setAttribute('aria-expanded', 'false');
+      document.body.classList.remove('nav-menu-locked');
+    });
+
+    const mobileAccoTriggers = document.querySelectorAll('.mobile-accordion-trigger');
+    mobileAccoTriggers.forEach(trigger => {
+      trigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const parentItem = trigger.parentElement;
+        const stateActive = parentItem.classList.contains('mobile-expanded');
+        
+        document.querySelectorAll('.mobile-accordion-item').forEach(el => el.classList.remove('mobile-expanded'));
+        
+        if (!stateActive) {
+          parentItem.classList.add('mobile-expanded');
+        }
+      });
+    });
+  }
+
+  document.querySelectorAll('.topic-slider').forEach((slider) => {
+    const track = slider.querySelector('[data-slider-track]');
+    const prevBtn = slider.querySelector('[data-slider-prev]');
+    const nextBtn = slider.querySelector('[data-slider-next]');
+    if (!track || !prevBtn || !nextBtn) return;
+
+    const step = () => Math.max(track.clientWidth * 0.8, 180);
+    prevBtn.addEventListener('click', () => {
+      track.scrollBy({ left: -step(), behavior: 'smooth' });
+      prevBtn.blur();
+    });
+    nextBtn.addEventListener('click', () => {
+      track.scrollBy({ left: step(), behavior: 'smooth' });
+      nextBtn.blur();
+    });
+  });
+</script>
+
+<style>
+  .topic-slider {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .topic-slider-track {
+    display: flex;
+    gap: 16px;
+    flex: 1;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    margin-bottom: 20px;
+    mask-image: linear-gradient(to right, transparent 0, black 20px, black calc(100% - 20px), transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, transparent 0, black 20px, black calc(100% - 20px), transparent 100%);
+  }
+
+  .topic-slider-track::-webkit-scrollbar {
+    display: none;
+  }
+
+  .topic-slider-track > .topic-slider-item {
+    scroll-snap-align: start;
+    flex: 0 0 180px;
+  }
+
+  .topic-slider-arrow {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    margin-bottom: 20px;
+    border-radius: 999px;
+    border: 1px solid rgba(19, 26, 34, 0.16);
+    background: #fff;
+    color: var(--ink-900);
+    cursor: pointer;
+    transition: background 0.2s var(--ease), border-color 0.2s var(--ease), transform 0.15s var(--ease);
+  }
+
+  .topic-slider-arrow:hover {
+    background: var(--ink-900);
+    color: #F4F1EA;
+    border-color: var(--ink-900);
+    transform: translateY(-1px);
+  }
+
+  .topic-slider-arrow svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .topic-slider--mobile .topic-slider-track > .topic-slider-item {
+    flex: 0 0 145px;
+  }
+
+  .topic-slider--mobile .topic-slider-arrow {
+    width: 28px;
+    height: 28px;
+    margin-bottom: 8px;
+  }
+
+  .topic-slider--mobile .topic-slider-track {
+    margin-bottom: 0;
+  }
+
+  @media (max-width: 640px) {
+    .topic-slider-arrow {
+      display: none;
+    }
+  }
+</style>
 
 <main>
   <slot />
@@ -240,29 +607,5 @@ const ogImage = new URL('/images/og-cover.jpg', canonicalURL.origin);
     <span>Johar Town, Lahore, Pakistan — Online &amp; in-person sessions</span>
   </div>
 </footer>
-
-<script>
-  const hamburgerBtn = document.getElementById('hamburgerBtn');
-  const drawer = document.getElementById('mobileDrawer');
-  const overlay = document.getElementById('drawerOverlay');
-  const closeBtn = document.getElementById('drawerCloseBtn');
-
-  function openDrawer() {
-    drawer?.classList.add('is-open');
-    overlay?.classList.add('is-open');
-    hamburgerBtn?.setAttribute('aria-expanded', 'true');
-    document.body.style.overflow = 'hidden';
-  }
-  function closeDrawer() {
-    drawer?.classList.remove('is-open');
-    overlay?.classList.remove('is-open');
-    hamburgerBtn?.setAttribute('aria-expanded', 'false');
-    document.body.style.overflow = '';
-  }
-
-  hamburgerBtn?.addEventListener('click', openDrawer);
-  closeBtn?.addEventListener('click', closeDrawer);
-  overlay?.addEventListener('click', closeDrawer);
-</script>
 </body>
 </html>
