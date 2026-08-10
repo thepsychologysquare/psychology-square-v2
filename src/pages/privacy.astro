@@ -1,0 +1,63 @@
+---
+import Layout from '../layouts/Layout.astro';
+const lastUpdated = 'August 2026';
+---
+<Layout title="Privacy Policy" description="How The Psychology Square collects, uses, and protects your information.">
+  <section class="hero">
+    <div class="wrap">
+      <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <a href="/">Home</a><span class="crumb-sep">/</span><span class="crumb-current">Privacy Policy</span>
+      </nav>
+      <p class="eyebrow">Legal</p>
+      <h1 class="hero-title" style="font-size: clamp(30px, 3.6vw, 44px); margin-bottom: 10px;">Privacy Policy</h1>
+      <p class="hero-sub">Last updated: {lastUpdated}</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap prose" style="max-width: 760px;">
+      <h2>What we collect</h2>
+      <p>Depending on which service you use, we may collect: your name, email, and phone number (contact, booking, and tutoring request forms); payment confirmation screenshots (therapy bookings); research datasets and study details you share with us (research analysis service); and account details if you enroll in a paid course (name, email, course progress, certificates).</p>
+
+      <h2>How we use it</h2>
+      <p>We use this information to respond to your inquiry, schedule and deliver sessions or classes, process and confirm payments, carry out the analysis or coursework you've requested, and issue certificates where applicable. We do not sell your information.</p>
+
+      <h2>Sensitive information</h2>
+      <p>Anything you share in the course of therapy is treated as clinically confidential, with standard exceptions such as risk of serious harm to yourself or others, or where disclosure is required by law. Research datasets are used solely for the agreed analysis and are not shared, published, or reused without your consent.</p>
+
+      <h2>Sharing</h2>
+      <p>Information is only shared with the specific practitioner, tutor, or analyst assigned to your case, or with payment processors as needed to confirm a transaction. We do not share your data with third parties for marketing purposes.</p>
+
+      <h2>Data retention & security</h2>
+      <p>We take reasonable technical and organizational measures to keep your information secure, and retain it only as long as needed to provide the service or as required by law. Files related to research analysis are deleted after an agreed retention period.</p>
+
+      <h2>Minors</h2>
+      <p>Some of our services (such as O Level and A Level tutoring) may involve students under 18. Where this is the case, we expect a parent or guardian to be aware of and consent to enrollment, and we will direct billing and scheduling communication to the responsible adult wherever possible.</p>
+
+      <h2>Cookies</h2>
+      <p>Our website may use basic cookies to keep the site functioning correctly and to understand general usage patterns. These do not include sensitive personal data.</p>
+
+      <h2>Your rights</h2>
+      <p>You can request access to, correction of, or deletion of your personal information at any time by emailing us.</p>
+
+      <h2>Changes to this policy</h2>
+      <p>We may update this policy from time to time. The "last updated" date above reflects the most recent revision.</p>
+
+      <h2>Contact</h2>
+      <p>Questions about this policy? Email <a href="mailto:info@thepsychologysquare.com">info@thepsychologysquare.com</a>.</p>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .breadcrumbs{ font-family: var(--font-mono); font-size: 12px; color: rgba(248,249,246,0.6); margin-bottom: 20px; display:flex; gap:6px; align-items:center; }
+  .breadcrumbs a:hover{ color: var(--gold-300); }
+  .crumb-sep{ color: rgba(248,249,246,0.3); }
+  .crumb-current{ color: rgba(248,249,246,0.85); }
+  .prose{ font-size: 16px; line-height: 1.75; color: var(--ink-900); }
+  .prose h2{ font-family: var(--font-display); font-size: 21px; margin: 34px 0 10px; }
+  .prose h2:first-child{ margin-top: 0; }
+  .prose p{ margin-bottom: 4px; color: var(--ink-600); }
+  .prose a{ color: var(--navy-700); text-decoration: underline; text-underline-offset: 2px; }
+  .prose a:hover{ color: var(--gold-500); }
+</style>
