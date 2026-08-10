@@ -1,0 +1,51 @@
+---
+import Layout from '../layouts/Layout.astro';
+const lastUpdated = 'August 2026';
+---
+<Layout title="Disclaimer" description="Important information about the scope of The Psychology Square's services.">
+  <section class="hero">
+    <div class="wrap">
+      <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <a href="/">Home</a><span class="crumb-sep">/</span><span class="crumb-current">Disclaimer</span>
+      </nav>
+      <p class="eyebrow">Legal</p>
+      <h1 class="hero-title" style="font-size: clamp(30px, 3.6vw, 44px); margin-bottom: 10px;">Disclaimer</h1>
+      <p class="hero-sub">Last updated: {lastUpdated}</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap prose" style="max-width: 760px;">
+      <h2>Not a crisis or emergency service</h2>
+      <p>The Psychology Square provides scheduled, outpatient therapy and academic support. We are not equipped for crisis intervention or psychiatric emergencies. If you or someone you know is experiencing suicidal ideation, severe self-harm urges, or any medical emergency, please contact your local emergency services or go to the nearest hospital emergency department immediately.</p>
+
+      <h2>Therapy is not a substitute for medical care</h2>
+      <p>Our therapy services are provided by qualified psychologists but do not replace psychiatric or medical treatment where that is needed. Formal diagnoses are only made during designated clinical assessment sessions — general articles, worksheets, and self-assessment tools on this site are for educational purposes only and are not a diagnosis.</p>
+
+      <h2>Research analysis is consulting, not authorship</h2>
+      <p>Our research and statistical analysis service acts as a consultant, not a ghostwriter. You retain ownership of your research questions, interpretation, and written thesis; we are not responsible for how findings are used in your final submission, nor for your institution's academic integrity determinations.</p>
+
+      <h2>Tutoring outcomes</h2>
+      <p>Tutoring is intended to support a student's understanding of the subject matter. We do not guarantee specific grades, exam results, or admission outcomes.</p>
+
+      <h2>Website content</h2>
+      <p>Articles and resources on this site reflect general knowledge in psychology and are provided for informational purposes. They should not be treated as personalized clinical, legal, or financial advice.</p>
+
+      <h2>Contact</h2>
+      <p>Questions about this disclaimer? Email <a href="mailto:info@thepsychologysquare.com">info@thepsychologysquare.com</a>.</p>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .breadcrumbs{ font-family: var(--font-mono); font-size: 12px; color: rgba(248,249,246,0.6); margin-bottom: 20px; display:flex; gap:6px; align-items:center; }
+  .breadcrumbs a:hover{ color: var(--gold-300); }
+  .crumb-sep{ color: rgba(248,249,246,0.3); }
+  .crumb-current{ color: rgba(248,249,246,0.85); }
+  .prose{ font-size: 16px; line-height: 1.75; color: var(--ink-900); }
+  .prose h2{ font-family: var(--font-display); font-size: 21px; margin: 34px 0 10px; }
+  .prose h2:first-child{ margin-top: 0; }
+  .prose p{ margin-bottom: 4px; color: var(--ink-600); }
+  .prose a{ color: var(--navy-700); text-decoration: underline; text-underline-offset: 2px; }
+  .prose a:hover{ color: var(--gold-500); }
+</style>
