@@ -1,0 +1,63 @@
+---
+import Layout from '../layouts/Layout.astro';
+const lastUpdated = 'August 2026';
+---
+<Layout title="Terms of Service" description="Terms of Service for The Psychology Square website and services.">
+  <section class="hero">
+    <div class="wrap">
+      <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <a href="/">Home</a><span class="crumb-sep">/</span><span class="crumb-current">Terms of Service</span>
+      </nav>
+      <p class="eyebrow">Legal</p>
+      <h1 class="hero-title" style="font-size: clamp(30px, 3.6vw, 44px); margin-bottom: 10px;">Terms of Service</h1>
+      <p class="hero-sub">Last updated: {lastUpdated}</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap prose" style="max-width: 760px;">
+      <h2>Who we are</h2>
+      <p>The Psychology Square ("we", "us") provides therapy, psychology tutoring, research and statistical analysis consulting, and online courses, based in Johar Town, Lahore, Pakistan. By using this website or any of our services, you agree to these terms.</p>
+
+      <h2>Our services</h2>
+      <p>Services are booked or requested through the forms on this site and confirmed by email or WhatsApp. Pricing shown on the site is indicative and may be updated from time to time; the price confirmed at the time of booking applies to your engagement.</p>
+
+      <h2>Accounts & courses</h2>
+      <p>If you create an account to access a paid course, you're responsible for keeping your login details secure and for all activity under your account. Course content and certificates are for your personal use and may not be redistributed or resold.</p>
+
+      <h2>Payments</h2>
+      <p>Payments are made via the methods indicated at checkout or booking (e.g. bank transfer, JazzCash). Refunds and cancellations are governed by our <a href="/refund-and-cancellation">Refund &amp; Cancellation Policy</a>.</p>
+
+      <h2>Not a crisis service</h2>
+      <p>Our therapy and tutoring services are scheduled, outpatient services and are not equipped for emergencies. See our <a href="/disclaimer">Disclaimer</a> for details on what to do in a crisis.</p>
+
+      <h2>Acceptable use</h2>
+      <p>You agree not to misuse the site — including attempting to access other users' data, disrupting the service, or submitting false information when booking or enrolling.</p>
+
+      <h2>Intellectual property</h2>
+      <p>Articles, worksheets, course materials, and other content on this site belong to The Psychology Square unless stated otherwise, and may not be reproduced commercially without permission.</p>
+
+      <h2>Limitation of liability</h2>
+      <p>We provide our services with reasonable skill and care, but do not guarantee specific outcomes (academic, therapeutic, or research-related). To the extent permitted by law, we are not liable for indirect or consequential losses arising from use of our services.</p>
+
+      <h2>Changes to these terms</h2>
+      <p>We may update these terms from time to time; continued use of the site after changes means you accept the updated terms.</p>
+
+      <h2>Contact</h2>
+      <p>Questions about these terms? Email <a href="mailto:info@thepsychologysquare.com">info@thepsychologysquare.com</a>.</p>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .breadcrumbs{ font-family: var(--font-mono); font-size: 12px; color: rgba(248,249,246,0.6); margin-bottom: 20px; display:flex; gap:6px; align-items:center; }
+  .breadcrumbs a:hover{ color: var(--gold-300); }
+  .crumb-sep{ color: rgba(248,249,246,0.3); }
+  .crumb-current{ color: rgba(248,249,246,0.85); }
+  .prose{ font-size: 16px; line-height: 1.75; color: var(--ink-900); }
+  .prose h2{ font-family: var(--font-display); font-size: 21px; margin: 34px 0 10px; }
+  .prose h2:first-child{ margin-top: 0; }
+  .prose p{ margin-bottom: 4px; color: var(--ink-600); }
+  .prose a{ color: var(--navy-700); text-decoration: underline; text-underline-offset: 2px; }
+  .prose a:hover{ color: var(--gold-500); }
+</style>
