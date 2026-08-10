@@ -1,0 +1,48 @@
+---
+import Layout from '../layouts/Layout.astro';
+const lastUpdated = 'August 2026';
+---
+<Layout title="Refund & Cancellation Policy" description="Our refund, rescheduling, and cancellation policy for therapy, tutoring, research analysis, and courses.">
+  <section class="hero">
+    <div class="wrap">
+      <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <a href="/">Home</a><span class="crumb-sep">/</span><span class="crumb-current">Refund &amp; Cancellation Policy</span>
+      </nav>
+      <p class="eyebrow">Legal</p>
+      <h1 class="hero-title" style="font-size: clamp(30px, 3.6vw, 44px); margin-bottom: 10px;">Refund &amp; Cancellation Policy</h1>
+      <p class="hero-sub">Last updated: {lastUpdated}</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap prose" style="max-width: 760px;">
+      <h2>Therapy sessions</h2>
+      <p>Sessions can be rescheduled with at least 24 hours' notice, subject to slot availability. Booked sessions are non-refundable in all cases. No-shows and missed appointments forfeit the full session fee.</p>
+
+      <h2>Psychology tutoring</h2>
+      <p>The monthly fee is payable in advance and covers the agreed number of classes for that month. Classes cancelled by the student with less than 24 hours' notice are forfeited. Classes cancelled or missed by us are rescheduled at no extra cost. The monthly fee is non-refundable once classes for that month have begun; a request to discontinue before the first class of a new month is eligible for a refund of that month's fee.</p>
+
+      <h2>Research analysis</h2>
+      <p>Work begins only after a proposal and quote have been confirmed. If you cancel before analysis has started, any advance payment is refunded in full. Once analysis work is underway, fees become non-refundable, as they reflect time and effort already committed.</p>
+
+      <h2>Online courses</h2>
+      <p>Once a course has been purchased and content has been accessed, it is non-refundable. If you believe you were charged in error, contact us within 7 days of purchase and we'll review it.</p>
+
+      <h2>Contact</h2>
+      <p>For any cancellation, rescheduling, or refund request, email <a href="mailto:info@thepsychologysquare.com">info@thepsychologysquare.com</a> and we'll get back to you promptly.</p>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .breadcrumbs{ font-family: var(--font-mono); font-size: 12px; color: rgba(248,249,246,0.6); margin-bottom: 20px; display:flex; gap:6px; align-items:center; }
+  .breadcrumbs a:hover{ color: var(--gold-300); }
+  .crumb-sep{ color: rgba(248,249,246,0.3); }
+  .crumb-current{ color: rgba(248,249,246,0.85); }
+  .prose{ font-size: 16px; line-height: 1.75; color: var(--ink-900); }
+  .prose h2{ font-family: var(--font-display); font-size: 21px; margin: 34px 0 10px; }
+  .prose h2:first-child{ margin-top: 0; }
+  .prose p{ margin-bottom: 4px; color: var(--ink-600); }
+  .prose a{ color: var(--navy-700); text-decoration: underline; text-underline-offset: 2px; }
+  .prose a:hover{ color: var(--gold-500); }
+</style>
