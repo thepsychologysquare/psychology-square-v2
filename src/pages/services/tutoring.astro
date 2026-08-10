@@ -1,5 +1,17 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import { Image } from 'astro:assets';
+
+const images = import.meta.glob<{ default: ImageMetadata }>('/src/assets/services/*.jpg');
+
+async function getServiceImage(imagePath: string) {
+  const fullPath = `/src/assets/services/${imagePath}`;
+  if (images[fullPath]) {
+    const img = await images[fullPath]();
+    return img.default;
+  }
+  return null;
+}
 
 const siteOrigin = 'https://www.thepsychologysquare.com';
 
@@ -9,7 +21,7 @@ const serviceJson = {
   "serviceType": "Psychology Tutoring",
   "provider": { "@type": "Organization", "name": "The Psychology Square", "url": siteOrigin },
   "areaServed": "Pakistan",
-  "url": `${siteOrigin}/tutoring`,
+  "url": `${siteOrigin}/services/tutoring`,
   "description": "One-to-one psychology tutoring for O Level, A Level, BS, MSc, MS and MPhil students across Pakistan — two classes a week per subject, evenings and weekends.",
   "offers": {
     "@type": "Offer",
@@ -50,6 +62,13 @@ const subjects = [
   { name: 'O/A Level Psychology (Cambridge)', category: 'school', image: 'tutoring-cambridge-psychology.jpg' },
   { name: 'Thesis & Research Supervision', category: 'research', image: 'tutoring-thesis-supervision.jpg' }
 ];
+
+const subjectsWithImages = await Promise.all(
+  subjects.map(async (s) => ({
+    ...s,
+    resolvedImage: await getServiceImage(s.image)
+  }))
+);
 
 const approach = [
   {
@@ -154,17 +173,19 @@ const approach = [
       </div>
 
       <div class="subjects-grid" id="subjectsGrid">
-        {subjects.map((s) => (
+        {subjectsWithImages.map((s) => (
           <div class="subject-card" data-category={s.category}>
             <div class="subject-card-img-wrap">
-              <img 
-                src={`/src/assets/services/${s.image}`} 
-                alt={s.name} 
-                class="subject-card-img"
-                loading="lazy"
-                onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
-              />
-              <div class="subject-card-fallback bg-placeholder-1" style="display:none;"></div>
+              {s.resolvedImage ? (
+                <Image 
+                  src={s.resolvedImage} 
+                  alt={s.name} 
+                  class="subject-card-img"
+                  loading="lazy"
+                />
+              ) : (
+                <div class="subject-card-fallback bg-placeholder-1"></div>
+              )}
             </div>
             <div class="subject-card-content">
               <span class="subject-category-tag">{s.category}</span>
@@ -572,18 +593,4 @@ const approach = [
       });
     });
   });
-
-  function paintSignature(id, filledGoldArr, filledSageArr) {
-    const grid = document.getElementById(id);
-    if (!grid) return;
-    const filledGold = new Set(filledGoldArr);
-    const filledSage = new Set(filledSageArr);
-    for (let i = 0; i < 36; i++) {
-      const cell = document.createElement('span');
-      if (filledGold.has(i)) cell.classList.add('filled');
-      if (filledSage.has(i)) cell.classList.add('filled-sage');
-      grid.appendChild(cell);
-    }
-  }
-  paintSignature('gridSignatureTutoring', [1, 8, 15, 20, 26, 33], [6, 13, 22, 29]);
 </script>
