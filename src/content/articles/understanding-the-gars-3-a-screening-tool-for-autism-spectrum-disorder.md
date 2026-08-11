@@ -3,7 +3,7 @@ title: "Understanding the GARS-3: A Screening Tool for Autism Spectrum Disorder"
 description: Learn how the Gilliam Autism Rating Scale (GARS-3) works, its key subscales,
 image: /images/understanding-the-gars-3-a-screening-tool-for-autism-spectrum-disorder.jpg
 imageAlt: "Understanding the GARS-3: A Screening Tool for Autism Spectrum Disorder"
-category: adhd
+category: autism
 tags:
   - Scales
 author: Muhammad Sohail
