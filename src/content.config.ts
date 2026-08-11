@@ -1,14 +1,17 @@
 import { defineCollection, z } from 'astro:content';
 import { glob } from 'astro/loaders';
-const categoryEnum = z.enum([
-  'anxiety',
-  'depression',
-  'addiction-recovery',
-  'trauma',
-  'relationships',
-  'stress-burnout',
-  'adhd',
-]);
+// Categories used to be a fixed list here (z.enum). They're now managed
+// as their own Decap collection (src/content/categories) so new categories
+// can be added from the CMS without touching code — see the "categories"
+// collection below and the "Category"/"Topic" relation fields in
+// public/admin/config.yml. Any string is accepted here on purpose.
+const categoryEnum = z.string();
+const categories = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/categories' }),
+  schema: z.object({
+    name: z.string(),
+  }),
+});
 const articles = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/articles' }),
   schema: z.object({
@@ -32,10 +35,7 @@ const worksheets = defineCollection({
     title: z.string(),
     description: z.string(),
     tier: z.enum(['free', 'paid']),
-    category: z.enum([
-      'anxiety', 'depression', 'addiction-recovery', 'trauma',
-      'relationships', 'stress-burnout', 'adhd', 'general',
-    ]).default('general'),
+    category: z.string().default('general'),
     age: z.array(z.enum(['children', 'adults'])).default(['adults']),
     fileUrl: z.string().optional(),
     order: z.number().default(0),
@@ -50,10 +50,7 @@ const assessments = defineCollection({
   schema: z.object({
     title: z.string(),
     description: z.string(),
-    category: z.enum([
-      'anxiety', 'depression', 'addiction-recovery', 'trauma',
-      'relationships', 'stress-burnout', 'adhd', 'general',
-    ]).default('general'),
+    category: z.string().default('general'),
     age: z.array(z.enum(['children', 'adults'])).default(['adults']),
     pdfUrl: z.string(),
     scoringSummary: z.string(),
@@ -118,4 +115,4 @@ const courseModules = defineCollection({
   }),
 });
 
-export const collections = { articles, worksheets, assessments, courses, courseModules };
+export const collections = { articles, worksheets, assessments, courses, courseModules, categories };

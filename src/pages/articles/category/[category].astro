@@ -3,15 +3,12 @@ import { getCollection } from 'astro:content';
 import Layout from '../../../layouts/Layout.astro';
 
 export async function getStaticPaths() {
-  const categories = [
-    'anxiety',
-    'depression',
-    'adhd',
-    'addiction-recovery',
-    'trauma',
-    'relationships',
-    'stress-burnout',
-  ];
+  // Category pages are generated from whatever categories the articles
+  // actually use, rather than a fixed list — so a new category added in
+  // Decap (via the "categories" collection) automatically gets a working
+  // /articles/category/... page with no code changes needed.
+  const allArticles = await getCollection('articles', ({ data }) => !data.draft);
+  const categories = [...new Set(allArticles.map((a) => a.data.category))];
   return categories.map((category) => ({ params: { category } }));
 }
 
@@ -26,7 +23,10 @@ const categoryMeta: Record<string, { name: string; blurb: string }> = {
 };
 
 const { category } = Astro.params;
-const meta = categoryMeta[category as string];
+const meta = categoryMeta[category as string] || {
+  name: category as string,
+  blurb: 'Articles on this topic.',
+};
 
 const allArticles = await getCollection('articles', ({ data }) => !data.draft);
 const categoryArticles = allArticles

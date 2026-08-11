@@ -78,7 +78,7 @@ const mainImgSrc = typeof article.data.image === 'string' ? article.data.image :
     "itemListElement": [
       { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.thepsychologysquare.com/" },
       { "@type": "ListItem", "position": 2, "name": "Articles", "item": "https://www.thepsychologysquare.com/articles" },
-      { "@type": "ListItem", "position": 3, "name": categoryMeta[article.data.category], "item": `https://www.thepsychologysquare.com/articles/category/${article.data.category}` },
+      { "@type": "ListItem", "position": 3, "name": categoryMeta[article.data.category] || article.data.category, "item": `https://www.thepsychologysquare.com/articles/category/${article.data.category}` },
       { "@type": "ListItem", "position": 4, "name": article.data.title, "item": `https://www.thepsychologysquare.com${canonicalPath}` }
     ]
   })} />
@@ -89,13 +89,13 @@ const mainImgSrc = typeof article.data.image === 'string' ? article.data.image :
         <span class="crumb-sep">/</span>
         <a href="/articles">Articles</a>
         <span class="crumb-sep">/</span>
-        <a href={`/articles/category/${article.data.category}`}>{categoryMeta[article.data.category]}</a>
+        <a href={`/articles/category/${article.data.category}`}>{categoryMeta[article.data.category] || article.data.category}</a>
         <span class="crumb-sep">/</span>
         <span class="crumb-current">{article.data.title}</span>
       </nav>
 
       <span class="article-meta" style="display:block; margin-bottom: 14px;">
-        {categoryMeta[article.data.category]}{article.data.subcategory && <> / {article.data.subcategory}</>}
+        {categoryMeta[article.data.category] || article.data.category}{article.data.subcategory && <> / {article.data.subcategory}</>}
       </span>
       <h1 class="article-title">{article.data.title}</h1>
 
@@ -150,7 +150,7 @@ const mainImgSrc = typeof article.data.image === 'string' ? article.data.image :
                   </div>
                 )}
                 <div class="card-body">
-                  <span class="article-meta">{categoryMeta[a.data.category]}</span>
+                  <span class="article-meta">{categoryMeta[a.data.category] || a.data.category}</span>
                   <h3>{a.data.title}</h3>
                   <p>{a.data.description}</p>
                 </div>

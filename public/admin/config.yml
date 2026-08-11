@@ -9,6 +9,14 @@ media_folder: "public/images"
 public_folder: "/images"
 
 collections:
+  - name: "categories"
+    label: "Categories"
+    folder: "src/content/categories"
+    create: true
+    slug: "{{fields.name}}"
+    fields:
+      - {label: "Name", name: "name", widget: "string", hint: "e.g. Anxiety, Grief & Loss, Stress & Burnout. Add a new category here first, then it becomes pickable on Articles/Worksheets/Assessments."}
+
   - name: "articles"
     label: "Articles"
     folder: "src/content/articles"
@@ -21,15 +29,12 @@ collections:
       - {label: "Image Alt Text", name: "imageAlt", widget: "string", required: false, hint: "Brief description of the image for accessibility/SEO."}
       - label: "Category"
         name: "category"
-        widget: "select"
-        options:
-          - {label: "Anxiety", value: "anxiety"}
-          - {label: "Depression", value: "depression"}
-          - {label: "ADHD", value: "adhd"}
-          - {label: "Addiction & Recovery", value: "addiction-recovery"}
-          - {label: "Trauma", value: "trauma"}
-          - {label: "Relationships", value: "relationships"}
-          - {label: "Stress & Burnout", value: "stress-burnout"}
+        widget: "relation"
+        collection: "categories"
+        search_fields: ["name"]
+        display_fields: ["name"]
+        value_field: "{{slug}}"
+        hint: "Search for an existing category. Don't see it? Go to the Categories tab, add it there, then come back here."
       - {label: "Subcategory", name: "subcategory", widget: "string", required: false, hint: "Optional — a more specific label, e.g. 'coping-skills' or 'couples-conflict'."}
       - {label: "Tags", name: "tags", widget: "list", default: []}
       - label: "Author"
@@ -63,17 +68,13 @@ collections:
           - {label: "Paid", value: "paid"}
       - label: "Topic"
         name: "category"
-        widget: "select"
+        widget: "relation"
+        collection: "categories"
+        search_fields: ["name"]
+        display_fields: ["name"]
+        value_field: "{{slug}}"
         default: "general"
-        options:
-          - {label: "General", value: "general"}
-          - {label: "Anxiety", value: "anxiety"}
-          - {label: "Depression", value: "depression"}
-          - {label: "ADHD", value: "adhd"}
-          - {label: "Addiction & Recovery", value: "addiction-recovery"}
-          - {label: "Trauma", value: "trauma"}
-          - {label: "Relationships", value: "relationships"}
-          - {label: "Stress & Burnout", value: "stress-burnout"}
+        hint: "Search for an existing category. Don't see it? Go to the Categories tab, add it there, then come back here."
       - label: "Age"
         name: "age"
         widget: "select"
@@ -108,17 +109,13 @@ collections:
       - {label: "Description", name: "description", widget: "text", hint: "What the scale measures, in one or two sentences."}
       - label: "Topic"
         name: "category"
-        widget: "select"
+        widget: "relation"
+        collection: "categories"
+        search_fields: ["name"]
+        display_fields: ["name"]
+        value_field: "{{slug}}"
         default: "general"
-        options:
-          - {label: "General", value: "general"}
-          - {label: "Anxiety", value: "anxiety"}
-          - {label: "Depression", value: "depression"}
-          - {label: "ADHD", value: "adhd"}
-          - {label: "Addiction & Recovery", value: "addiction-recovery"}
-          - {label: "Trauma", value: "trauma"}
-          - {label: "Relationships", value: "relationships"}
-          - {label: "Stress & Burnout", value: "stress-burnout"}
+        hint: "Search for an existing category. Don't see it? Go to the Categories tab, add it there, then come back here."
       - label: "Age"
         name: "age"
         widget: "select"
