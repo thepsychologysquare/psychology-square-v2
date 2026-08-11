@@ -142,16 +142,16 @@ const approach = [
   <section class="section">
     <div class="wrap">
       <div class="section-head-2">
-        <h2 class="section-title">We Cater Every Student</h2>
+        <h2 class="section-title">We Cover All Subjects</h2>
       </div>
       <div class="level-row">
-        {levels.map((l) => (
-          <div class="level-pill">
-            <span class="level-pill-name">{l.name}</span>
-            <span class="level-pill-tag">{l.tag}</span>
-          </div>
-        ))}
-      </div>
+  {levels.map((l) => (
+    <div class="level-pill" key={l.name}>
+      <small>{l.tag}</small>
+      <span>{l.name}</span>
+    </div>
+  ))}
+</div>
     </div>
   </section>
 
@@ -159,10 +159,6 @@ const approach = [
   <section class="section section--alt tut-subjects" id="subjects">
     <div class="wrap">
       <div class="section-head-2">
-        <div>
-          <h2 class="section-title">Subjects we cover</h2>
-          <p class="section-sub">We tutor all psychology related subjects, including but not limited to the following. Filter by field or explore our full curriculum below.</p>
-        </div>
         <div class="subject-filters" role="tablist" aria-label="Subject categories">
           <button type="button" class="filter-btn active" data-filter="all">All Subjects</button>
           <button type="button" class="filter-btn" data-filter="core">Core Psychology</button>
@@ -251,7 +247,7 @@ const approach = [
         <p class="section-sub">Tell us the level and subject(s) — we'll follow up to confirm a schedule.</p>
       </div>
 
-      <form action="https://formspree.io/f/mdaqlngp" method="POST" class="request-form">
+      <form action="https://formspree.io/f/mdengkrv" method="POST" class="request-form">
         <input type="hidden" name="_subject" value="New Psychology Tutoring inquiry" />
 
         <div class="form-row">
@@ -296,16 +292,6 @@ const approach = [
             <option value="Weekend afternoons">Weekend afternoons</option>
             <option value="Weekend evenings">Weekend evenings</option>
             <option value="Flexible / not sure yet">Flexible / not sure yet</option>
-          </select>
-        </label>
-
-        <label for="tut-format">
-          Preferred format
-          <select id="tut-format" name="preferred_format">
-            <option value="" disabled selected>Select a preference</option>
-            <option value="Online">Online</option>
-            <option value="In-person">In-person</option>
-            <option value="Either">Either is fine</option>
           </select>
         </label>
 
@@ -356,22 +342,50 @@ const approach = [
   .trust-label{ font-size: 12.5px; color: rgba(248,249,246,0.68); max-width: 200px; }
 
   /* Levels row */
-  .level-row{ display:flex; flex-wrap:wrap; gap:5px; }
-  .level-pill{
-    display:flex; flex-direction:column; gap:3px;
-    border:1px solid var(--line); border-radius:10px;
-    padding:12px 18px; background: var(--paper-0);
-    transition: border-color .25s var(--ease), transform .25s var(--ease);
-  }
-  .level-pill:hover{ border-color: var(--gold-500); transform: translateY(-2px); }
-  .level-pill-name{ font-weight:600; font-size:14.5px; color: var(--ink-900); }
-  .level-pill-tag{ font-family: var(--font-mono); font-size:11px; letter-spacing:0.04em; color: var(--sage-500); text-transform:uppercase; }
+  .level-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
 
+.level-pill {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 6px 10px;
+  background: var(--paper-0);
+  transition: border-color .2s var(--ease), transform .2s var(--ease);
+}
+
+.level-pill:hover {
+  border-color: var(--gold-500);
+  transform: translateY(-1px);
+}
+
+.level-pill small {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  color: var(--sage-500);
+  text-transform: uppercase;
+  font-weight: normal;
+}
+
+.level-pill span {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-900);
+  line-height: 1.2;
+}
   /* Subject filters */
   .subject-filters {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
+    margin-top: 24px;
   }
   .filter-btn {
     font-family: var(--font-body);

@@ -298,7 +298,7 @@ const faqs = [
 </Layout>
 
 <style>
-  .meet { padding: 96px 0; border-bottom: 1px solid var(--line); }
+  .meet { padding: 24px 0; border-bottom: 1px solid var(--line); }
 
 .meet-row {
   display: grid;
@@ -307,7 +307,7 @@ const faqs = [
   align-items: start;
 }
 
-.meet-row + .meet-row { margin-top: 96px; }
+.meet-row + .meet-row { margin-top: 30px; }
 
 .meet-row--reverse {
   grid-template-columns: 1fr 375px;
@@ -473,7 +473,7 @@ const faqs = [
   .topics-scroll::-webkit-scrollbar{ display:none; }
   .topic-card{
     flex:0 0 auto; width:190px; scroll-snap-align:start;
-    background:var(--paper-0); border:1px solid var(--line);
+    background:white; border:1px solid var(--line);
     overflow:hidden; transition:transform .25s var(--ease), border-color .25s var(--ease) ;
     padding: 0px;
   }
@@ -569,7 +569,7 @@ const faqs = [
 
     /* Right column: Aligns 'Meet the Team' to the far left */
     .therapy-right .therapy-action-block {
-      justify-content: flex-end;
+      justify-content: flex-start;
     }
   }
 
@@ -615,7 +615,6 @@ const faqs = [
   .explore-teaser p{ color: var(--ink-600); font-size: 13.5px; flex:1; }
 
   /* FAQ — compact two-column accordion */
-  .faq-section{ padding: 24px 0; }
   .faq-head{
     display:flex; justify-content:space-between; align-items:flex-end; gap:16px;
     margin-bottom: 22px;
@@ -689,7 +688,7 @@ const faqs = [
   .book-badge{ padding:10px 24px; }
 
   .book-card{
-    background:var(--paper-0); border:1px solid var(--line); border-radius:10px;
+    background:white; border:1px solid var(--line); border-radius:10px;
     padding:26px 28px; max-width:480px;
   }
   .book-card-tag{
