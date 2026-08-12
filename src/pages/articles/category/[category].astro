@@ -2,6 +2,18 @@
 import { getCollection } from 'astro:content';
 import Layout from '../../../layouts/Layout.astro';
 
+// Cover image per category, when one exists in src/assets/topics — categories
+// added later via Decap without a matching asset simply get no preview image
+// and fall back to the sitewide default, rather than breaking the build.
+const topicImages = import.meta.glob<{ default: ImageMetadata }>(
+  '/src/assets/topics/*.{jpg,jpeg,png,webp}',
+  { eager: true }
+);
+function getTopicImage(slug: string) {
+  const entry = Object.entries(topicImages).find(([path]) => path.includes(`/${slug}.`));
+  return entry?.[1].default;
+}
+
 export async function getStaticPaths() {
   // Category pages are generated from whatever categories the articles
   // actually use, rather than a fixed list — so a new category added in
@@ -32,9 +44,11 @@ const allArticles = await getCollection('articles', ({ data }) => !data.draft);
 const categoryArticles = allArticles
   .filter((a) => a.data.category === category)
   .sort((a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf());
+
+const coverImage = getTopicImage(category as string);
 ---
 
-<Layout title={meta.name} description={meta.blurb}>
+<Layout title={meta.name} description={meta.blurb} image={coverImage?.src}>
   <section class="hero">
     <div class="wrap">
       <p class="eyebrow">

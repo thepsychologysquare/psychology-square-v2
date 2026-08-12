@@ -4,6 +4,7 @@ import { env } from 'cloudflare:workers';
 import { listCourses } from '../../lib/courses';
 import { getClientSession } from '../../lib/clientAuth';
 import Layout from '../../layouts/Layout.astro';
+import coursesCover from '../../assets/courses/courses.jpg';
 
 const allCourses = await listCourses(env, { includeDrafts: false });
 const sorted = allCourses.sort((a, b) => a.data.order - b.data.order);
@@ -28,6 +29,7 @@ const categoriesInUse = [...new Set(sorted.map((c) => c.data.category))];
 <Layout
   title="Courses"
   description="Continuing education courses from The Psychology Square. Complete a course, pass the quiz, and receive a verifiable certificate by email."
+  image={coursesCover.src}
 >
   <section class="courses-hero">
     <div class="wrap">

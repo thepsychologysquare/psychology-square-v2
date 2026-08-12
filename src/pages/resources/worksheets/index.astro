@@ -1,6 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import Layout from '../../../layouts/Layout.astro';
+import worksheetsCover from '../../../assets/resources/worksheets.jpg';
 
 const allWorksheets = await getCollection('worksheets', ({ data }) => !data.draft);
 const sorted = allWorksheets.sort((a, b) => a.data.order - b.data.order);
@@ -58,6 +59,7 @@ const breadcrumbJson = {
   title="Worksheets"
   fullTitle="Free & Paid Therapy Worksheets — Anxiety, Depression, ADHD | The Psychology Square"
   description="Printable therapy worksheets for anxiety, depression, ADHD, trauma, and relationships — free downloads and paid sets, from a licensed practice in Lahore."
+  image={worksheetsCover.src}
 >
   <script type="application/ld+json" set:html={JSON.stringify(itemListJson)} />
   <script type="application/ld+json" set:html={JSON.stringify(breadcrumbJson)} />

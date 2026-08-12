@@ -1,5 +1,6 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import therapyCover from '../../assets/services/therapy.jpg';
 
 const siteOrigin = 'https://www.thepsychologysquare.com';
 const serviceJson = {
@@ -28,6 +29,7 @@ const breadcrumbJson = {
   title="Therapy"
   fullTitle="Individual & Couples Therapy in Lahore | The Psychology Square"
   description="Individual and couples therapy in Johar Town, Lahore — online or in person. Anxiety, depression, trauma, relationships, and more. Licensed clinical psychologists."
+  image={therapyCover.src}
 >
   <script type="application/ld+json" set:html={JSON.stringify(serviceJson)} />
   <script type="application/ld+json" set:html={JSON.stringify(breadcrumbJson)} />

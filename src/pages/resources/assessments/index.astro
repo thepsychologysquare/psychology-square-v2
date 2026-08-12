@@ -1,6 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import Layout from '../../../layouts/Layout.astro';
+import assessmentsCover from '../../../assets/resources/assessments.jpg';
 
 const allAssessments = await getCollection('assessments', ({ data }) => !data.draft);
 const sorted = allAssessments.sort((a, b) => a.data.order - b.data.order);
@@ -55,6 +56,7 @@ const breadcrumbJson = {
   title="Assessments"
   fullTitle="Free Psychological Assessments & Scales — Anxiety, Depression, ADHD | The Psychology Square"
   description="Publicly available psychological screening scales — GAD-7, PHQ-9, Vanderbilt ADHD, and more — with plain-language descriptions and scoring guides."
+  image={assessmentsCover.src}
 >
   <script type="application/ld+json" set:html={JSON.stringify(itemListJson)} />
   <script type="application/ld+json" set:html={JSON.stringify(breadcrumbJson)} />

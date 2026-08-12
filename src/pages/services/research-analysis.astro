@@ -1,5 +1,6 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import researchAnalysisCover from '../../assets/services/research-analysis.jpg';
 
 const siteOrigin = 'https://www.thepsychologysquare.com';
 
@@ -152,6 +153,7 @@ const datasetStatus = ['Data already collected', 'Still collecting data', 'Need 
   title="Research Analysis"
   fullTitle="Statistical & Research Analysis Services for Psychology | The Psychology Square"
   description="Statistical consulting for psychology students, researchers, and institutions — descriptive & inferential statistics, psychometrics, SEM/HLM, and defense preparation, in R, SPSS, AMOS, and Python."
+  image={researchAnalysisCover.src}
 >
   <script type="application/ld+json" set:html={JSON.stringify(serviceJson)} />
   <script type="application/ld+json" set:html={JSON.stringify(breadcrumbJson)} />

@@ -70,6 +70,8 @@ const subjectsWithImages = await Promise.all(
   }))
 );
 
+const coverImage = await getServiceImage('tutoring.jpg');
+
 const approach = [
   {
     num: '01',
@@ -97,6 +99,7 @@ const approach = [
   title="Psychology Tutoring"
   fullTitle="Psychology Tutoring for O Level, A Level, BS & MS Students | The Psychology Square"
   description="One-to-one psychology tutoring for O Level, A Level, BS, MSc, MS and MPhil students across Pakistan. Three classes a week per subject, evenings and weekends. PKR 35,000/month per subject."
+  image={coverImage?.src}
 >
   <script type="application/ld+json" set:html={JSON.stringify(serviceJson)} />
   <script type="application/ld+json" set:html={JSON.stringify(breadcrumbJson)} />
