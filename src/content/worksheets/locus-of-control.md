@@ -1,5 +1,5 @@
 ---
-title: Locus of Control
+title: Locus of Control - Worksheet
 description: Explore personal agency and external influences with this Locus of
   Control worksheet. Identify internal vs. external factors shaping your
   outcomes to foster self-awareness and empowerment.
