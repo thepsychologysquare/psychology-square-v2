@@ -1,8 +1,6 @@
 ---
 import '../styles/global.css';
 import { Image } from 'astro:assets';
-import fs from 'node:fs';
-import path from 'node:path';
 
 export interface Props {
   title: string;
@@ -17,21 +15,14 @@ const {
 const pageTitle = fullTitle ?? `${title} — The Psychology Square`;
 const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://www.thepsychologysquare.com');
 
-// Resolve the OG cover image regardless of its actual extension/case,
-// so a mismatch (e.g. og-cover.png vs the hardcoded .jpg) can't break link previews.
-function resolveOgImagePath(): string {
-  const dir = path.join(process.cwd(), 'public', 'images');
-  const candidates = ['og-cover.jpg', 'og-cover.jpeg', 'og-cover.png', 'og-cover.webp'];
-  try {
-    const filesInDir = fs.readdirSync(dir);
-    const match = filesInDir.find((f) => candidates.includes(f.toLowerCase()) || /^og-cover\.(jpg|jpeg|png|webp)$/i.test(f));
-    if (match) return `/images/${match}`;
-  } catch {
-    // public/images not readable at build time — fall through to default
-  }
-  return '/images/og-cover.jpg';
-}
-const ogImage = new URL(resolveOgImagePath(), canonicalURL.origin);
+// The sitewide OG cover image. This used to be resolved dynamically with
+// node:fs at render time, but node:fs doesn't exist in the Cloudflare
+// Workers runtime — that crashed every non-prerendered page (book,
+// courses, dashboard, etc.) with "No such module 'node:fs'" while static
+// pages kept working (they're built in real Node.js). The actual file in
+// public/images is og-cover.png, so it's just hardcoded here — update this
+// one line if the file is ever replaced with a different extension.
+const ogImage = new URL('/images/og-cover.png', canonicalURL.origin);
 
 // --- Glob loaders for dynamic images across categories ---
 const topicImages = import.meta.glob<{ default: ImageMetadata }>(
