@@ -45,12 +45,18 @@ const isoDate = article.data.publishDate.toISOString();
 const canonicalPath = `/articles/${article.id}`;
 
 const mainImgSrc = typeof article.data.image === 'string' ? article.data.image : article.data.image?.src;
+// Handles both a Decap-uploaded relative path (e.g. /images/foo.jpg) and a
+// full external URL (e.g. a pasted Unsplash link) without double-prefixing.
+const mainImgAbsolute = mainImgSrc
+  ? (mainImgSrc.startsWith('http') ? mainImgSrc : `https://www.thepsychologysquare.com${mainImgSrc}`)
+  : undefined;
 ---
 
 <Layout
   title={article.data.title}
   description={article.data.description}
   fullTitle={`${article.data.title} — The Psychology Square`}
+  image={mainImgSrc}
 >
   <script type="application/ld+json" set:html={JSON.stringify({
     "@context": "https://schema.org",
@@ -61,7 +67,7 @@ const mainImgSrc = typeof article.data.image === 'string' ? article.data.image :
     "dateModified": isoDate,
     "author": { "@type": "Person", "name": article.data.author },
     ...(article.data.reviewedBy ? { "reviewedBy": { "@type": "Person", "name": article.data.reviewedBy } } : {}),
-    ...(mainImgSrc ? { "image": `https://www.thepsychologysquare.com${mainImgSrc}` } : {}),
+    ...(mainImgAbsolute ? { "image": mainImgAbsolute } : {}),
     "publisher": {
       "@type": "Organization",
       "name": "The Psychology Square",

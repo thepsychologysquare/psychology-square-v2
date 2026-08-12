@@ -6,15 +6,19 @@ export interface Props {
   title: string;
   description?: string;
   fullTitle?: string;
+  image?: string;
 }
 const {
   title,
   description = "The Psychology Square — individual and couples therapy, online and in person in Johar Town, Lahore.",
   fullTitle,
+  image,
 } = Astro.props;
 const pageTitle = fullTitle ?? `${title} — The Psychology Square`;
 const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://www.thepsychologysquare.com');
-const ogImage = new URL('/images/og-cover.jpg', canonicalURL.origin);
+// Falls back to the sitewide cover image unless a page (e.g. an article)
+// passes its own uploaded image in via the `image` prop.
+const ogImage = image ? new URL(image, canonicalURL.origin) : new URL('/images/og-cover.jpg', canonicalURL.origin);
 
 // --- Glob loaders for dynamic images across categories ---
 const topicImages = import.meta.glob<{ default: ImageMetadata }>(
