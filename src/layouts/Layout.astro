@@ -1,24 +1,37 @@
 ---
 import '../styles/global.css';
 import { Image } from 'astro:assets';
+import fs from 'node:fs';
+import path from 'node:path';
 
 export interface Props {
   title: string;
   description?: string;
   fullTitle?: string;
-  image?: string;
 }
 const {
   title,
   description = "The Psychology Square — individual and couples therapy, online and in person in Johar Town, Lahore.",
   fullTitle,
-  image,
 } = Astro.props;
 const pageTitle = fullTitle ?? `${title} — The Psychology Square`;
 const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://www.thepsychologysquare.com');
-// Falls back to the sitewide cover image unless a page (e.g. an article)
-// passes its own uploaded image in via the `image` prop.
-const ogImage = image ? new URL(image, canonicalURL.origin) : new URL('/images/og-cover.jpg', canonicalURL.origin);
+
+// Resolve the OG cover image regardless of its actual extension/case,
+// so a mismatch (e.g. og-cover.png vs the hardcoded .jpg) can't break link previews.
+function resolveOgImagePath(): string {
+  const dir = path.join(process.cwd(), 'public', 'images');
+  const candidates = ['og-cover.jpg', 'og-cover.jpeg', 'og-cover.png', 'og-cover.webp'];
+  try {
+    const filesInDir = fs.readdirSync(dir);
+    const match = filesInDir.find((f) => candidates.includes(f.toLowerCase()) || /^og-cover\.(jpg|jpeg|png|webp)$/i.test(f));
+    if (match) return `/images/${match}`;
+  } catch {
+    // public/images not readable at build time — fall through to default
+  }
+  return '/images/og-cover.jpg';
+}
+const ogImage = new URL(resolveOgImagePath(), canonicalURL.origin);
 
 // --- Glob loaders for dynamic images across categories ---
 const topicImages = import.meta.glob<{ default: ImageMetadata }>(
@@ -98,11 +111,15 @@ const navAllArticleCategories = Object.keys(navCategoryMeta).map((slug, i) => ({
   <meta property="og:description" content={description} />
   <meta property="og:url" content={canonicalURL} />
   <meta property="og:image" content={ogImage} />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="The Psychology Square" />
   <meta property="og:locale" content="en_PK" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content={pageTitle} />
   <meta name="twitter:description" content={description} />
   <meta name="twitter:image" content={ogImage} />
+  <meta name="twitter:image:alt" content="The Psychology Square" />
 
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
