@@ -88,7 +88,7 @@ collections:
         name: "fileUrl"
         widget: "file"
         required: false
-        media_folder: "/worksheets"
+        media_folder: "public/worksheets"
         public_folder: "/worksheets"
         hint: "Only needed for Free worksheets — this is what visitors download directly. Leave blank for Paid worksheets."
       - {label: "Order", name: "order", widget: "number", default: 0, required: false, hint: "Lower numbers show first. Leave as 0 if you don't care about order."}
