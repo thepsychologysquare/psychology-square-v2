@@ -5,7 +5,7 @@ import sitemap from '@astrojs/sitemap';
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://www.thepsychologysquare.com',
+  site: 'https://thepsychologysquare.com',
   adapter: cloudflare({
     prerenderEnvironment: 'node',
   }),
@@ -29,7 +29,7 @@ export default defineConfig({
         !page.includes('/privacy/') &&
         !page.includes('/refund-and-cancellation/') &&
         !page.includes('/disclaimer/') &&
-        page !== 'https://www.thepsychologysquare.com/assessments/',
+        page !== 'https://thepsychologysquare.com/assessments/',
     }),
   ],
 });

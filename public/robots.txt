@@ -3,4 +3,4 @@ Allow: /
 Disallow: /admin/
 Disallow: /dashboard/
 
-Sitemap: https://www.thepsychologysquare.com/sitemap-index.xml
+Sitemap: https://thepsychologysquare.com/sitemap-index.xml

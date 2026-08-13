@@ -13,7 +13,7 @@ const {
   fullTitle,
 } = Astro.props;
 const pageTitle = fullTitle ?? `${title} — The Psychology Square`;
-const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://www.thepsychologysquare.com');
+const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://thepsychologysquare.com');
 
 // The sitewide OG cover image. This used to be resolved dynamically with
 // node:fs at render time, but node:fs doesn't exist in the Cloudflare
@@ -121,7 +121,7 @@ const navAllArticleCategories = Object.keys(navCategoryMeta).map((slug, i) => ({
     "@context": "https://schema.org",
     "@type": "MedicalBusiness",
     "name": "The Psychology Square",
-    "url": "https://www.thepsychologysquare.com",
+    "url": "https://thepsychologysquare.com",
     "image": ogImage.toString(),
     "description": "Individual and couples therapy, online and in person in Johar Town, Lahore, Pakistan.",
     "priceRange": "PKR 5,000–7,000",
