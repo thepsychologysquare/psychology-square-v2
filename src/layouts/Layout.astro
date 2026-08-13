@@ -15,6 +15,12 @@ const {
 const pageTitle = fullTitle ?? `${title} — The Psychology Square`;
 const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://thepsychologysquare.com');
 
+// Google Tag Manager. Set PUBLIC_GTM_ID at build time (see .env.example) —
+// GA4 and any future pixels/conversion tags are then configured entirely
+// from the GTM web dashboard, not in code. Left unset, GTM is simply
+// skipped (e.g. local dev), so nothing breaks if it's not configured yet.
+const gtmId = import.meta.env.PUBLIC_GTM_ID as string | undefined;
+
 // The sitewide OG cover image. This used to be resolved dynamically with
 // node:fs at render time, but node:fs doesn't exist in the Cloudflare
 // Workers runtime — that crashed every non-prerendered page (book,
@@ -138,8 +144,22 @@ const navAllArticleCategories = Object.keys(navCategoryMeta).map((slug, i) => ({
       { "@type": "Person", "name": "Sehar Waheed", "jobTitle": "Clinical Psychologist" }
     ]
   })} />
+
+  {gtmId && (
+    <script set:html={`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','${gtmId}');`} />
+  )}
 </head>
 <body>
+  {gtmId && (
+    <noscript>
+      <iframe src={`https://www.googletagmanager.com/ns.html?id=${gtmId}`}
+        height="0" width="0" style="display:none;visibility:hidden"></iframe>
+    </noscript>
+  )}
 
   <div class="header-strip-layer">
   <header class="header-floating-wrapper">
