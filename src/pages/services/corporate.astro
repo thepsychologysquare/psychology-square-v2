@@ -1,5 +1,6 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import corporateCover from '../../assets/services/corporate.jpg';
 
 const siteOrigin = 'https://thepsychologysquare.com';
 const serviceJson = JSON.parse(`{
@@ -26,6 +27,7 @@ const breadcrumbJson = JSON.parse(`{
   title="Corporate Wellbeing"
   fullTitle="Corporate & Workplace Mental Health Services in Lahore | The Psychology Square"
   description="Employee assistance, workplace mental health training, manager support, and organizational assessments for companies in Lahore — delivered directly by licensed clinical psychologists."
+  image={corporateCover.src}
 >
   <script type="application/ld+json" set:html={JSON.stringify(serviceJson)} />
   <script type="application/ld+json" set:html={JSON.stringify(breadcrumbJson)} />

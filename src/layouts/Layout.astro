@@ -6,16 +6,18 @@ export interface Props {
   title: string;
   description?: string;
   fullTitle?: string;
+  image?: string;
 }
 const {
   title,
   description = "The Psychology Square — individual and couples therapy, online and in person in Johar Town, Lahore.",
   fullTitle,
+  image = '/images/og-cover.png',
 } = Astro.props;
 const pageTitle = fullTitle ?? `${title} — The Psychology Square`;
 const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://thepsychologysquare.com');
 
-const ogImage = new URL('/images/og-cover.png', canonicalURL.origin);
+const ogImage = new URL(image, canonicalURL.origin);
 
 // --- Glob loaders for dynamic images across categories ---
 const topicImages = import.meta.glob<{ default: ImageMetadata }>(
