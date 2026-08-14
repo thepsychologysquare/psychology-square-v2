@@ -105,13 +105,54 @@ const faqs = [
     })),
   })} />
 
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "MedicalBusiness",
+    "name": "The Psychology Square",
+    "image": "https://thepsychologysquare.com/images/sohail.jpg",
+    "@id": "https://thepsychologysquare.com/#business",
+    "url": "https://thepsychologysquare.com",
+    "telephone": "+923000000000",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Johar Town",
+      "addressLocality": "Lahore",
+      "addressRegion": "Punjab",
+      "postalCode": "54000",
+      "addressCountry": "PK"
+    },
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": 31.4697,
+      "longitude": 74.2728
+    },
+    "openingHoursSpecification": {
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+        "Sunday"
+      ],
+      "opens": "09:00",
+      "closes": "21:00"
+    },
+    "priceRange": "PKR 5000 - PKR 7000",
+    "sameAs": [
+      "https://thepsychologysquare.com"
+    ]
+  })} />
+
   <section class="hero">
     <div class="wrap hero-inner">
       <div class="hero-copy">
         <span class="since-badge">Since 2019</span>
-        <p class="eyebrow">Online &amp; In-Person — Johar Town, Lahore, Pakistan</p>
+        <p class="eyebrow">Online &amp; In-Person Therapy — Johar Town, Lahore, Pakistan</p>
         <h1 class="hero-title">A steady space<br>to think things<br>through.</h1>
-        <p class="hero-sub">Individual and couples therapy, held online over video call or in person in Johar Town, Lahore. Evidence-based, unhurried, and built around what you're actually carrying.</p>
+        <p class="hero-sub">Individual and couples therapy with licensed clinical psychologists, held online over video call or in person in Johar Town, Lahore. Evidence-based, unhurried, and built around what you're actually carrying.</p>
         <div class="hero-actions">
           <a href="/book" class="btn btn--primary">Book Now</a>
         </div>
@@ -127,7 +168,7 @@ const faqs = [
     <div class="wrap">
       <div class="meet-row">
         <div class="meet-photo">
-          <img src="/images/sohail.jpg" alt="Muhammad Sohail" loading="lazy" onerror="this.classList.add('img-error')">
+          <img src="/images/sohail.jpg" alt="Muhammad Sohail - Clinical Psychologist and Founder of The Psychology Square in Lahore" loading="lazy" onerror="this.classList.add('img-error')">
           <span class="meet-photo-fallback">MS</span>
         </div>
         <div class="meet-copy">
@@ -140,7 +181,7 @@ const faqs = [
 
       <div class="meet-row meet-row--reverse">
         <div class="meet-photo">
-          <img src="/images/sehar.jpg" alt="Sehar Waheed" loading="lazy" onerror="this.classList.add('img-error')">
+          <img src="/images/sehar.jpg" alt="Sehar Waheed - Clinical Psychologist and Co-CEO of The Psychology Square" loading="lazy" onerror="this.classList.add('img-error')">
           <span class="meet-photo-fallback">SW</span>
         </div>
         <div class="meet-copy">
@@ -158,7 +199,7 @@ const faqs = [
       <div class="therapy-left">
         <div class="therapy-portrait" style={!getServiceImage('therapy-hero') ? 'background:var(--navy-800);' : undefined}>
           {getServiceImage('therapy-hero') && (
-            <Image src={getServiceImage('therapy-hero')!} alt="Therapy at The Psychology Square" width={760} format="webp" quality={65} loading="lazy" class="therapy-portrait-photo" />
+            <Image src={getServiceImage('therapy-hero')!} alt="Therapy sessions at The Psychology Square Lahore" width={760} format="webp" quality={65} loading="lazy" class="therapy-portrait-photo" />
           )}
           <span class="therapy-portrait-mark">TPS</span>
           <div class="therapy-portrait-caption">
@@ -253,7 +294,7 @@ const faqs = [
     {getServiceImage('booking-hero') ? (
       <Image
         src={getServiceImage('booking-hero')!}
-        alt="A person booking an online therapy session"
+        alt="A person booking an online or in-person therapy session in Lahore"
         width={640}
         format="webp"
         quality={65}
@@ -288,8 +329,8 @@ const faqs = [
         })}
       </div>
       <div class="topics-nav">
-        <button type="button" class="topics-arrow" data-dir="-1" aria-label="Previous topics">←</button>
-        <button type="button" class="topics-arrow" data-dir="1" aria-label="Next topics">→</button>
+        <button type="button" class="topics-arrow" data-dir="-1" aria-label="Previous topics">&larr;</button>
+        <button type="button" class="topics-arrow" data-dir="1" aria-label="Next topics">&rarr;</button>
       </div>
     </div>
   </section>
@@ -448,9 +489,8 @@ const faqs = [
     grid-row: 3;
   }
 }
-  }
   .issues { margin:20px;}
- .since-badge {
+  .since-badge {
   display: inline-flex;
   align-items: center;
   padding: 0.25rem 0.75rem;

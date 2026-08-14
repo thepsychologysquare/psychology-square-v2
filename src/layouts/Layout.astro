@@ -114,23 +114,121 @@ const navAllArticleCategories = Object.keys(navCategoryMeta).map((slug, i) => ({
 
   <script type="application/ld+json" set:html={JSON.stringify({
     "@context": "https://schema.org",
-    "@type": "MedicalBusiness",
-    "name": "The Psychology Square",
-    "url": "https://thepsychologysquare.com",
-    "image": ogImage.toString(),
-    "description": "Individual and couples therapy, online and in person in Johar Town, Lahore, Pakistan.",
-    "priceRange": "PKR 5,000–7,000",
-    "address": {
-      "@type": "PostalAddress",
-      "addressLocality": "Johar Town, Lahore",
-      "addressCountry": "PK"
-    },
-    "email": "info@thepsychologysquare.com",
-    "medicalSpecialty": "Psychiatric",
-    "areaServed": "Lahore, Pakistan",
-    "employee": [
-      { "@type": "Person", "name": "Muhammad Sohail", "jobTitle": "Clinical Psychologist" },
-      { "@type": "Person", "name": "Sehar Waheed", "jobTitle": "Clinical Psychologist" }
+    "@graph": [
+      {
+        "@type": "MedicalBusiness",
+        "@id": "https://thepsychologysquare.com/#business",
+        "name": "The Psychology Square",
+        "url": "https://thepsychologysquare.com",
+        "image": ogImage.toString(),
+        "logo": "https://thepsychologysquare.com/images/sohail.jpg",
+        "description": "Individual and couples therapy, online and in person in Johar Town, Lahore, Pakistan.",
+        "priceRange": "PKR 5,000–7,000",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "Johar Town",
+          "addressLocality": "Lahore",
+          "addressRegion": "Punjab",
+          "postalCode": "54000",
+          "addressCountry": "PK"
+        },
+        "email": "info@thepsychologysquare.com",
+        "medicalSpecialty": "Psychiatric",
+        "areaServed": "Lahore, Pakistan",
+        "founder": [
+          {
+            "@type": "Person",
+            "name": "Muhammad Sohail",
+            "url": "https://thepsychologysquare.com/team/sohail"
+          },
+          {
+            "@type": "Person",
+            "name": "Sehar Waheed",
+            "url": "https://thepsychologysquare.com/team/sehar"
+          }
+        ],
+        "employee": [
+          { "@type": "Person", "name": "Muhammad Sohail", "jobTitle": "Clinical Psychologist" },
+          { "@type": "Person", "name": "Sehar Waheed", "jobTitle": "Clinical Psychologist" }
+        ]
+      },
+      {
+        "@type": "ItemList",
+        "itemListElement": [
+          {
+            "@type": "SiteNavigationElement",
+            "position": 1,
+            "name": "Home",
+            "url": "https://thepsychologysquare.com/"
+          },
+          {
+            "@type": "SiteNavigationElement",
+            "position": 2,
+            "name": "Articles",
+            "url": "https://thepsychologysquare.com/articles/"
+          },
+          {
+            "@type": "SiteNavigationElement",
+            "position": 3,
+            "name": "Services",
+            "url": "https://thepsychologysquare.com/services/"
+          },
+          {
+            "@type": "SiteNavigationElement",
+            "position": 4,
+            "name": "Therapy Services",
+            "url": "https://thepsychologysquare.com/services/therapy/"
+          },
+          {
+            "@type": "SiteNavigationElement",
+            "position": 5,
+            "name": "Research Analysis",
+            "url": "https://thepsychologysquare.com/services/research-analysis/"
+          },
+          {
+            "@type": "SiteNavigationElement",
+            "position": 6,
+            "name": "Psychology Tutoring",
+            "url": "https://thepsychologysquare.com/services/tutoring/"
+          },
+          {
+            "@type": "SiteNavigationElement",
+            "position": 7,
+            "name": "Corporate Services",
+            "url": "https://thepsychologysquare.com/services/corporate/"
+          },
+          {
+            "@type": "SiteNavigationElement",
+            "position": 8,
+            "name": "Resources & Worksheets",
+            "url": "https://thepsychologysquare.com/resources/"
+          },
+          {
+            "@type": "SiteNavigationElement",
+            "position": 9,
+            "name": "Courses",
+            "url": "https://thepsychologysquare.com/courses/"
+          },
+          {
+            "@type": "SiteNavigationElement",
+            "position": 10,
+            "name": "Meet the Team",
+            "url": "https://thepsychologysquare.com/team/"
+          },
+          {
+            "@type": "SiteNavigationElement",
+            "position": 11,
+            "name": "Book a Session",
+            "url": "https://thepsychologysquare.com/book/"
+          },
+          {
+            "@type": "SiteNavigationElement",
+            "position": 12,
+            "name": "Contact",
+            "url": "https://thepsychologysquare.com/contact/"
+          }
+        ]
+      }
     ]
   })} />
   <style>
