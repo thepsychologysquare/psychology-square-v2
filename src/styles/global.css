@@ -433,6 +433,7 @@ a:focus-visible, button:focus-visible{
   .header-inner-pill {
     padding: 8px 12px 8px 20px;
     min-height: 64px;
+    margin: 0px 24px;
   }
 
   .header-strip-layer {
@@ -440,7 +441,7 @@ a:focus-visible, button:focus-visible{
   }
 
   .header-floating-wrapper {
-    padding-top: 8px;
+    padding-top: 24px;
     width: calc(100% - 24px);
   }
 
