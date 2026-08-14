@@ -1623,7 +1623,6 @@ span.swiper-notification {
   @media (max-width: 960px){
     .approach-grid{
       grid-template-columns: 1fr;
-      padding: 28px;
     }
     .request-cta-banner {
       flex-direction: column;
