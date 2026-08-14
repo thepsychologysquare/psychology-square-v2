@@ -51,7 +51,7 @@ const breadcrumbJson = JSON.parse(`{
 
   <section class="section">
     <div class="wrap">
-      <h2 style="font-size: 24px; font-weight: 600; margin-bottom: 32px; letter-spacing: -0.01em;">What we offer</h2>
+      <h2>What we offer</h2>
       <div class="card-grid corporate-grid" style="margin-bottom: 64px;">
         <div class="article-card corporate-card" style="cursor:default;">
           <span class="article-meta">Employee Assistance</span>
@@ -213,5 +213,13 @@ const breadcrumbJson = JSON.parse(`{
 
   @media (max-width: 860px){
     .corporate-grid { grid-template-columns: 1fr; }
+    .approach-grid {
+    display: block;
+    padding: 24px;
+  }
+
+  .approach-grid > * + * {
+    margin-top: 24px;
+  }
   }
 </style>
