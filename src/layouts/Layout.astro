@@ -15,19 +15,6 @@ const {
 const pageTitle = fullTitle ?? `${title} — The Psychology Square`;
 const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://thepsychologysquare.com');
 
-// Google Tag Manager. Set PUBLIC_GTM_ID at build time (see .env.example) —
-// GA4 and any future pixels/conversion tags are then configured entirely
-// from the GTM web dashboard, not in code. Left unset, GTM is simply
-// skipped (e.g. local dev), so nothing breaks if it's not configured yet.
-const gtmId = import.meta.env.PUBLIC_GTM_ID as string | undefined;
-
-// The sitewide OG cover image. This used to be resolved dynamically with
-// node:fs at render time, but node:fs doesn't exist in the Cloudflare
-// Workers runtime — that crashed every non-prerendered page (book,
-// courses, dashboard, etc.) with "No such module 'node:fs'" while static
-// pages kept working (they're built in real Node.js). The actual file in
-// public/images is og-cover.png, so it's just hardcoded here — update this
-// one line if the file is ever replaced with a different extension.
 const ogImage = new URL('/images/og-cover.png', canonicalURL.origin);
 
 // --- Glob loaders for dynamic images across categories ---
@@ -144,27 +131,104 @@ const navAllArticleCategories = Object.keys(navCategoryMeta).map((slug, i) => ({
       { "@type": "Person", "name": "Sehar Waheed", "jobTitle": "Clinical Psychologist" }
     ]
   })} />
+  <style>
+    .header-floating-wrapper {
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .header-inner-pill {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: nowrap;
+      gap: 12px;
+      max-width: 100%;
+      box-sizing: border-box;
+      overflow: visible !important; /* Guaranteed preservation of borders and shadows */
+      padding-left: 20px;
+      padding-right: 20px;
+    }
+    .site-nav {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .site-nav .nav-link-standard,
+    .site-nav .nav-trigger {
+      padding: 6px 10px;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+    .header-subscribe-btn {
+      flex-shrink: 0;
+      white-space: nowrap;
+      padding: 8px 16px;
+      font-size: 13px;
+      transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    }
+    .header-subscribe-btn:hover {
+      background-color: var(--ink-900, #131a22);
+      color: #F4F1EA;
+      border-color: var(--ink-900, #131a22);
+    }
+    
+    /* Logo scaling starts shrinking below 1090px, keeping menu text size untouched */
+    @media (max-width: 1090px) {
+      .wordmark {
+        gap: 6px;
+        letter-spacing: -0.01em;
+      }
+      .wordmark .mark {
+        transform: scale(0.85);
+        transform-origin: left center;
+      }
+      .header-inner-pill {
+        padding-left: 14px;
+        padding-right: 14px;
+        gap: 8px;
+      }
+    }
 
-  {gtmId && (
-    <script set:html={`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-    })(window,document,'script','dataLayer','${gtmId}');`} />
-  )}
+    @media (max-width: 980px) {
+      .wordmark .mark {
+        transform: scale(0.75);
+      }
+    }
+
+    /* Clean switch to mobile drawer before any collision can occur */
+    @media (max-width: 920px) {
+      .site-nav {
+        display: none !important;
+      }
+      .header-subscribe-btn {
+        display: none !important;
+      }
+    }
+
+    .mega-view-all-pill {
+      transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    }
+    .mega-view-all-pill:hover {
+      background-color: var(--ink-900, #131a22);
+      color: #F4F1EA;
+      border-color: var(--ink-900, #131a22);
+    }
+    .mobile-footer-cta-btn {
+      transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    }
+    .mobile-footer-cta-btn:hover {
+      background-color: var(--ink-900, #131a22);
+      color: #F4F1EA;
+      border-color: var(--ink-900, #131a22);
+    }
+  </style>
 </head>
 <body>
-  {gtmId && (
-    <noscript>
-      <iframe src={`https://www.googletagmanager.com/ns.html?id=${gtmId}`}
-        height="0" width="0" style="display:none;visibility:hidden"></iframe>
-    </noscript>
-  )}
 
   <div class="header-strip-layer">
   <header class="header-floating-wrapper">
     <div class="wrap header-inner-pill">
-      <!-- Brand Wordmark with Previous Logo Markup Structure Applied to Left -->
+      <!-- Brand Wordmark -->
       <a href="/" class="wordmark" style="display: inline-flex; align-items: center; gap: 10px;">
         <span class="mark" aria-hidden="true">
           <span class="mark-sq mark-sq--1"></span>
@@ -173,7 +237,7 @@ const navAllArticleCategories = Object.keys(navCategoryMeta).map((slug, i) => ({
         The Psychology Square
       </a>
 
-      <!-- Primary Navigation Controls (UNTOUCHED DESKTOP NAV) -->
+      <!-- Primary Navigation Controls -->
       <nav class="site-nav" aria-label="Primary Navigation">
         <div class="nav-item"><a href="/" class="nav-link-standard">Home</a></div>
         
@@ -271,6 +335,14 @@ const navAllArticleCategories = Object.keys(navCategoryMeta).map((slug, i) => ({
                     ) : null}
                   </div>
                   <span class="course-card-name">Psychology Tutoring</span>
+                </a>
+                <a href="/services/corporate" class="course-panel-card">
+                  <div class={`course-card-graphic ${getServiceImage('corporate') ? '' : 'bg-placeholder-7'}`}>
+                    {getServiceImage('corporate') ? (
+                      <Image src={getServiceImage('corporate')!} alt="Corporate & Workplace Wellbeing" width={360} format="webp" quality={60} loading="lazy" style="width:100%; height:100%; object-fit:cover;" />
+                    ) : null}
+                  </div>
+                  <span class="course-card-name">Corporate &amp; Workplace Wellbeing</span>
                 </a>
               </div>
               <div class="mega-row-footer">
@@ -391,6 +463,9 @@ const navAllArticleCategories = Object.keys(navCategoryMeta).map((slug, i) => ({
                 <span class="mobile-stack-title">Scales & Assessments</span>
               </div>
             </a>
+            <div class="mega-row-footer" style="padding-top: 12px;">
+              <a href="/resources" class="mega-view-all-pill" style="display: block; text-align: center;">View All Resources</a>
+            </div>
           </div>
         </div>
       </div>
@@ -418,6 +493,9 @@ const navAllArticleCategories = Object.keys(navCategoryMeta).map((slug, i) => ({
             <button type="button" class="topic-slider-arrow topic-slider-arrow--next" data-slider-next aria-label="Scroll topics right">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
             </button>
+          </div>
+          <div class="mega-row-footer" style="padding-top: 12px;">
+            <a href="/articles" class="mega-view-all-pill" style="display: block; text-align: center;">View All Articles</a>
           </div>
         </div>
       </div>
@@ -451,6 +529,17 @@ const navAllArticleCategories = Object.keys(navCategoryMeta).map((slug, i) => ({
               </div>
               <span class="mobile-carousel-label">Psychology Tutoring</span>
             </a>
+            <a href="/services/corporate" class="mobile-carousel-card">
+              <div class={`mobile-carousel-thumb ${getServiceImage('corporate') ? '' : 'bg-placeholder-7'}`} style="overflow:hidden;">
+                {getServiceImage('corporate') ? (
+                  <Image src={getServiceImage('corporate')!} alt="Corporate & Workplace Wellbeing" width={180} format="webp" quality={60} loading="lazy" style="width:100%; height:100%; object-fit:cover;" />
+                ) : null}
+              </div>
+              <span class="mobile-carousel-label">Corporate Wellbeing</span>
+            </a>
+          </div>
+          <div class="mega-row-footer" style="padding-top: 12px;">
+            <a href="/services" class="mega-view-all-pill" style="display: block; text-align: center;">View All Services</a>
           </div>
         </div>
       </div>

@@ -1,53 +1,156 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+
+const siteOrigin = 'https://thepsychologysquare.com';
+const itemListJson = {
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Muhammad Sohail", "url": `${siteOrigin}/team/sohail` },
+    { "@type": "ListItem", "position": 2, "name": "Sehar Waheed", "url": `${siteOrigin}/team/sehar` },
+  ],
+};
+const breadcrumbJson = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home", "item": `${siteOrigin}/` },
+    { "@type": "ListItem", "position": 2, "name": "Team", "item": `${siteOrigin}/team` },
+  ],
+};
 ---
-<Layout title="Team" description="Meet the clinicians at The Psychology Square — Muhammad Sohail and Sehar Waheed.">
+<Layout
+  title="Team"
+  fullTitle="Meet Our Clinical Psychologists in Lahore | The Psychology Square"
+  description="Meet the licensed clinical psychologists at The Psychology Square, Johar Town, Lahore — Muhammad Sohail and Sehar Waheed, both APA members with M.S. degrees in Clinical Psychology."
+>
+  <script type="application/ld+json" set:html={JSON.stringify(itemListJson)} />
+  <script type="application/ld+json" set:html={JSON.stringify(breadcrumbJson)} />
 
   <section class="hero">
     <div class="wrap">
+      <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <a href="/">Home</a>
+        <span class="crumb-sep">/</span>
+        <span class="crumb-current">Team</span>
+      </nav>
       <p class="eyebrow">Who you'll work with</p>
       <h1 class="hero-title" style="font-size: clamp(32px, 4vw, 48px); margin-bottom: 16px;">Two clinicians. One practice.</h1>
-      <p class="hero-sub">Both trained clinical psychologists, working individually and together out of the same practice.</p>
+      <p class="hero-sub">Both trained clinical psychologists in Johar Town, Lahore, working individually and together out of the same practice.</p>
     </div>
   </section>
 
-  <section class="team">
+  <section class="section">
     <div class="wrap">
-      <div class="team-grid">
-        <article class="team-card">
-          <div class="avatar">
-            <img src="/images/sohail.jpg" alt="Muhammad Sohail" loading="lazy" onerror="this.classList.add('img-error')">
+      <div class="team-columns">
+        <div class="team-col">
+          <div class="avatar" style="width:96px; height:96px;">
+            <img src="/images/sohail.jpg" alt="Muhammad Sohail, Clinical Psychologist at The Psychology Square" loading="lazy" onerror="this.classList.add('img-error')">
             <span class="avatar-fallback">MS</span>
           </div>
-          <h3>Muhammad Sohail</h3>
-          <span class="team-role">Founder &amp; CEO - The Psychology Square</span>
-          <span class="team-role">Lecturer of Psychology &amp; Clinical Psychologist</span>
-          <ul class="team-credentials">
-            <li>Lecturer of Psychology, Rashid Latif Khan University (RLKU)</li>
-            <li>M.S. in Clinical Psychology</li>
-            <li>Member, American Psychological Association (APA)</li>
-          </ul>
+          <h2 class="team-col-name">Muhammad Sohail</h2>
+          <span class="team-col-role">Founder &amp; CEO — Clinical Psychologist &amp; Lecturer</span>
+          <p class="team-col-bio">Lecturer of Psychology at Rashid Latif Khan University (RLKU), M.S. in Clinical Psychology, and a member of the American Psychological Association. Through individual and couples sessions, he's helped clients navigate what they're actually carrying — steadily, and without the jargon.</p>
           <a href="/team/sohail" class="profile-link">View full profile →</a>
-        </article>
+        </div>
 
-        <article class="team-card">
-          <div class="avatar">
-            <img src="/images/sehar.jpg" alt="Sehar Waheed" loading="lazy" onerror="this.classList.add('img-error')">
+        <div class="team-col">
+          <div class="avatar" style="width:96px; height:96px;">
+            <img src="/images/sehar.jpg" alt="Sehar Waheed, Clinical Psychologist at The Psychology Square" loading="lazy" onerror="this.classList.add('img-error')">
             <span class="avatar-fallback">SW</span>
           </div>
-          <h3>Sehar Waheed</h3>
-          <span class="team-role">Co-CEO - The Psychology Square</span>
-          <span class="team-role">Clinical Psychologist &amp; Counselor</span>
-          <ul class="team-credentials">
-            <li>Clinical Psychologist / Counselor, University of Management and Technology (UMT)</li>
-            <li>M.S. in Clinical Psychology</li>
-            <li>Member, American Psychological Association (APA)</li>
-          </ul>
+          <h2 class="team-col-name">Sehar Waheed</h2>
+          <span class="team-col-role">Co-CEO — Clinical Psychologist &amp; Counselor</span>
+          <p class="team-col-bio">Clinical Psychologist and Counselor at the University of Management and Technology (UMT), M.S. in Clinical Psychology, and a member of the American Psychological Association. Her sessions stay collaborative — conversation first, framework second.</p>
           <a href="/team/sehar" class="profile-link">View full profile →</a>
-        </article>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--alt">
+    <div class="wrap">
+      <h2 style="font-size: 22px; margin-bottom: 16px;">How we work together</h2>
+      <div class="approach-grid" style="margin-bottom: 56px;">
+        <div class="approach-item">
+          <span class="approach-num">01</span>
+          <h3>Same practice, individual care</h3>
+          <p>You'll work with either Sohail or Sehar directly for your sessions — not passed between clinicians partway through.</p>
+        </div>
+        <div class="approach-item">
+          <span class="approach-num">02</span>
+          <h3>Shared clinical grounding</h3>
+          <p>Both hold an M.S. in Clinical Psychology and are members of the American Psychological Association, with training that spans hospital and academic settings.</p>
+        </div>
+        <div class="approach-item">
+          <span class="approach-num">03</span>
+          <h3>Conversation first</h3>
+          <p>Frameworks like CBT and ACT inform the work, but every session starts with listening — not a worksheet handed over before you've been heard.</p>
+        </div>
+      </div>
+
+      <div class="request-cta-banner">
+        <p>Ready to have a meeting?</p>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <a href="/book" class="btn btn--primary">Book Now</a>
+        </div>
       </div>
     </div>
   </section>
 
 </Layout>
 
+<style>
+  .breadcrumbs{
+    font-family: var(--font-mono); font-size: 12px; color: rgba(248,249,246,0.6);
+    margin-bottom: 20px; display:flex; flex-wrap:wrap; gap:6px; align-items:center;
+  }
+  .breadcrumbs a:hover{ color: var(--gold-300); }
+  .crumb-sep{ color: rgba(248,249,246,0.3); }
+  .crumb-current{ color: rgba(248,249,246,0.85); }
+
+  .team-columns{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 56px;
+  }
+  .team-col-name{
+    font-family: var(--font-display);
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--ink-900);
+    margin: 18px 0 4px;
+  }
+  .team-col-role{
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--sage-500);
+    margin-bottom: 18px;
+  }
+  .team-col-bio{
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--ink-600);
+    margin-bottom: 18px;
+  }
+
+  .approach-grid{
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+  }
+  .approach-item{ display:flex; flex-direction:column; gap:10px; }
+  .approach-num{
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--gold-500);
+  }
+  .approach-item h3{ font-size: 17px; }
+  .approach-item p{ color: var(--ink-600); font-size: 14.5px; }
+
+  @media (max-width: 860px){
+    .team-columns{ grid-template-columns: 1fr; gap: 40px; }
+    .approach-grid{ grid-template-columns: 1fr; }
+  }
+</style>

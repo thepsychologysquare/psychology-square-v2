@@ -400,7 +400,7 @@ a:focus-visible, button:focus-visible{
 }
 
 /* --- Responsive Layout Breakpoint Configurations --- */
-@media (max-width: 991px) {
+@media (max-width: 1040px) {
   .site-nav, .header-subscribe-btn {
     display: none !important;
   }
@@ -707,9 +707,12 @@ body.nav-menu-locked {
    Hero
 --------------------------------------- */
 .hero{
-  background:var(--navy-950);
-  color:var(--paper-0);
-  padding:150px 0 24px;
+  background: var(--navy-950);
+  color: var(--paper-0);
+  padding: 150px 0 24px;
+  background-image:
+    radial-gradient(circle at top right, rgba(197, 160, 89, 0.15), transparent 60%),
+    radial-gradient(circle at bottom left, rgba(28, 49, 76, 0.5), transparent 55%);
 }
 .hero-inner{
   display:grid;
@@ -863,7 +866,9 @@ body.nav-menu-locked {
 .quote-block{
   background:var(--navy-950);
   color:var(--paper-0);
-  padding:40px 0;
+  padding:10px 0px;
+  border-radius: 60px 0 60px 0px;
+  margin: 40px;
 }
 .quote-inner{max-width:720px; margin:0 auto; text-align:center;}
 .quote-text{
@@ -1593,3 +1598,37 @@ span.swiper-notification {
     }
 }
 
+.request-cta-banner {
+    background: var(--navy-950);
+    color: var(--paper-0);
+    border-radius: 12px;
+    padding: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    box-shadow: 0 16px 32px -12px rgba(11, 20, 31, 0.2);
+  }
+
+  .request-cta-banner p {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 500;
+    margin: 0;
+    color: var(--paper-0);
+  }
+
+  @media (max-width: 960px){
+    .approach-grid{
+      grid-template-columns: 1fr;
+      padding: 28px;
+    }
+    .request-cta-banner {
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 28px;
+    }
+    .request-cta-banner p {
+      font-size: 19px;
+    }
+  }

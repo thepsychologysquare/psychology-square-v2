@@ -1,0 +1,217 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+const siteOrigin = 'https://thepsychologysquare.com';
+const serviceJson = JSON.parse(`{
+  "@context": "https://schema.org",
+  "@type": "Service",
+  "serviceType": "Corporate & Workplace Mental Health Services",
+  "provider": { "@type": "MedicalBusiness", "name": "The Psychology Square", "url": "${siteOrigin}" },
+  "areaServed": "Lahore, Pakistan",
+  "url": "${siteOrigin}/services/corporate",
+  "description": "Employee assistance, workplace mental health training, manager support, and organizational psychometric assessments for companies in Lahore, Pakistan."
+}`);
+
+const breadcrumbJson = JSON.parse(`{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home", "item": "${siteOrigin}/" },
+    { "@type": "ListItem", "position": 2, "name": "Services", "item": "${siteOrigin}/services" },
+    { "@type": "ListItem", "position": 3, "name": "Corporate Wellbeing", "item": "${siteOrigin}/services/corporate" }
+  ]
+}`);
+---
+<Layout
+  title="Corporate Wellbeing"
+  fullTitle="Corporate & Workplace Mental Health Services in Lahore | The Psychology Square"
+  description="Employee assistance, workplace mental health training, manager support, and organizational assessments for companies in Lahore — delivered directly by licensed clinical psychologists."
+>
+  <script type="application/ld+json" set:html={JSON.stringify(serviceJson)} />
+  <script type="application/ld+json" set:html={JSON.stringify(breadcrumbJson)} />
+
+  <section class="hero">
+    <div class="wrap">
+      <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <a href="/">Home</a>
+        <span class="crumb-sep">/</span>
+        <a href="/services">Services</a>
+        <span class="crumb-sep">/</span>
+        <span class="crumb-current">Corporate Wellbeing</span>
+      </nav>
+      <p class="eyebrow">For Organizations</p>
+      <h1 class="hero-title" style="font-size: clamp(32px, 4vw, 48px); margin-bottom: 16px;">Corporate &amp; Workplace Wellbeing</h1>
+      <p class="hero-sub">Mental health support for your team, delivered directly by licensed clinical psychologists in Johar Town, Lahore — not outsourced to a call center.</p>
+      <div class="hero-actions" style="margin-top: 28px;">
+        <a href="/contact" class="btn btn--primary">Talk to us about your team</a>
+        <a href="mailto:info@thepsychologysquare.com" class="btn btn--text">Email us →</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <h2 style="font-size: 24px; font-weight: 600; margin-bottom: 32px; letter-spacing: -0.01em;">What we offer</h2>
+      <div class="card-grid corporate-grid" style="margin-bottom: 64px;">
+        <div class="article-card corporate-card" style="cursor:default;">
+          <span class="article-meta">Employee Assistance</span>
+          <h3>Confidential 1:1 Counseling</h3>
+          <p>A direct line to a licensed psychologist for your employees — short-term, confidential support for stress, anxiety, and personal or work-related concerns.</p>
+        </div>
+        <div class="article-card corporate-card" style="cursor:default;">
+          <span class="article-meta">Training &amp; Workshops</span>
+          <h3>Workplace Mental Health Sessions</h3>
+          <p>On-site or online sessions on stress management, burnout prevention, and mental health awareness — built around what your team is actually facing.</p>
+        </div>
+        <div class="article-card corporate-card" style="cursor:default;">
+          <span class="article-meta">Manager Training</span>
+          <h3>Supporting a Struggling Employee</h3>
+          <p>Practical training for managers and HR teams on recognizing distress early, having the conversation, and knowing when and how to refer.</p>
+        </div>
+        <div class="article-card corporate-card" style="cursor:default;">
+          <span class="article-meta">Assessments</span>
+          <h3>Organizational &amp; Pre-Employment Testing</h3>
+          <p>Psychometric assessment support for hiring and team development, drawing on our existing statistical and psychometric research practice.</p>
+        </div>
+        <div class="article-card corporate-card" style="cursor:default;">
+          <span class="article-meta">Critical Incident Support</span>
+          <h3>Post-Incident Debriefing</h3>
+          <p>Structured support sessions for teams following a difficult event at work — a space to process, not just move on.</p>
+        </div>
+      </div>
+
+      <div class="approach-grid" style="margin-bottom: 64px;">
+        <div class="approach-item">
+          <span class="approach-num">01</span>
+          <h3>Built around your team</h3>
+          <p>We start with a short conversation about what your organization actually needs, not a fixed package — pricing and scope are set from there.</p>
+        </div>
+        <div class="approach-item">
+          <span class="approach-num">02</span>
+          <h3>On-site or remote</h3>
+          <p>Sessions and training can run at your office in Lahore, or online for distributed and remote teams.</p>
+        </div>
+        <div class="approach-item">
+          <span class="approach-num">03</span>
+          <h3>Delivered by real clinicians</h3>
+          <p>Every session is led directly by Muhammad Sohail or Sehar Waheed — the same psychologists who see individual clients, not a rotating panel.</p>
+        </div>
+      </div>
+
+      <div class="request-cta-banner">
+        <p>Interested in wellbeing support for your organization?</p>
+        <div style="display:flex; gap:12px; flex-wrap:wrap;">
+          <a href="/contact" class="btn btn--primary">Get in touch</a>
+          <a href="mailto:info@thepsychologysquare.com" class="btn btn--primary">Email us →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</Layout>
+
+<style>
+  .breadcrumbs{
+    font-family: var(--font-mono); font-size: 12px; color: rgba(248,249,246,0.6);
+    margin-bottom: 20px; display:flex; flex-wrap:wrap; gap:6px; align-items:center;
+  }
+  .breadcrumbs a:hover{ color: var(--gold-300); }
+  .crumb-sep{ color: rgba(248,249,246,0.3); }
+  .crumb-current{ color: rgba(248,249,246,0.85); }
+
+  .corporate-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+    gap: 24px;
+  }
+
+  .corporate-card {
+    background: #ffffff;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 28px;
+    transition: transform 0.3s var(--ease), border-color 0.3s var(--ease), box-shadow 0.3s var(--ease);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .corporate-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--gold-500);
+    box-shadow: 0 12px 30px -8px rgba(11, 20, 31, 0.08);
+  }
+
+  .corporate-card h3 {
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--navy-950);
+    margin: 0;
+    line-height: 1.3;
+  }
+
+  .corporate-card p {
+    color: var(--ink-600);
+    font-size: 15px;
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  .article-meta {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--sage-500);
+    background: rgba(124, 152, 133, 0.1);
+    padding: 4px 10px;
+    border-radius: 999px;
+    align-self: flex-start;
+    margin-bottom: 4px;
+  }
+
+  .approach-grid{
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 36px;
+    background: var(--paper-50);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 40px;
+  }
+
+  .approach-item{
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .approach-num{
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--gold-500);
+    letter-spacing: 0.05em;
+  }
+
+  .approach-item h3{
+    font-family: var(--font-display);
+    font-size: 19px;
+    font-weight: 600;
+    color: var(--navy-950);
+    margin: 0;
+  }
+
+  .approach-item p{
+    color: var(--ink-600);
+    font-size: 15px;
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  @media (max-width: 860px){
+    .corporate-grid { grid-template-columns: 1fr; }
+  }
+</style>

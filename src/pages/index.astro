@@ -171,7 +171,7 @@ const faqs = [
       </div>
 
       <div class="therapy-right">
-        <h3 class="therapy-title">Our Services</h3>
+        <h3 class="therapy-title">Our Therapy Services</h3>
         <div class="therapy-list">
           {therapyServices.map((s) => {
             const img = getServiceImage(s.slug);
@@ -195,6 +195,32 @@ const faqs = [
         <div class="therapy-action-block">
           <a href="/book" class="btn btn--primary contact-btn">Book Now</a>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <div class="section-head" style="margin-bottom: 28px;">
+        <div>
+          <h2 class="section-title">More Services</h2>
+        </div>
+      </div>
+
+      <div class="explore-grid">
+        <a href="/services/research-analysis" class="featured-article-box" style="text-decoration: none;">
+          <span class="other-service-badge">Statistical &amp; Psychometric</span>
+          <h3>Research Analysis</h3>
+          <p>From your first t-test to full-scale psychometric validation, structural equation modeling, and defense preparation in R, SPSS, AMOS, and Python.</p>
+          <span class="therapy-card-meta">Explore research services &rarr;</span>
+        </a>
+
+        <a href="/services/tutoring" class="featured-article-box" style="text-decoration: none;">
+          <span class="other-service-badge">O Level &rarr; MPhil</span>
+          <h3>Psychology Tutoring</h3>
+          <p>One-to-one tutoring mapped precisely to your curriculum, taught by practicing psychologists who break down complex theoretical and statistical frameworks.</p>
+          <span class="therapy-card-meta">Explore tutoring options &rarr;</span>
+        </a>
       </div>
     </div>
   </section>
@@ -598,7 +624,7 @@ const faqs = [
 
   .explore-grid{ display:grid; grid-template-columns: 1.4fr 1fr; gap: 28px; align-items:stretch; }
   .featured-article-box{
-    background: var(--paper-0); border: 1px solid var(--line); border-left: 3px solid var(--gold-500);
+    background: white; border: 1px solid var(--line); border-left: 3px solid var(--gold-500);
     padding: 32px; display:flex; flex-direction:column; gap:12px;
     transition: border-color .25s var(--ease), transform .25s var(--ease);
   }

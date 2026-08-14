@@ -1,13 +1,42 @@
 ---
 import Layout from '../layouts/Layout.astro';
+
+const siteOrigin = 'https://thepsychologysquare.com';
+const itemListJson = {
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Printable Worksheets", "url": `${siteOrigin}/resources/worksheets` },
+    { "@type": "ListItem", "position": 2, "name": "Scales & Assessment Tools", "url": `${siteOrigin}/resources/assessments` },
+  ],
+};
+const breadcrumbJson = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home", "item": `${siteOrigin}/` },
+    { "@type": "ListItem", "position": 2, "name": "Resources", "item": `${siteOrigin}/resources` },
+  ],
+};
 ---
-<Layout title="Resources" description="Worksheets and public assessments to use on your own or bring to a session." image="/images/resources-cover.jpg">
+<Layout
+  title="Resources"
+  fullTitle="Mental Health Worksheets & Assessment Tools | The Psychology Square"
+  description="Free printable worksheets and public psychological assessment scales from The Psychology Square, Lahore — use on your own or bring to a therapy session."
+>
+  <script type="application/ld+json" set:html={JSON.stringify(itemListJson)} />
+  <script type="application/ld+json" set:html={JSON.stringify(breadcrumbJson)} />
 
   <section class="hero">
     <div class="wrap">
+      <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <a href="/">Home</a>
+        <span class="crumb-sep">/</span>
+        <span class="crumb-current">Resources</span>
+      </nav>
       <p class="eyebrow">Tools &amp; Support</p>
       <h1 class="hero-title" style="font-size: clamp(32px, 4vw, 48px); margin-bottom: 16px;">Resources</h1>
-      <p class="hero-sub">Printable worksheets and public assessment scales, free to use on your own or bring to a session.</p>
+      <p class="hero-sub">Printable worksheets and public assessment scales, free to use on your own or bring to a session with one of our clinicians in Johar Town, Lahore.</p>
     </div>
   </section>
 
@@ -25,9 +54,82 @@ import Layout from '../layouts/Layout.astro';
           <p>Publicly available psychological scales, with scoring guidance and source notes.</p>
         </a>
       </div>
+
+      <h2 style="font-size: 22px; margin: 64px 0 16px;">What's covered</h2>
+      <p style="max-width:680px; color: var(--ink-600); font-size:15px; line-height:1.7; margin-bottom: 24px;">
+        Worksheets and assessments on this page span the concerns we see most often in session — general coping tools alongside material specific to anxiety, depression, ADHD, addiction and recovery, trauma, relationships, and stress or burnout. Everything here is meant to stand on its own: readable without a clinician in the room, but also useful to bring into one.
+      </p>
+      <div class="category-pills" style="margin-bottom: 56px;">
+        {['General', 'Anxiety', 'Depression', 'ADHD', 'Addiction & Recovery', 'Trauma', 'Relationships', 'Stress & Burnout'].map((t) => (
+          <span class="topic-pill">{t}</span>
+        ))}
+      </div>
+
+      <div class="approach-grid" style="margin-bottom: 56px;">
+        <div class="approach-item">
+          <span class="approach-num">01</span>
+          <h3>Worksheets</h3>
+          <p>Structured, printable exercises for use between sessions. Some are free downloads; others are part of a paid set you can request directly.</p>
+        </div>
+        <div class="approach-item">
+          <span class="approach-num">02</span>
+          <h3>Assessment scales</h3>
+          <p>Publicly available screening tools, each with scoring guidance and a note on its source — useful for a first read on where things stand.</p>
+        </div>
+        <div class="approach-item">
+          <span class="approach-num">03</span>
+          <h3>A starting point, not a diagnosis</h3>
+          <p>These resources are educational. If something here resonates, a session is the next step to talk it through properly.</p>
+        </div>
+      </div>
+
+      <div class="request-cta-banner">
+        <p>Want to talk through what you're working on?</p>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <a href="/concact" class="btn btn--primary">Contact Us</a>
+        </div>
+      </div>
     </div>
   </section>
 
 </Layout>
 
+<style>
+  .breadcrumbs{
+    font-family: var(--font-mono); font-size: 12px; color: rgba(248,249,246,0.6);
+    margin-bottom: 20px; display:flex; flex-wrap:wrap; gap:6px; align-items:center;
+  }
+  .breadcrumbs a:hover{ color: var(--gold-300); }
+  .crumb-sep{ color: rgba(248,249,246,0.3); }
+  .crumb-current{ color: rgba(248,249,246,0.85); }
 
+  .category-pills{ display:flex; flex-wrap:wrap; gap:10px; }
+  .topic-pill{
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--navy-700);
+    border: 1px solid var(--line);
+    padding: 9px 16px;
+    border-radius: 999px;
+  }
+
+  .approach-grid{
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+  }
+  .approach-item{ display:flex; flex-direction:column; gap:10px; }
+  .approach-num{
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--gold-500);
+  }
+  .approach-item h3{ font-size: 17px; }
+  .approach-item p{ color: var(--ink-600); font-size: 14.5px; }
+
+  @media (max-width: 860px){
+    .approach-grid{ grid-template-columns: 1fr; }
+  }
+</style>
