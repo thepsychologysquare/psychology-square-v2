@@ -1137,6 +1137,7 @@ body.nav-menu-locked {
   .wordmark{ font-size: 15px; gap:7px; }
   .header-cta{ display:none; }
   .hamburger-btn{ display:flex; }
+  .header-inner-pill{ border-radius: 20px;}
 }
 @media (min-width: 901px){
   .hamburger-btn, .mobile-drawer, .drawer-overlay{ display:none; }
