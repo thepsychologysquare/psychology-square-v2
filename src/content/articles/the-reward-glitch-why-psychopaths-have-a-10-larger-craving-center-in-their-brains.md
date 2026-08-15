@@ -1,10 +1,9 @@
 ---
 title: "The Reward Glitch: Why Psychopaths Have a 10% Larger 'Craving Center' in
   Their Brains"
-description: Discover how recent neuroimaging studies reveal that psilocybin
+description: "Discover how recent neuroimaging studies reveal that psilocybin
   creates lasting changes in brain connectivity and the default mode network
-  (DMN). Explore what magic mushrooms mean for the future of mental health
-  treatment, depression therapy, and psychedelic neuroscience.
+  (DMN). "
 image: /images/psychopathy.jpg
 imageAlt: psychopathy
 category: general
