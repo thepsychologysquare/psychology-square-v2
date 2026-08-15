@@ -1,10 +1,8 @@
 ---
 title: "The Lasting Impact of Psychedelics: How Magic Mushrooms Can Change Your Brain"
-description: Discover how recent neuroimaging research reveals that psilocybin
+description: "Discover how recent neuroimaging research reveals that psilocybin
   (magic mushrooms) creates long-lasting changes in brain activity and
-  structure. Learn about its impact on the default mode network (DMN), mental
-  health treatments for depression and anxiety, and what science says about the
-  future of psychedelic therapy.
+  structure. "
 image: /images/psychedelics.jpg
 imageAlt: psychedelic experience
 category: general
