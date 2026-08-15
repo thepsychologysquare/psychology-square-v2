@@ -1,6 +1,7 @@
 ---
-title: "The Reward Glitch: Why Psychopaths Have a 10% Larger 'Craving Center' in Their Brains"
-description: ""
+title: "The Reward Glitch: Why Psychopaths Have a 10% Larger 'Craving Center' in
+  Their Brains"
+description: An article about psychopaths
 image: ""
 imageAlt: ""
 category: neuroscience
@@ -8,7 +9,7 @@ tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
 publishDate: 2026-08-15T10:43:48.966Z
-draft: true
+draft: false
 ---
 <h2>The Reward Glitch: Why Psychopaths Have a 10% Larger 'Craving Center' in Their Brains</h2>
 
