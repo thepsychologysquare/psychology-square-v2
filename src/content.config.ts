@@ -27,6 +27,11 @@ const articles = defineCollection({
     // Safe, non-destructive optional fields for Decap CMS uploads:
     image: z.string().optional(),
     imageAlt: z.string().optional(),
+    // Unsplash attribution (populated by the n8n pipeline for AI-sourced images).
+    // Optional so manually-uploaded Decap images without a credit still work fine.
+    imageCredit: z.string().optional(),
+    imageCreditUrl: z.string().optional(),
+    imageSourceUrl: z.string().optional(),
   }),
 });
 const worksheets = defineCollection({

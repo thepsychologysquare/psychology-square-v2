@@ -16,6 +16,11 @@ const categoryMeta: Record<string, string> = {
   'relationships': 'Relationships',
   'stress-burnout': 'Stress & Burnout',
 };
+// Fallback for categories not in the list above (e.g. one typed straight
+// into an article's frontmatter) — Title Case instead of a raw slug.
+function categoryLabel(slug: string) {
+  return categoryMeta[slug] || slug.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+}
 
 // Auto-derived from actual content — adding a category or tag later needs zero page edits.
 const categoriesPresent = [...new Set(sorted.map((a) => a.data.category))].sort();
@@ -79,7 +84,7 @@ const breadcrumbJson = {
       </p>
       <div class="topic-link-row">
         {categoriesPresent.map((cat) => (
-          <a href={`/articles/category/${cat}`} class="topic-pill">{categoryMeta[cat] || cat}</a>
+          <a href={`/articles/category/${cat}`} class="topic-pill">{categoryLabel(cat)}</a>
         ))}
       </div>
     </div>
@@ -100,8 +105,8 @@ const breadcrumbJson = {
               <div class="checkbox-list" id="category-filters">
                 {categoriesPresent.map((cat) => (
                   <label class="checkbox-row">
-                    <input type="checkbox" value={cat} class="category-checkbox" data-label={categoryMeta[cat] || cat} />
-                    <span>{categoryMeta[cat] || cat}</span>
+                    <input type="checkbox" value={cat} class="category-checkbox" data-label={categoryLabel(cat)} />
+                    <span>{categoryLabel(cat)}</span>
                   </label>
                 ))}
               </div>
@@ -155,7 +160,7 @@ const breadcrumbJson = {
                 </div>
               )}
               <div class="card-body">
-                <span class="article-meta">{categoryMeta[article.data.category] || article.data.category}</span>
+                <span class="article-meta">{categoryLabel(article.data.category)}</span>
                 <h3>{article.data.title}</h3>
                 <p>{article.data.description}</p>
               </div>

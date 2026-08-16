@@ -35,8 +35,18 @@ const categoryMeta: Record<string, { name: string; blurb: string }> = {
 };
 
 const { category } = Astro.params;
+
+// Fallback chain for categories not in the hardcoded list above: try the
+// Decap "categories" collection (if an admin added a friendly name there),
+// then fall back to Title Case of the slug itself — never a raw slug.
+const decapCategories = await getCollection('categories');
+const decapNameBySlug = new Map(decapCategories.map((c) => [c.id, c.data.name]));
+function titleCaseFromSlug(slug: string) {
+  return slug.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+}
+
 const meta = categoryMeta[category as string] || {
-  name: category as string,
+  name: decapNameBySlug.get(category as string) || titleCaseFromSlug(category as string),
   blurb: 'Articles on this topic.',
 };
 

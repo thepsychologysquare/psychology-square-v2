@@ -11,6 +11,11 @@ const categoryMeta: Record<string, string> = {
   'relationships': 'Relationships',
   'stress-burnout': 'Stress & Burnout',
 };
+// Fallback for categories not in the list above (e.g. one typed straight
+// into an article's frontmatter) — Title Case instead of a raw slug.
+function categoryLabel(slug: string) {
+  return categoryMeta[slug] || slug.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+}
 
 export async function getStaticPaths() {
   const articles = await getCollection('articles', ({ data }) => !data.draft);
@@ -84,7 +89,7 @@ const mainImgAbsolute = mainImgSrc
     "itemListElement": [
       { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://thepsychologysquare.com/" },
       { "@type": "ListItem", "position": 2, "name": "Articles", "item": "https://thepsychologysquare.com/articles" },
-      { "@type": "ListItem", "position": 3, "name": categoryMeta[article.data.category] || article.data.category, "item": `https://thepsychologysquare.com/articles/category/${article.data.category}` },
+      { "@type": "ListItem", "position": 3, "name": categoryLabel(article.data.category), "item": `https://thepsychologysquare.com/articles/category/${article.data.category}` },
       { "@type": "ListItem", "position": 4, "name": article.data.title, "item": `https://thepsychologysquare.com${canonicalPath}` }
     ]
   })} />
@@ -95,13 +100,13 @@ const mainImgAbsolute = mainImgSrc
         <span class="crumb-sep">/</span>
         <a href="/articles">Articles</a>
         <span class="crumb-sep">/</span>
-        <a href={`/articles/category/${article.data.category}`}>{categoryMeta[article.data.category] || article.data.category}</a>
+        <a href={`/articles/category/${article.data.category}`}>{categoryLabel(article.data.category)}</a>
         <span class="crumb-sep">/</span>
         <span class="crumb-current">{article.data.title}</span>
       </nav>
 
       <span class="article-meta" style="display:block; margin-bottom: 14px;">
-        {categoryMeta[article.data.category] || article.data.category}{article.data.subcategory && <> / {article.data.subcategory}</>}
+        {categoryLabel(article.data.category)}{article.data.subcategory && <> / {article.data.subcategory}</>}
       </span>
       <h1 class="article-title">{article.data.title}</h1>
 
@@ -172,7 +177,7 @@ const mainImgAbsolute = mainImgSrc
                   </div>
                 )}
                 <div class="card-body">
-                  <span class="article-meta">{categoryMeta[a.data.category] || a.data.category}</span>
+                  <span class="article-meta">{categoryLabel(a.data.category)}</span>
                   <h3>{a.data.title}</h3>
                   <p>{a.data.description}</p>
                 </div>

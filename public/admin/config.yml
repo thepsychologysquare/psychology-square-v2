@@ -22,6 +22,17 @@ collections:
     folder: "src/content/articles"
     create: true
     slug: "{{slug}}"
+    sortable_fields: ["publishDate", "title", "draft"]
+    view_filters:
+      - label: "Drafts only"
+        field: draft
+        pattern: true
+      - label: "Published only"
+        field: draft
+        pattern: false
+    view_groups:
+      - label: "Status"
+        field: draft
     fields:
       - {label: "Title", name: "title", widget: "string"}
       - {label: "Description", name: "description", widget: "text", hint: "One or two sentences — shows on article cards and in search results."}

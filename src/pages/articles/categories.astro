@@ -1,0 +1,132 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+
+const topicImages = import.meta.glob<{ default: ImageMetadata }>(
+  '/src/assets/topics/*.{jpg,jpeg,png,webp}',
+  { eager: true }
+);
+function getTopicImage(slug: string) {
+  const entry = Object.entries(topicImages).find(([path]) => path.includes(`/${slug}.`));
+  return entry?.[1].default;
+}
+
+// Friendly names for the categories we already know about (same list used
+// elsewhere on the site). Anything not in here falls back to the name from
+// the Decap "categories" collection if one exists, and finally to a
+// Title-Cased version of the slug itself — so a category never shows up
+// looking like a raw slug.
+const categoryLabels: Record<string, string> = {
+  'anxiety': 'Anxiety',
+  'depression': 'Depression',
+  'adhd': 'ADHD',
+  'addiction-recovery': 'Addiction & Recovery',
+  'trauma': 'Trauma',
+  'relationships': 'Relationships',
+  'stress-burnout': 'Stress & Burnout',
+};
+function titleCaseFromSlug(slug: string) {
+  return slug
+    .split('-')
+    .map((w) => (w.length ? w.charAt(0).toUpperCase() + w.slice(1) : w))
+    .join(' ');
+}
+
+// Decap-managed category entries (src/content/categories) give us nicer
+// display names for anything added through the CMS's "Categories" tab.
+const decapCategories = await getCollection('categories');
+const decapNameBySlug = new Map(decapCategories.map((c) => [c.id, c.data.name]));
+
+// The category list itself is derived straight from published articles —
+// not from the Decap "categories" collection — because a category becomes
+// "real" the moment an article uses it, whether it was picked from the
+// Decap relation field or just typed directly into an article's frontmatter
+// (e.g. a category the n8n pipeline invented on its own). This means a
+// brand new category shows up here automatically on the next build, with
+// no manual step required.
+const allArticles = await getCollection('articles', ({ data }) => !data.draft);
+const counts = new Map<string, number>();
+for (const a of allArticles) {
+  counts.set(a.data.category, (counts.get(a.data.category) || 0) + 1);
+}
+
+const categories = [...counts.entries()]
+  .map(([slug, count], i) => ({
+    slug,
+    label: categoryLabels[slug] || decapNameBySlug.get(slug) || titleCaseFromSlug(slug),
+    count,
+    img: getTopicImage(slug),
+    graphic: `bg-placeholder-${(i % 9) + 1}`,
+  }))
+  .sort((a, b) => a.label.localeCompare(b.label));
+---
+
+<Layout
+  title="All Categories"
+  fullTitle="All Article Categories | The Psychology Square"
+  description="Browse every article topic on The Psychology Square, from anxiety and depression to trauma, relationships, and neuroscience."
+>
+  <section class="hero">
+    <div class="wrap">
+      <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <a href="/">Home</a>
+        <span class="crumb-sep">/</span>
+        <a href="/articles">Articles</a>
+        <span class="crumb-sep">/</span>
+        <span class="crumb-current">Categories</span>
+      </nav>
+      <p class="eyebrow">Browse by Topic</p>
+      <h1 class="hero-title" style="font-size: clamp(32px, 4vw, 48px); margin-bottom: 16px;">All Categories</h1>
+      <p class="hero-sub">Every topic we've written about, from {categories.length} categor{categories.length === 1 ? 'y' : 'ies'} in total.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <div class="card-grid">
+        {categories.map((cat) => (
+          <a class="article-card category-card" href={`/articles/category/${cat.slug}`}>
+            <div class={`card-image-wrap ${cat.img ? '' : cat.graphic}`}>
+              {cat.img && <img src={cat.img.src} alt={cat.label} loading="lazy" />}
+            </div>
+            <h3>{cat.label}</h3>
+            <p>{cat.count} article{cat.count === 1 ? '' : 's'}</p>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .breadcrumbs{
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: rgba(248,249,246,0.6);
+    margin-bottom: 20px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    align-items:center;
+  }
+  .breadcrumbs a:hover{ color: var(--gold-300); }
+  .crumb-sep{ color: rgba(248,249,246,0.3); }
+  .crumb-current{ color: rgba(248,249,246,0.85); }
+
+  .card-image-wrap{
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border-radius: 6px;
+    background-color: var(--paper-50);
+    background-size: cover;
+    background-position: center;
+  }
+  .card-image-wrap img{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s var(--ease);
+  }
+  .category-card:hover .card-image-wrap img{ transform: scale(1.03); }
+</style>
