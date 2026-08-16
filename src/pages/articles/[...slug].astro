@@ -118,6 +118,22 @@ const mainImgAbsolute = mainImgSrc
             alt={article.data.imageAlt || article.data.title} 
             loading="eager" 
           />
+          {article.data.imageCredit && (
+            <figcaption class="image-credit">
+              Photo by{' '}
+              {article.data.imageCreditUrl ? (
+                <a href={article.data.imageCreditUrl} target="_blank" rel="noopener noreferrer">{article.data.imageCredit}</a>
+              ) : (
+                article.data.imageCredit
+              )}
+              {' '}on{' '}
+              {article.data.imageSourceUrl ? (
+                <a href={article.data.imageSourceUrl} target="_blank" rel="noopener noreferrer">Unsplash</a>
+              ) : (
+                'Unsplash'
+              )}
+            </figcaption>
+          )}
         </figure>
       )}
 
@@ -223,6 +239,21 @@ const mainImgAbsolute = mainImgSrc
     max-height: 480px;
     object-fit: cover;
     display: block;
+  }
+  .image-credit {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--ink-600);
+    text-align: right;
+    padding: 6px 10px 0;
+  }
+  .image-credit a {
+    color: var(--ink-600);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .image-credit a:hover {
+    color: var(--gold-500);
   }
 
   .prose{
