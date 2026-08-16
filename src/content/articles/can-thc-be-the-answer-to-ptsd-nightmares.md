@@ -1,14 +1,16 @@
 ---
-title: "Can THC Be the Answer to PTSD Nightmares?"
-description: "Discover how THC medication is being used to treat PTSD nightmares, reducing symptoms in over a third of patients. Learn more about this breakthrough treatment."
-image: "/images/woman-sleeping-on-bed-under-blankets.jpg"
-imageAlt: "woman sleeping on bed under blankets"
+title: Can THC Be the Answer to PTSD Nightmares?
+description: Discover how THC medication is being used to treat PTSD nightmares,
+  reducing symptoms in over a third of patients. Learn more about this
+  breakthrough treatment.
+image: /images/woman-sleeping-on-bed-under-blankets.jpg
+imageAlt: woman sleeping on bed under blankets
 category: therapy-treatment
 tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
-publishDate: 2026-08-16T10:03:24.285Z
-draft: true
+publishDate: 2026-08-16T15:05:00.000+05:00
+draft: false
 ---
 <script type="application/ld+json">
 {
