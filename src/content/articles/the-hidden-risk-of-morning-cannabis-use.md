@@ -1,16 +1,17 @@
 ---
-title: "The Hidden Risk of Morning Cannabis Use"
-description: ""
-image: "/images/woman-in-orange-tank-top-and-black-skirt-sitting-on-bed.jpg"
-imageAlt: "woman in orange tank top and black skirt sitting on bed"
-category: mental-health
+title: The Hidden Risk of Morning Cannabis Use
+description: Discover how regular cannabis use impacts morning cortisol levels
+  and stress rhythms. Learn the science, health implications, and alternative
+  stress relief tips.
+image: /images/woman-in-orange-tank-top-and-black-skirt-sitting-on-bed.jpg
+imageAlt: woman in orange tank top and black skirt sitting on bed
+category: addiction-recovery
 tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
-publishDate: 2026-08-16T08:04:18.116Z
+publishDate: 2026-08-16T13:10:00.000+05:00
 draft: true
 ---
-<h2>HOOK</h2>
 <p>Imagine waking up to a typical Monday morning, only to find that your body is already on high alert, as if you've been stressed for hours. For frequent cannabis users, this may be a common reality. Research has uncovered a surprising link between regular cannabis use and elevated levels of cortisol, the body's primary stress hormone, even after a full night's sleep. This finding raises important questions about the potential long-term consequences of cannabis use and how it may impact our daily lives.</p>
 
 <h2>THE SCIENCE</h2>
