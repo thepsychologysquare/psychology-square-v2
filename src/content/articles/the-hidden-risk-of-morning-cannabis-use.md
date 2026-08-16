@@ -10,7 +10,7 @@ tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
 publishDate: 2026-08-16T13:10:00.000+05:00
-draft: true
+draft: false
 ---
 <p>Imagine waking up to a typical Monday morning, only to find that your body is already on high alert, as if you've been stressed for hours. For frequent cannabis users, this may be a common reality. Research has uncovered a surprising link between regular cannabis use and elevated levels of cortisol, the body's primary stress hormone, even after a full night's sleep. This finding raises important questions about the potential long-term consequences of cannabis use and how it may impact our daily lives.</p>
 
