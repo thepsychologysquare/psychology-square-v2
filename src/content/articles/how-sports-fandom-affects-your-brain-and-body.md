@@ -1,17 +1,19 @@
 ---
-title: "How Sports Fandom Affects Your Brain and Body"
-description: "Discover the surprising science behind sports fandom and how live events can synchronize heart rates and release oxytocin, promoting social bonding and emotional connections."
-image: "/images/people-watching-baseball.jpg"
-imageAlt: "people watching baseball"
-imageCredit: "Jimmy Conover"
-imageCreditUrl: "https://unsplash.com/@jimmy_conover?utm_source=the_psychology_square&utm_medium=referral"
-imageSourceUrl: "https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral"
+title: How Sports Fandom Affects Your Brain and Body
+description: Discover the surprising science behind sports fandom and how live
+  events can synchronize heart rates and release oxytocin, promoting social
+  bonding and emotional connections.
+image: /images/people-watching-baseball.jpg
+imageAlt: people watching baseball
 category: neuroscience
 tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
+draft: false
+imageCredit: Jimmy Conover
+imageSourceUrl: https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral
+imageCreditUrl: https://unsplash.com/@jimmy_conover?utm_source=the_psychology_square&utm_medium=referral
 publishDate: 2026-08-16T10:28:49.422Z
-draft: true
 ---
 <script type="application/ld+json">
 {
