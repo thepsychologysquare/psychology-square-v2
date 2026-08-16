@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { Image } from 'astro:assets';
+import { getCollection } from 'astro:content';
 
 const topicImages = import.meta.glob<{ default: ImageMetadata }>(
   '/src/assets/topics/*.{jpg,jpeg,png,webp}',
@@ -11,15 +12,44 @@ function getTopicImage(slug: string) {
   return entry?.[1].default;
 }
 
-const topics = [
-  { name: 'Anxiety', slug: 'anxiety', href: '/articles/category/anxiety', bg: 'var(--sage-500)' },
-  { name: 'Depression', slug: 'depression', href: '/articles/category/depression', bg: 'var(--navy-700)' },
-  { name: 'ADHD', slug: 'adhd', href: '/articles/category/adhd', bg: 'var(--gold-500)' },
-  { name: 'Addiction & Recovery', slug: 'addiction-recovery', href: '/articles/category/addiction-recovery', bg: 'var(--navy-950)' },
-  { name: 'Trauma', slug: 'trauma', href: '/articles/category/trauma', bg: 'var(--ink-600)' },
-  { name: 'Relationships', slug: 'relationships', href: '/articles/category/relationships', bg: 'var(--gold-300)' },
-  { name: 'Stress & Burnout', slug: 'stress-burnout', href: '/articles/category/stress-burnout', bg: 'var(--navy-800)' },
-];
+// "Explore Topics" slider — data-driven from actual published articles, the
+// same approach as /articles/categories and the nav slider: a new category
+// shows up here automatically the next time the site builds, whether it was
+// picked in Decap or just typed straight into an article's frontmatter.
+const knownTopicBg: Record<string, string> = {
+  'anxiety': 'var(--sage-500)',
+  'depression': 'var(--navy-700)',
+  'adhd': 'var(--gold-500)',
+  'addiction-recovery': 'var(--navy-950)',
+  'trauma': 'var(--ink-600)',
+  'relationships': 'var(--gold-300)',
+  'stress-burnout': 'var(--navy-800)',
+};
+const knownTopicLabels: Record<string, string> = {
+  'anxiety': 'Anxiety',
+  'depression': 'Depression',
+  'adhd': 'ADHD',
+  'addiction-recovery': 'Addiction & Recovery',
+  'trauma': 'Trauma',
+  'relationships': 'Relationships',
+  'stress-burnout': 'Stress & Burnout',
+};
+function topicTitleCaseFromSlug(slug: string) {
+  return slug.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+}
+const homeDecapCategories = await getCollection('categories');
+const homeDecapNameBySlug = new Map(homeDecapCategories.map((c) => [c.id, c.data.name]));
+const homeArticles = await getCollection('articles', ({ data }) => !data.draft);
+const homeCategorySlugs = [...new Set(homeArticles.map((a) => a.data.category))];
+const topics = homeCategorySlugs
+  .map((slug, i) => ({
+    name: knownTopicLabels[slug] || homeDecapNameBySlug.get(slug) || topicTitleCaseFromSlug(slug),
+    slug,
+    href: `/articles/category/${slug}`,
+    bg: knownTopicBg[slug],
+    graphic: `bg-placeholder-${(i % 9) + 1}`,
+  }))
+  .sort((a, b) => a.name.localeCompare(b.name));
 
 const serviceImages = import.meta.glob<{ default: ImageMetadata }>(
   '/src/assets/services/*.{jpg,jpeg,png,webp}',
@@ -318,7 +348,10 @@ const faqs = [
           const img = getTopicImage(t.slug);
           return (
             <a class="topic-card topic-card-explore" href={t.href}>
-              <div class="topic-card-img" style={img ? undefined : `background:${t.bg};`}>
+              <div
+                class:list={['topic-card-img', !img && !t.bg && t.graphic]}
+                style={!img && t.bg ? `background:${t.bg};` : undefined}
+              >
                 {img && (
                   <Image src={img} alt={t.name} width={760} format="webp" quality={60} loading="lazy" class="topic-card-photo" />
                 )}

@@ -90,7 +90,6 @@ const categories = [...counts.entries()]
               {cat.img && <img src={cat.img.src} alt={cat.label} loading="lazy" />}
             </div>
             <h3>{cat.label}</h3>
-            <p>{cat.count} article{cat.count === 1 ? '' : 's'}</p>
           </a>
         ))}
       </div>

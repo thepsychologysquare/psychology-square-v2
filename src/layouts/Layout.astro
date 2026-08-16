@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 import { Image } from 'astro:assets';
+import { getCollection } from 'astro:content';
 
 export interface Props {
   title: string;
@@ -66,7 +67,10 @@ function getCourseImage(slug: string) {
 }
 
 // --- Nav content metadata ---
-const navCategoryMeta: Record<string, string> = {
+// Nav topic slider — data-driven from actual published articles, the same
+// approach as /articles/categories: any category in use shows up here
+// automatically, no manual list to maintain when a new one appears.
+const navCategoryLabels: Record<string, string> = {
   'anxiety': 'Anxiety',
   'depression': 'Depression',
   'adhd': 'ADHD',
@@ -75,12 +79,21 @@ const navCategoryMeta: Record<string, string> = {
   'relationships': 'Relationships',
   'stress-burnout': 'Stress & Burnout',
 };
-const navAllArticleCategories = Object.keys(navCategoryMeta).map((slug, i) => ({
-  slug,
-  label: navCategoryMeta[slug],
-  img: getTopicImage(slug),
-  graphic: `bg-placeholder-${(i % 9) + 1}`,
-}));
+function navTitleCaseFromSlug(slug: string) {
+  return slug.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+}
+const navDecapCategories = await getCollection('categories');
+const navDecapNameBySlug = new Map(navDecapCategories.map((c) => [c.id, c.data.name]));
+const navArticles = await getCollection('articles', ({ data }) => !data.draft);
+const navCategorySlugsInUse = [...new Set(navArticles.map((a) => a.data.category))];
+const navAllArticleCategories = navCategorySlugsInUse
+  .map((slug, i) => ({
+    slug,
+    label: navCategoryLabels[slug] || navDecapNameBySlug.get(slug) || navTitleCaseFromSlug(slug),
+    img: getTopicImage(slug),
+    graphic: `bg-placeholder-${(i % 9) + 1}`,
+  }))
+  .sort((a, b) => a.label.localeCompare(b.label));
 ---
 <!DOCTYPE html>
 <html lang="en">
