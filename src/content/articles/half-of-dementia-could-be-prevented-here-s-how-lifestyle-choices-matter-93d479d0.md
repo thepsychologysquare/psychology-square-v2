@@ -5,7 +5,7 @@ description: Discover how smoking, blood pressure, heart disease, and
   your chances of developing it.
 image: /images/man-in-white-crew-neck-shirt-wearing-black-sunglasses-C3x3tMBskDw.jpg
 imageAlt: man in white crew neck shirt wearing black sunglasses
-category: mental-health
+category: general
 tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
