@@ -1,17 +1,19 @@
 ---
 title: "The Hidden Danger of Drinking to Cope: How It Can Rewire Your Brain"
-description: "Explore the hidden danger of drinking to cope with stress and how it can permanently rewire your brain, putting you at risk of mental health issues."
-image: "/images/man-in-black-knit-cap-holding-clear-glass-mug-suI00gcXNwk.jpg"
-imageAlt: "man in black knit cap holding clear glass mug"
-imageCredit: "Taylor Brandon"
-imageCreditUrl: "https://unsplash.com/@house_42?utm_source=the_psychology_square&utm_medium=referral"
-imageSourceUrl: "https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral"
+description: Explore the hidden danger of drinking to cope with stress and how
+  it can permanently rewire your brain, putting you at risk of mental health
+  issues.
+image: /images/man-in-black-knit-cap-holding-clear-glass-mug-suI00gcXNwk.jpg
+imageAlt: man in black knit cap holding clear glass mug
 category: mental-health
 tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
+draft: false
+imageCredit: Taylor Brandon
+imageSourceUrl: https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral
+imageCreditUrl: https://unsplash.com/@house_42?utm_source=the_psychology_square&utm_medium=referral
 publishDate: 2026-08-17T07:37:26.940Z
-draft: true
 ---
 <script type="application/ld+json">
 {
