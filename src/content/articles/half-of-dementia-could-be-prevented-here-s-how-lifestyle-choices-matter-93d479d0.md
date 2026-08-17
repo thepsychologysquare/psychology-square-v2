@@ -1,17 +1,19 @@
 ---
-title: "Half of Dementia Could Be Prevented—Here’s How Lifestyle Choices Matter"
-description: "Discover how smoking, blood pressure, heart disease, and cholesterol contribute to dementia risk and learn practical steps to halve your chances of developing it."
-image: "/images/man-in-white-crew-neck-shirt-wearing-black-sunglasses-C3x3tMBskDw.jpg"
-imageAlt: "man in white crew neck shirt wearing black sunglasses"
-imageCredit: "Carl Barcelo"
-imageCreditUrl: "https://unsplash.com/@barcelocarl?utm_source=the_psychology_square&utm_medium=referral"
-imageSourceUrl: "https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral"
+title: Half of Dementia Could Be Prevented—Here’s How Lifestyle Choices Matter
+description: Discover how smoking, blood pressure, heart disease, and
+  cholesterol contribute to dementia risk and learn practical steps to halve
+  your chances of developing it.
+image: /images/man-in-white-crew-neck-shirt-wearing-black-sunglasses-C3x3tMBskDw.jpg
+imageAlt: man in white crew neck shirt wearing black sunglasses
 category: mental-health
 tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
+draft: false
+imageCredit: Carl Barcelo
+imageSourceUrl: https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral
+imageCreditUrl: https://unsplash.com/@barcelocarl?utm_source=the_psychology_square&utm_medium=referral
 publishDate: 2026-08-17T09:46:17.976Z
-draft: true
 ---
 <script type="application/ld+json">
 {
