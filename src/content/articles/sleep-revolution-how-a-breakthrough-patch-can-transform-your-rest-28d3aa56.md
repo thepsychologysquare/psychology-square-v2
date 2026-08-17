@@ -4,7 +4,8 @@ description: Discover how a wearable ultrasound patch can boost REM sleep
   without drugs or surgery, revolutionizing sleep disorder treatment.
 image: /images/man-in-blue-shirt-sleeping-hfvFunLkFgg.jpg
 imageAlt: man in blue shirt sleeping
-category: mental-health
+category: sleep
+subcategory: ""
 tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
