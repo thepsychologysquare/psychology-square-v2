@@ -1,17 +1,18 @@
 ---
 title: "Sleep Revolution: How a Breakthrough Patch Can Transform Your Rest"
-description: "Discover how a wearable ultrasound patch can boost REM sleep without drugs or surgery, revolutionizing sleep disorder treatment."
-image: "/images/man-in-blue-shirt-sleeping-hfvFunLkFgg.jpg"
-imageAlt: "man in blue shirt sleeping"
-imageCredit: "Shane"
-imageCreditUrl: "https://unsplash.com/@theyshane?utm_source=the_psychology_square&utm_medium=referral"
-imageSourceUrl: "https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral"
+description: Discover how a wearable ultrasound patch can boost REM sleep
+  without drugs or surgery, revolutionizing sleep disorder treatment.
+image: /images/man-in-blue-shirt-sleeping-hfvFunLkFgg.jpg
+imageAlt: man in blue shirt sleeping
 category: mental-health
 tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
+draft: false
+imageCredit: Shane
+imageSourceUrl: https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral
+imageCreditUrl: https://unsplash.com/@theyshane?utm_source=the_psychology_square&utm_medium=referral
 publishDate: 2026-08-17T07:38:14.283Z
-draft: true
 ---
 <script type="application/ld+json">
 {
