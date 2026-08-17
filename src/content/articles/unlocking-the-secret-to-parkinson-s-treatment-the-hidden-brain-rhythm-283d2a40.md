@@ -1,17 +1,18 @@
 ---
 title: "Unlocking the Secret to Parkinson's Treatment: The Hidden Brain Rhythm"
-description: "Discover the hidden brain rhythm that could improve Parkinson's treatment and revolutionize the lives of those affected by the disease."
-image: "/images/a-close-up-of-a-human-brain-on-a-black-background-ii6BOPjAtVY.jpg"
-imageAlt: "a close up of a human brain on a black background"
-imageCredit: "Shawn Day"
-imageCreditUrl: "https://unsplash.com/@whisperingshiba?utm_source=the_psychology_square&utm_medium=referral"
-imageSourceUrl: "https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral"
+description: Discover the hidden brain rhythm that could improve Parkinson's
+  treatment and revolutionize the lives of those affected by the disease.
+image: /images/person-with-parkisnson-disease.jpg
+imageAlt: person with parkisnson disease
 category: neuroscience
 tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
-publishDate: 2026-08-17T05:01:49.176Z
 draft: true
+imageCredit: Shawn Day
+imageSourceUrl: https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral
+imageCreditUrl: https://unsplash.com/@whisperingshiba?utm_source=the_psychology_square&utm_medium=referral
+publishDate: 2026-08-17T05:01:49.176Z
 ---
 <script type="application/ld+json">
 {
