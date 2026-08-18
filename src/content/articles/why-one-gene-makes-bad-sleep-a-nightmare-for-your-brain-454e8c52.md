@@ -1,17 +1,18 @@
 ---
-title: "Why One Gene Makes Bad Sleep a Nightmare for Your Brain"
-description: "Discover how a specific gene links poor sleep to increased Alzheimer’s risk and what simple sleep habits can protect your brain."
-image: "/images/shadow-of-woman-on-bed-3sn9MUlx2ZE.jpg"
-imageAlt: "shadow of woman on bed"
-imageCredit: "Megan te Boekhorst"
-imageCreditUrl: "https://unsplash.com/@thesequoialife?utm_source=the_psychology_square&utm_medium=referral"
-imageSourceUrl: "https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral"
+title: Why One Gene Makes Bad Sleep a Nightmare for Your Brain
+description: Discover how a specific gene links poor sleep to increased
+  Alzheimer’s risk and what simple sleep habits can protect your brain.
+image: /images/shadow-of-woman-on-bed-3sn9MUlx2ZE.jpg
+imageAlt: shadow of woman on bed
 category: neuroscience
 tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
+draft: false
+imageCredit: Megan te Boekhorst
+imageSourceUrl: https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral
+imageCreditUrl: https://unsplash.com/@thesequoialife?utm_source=the_psychology_square&utm_medium=referral
 publishDate: 2026-08-18T08:57:10.672Z
-draft: true
 ---
 <script type="application/ld+json">
 {
