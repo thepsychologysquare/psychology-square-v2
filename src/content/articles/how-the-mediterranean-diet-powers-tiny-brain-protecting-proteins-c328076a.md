@@ -1,17 +1,19 @@
 ---
-title: "How the Mediterranean Diet Powers Tiny Brain‑Protecting Proteins"
-description: "Explore how the Mediterranean diet stimulates mitochondrial peptides that protect heart and brain health, with practical food tips to boost these natural defenders."
-image: "/images/article-image-IjrBf8rtKXE.jpg"
+title: How the Mediterranean Diet Powers Tiny Brain‑Protecting Proteins
+description: Explore how the Mediterranean diet stimulates mitochondrial
+  peptides that protect heart and brain health, with practical food tips to
+  boost these natural defenders.
+image: /images/article-image-IjrBf8rtKXE.jpg
 imageAlt: ""
-imageCredit: ""
-imageCreditUrl: "https://unsplash.com/@alexgoesglobal?utm_source=the_psychology_square&utm_medium=referral"
-imageSourceUrl: "https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral"
 category: neuroscience
 tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
+draft: false
+imageCredit: ""
+imageSourceUrl: https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral
+imageCreditUrl: https://unsplash.com/@alexgoesglobal?utm_source=the_psychology_square&utm_medium=referral
 publishDate: 2026-08-18T07:10:45.435Z
-draft: true
 ---
 <script type="application/ld+json">
 {
