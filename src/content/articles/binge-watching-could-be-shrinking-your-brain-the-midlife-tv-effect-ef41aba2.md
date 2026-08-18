@@ -1,17 +1,19 @@
 ---
 title: "Binge‑Watching Could Be Shrinking Your Brain: The Midlife TV Effect"
-description: "Heavy TV watching in midlife is linked to brain shrinkage; discover which regions are affected, safe screen‑time limits, and brain‑friendly habits to adopt now."
-image: "/images/article-image-dZmNJKFDuVI.jpg"
+description: Heavy TV watching in midlife is linked to brain shrinkage; discover
+  which regions are affected, safe screen‑time limits, and brain‑friendly habits
+  to adopt now.
+image: /images/article-image-dZmNJKFDuVI.jpg
 imageAlt: ""
-imageCredit: ""
-imageCreditUrl: "https://unsplash.com/@jonasleupe?utm_source=the_psychology_square&utm_medium=referral"
-imageSourceUrl: "https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral"
 category: neuroscience
 tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
+draft: false
+imageCredit: ""
+imageSourceUrl: https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral
+imageCreditUrl: https://unsplash.com/@jonasleupe?utm_source=the_psychology_square&utm_medium=referral
 publishDate: 2026-08-18T07:10:25.042Z
-draft: true
 ---
 <script type="application/ld+json">
 {
