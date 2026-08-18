@@ -17,6 +17,19 @@ function categoryLabel(slug: string) {
   return categoryMeta[slug] || slug.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 }
 
+// Maps a byline name to its team profile so both the visible byline and the
+// Article JSON-LD can point search engines at /team/sohail or /team/sehar
+// instead of leaving the name as unlinked plain text.
+const teamSlugs: Record<string, string> = {
+  'Muhammad Sohail': 'sohail',
+  'Sehar Waheed': 'sehar',
+};
+const siteOrigin = 'https://thepsychologysquare.com';
+function teamUrl(name?: string) {
+  const slug = name ? teamSlugs[name] : undefined;
+  return slug ? `${siteOrigin}/team/${slug}` : undefined;
+}
+
 export async function getStaticPaths() {
   const articles = await getCollection('articles', ({ data }) => !data.draft);
   return articles.map((article) => ({
@@ -70,8 +83,18 @@ const mainImgAbsolute = mainImgSrc
     "description": article.data.description,
     "datePublished": isoDate,
     "dateModified": isoDate,
-    "author": { "@type": "Person", "name": article.data.author },
-    ...(article.data.reviewedBy ? { "reviewedBy": { "@type": "Person", "name": article.data.reviewedBy } } : {}),
+    "author": {
+      "@type": "Person",
+      "name": article.data.author,
+      ...(teamUrl(article.data.author) ? { "url": teamUrl(article.data.author) } : {}),
+    },
+    ...(article.data.reviewedBy ? {
+      "reviewedBy": {
+        "@type": "Person",
+        "name": article.data.reviewedBy,
+        ...(teamUrl(article.data.reviewedBy) ? { "url": teamUrl(article.data.reviewedBy) } : {}),
+      },
+    } : {}),
     ...(mainImgAbsolute ? { "image": mainImgAbsolute } : {}),
     "publisher": {
       "@type": "Organization",
@@ -111,8 +134,24 @@ const mainImgAbsolute = mainImgSrc
       <h1 class="article-title">{article.data.title}</h1>
 
       <div class="byline">
-        <span>By {article.data.author}</span>
-        {article.data.reviewedBy && <span> · Reviewed by {article.data.reviewedBy}</span>}
+        <span>
+          By{' '}
+          {teamUrl(article.data.author) ? (
+            <a href={teamUrl(article.data.author)}>{article.data.author}</a>
+          ) : (
+            article.data.author
+          )}
+        </span>
+        {article.data.reviewedBy && (
+          <span>
+            {' '}· Reviewed by{' '}
+            {teamUrl(article.data.reviewedBy) ? (
+              <a href={teamUrl(article.data.reviewedBy)}>{article.data.reviewedBy}</a>
+            ) : (
+              article.data.reviewedBy
+            )}
+          </span>
+        )}
         <span> · <time datetime={isoDate}>{formattedDate}</time></span>
       </div>
 
@@ -232,6 +271,15 @@ const mainImgAbsolute = mainImgSrc
     padding-bottom: 24px;
     border-bottom: 1px solid var(--line);
     overflow-wrap: anywhere;
+  }
+  .byline a{
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-color: var(--line);
+    text-underline-offset: 2px;
+  }
+  .byline a:hover{
+    color: var(--gold-500, var(--ink-900));
   }
 
   .article-hero-image {
