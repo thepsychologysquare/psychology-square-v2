@@ -1,17 +1,19 @@
 ---
-title: "How Rewriting Childhood Memories Can Crush Your Fear of Failure"
-description: "Discover how a new memory‑rewriting therapy can reduce fear of failure by reshaping critical childhood memories, offering a fresh path to confidence."
-image: "/images/article-image-m-82PNzgFq4.jpg"
+title: How Rewriting Childhood Memories Can Crush Your Fear of Failure
+description: Discover how a new memory‑rewriting therapy can reduce fear of
+  failure by reshaping critical childhood memories, offering a fresh path to
+  confidence.
+image: /images/article-image-m-82PNzgFq4.jpg
 imageAlt: ""
-imageCredit: ""
-imageCreditUrl: "https://unsplash.com/@silverkblack?utm_source=the_psychology_square&utm_medium=referral"
-imageSourceUrl: "https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral"
 category: therapy
 tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
+draft: false
+imageCredit: ""
+imageSourceUrl: https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral
+imageCreditUrl: https://unsplash.com/@silverkblack?utm_source=the_psychology_square&utm_medium=referral
 publishDate: 2026-08-18T07:10:25.039Z
-draft: true
 ---
 <script type="application/ld+json">
 {
