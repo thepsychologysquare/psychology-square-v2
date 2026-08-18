@@ -11,16 +11,7 @@ export default defineConfig({
   }),
   integrations: [
     sitemap({
-      // Keep the sitemap to public, indexable content only — login-gated
-      // dashboard pages and personal certificate lookups don't belong in
-      // it (dashboard is already blocked in robots.txt; listing it here
-      // too just creates "blocked by robots.txt" noise in Search Console).
-      // Keep the sitemap to pages worth Google prioritizing:
-      // - dashboard/certificates: login-gated, already blocked in robots.txt
-      // - terms/privacy/refund-and-cancellation/disclaimer: legal boilerplate,
-      //   no search value, still reachable normally via the footer
-      // - /assessments: a legacy redirect stub (301 -> /resources/assessments),
-      //   not real content
+      // Keep the sitemap to public, indexable, non-thin content only.
       filter: (page) =>
         !page.includes('/dashboard/') &&
         !page.includes('/my-certificates/') &&
@@ -29,6 +20,7 @@ export default defineConfig({
         !page.includes('/privacy/') &&
         !page.includes('/refund-and-cancellation/') &&
         !page.includes('/disclaimer/') &&
+        !page.includes('/articles/category/') &&
         page !== 'https://thepsychologysquare.com/assessments/',
     }),
   ],
