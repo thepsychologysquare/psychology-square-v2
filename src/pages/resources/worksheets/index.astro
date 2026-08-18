@@ -145,8 +145,9 @@ const breadcrumbJson = {
         {sorted.map((w) => {
           const imgSrc = typeof w.data.image === 'string' ? w.data.image : w.data.image?.src;
           return (
-          <div
+          <a
             class="article-card worksheet-card"
+            href={`/resources/worksheets/${w.id}`}
             data-tier={w.data.tier}
             data-category={w.data.category}
             data-age={w.data.age.join(',')}
@@ -158,17 +159,15 @@ const breadcrumbJson = {
                 <img src={imgSrc} alt={w.data.imageAlt || w.data.title} loading="lazy" />
               </div>
             )}
-            <span class="article-meta">
-              {w.data.tier === 'free' ? 'Free' : 'Paid'} · {categoryMeta[w.data.category]} · {w.data.age.map((a) => ageMeta[a]).join(' & ')}
-            </span>
-            <h3>{w.data.title}</h3>
-            <p>{w.data.description}</p>
-            {w.data.tier === 'free' ? (
-              <a class="worksheet-btn worksheet-btn--download" href={w.data.fileUrl} target="_blank" rel="noopener" aria-label={`Download ${w.data.title} PDF`}>Download PDF →</a>
-            ) : (
-              <button class="worksheet-btn worksheet-btn--request request-btn" data-title={w.data.title} type="button" aria-label={`Request ${w.data.title}`}>Request this worksheet →</button>
-            )}
-          </div>
+            <div class="card-body">
+              <span class="article-meta">
+                {w.data.tier === 'free' ? 'Free' : 'Paid'} · {categoryMeta[w.data.category]} · {w.data.age.map((a) => ageMeta[a]).join(' & ')}
+              </span>
+              <h3>{w.data.title}</h3>
+              <p>{w.data.description}</p>
+              <span class="worksheet-card-link">{w.data.tier === 'free' ? 'View worksheet →' : 'View details →'}</span>
+            </div>
+          </a>
           );
         })}
       </div>
@@ -359,10 +358,19 @@ const breadcrumbJson = {
   }
   .no-results{ color: var(--ink-600); padding: 40px 0; }
 
-  .worksheet-card{ justify-content: flex-start; }
-  .card-image-wrap{ width: 100%; aspect-ratio: 16 / 9; overflow: hidden; background-color: var(--paper-50); border-bottom: 1px solid var(--line); margin-bottom: 14px; }
+  .worksheet-card{ justify-content: flex-start; display: flex; flex-direction: column; overflow: hidden; }
+  .card-image-wrap{ width: 100%; aspect-ratio: 16 / 9; overflow: hidden; background-color: var(--paper-50); border-bottom: 1px solid var(--line); }
   .card-image-wrap img{ width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s var(--ease); }
   .worksheet-card:hover .card-image-wrap img{ transform: scale(1.03); }
+  .worksheet-card .card-body{ display: flex; flex-direction: column; flex-grow: 1; }
+  .worksheet-card-link{
+    margin-top: auto;
+    padding-top: 12px;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    letter-spacing: 0.02em;
+    color: var(--gold-500);
+  }
   .worksheet-card.is-hidden{ display: none; }
   .worksheet-card.is-paged-out{ display: none; }
   .pager{ display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-top:40px; }

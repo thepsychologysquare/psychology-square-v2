@@ -2,6 +2,7 @@
 import { getCollection } from 'astro:content';
 import Layout from '../../../layouts/Layout.astro';
 import assessmentsCover from '../../../assets/resources/assessments.jpg';
+import { getExcerpt } from '../../../lib/textExcerpt';
 
 const allAssessments = await getCollection('assessments', ({ data }) => !data.draft);
 const sorted = allAssessments.sort((a, b) => a.data.order - b.data.order);
@@ -122,27 +123,26 @@ const breadcrumbJson = {
       <p class="results-count" id="results-count"></p>
 
       <div class="assessment-list" id="assessment-list">
-        {sorted.map((a) => (
-          <div
+        {sorted.map((a) => {
+          const preview = getExcerpt(a.body, a.data.description);
+          return (
+          <a
             class="assessment-card"
+            href={`/resources/assessments/${a.id}`}
             data-category={a.data.category}
             data-age={a.data.age.join(',')}
             data-title={a.data.title.toLowerCase()}
-            data-description={a.data.description.toLowerCase()}
+            data-description={preview.toLowerCase()}
           >
             <span class="article-meta">{categoryMeta[a.data.category]} · {a.data.age.map((x) => ageMeta[x]).join(' & ')}</span>
             <h3>{a.data.title}</h3>
-            <p class="assessment-desc">{a.data.description}</p>
+            <p class="assessment-desc">{preview}</p>
             {a.data.sourceNote && <p class="assessment-source">{a.data.sourceNote}</p>}
 
-            <div class="scoring-block">
-              <span class="scoring-label">How to score</span>
-              <p>{a.data.scoringSummary}</p>
-            </div>
-
-            <a class="worksheet-btn worksheet-btn--download" href={a.data.pdfUrl} target="_blank" rel="noopener noreferrer" aria-label={`View ${a.data.title} PDF`}>View PDF →</a>
-          </div>
-        ))}
+            <span class="assessment-card-link">View details &amp; PDF →</span>
+          </a>
+          );
+        })}
       </div>
 
       <p class="no-results" id="no-results" hidden>No assessments match your filters. Try clearing some, or search a different term.</p>
@@ -213,7 +213,7 @@ const breadcrumbJson = {
   .results-count{ font-family: var(--font-mono); font-size: 12.5px; color: var(--ink-600); margin: 24px 0; }
   .no-results{ color: var(--ink-600); padding: 40px 0; }
 
-  .assessment-list{ display:flex; flex-direction:column; gap:16px; }
+  .assessment-list{ display:grid; grid-template-columns: repeat(2, 1fr); gap:20px; }
   .assessment-card{
     display:flex;
     flex-direction: column;
@@ -234,28 +234,23 @@ const breadcrumbJson = {
   .pager-btn.is-current{ background:var(--gold-500); border-color:var(--gold-500); color:var(--navy-950); font-weight:600; }
   .pager-btn:disabled{ opacity:0.4; cursor:not-allowed; }
   .assessment-card h3{ font-size: 19px; margin: 6px 0 8px; }
-  .assessment-desc{ color: var(--ink-600); font-size: 14.5px; }
+  .assessment-desc{ color: var(--ink-600); font-size: 14.5px; flex-grow: 1; }
   .assessment-source{ font-size: 12px !important; margin-top: 8px; color: var(--sage-500) !important; }
 
-  .scoring-block{
-    margin-top: 18px;
-    padding: 16px 18px;
-    background: var(--paper-50);
-    border-left: 3px solid var(--sage-500);
-    border-radius: 2px;
+  .assessment-card-link{
+    margin-top: 20px;
+    align-self: flex-start;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    letter-spacing: 0.02em;
+    color: var(--gold-500);
   }
-  .scoring-label{
-    display:block;
-    font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase;
-    color: var(--sage-500); margin-bottom: 6px;
-  }
-  .scoring-block p{ font-size: 13.5px; color: var(--ink-700); line-height: 1.65; }
-
-  .assessment-card .worksheet-btn{ margin-top: 20px; align-self: flex-start; }
+  .assessment-card:hover .assessment-card-link{ text-decoration: underline; text-underline-offset: 3px; }
 
   @media (max-width: 700px){
     .toolbar{ flex-direction: column; }
     .filter-panel{ right: 0; left: 0; width: auto; }
+    .assessment-list{ grid-template-columns: 1fr; }
  }
 </style>
 

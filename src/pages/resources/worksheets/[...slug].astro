@@ -1,0 +1,325 @@
+---
+import { getCollection, render } from 'astro:content';
+import Layout from '../../../layouts/Layout.astro';
+
+const categoryMeta: Record<string, string> = {
+  'general': 'General',
+  'anxiety': 'Anxiety',
+  'depression': 'Depression',
+  'adhd': 'ADHD',
+  'addiction-recovery': 'Addiction & Recovery',
+  'trauma': 'Trauma',
+  'relationships': 'Relationships',
+  'stress-burnout': 'Stress & Burnout',
+};
+const ageMeta: Record<string, string> = { 'children': 'Children', 'adults': 'Adults' };
+function categoryLabel(slug: string) {
+  return categoryMeta[slug] || slug.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+}
+
+export async function getStaticPaths() {
+  const worksheets = await getCollection('worksheets', ({ data }) => !data.draft);
+  return worksheets.map((worksheet) => ({
+    params: { slug: worksheet.id },
+    props: { worksheet, allWorksheets: worksheets },
+  }));
+}
+
+const { worksheet, allWorksheets } = Astro.props;
+const { Content } = await render(worksheet);
+
+const related = allWorksheets
+  .filter((w) => w.id !== worksheet.id && w.data.category === worksheet.data.category)
+  .slice(0, 3);
+
+const siteOrigin = 'https://thepsychologysquare.com';
+const canonicalPath = `/resources/worksheets/${worksheet.id}`;
+const imgSrc = typeof worksheet.data.image === 'string' ? worksheet.data.image : worksheet.data.image?.src;
+const imgAbsolute = imgSrc
+  ? (imgSrc.startsWith('http') ? imgSrc : `${siteOrigin}${imgSrc}`)
+  : undefined;
+
+const creativeWorkJson = {
+  "@context": "https://schema.org",
+  "@type": "CreativeWork",
+  "name": worksheet.data.title,
+  "description": worksheet.data.description,
+  "url": `${siteOrigin}${canonicalPath}`,
+  "isAccessibleForFree": worksheet.data.tier === 'free',
+  ...(worksheet.data.tier === 'free' && worksheet.data.fileUrl
+    ? { "associatedMedia": { "@type": "MediaObject", "contentUrl": new URL(worksheet.data.fileUrl, siteOrigin).toString() } }
+    : {}),
+  "publisher": {
+    "@type": "Organization",
+    "name": "The Psychology Square",
+    "url": siteOrigin,
+  },
+};
+const breadcrumbJson = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home", "item": `${siteOrigin}/` },
+    { "@type": "ListItem", "position": 2, "name": "Resources", "item": `${siteOrigin}/resources` },
+    { "@type": "ListItem", "position": 3, "name": "Worksheets", "item": `${siteOrigin}/resources/worksheets` },
+    { "@type": "ListItem", "position": 4, "name": worksheet.data.title, "item": `${siteOrigin}${canonicalPath}` },
+  ],
+};
+---
+
+<Layout
+  title={worksheet.data.title}
+  description={worksheet.data.description}
+  fullTitle={`${worksheet.data.title} — The Psychology Square`}
+  image={imgSrc}
+>
+  <script type="application/ld+json" set:html={JSON.stringify(creativeWorkJson)} />
+  <script type="application/ld+json" set:html={JSON.stringify(breadcrumbJson)} />
+
+  <article class="worksheet-page">
+    <div class="wrap">
+      <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <a href="/">Home</a>
+        <span class="crumb-sep">/</span>
+        <a href="/resources">Resources</a>
+        <span class="crumb-sep">/</span>
+        <a href="/resources/worksheets">Worksheets</a>
+        <span class="crumb-sep">/</span>
+        <span class="crumb-current">{worksheet.data.title}</span>
+      </nav>
+
+      <span class="article-meta" style="display:block; margin-bottom: 14px;">
+        {worksheet.data.tier === 'free' ? 'Free' : 'Paid'} · {categoryLabel(worksheet.data.category)} · {worksheet.data.age.map((a: string) => ageMeta[a]).join(' & ')}
+      </span>
+      <h1 class="worksheet-title">{worksheet.data.title}</h1>
+      <p class="worksheet-lede">{worksheet.data.description}</p>
+
+      {imgSrc && (
+        <figure class="worksheet-hero-image">
+          <img src={imgSrc} alt={worksheet.data.imageAlt || worksheet.data.title} loading="eager" />
+        </figure>
+      )}
+
+      <div class="prose">
+        <Content />
+      </div>
+
+      <div class="worksheet-cta">
+        {worksheet.data.tier === 'free' ? (
+          <a
+            class="worksheet-btn worksheet-btn--download"
+            href={worksheet.data.fileUrl}
+            target="_blank"
+            rel="noopener"
+            aria-label={`Download ${worksheet.data.title} PDF`}
+          >
+            Download PDF →
+          </a>
+        ) : (
+          <button class="worksheet-btn worksheet-btn--request request-btn" data-title={worksheet.data.title} type="button" aria-label={`Request ${worksheet.data.title}`}>
+            Request this worksheet →
+          </button>
+        )}
+      </div>
+    </div>
+  </article>
+
+  {related.length > 0 && (
+    <section class="section section--alt">
+      <div class="wrap">
+        <div class="section-head">
+          <h2 class="section-title">More {categoryLabel(worksheet.data.category)} worksheets</h2>
+        </div>
+        <div class="card-grid">
+          {related.map((w) => {
+            const relImgSrc = typeof w.data.image === 'string' ? w.data.image : w.data.image?.src;
+            return (
+              <a class="article-card" href={`/resources/worksheets/${w.id}`}>
+                {relImgSrc && (
+                  <div class="card-image-wrap">
+                    <img src={relImgSrc} alt={w.data.imageAlt || w.data.title} loading="lazy" />
+                  </div>
+                )}
+                <div class="card-body">
+                  <span class="article-meta">{w.data.tier === 'free' ? 'Free' : 'Paid'} · {categoryLabel(w.data.category)}</span>
+                  <h3>{w.data.title}</h3>
+                  <p>{w.data.description}</p>
+                </div>
+              </a>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  )}
+
+  <div class="modal-overlay" id="requestModalOverlay">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <button class="modal-close" id="modalClose" aria-label="Close">✕</button>
+      <h2 id="modalTitle" class="section-title" style="font-size:22px; margin-bottom:8px;">Request a worksheet</h2>
+      <p style="color: var(--ink-600); margin-bottom: 24px; font-size:14px;">Fill this in and we'll follow up by email to arrange payment (for paid items) or the file itself.</p>
+
+      <form action="https://formspree.io/f/mdaqlngp" method="POST" class="request-form">
+        <label>
+          Worksheet
+          <input type="text" name="worksheet" id="worksheet-field" placeholder="e.g. Anger Management Workbook — or describe what you're looking for" />
+        </label>
+        <label>
+          Your name
+          <input type="text" name="name" required />
+        </label>
+        <label>
+          Your email
+          <input type="email" name="email" required />
+        </label>
+        <label>
+          Message (optional)
+          <textarea name="message" rows="3"></textarea>
+        </label>
+        <button type="submit" class="btn btn--primary">Send request</button>
+      </form>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .worksheet-page{ padding: 56px 0 80px; max-width: 100%; }
+  .worksheet-page .wrap{ max-width: 760px; }
+
+  .breadcrumbs{
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.02em;
+    color: var(--ink-600);
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    align-items:center;
+    margin-top: 65px;
+    margin-bottom: 10px;
+  }
+  .breadcrumbs a:hover{ color: var(--gold-500); }
+  .crumb-sep{ color: var(--line); }
+  .crumb-current{ color: var(--ink-900); }
+
+  @media (max-width: 768px) {
+    .breadcrumbs { margin-top: 50px; }
+  }
+
+  .worksheet-title{
+    font-size: clamp(30px, 4vw, 44px);
+    line-height: 1.15;
+    margin-bottom: 14px;
+  }
+  .worksheet-lede{
+    font-size: 17px;
+    color: var(--ink-600);
+    line-height: 1.6;
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .worksheet-hero-image{
+    margin: 0 0 40px 0;
+    width: 100%;
+    border-radius: 4px;
+    overflow: hidden;
+    background-color: var(--paper-50);
+  }
+  .worksheet-hero-image img{
+    width: 100%;
+    max-height: 420px;
+    object-fit: cover;
+    display: block;
+  }
+
+  .prose{
+    font-size: 17px;
+    line-height: 1.75;
+    color: var(--ink-900);
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+  .prose :global(h2){ font-size: 24px; margin: 40px 0 16px; overflow-wrap: anywhere; }
+  .prose :global(p){ margin-bottom: 18px; }
+  .prose :global(ul), .prose :global(ol){ margin: 0 0 18px; padding-left: 22px; }
+  .prose :global(li){ margin-bottom: 8px; }
+  .prose :global(img){ max-width: 100%; height: auto; display: block; margin: 24px auto; border-radius: 4px; }
+  .prose :global(pre){ max-width: 100%; overflow-x: auto; }
+  .prose :global(table){ display: block; max-width: 100%; overflow-x: auto; }
+  .prose :global(a){ overflow-wrap: anywhere; word-break: break-word; }
+
+  .worksheet-cta{
+    margin-top: 40px;
+    padding-top: 28px;
+    border-top: 1px solid var(--line);
+  }
+  .worksheet-cta .worksheet-btn{ font-size: 14px; }
+
+  .article-card {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .card-image-wrap {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    background-color: var(--paper-50);
+    border-bottom: 1px solid var(--line);
+  }
+  .card-image-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s var(--ease);
+  }
+  .article-card:hover .card-image-wrap img {
+    transform: scale(1.03);
+  }
+  .card-body {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+  }
+
+  .request-form{ display:flex; flex-direction:column; gap:18px; }
+  .request-form label{ display:flex; flex-direction:column; gap:6px; font-size: 14px; color: var(--ink-600); font-weight: 500; }
+  .request-form input,
+  .request-form textarea{
+    font-family: var(--font-body);
+    font-size: 15px;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    background: var(--paper-0);
+    color: var(--ink-900);
+  }
+  .request-form input:focus,
+  .request-form textarea:focus{ outline: 2px solid var(--gold-500); outline-offset: 1px; }
+  .request-form button{ align-self: flex-start; border: none; cursor: pointer; }
+</style>
+
+<script>
+  const modalOverlay = document.getElementById('requestModalOverlay');
+  const modalClose = document.getElementById('modalClose');
+  const worksheetField = document.getElementById('worksheet-field') as HTMLInputElement | null;
+
+  function openModal(prefill = '') {
+    if (worksheetField) worksheetField.value = prefill;
+    modalOverlay?.classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeModal() {
+    modalOverlay?.classList.remove('is-open');
+    document.body.style.overflow = '';
+  }
+
+  document.querySelectorAll<HTMLButtonElement>('.request-btn').forEach((btn) => {
+    btn.addEventListener('click', () => openModal(btn.dataset.title || ''));
+  });
+  modalClose?.addEventListener('click', closeModal);
+  modalOverlay?.addEventListener('click', (e) => { if (e.target === modalOverlay) closeModal(); });
+</script>

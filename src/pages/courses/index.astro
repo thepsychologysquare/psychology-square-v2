@@ -4,7 +4,6 @@ import { env } from 'cloudflare:workers';
 import { listCourses } from '../../lib/courses';
 import { getClientSession } from '../../lib/clientAuth';
 import Layout from '../../layouts/Layout.astro';
-import coursesCover from '../../assets/courses/courses.jpg';
 
 const allCourses = await listCourses(env, { includeDrafts: false });
 const sorted = allCourses.sort((a, b) => a.data.order - b.data.order);
@@ -29,7 +28,6 @@ const categoriesInUse = [...new Set(sorted.map((c) => c.data.category))];
 <Layout
   title="Courses"
   description="Continuing education courses from The Psychology Square. Complete a course, pass the quiz, and receive a verifiable certificate by email."
-  image={coursesCover.src}
 >
   <section class="courses-hero">
     <div class="wrap">
@@ -43,7 +41,7 @@ const categoriesInUse = [...new Set(sorted.map((c) => c.data.category))];
             <button type="button" id="logoutBtn" class="btn btn--text">Log out</button>
           </div>
         ) : (
-          <a href="/my-certificates?redirect=/courses" class="btn btn--text">Login &rarr;</a>
+          <a href="/my-certificates" class="btn btn--text">Login &rarr;</a>
         )}
       </div>
       <h1>Courses</h1>
@@ -99,6 +97,24 @@ const categoriesInUse = [...new Set(sorted.map((c) => c.data.category))];
       <p class="filter-empty" id="filterEmptyMsg" hidden>No courses match those filters.</p>
     </div>
   </section>
+
+  <section class="transparency-section">
+    <div class="wrap">
+      <div class="transparency-block">
+        <h2>Free vs. paid — what's the difference?</h2>
+        <div class="transparency-grid">
+          <div class="transparency-card">
+            <span class="transparency-card__label">Free courses</span>
+            <p>Enroll instantly with just your email — no payment step. All lessons, the final quiz, and a verifiable digital certificate on completion, at no cost.</p>
+          </div>
+          <div class="transparency-card">
+            <span class="transparency-card__label">Paid courses</span>
+            <p>Enroll after a quick payment confirmation (easypaisa, JazzCash, or bank transfer — same as our therapy bookings). Includes every lesson and the same free, automatic digital certificate on completion. The payment only ever gates lesson access, never the credential.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 </Layout>
 
 <script>
@@ -152,9 +168,7 @@ const categoriesInUse = [...new Set(sorted.map((c) => c.data.category))];
 
 <style>
   .courses-hero{ padding:72px 0 40px; border-bottom:1px solid var(--line); }
-  .hero-top{ display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-top: 40px; }
-  .hero-top .btn--text{ color:var(--ink-900); text-decoration:underline; text-underline-offset:3px; }
-  .hero-top .btn--text:hover{ color:var(--gold-500); }
+  .hero-top{ display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
   .session-status{ display:flex; align-items:center; gap:10px; font-size:13.5px; color:var(--ink-600); flex-wrap:wrap; }
   .session-status__dot{ width:8px; height:8px; border-radius:50%; background:#2E7D5B; flex-shrink:0; }
   .session-status strong{ color:var(--ink-900); }
@@ -168,7 +182,7 @@ const categoriesInUse = [...new Set(sorted.map((c) => c.data.category))];
   .courses-grid-section{ padding:56px 0 40px; }
   .empty-state{ color:var(--ink-600); }
 
-  .filter-bar{ display:flex; gap:12px; margin-bottom:32px; }
+  .filter-bar{ display:flex; flex-direction:column; gap:12px; margin-bottom:32px; }
   .filter-group{ display:flex; gap:8px; flex-wrap:wrap; }
   .filter-chip{
     font-family:var(--font-mono); font-size:12px; letter-spacing:0.05em; text-transform:uppercase;

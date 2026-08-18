@@ -674,11 +674,11 @@ const moduleQuestionsForClient = renderedModules.map((m) =>
   .quiz-intro{ color:var(--ink-600); margin-bottom:28px; }
 
   .field-row{ display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px; }
-  .field{ display:flex; flex-direction:column; gap:6px; min-width:0; }
+  .field{ display:flex; flex-direction:column; gap:6px; }
   label{ font-size:14px; font-weight:500; }
   input[type="text"], input[type="email"]{
     font-family:var(--font-body); font-size:15px; padding:12px 14px;
-    border:1px solid var(--line); border-radius:2px; width:100%; box-sizing:border-box; min-width:0;
+    border:1px solid var(--line); border-radius:2px;
   }
   input:focus-visible{ outline:2px solid var(--gold-500); outline-offset:1px; }
 
@@ -689,14 +689,6 @@ const moduleQuestionsForClient = renderedModules.map((m) =>
   .quiz-error{ color:#B4432E; font-size:14px; margin-top:12px; }
 
   .quiz-result{ margin-top:8px; }
-
-  @media (max-width:560px){
-    .course-article{ padding:40px 0 72px; }
-    .wrap--narrow{ padding:0 20px; }
-    .enroll-gate{ padding:22px; }
-    .field-row{ grid-template-columns:1fr; gap:14px; margin-bottom:16px; }
-    .btn--primary{ width:100%; text-align:center; }
-  }
 </style>
 
 <!--

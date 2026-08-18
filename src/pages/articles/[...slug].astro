@@ -222,6 +222,7 @@ const mainImgAbsolute = mainImgSrc
     font-size: clamp(30px, 4vw, 44px);
     line-height: 1.15;
     margin-bottom: 18px;
+    overflow-wrap: anywhere;
   }
   .byline{
     font-family: var(--font-mono);
@@ -230,6 +231,7 @@ const mainImgAbsolute = mainImgSrc
     margin-bottom: 40px;
     padding-bottom: 24px;
     border-bottom: 1px solid var(--line);
+    overflow-wrap: anywhere;
   }
 
   .article-hero-image {
@@ -265,10 +267,14 @@ const mainImgAbsolute = mainImgSrc
     font-size: 17px;
     line-height: 1.75;
     color: var(--ink-900);
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
   .prose :global(h2){
     font-size: 24px;
     margin: 40px 0 16px;
+    overflow-wrap: anywhere;
   }
   .prose :global(p){
     margin-bottom: 18px;
@@ -278,6 +284,29 @@ const mainImgAbsolute = mainImgSrc
     padding-left: 22px;
   }
   .prose :global(li){ margin-bottom: 8px; }
+  .prose :global(img){
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 24px auto;
+    border-radius: 4px;
+  }
+  .prose :global(pre){
+    max-width: 100%;
+    overflow-x: auto;
+  }
+  .prose :global(table){
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+  }
+  .prose :global(a){
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+  .prose :global(iframe), .prose :global(video){
+    max-width: 100%;
+  }
 
   .tag-row{
     display:flex;

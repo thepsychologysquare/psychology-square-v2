@@ -29,6 +29,16 @@ html{scroll-behavior:smooth;}
   *{animation-duration:0.001ms !important; transition-duration:0.001ms !important;}
 }
 
+html, body{
+  /* Safety net: content coming from markdown (images, long URLs, code
+     blocks, tables) should never be able to push the page wider than the
+     viewport and shift it into a horizontal scroll on mobile. Individual
+     elements are also constrained below, but this guarantees it can never
+     happen regardless of what shows up in a .md file. */
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
 body{
   margin:0;
   background:var(--paper-0);

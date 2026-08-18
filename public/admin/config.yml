@@ -104,6 +104,7 @@ collections:
         hint: "Only needed for Free worksheets — this is what visitors download directly. Leave blank for Paid worksheets."
       - {label: "Order", name: "order", widget: "number", default: 0, required: false, hint: "Lower numbers show first. Leave as 0 if you don't care about order."}
       - {label: "Draft", name: "draft", widget: "boolean", default: false, hint: "Turn ON to hide this worksheet from the live site until it's ready."}
+      - {label: "Body", name: "body", widget: "markdown", required: false, hint: "Shown on the worksheet's own page — what it's for, who it helps, how to use it. A paragraph or two is plenty."}
 
   # The "courses" collection used to live here. Course creation and
   # editing (title, slug, description, pricing, quiz, modules, lessons --
@@ -140,3 +141,4 @@ collections:
       - {label: "Source / Citation", name: "sourceNote", widget: "string", required: false, hint: "Optional — e.g. 'Spitzer et al., 2006' or the publisher name."}
       - {label: "Order", name: "order", widget: "number", default: 0, required: false}
       - {label: "Draft", name: "draft", widget: "boolean", default: false}
+      - {label: "Body", name: "body", widget: "markdown", required: false, hint: "Shown on the assessment's own page — more context on what it measures, how it's used, and any caveats. Optional."}
