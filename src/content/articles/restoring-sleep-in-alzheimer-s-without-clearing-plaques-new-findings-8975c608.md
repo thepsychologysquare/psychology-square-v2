@@ -1,17 +1,19 @@
 ---
 title: "Restoring Sleep in Alzheimer’s Without Clearing Plaques: New Findings"
-description: "New research reveals targeting brain immune cells can restore sleep in Alzheimer’s models without clearing plaques, offering fresh therapeutic hope."
-image: "/images/a-black-and-white-photo-of-various-mri-images-BDKid0yJcAk.jpg"
-imageAlt: "a black and white photo of various mri images"
-imageCredit: "National Cancer Institute"
-imageCreditUrl: "https://unsplash.com/@nci?utm_source=the_psychology_square&utm_medium=referral"
-imageSourceUrl: "https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral"
+description: New research reveals targeting brain immune cells can restore sleep
+  in Alzheimer’s models without clearing plaques, offering fresh therapeutic
+  hope.
+image: /images/a-black-and-white-photo-of-various-mri-images-BDKid0yJcAk.jpg
+imageAlt: a black and white photo of various mri images
 category: sleep
 tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
+draft: false
+imageCredit: National Cancer Institute
+imageSourceUrl: https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral
+imageCreditUrl: https://unsplash.com/@nci?utm_source=the_psychology_square&utm_medium=referral
 publishDate: 2026-08-19T05:54:36.400Z
-draft: true
 ---
 <script type="application/ld+json">
 {
