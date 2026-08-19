@@ -1,17 +1,18 @@
 ---
-title: "How a Second Pregnancy Reshapes the Maternal Brain"
-description: "Research shows a second pregnancy induces distinct brain changes, offering insights into maternal cognition and mental health."
-image: "/images/pregnant-woman-cradling-her-belly-ux53SGpRAHU.jpg"
-imageAlt: "pregnant woman cradling her belly"
-imageCredit: "freestocks"
-imageCreditUrl: "https://unsplash.com/@freestocks?utm_source=the_psychology_square&utm_medium=referral"
-imageSourceUrl: "https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral"
+title: How a Second Pregnancy Reshapes the Maternal Brain
+description: Research shows a second pregnancy induces distinct brain changes,
+  offering insights into maternal cognition and mental health.
+image: /images/pregnant-woman-cradling-her-belly-ux53SGpRAHU.jpg
+imageAlt: pregnant woman cradling her belly
 category: general
 tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
+draft: false
+imageCredit: freestocks
+imageSourceUrl: https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral
+imageCreditUrl: https://unsplash.com/@freestocks?utm_source=the_psychology_square&utm_medium=referral
 publishDate: 2026-08-19T05:54:36.424Z
-draft: true
 ---
 <script type="application/ld+json">
 {
