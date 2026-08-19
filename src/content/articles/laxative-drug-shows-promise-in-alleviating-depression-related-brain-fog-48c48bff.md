@@ -1,17 +1,18 @@
 ---
-title: "Laxative Drug Shows Promise in Alleviating Depression-Related Brain Fog"
-description: "A common constipation medication may reduce depression-related brain fog, offering a novel gut‑brain approach to improve mental clarity."
-image: "/images/a-toy-figure-on-a-table-Wp4uMpruDc8.jpg"
-imageAlt: "a toy figure on a table"
-imageCredit: "Etactics Inc"
-imageCreditUrl: "https://unsplash.com/@etactics?utm_source=the_psychology_square&utm_medium=referral"
-imageSourceUrl: "https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral"
+title: Laxative Drug Shows Promise in Alleviating Depression-Related Brain Fog
+description: A common constipation medication may reduce depression-related
+  brain fog, offering a novel gut‑brain approach to improve mental clarity.
+image: /images/a-toy-figure-on-a-table-Wp4uMpruDc8.jpg
+imageAlt: a toy figure on a table
 category: depression
 tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
+draft: false
+imageCredit: Etactics Inc
+imageSourceUrl: https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral
+imageCreditUrl: https://unsplash.com/@etactics?utm_source=the_psychology_square&utm_medium=referral
 publishDate: 2026-08-19T05:44:35.962Z
-draft: true
 ---
 <script type="application/ld+json">
 {
