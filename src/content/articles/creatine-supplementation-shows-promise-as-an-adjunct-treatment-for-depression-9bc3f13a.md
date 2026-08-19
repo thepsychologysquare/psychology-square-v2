@@ -1,17 +1,18 @@
 ---
-title: "Creatine Supplementation Shows Promise as an Adjunct Treatment for Depression"
-description: "A recent trial finds creatine supplementation can reduce depressive symptoms, offering a potential low‑risk adjunct to conventional therapies."
-image: ""
-imageAlt: ""
-imageCredit: ""
-imageCreditUrl: ""
-imageSourceUrl: ""
-category: mental-health
+title: Creatine Supplementation Shows Promise as an Adjunct Treatment for Depression
+description: A recent trial finds creatine supplementation can reduce depressive
+  symptoms, offering a potential low‑risk adjunct to conventional therapies.
+image: /images/creatine-powder-setup-for-daily-fitness-routine..jpg
+imageAlt: Creatine powder setup for daily fitness routine.
+category: depression
 tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
+draft: false
+imageCredit: ""
+imageSourceUrl: ""
+imageCreditUrl: ""
 publishDate: 2026-08-19T04:13:57.175Z
-draft: true
 ---
 <script type="application/ld+json">
 {
