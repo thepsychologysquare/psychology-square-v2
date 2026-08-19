@@ -1,17 +1,19 @@
 ---
-title: "Blocking a Newly Identified Protein Halts Alzheimer’s Damage in Mice"
-description: "Researchers identify a protein that fuels Alzheimer’s and develop a blocker that stops brain damage in mice, offering a potential new therapeutic path."
-image: ""
-imageAlt: ""
-imageCredit: ""
-imageCreditUrl: ""
-imageSourceUrl: ""
+title: Blocking a Newly Identified Protein Halts Alzheimer’s Damage in Mice
+description: Researchers identify a protein that fuels Alzheimer’s and develop a
+  blocker that stops brain damage in mice, offering a potential new therapeutic
+  path.
+image: /images/old-man-with-alzheimer.jpg
+imageAlt: old-man-with-alzheimer
 category: neuroscience
 tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
+draft: false
+imageCredit: ""
+imageSourceUrl: ""
+imageCreditUrl: ""
 publishDate: 2026-08-19T04:17:23.777Z
-draft: true
 ---
 <script type="application/ld+json">
 {
