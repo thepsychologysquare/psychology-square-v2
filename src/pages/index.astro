@@ -707,62 +707,6 @@ const faqs = [
   .explore-teaser h3{ font-size: 16px; }
   .explore-teaser p{ color: var(--ink-600); font-size: 13.5px; flex:1; }
 
-  /* FAQ — compact two-column accordion */
-  .faq-head{
-    display:flex; justify-content:space-between; align-items:flex-end; gap:16px;
-    margin-bottom: 22px;
-  }
-  .faq-count{
-    font-family: var(--font-mono); font-size:11.5px; letter-spacing:0.06em; text-transform:uppercase;
-    color: var(--sage-500); background: rgba(124,152,133,0.1); border:1px solid rgba(124,152,133,0.3);
-    padding: 6px 12px; border-radius:999px; white-space:nowrap;
-  }
-
-  .faq-columns{ columns: 2; column-gap: 20px; }
-  .faq-item{
-    break-inside: avoid;
-    border: 1px solid var(--line);
-    border-left: 2px solid transparent;
-    background: white;
-    padding: 13px 16px;
-    border-radius: 3px;
-    margin-bottom: 10px;
-    transition: border-color .2s var(--ease), background .2s var(--ease);
-  }
-  .faq-item:hover{ border-color: var(--gold-500); }
-  .faq-item[open]{ border-left-color: var(--gold-500); background: var(--paper-50); }
-
-  .faq-item summary{
-    min-height: 44px;
-    cursor:pointer; list-style:none; display:flex; align-items:flex-start; justify-content:space-between; gap:12px;
-    font-weight:600; font-size:14px; line-height:1.4; color: var(--ink-900);
-  }
-  .faq-item summary::-webkit-details-marker{ display:none; }
-  .faq-item summary span:first-child{
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-  .faq-icon{ flex:none; width:16px; height:16px; margin-top:2px; position:relative; }
-  .faq-icon::before, .faq-icon::after{
-    content:''; position:absolute; background: var(--gold-500); transition: transform .2s var(--ease);
-  }
-  .faq-icon::before{ left:0; top:7px; width:16px; height:2px; }
-  .faq-icon::after{ left:7px; top:0; width:2px; height:16px; }
-  .faq-item[open] .faq-icon::after{ transform: scaleY(0); }
-
-  .faq-item p{
-    color: var(--ink-600); font-size:13px; line-height:1.55; margin-top:9px; padding-top:9px;
-    border-top: 1px solid var(--line);
-  }
-
-  @media (max-width: 760px){
-    .faq-columns{ columns:1; }
-    .faq-head{ flex-direction:column; align-items:flex-start; gap:8px; }
-  }
-
   @media (max-width: 860px){ .explore-grid{ grid-template-columns: 1fr; } }
   @media (max-width: 640px){
     .topic-card{ width:150px; }

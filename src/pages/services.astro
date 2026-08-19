@@ -20,14 +20,42 @@ const breadcrumbJson = {
     { "@type": "ListItem", "position": 2, "name": "Services", "item": `${siteOrigin}/services` },
   ],
 };
+
+const faqs = [
+  {
+    q: 'Which Psychology Square service is right for me?',
+    a: 'Therapy is for anyone working through anxiety, depression, trauma, or relationship difficulties. Research analysis is for students and researchers who need statistical or psychometric support for a thesis, dissertation, or publication. Tutoring is for students studying psychology at any level, from O Level to MPhil. If you\u2019re not sure which fits, send us a message and we\u2019ll point you in the right direction.',
+  },
+  {
+    q: 'Are sessions available online or only in person?',
+    a: 'Every service — therapy, research analysis, tutoring, and corporate wellbeing — is available both online by video call and in person at our office in Johar Town, Lahore. Most clients mix both depending on the week.',
+  },
+  {
+    q: 'Who actually delivers the sessions?',
+    a: 'Every service is delivered directly by one of our two licensed clinical psychologists, Muhammad Sohail or Sehar Waheed — never handed off to a third party or a call center partway through.',
+  },
+  {
+    q: 'How much do your services cost?',
+    a: 'Individual therapy is PKR 5,000 per session and couples therapy is PKR 7,000 per session. Tutoring is PKR 35,000 per month, per subject. Research analysis and corporate wellbeing pricing depends on project scope — get in touch for a free quote.',
+  },
+];
 ---
 <Layout
   title="Services"
-  fullTitle="Therapy, Research & Tutoring Services in Lahore | The Psychology Square"
-  description="Therapy, statistical/psychometric research support, and psychology tutoring in Johar Town, Lahore — online or in person, from licensed clinical psychologists."
+  fullTitle="Therapy, Tutoring & Research Services | The Psychology Square"
+  description="Therapy, statistical research support, and psychology tutoring in Johar Town, Lahore — online or in person, from licensed clinical psychologists."
 >
   <script type="application/ld+json" set:html={JSON.stringify(itemListJson)} />
   <script type="application/ld+json" set:html={JSON.stringify(breadcrumbJson)} />
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqs.map((f) => ({
+      "@type": "Question",
+      "name": f.q,
+      "acceptedAnswer": { "@type": "Answer", "text": f.a },
+    })),
+  })} />
 
   <section class="hero">
     <div class="wrap">
@@ -58,9 +86,9 @@ const breadcrumbJson = {
         <a class="article-card" href="/services/tutoring">
           <span class="article-meta">Tutoring</span>
           <h3>Psychology Tutoring — O Level to MPhil</h3>
-          <p>One-to-one tutoring across every psychology subject, for students in Pakistan. Evenings and weekends, two classes a week.</p>
+          <p>One-to-one tutoring across every psychology subject, for students in Pakistan. Evenings and weekends, three classes a week.</p>
         </a>
-        <a class="article-card" href="/services/tutoring">
+        <a class="article-card" href="/services/corporate">
           <span class="article-meta">Corporate</span>
           <h3>Corporate and Workplace Wellbeing</h3>
           <p>Employee assistance, workplace mental health training, manager support, and organizational assessments for companies in Lahore, delivered directly by licensed clinical psychologists.</p>
@@ -82,13 +110,32 @@ const breadcrumbJson = {
         <div class="approach-item">
           <span class="approach-num">03</span>
           <h3>Led by the same two clinicians</h3>
-          <p>Every service is delivered directly by Muhammad Sohail or Sehar Waheed — no hand-off to a third party partway through.</p>
+          <p>Every service is delivered directly by <a href="/team/sohail">Muhammad Sohail</a> or <a href="/team/sehar">Sehar Waheed</a> — no hand-off to a third party partway through.</p>
         </div>
       </div>
 
       <p style="color: var(--ink-600); font-size:15px; line-height:1.7; margin-bottom:40px;">
         We built The Psychology Square around three things people in Lahore kept asking us for in one place: a steady space for therapy, hands-on statistical help for thesis and research work, and psychology tutoring that actually explains the reasoning instead of just the answer. If you're not sure which one fits, <a href="/contact">send us a message</a> and we'll point you in the right direction.
       </p>
+
+      <div style="max-width: 960px; margin: 0 auto;">
+        <div class="section-head faq-head">
+          <div>
+            <h2 class="section-title">Frequently asked questions</h2>
+          </div>
+        </div>
+        <div class="faq-columns">
+          {faqs.map((f) => (
+            <details class="faq-item">
+              <summary>
+                <span>{f.q}</span>
+                <span class="faq-icon" aria-hidden="true"></span>
+              </summary>
+              <p>{f.a}</p>
+            </details>
+          ))}
+        </div>
+      </div>
 
       <div class="request-cta-banner">
         <p>Not sure which service is right for you?</p>

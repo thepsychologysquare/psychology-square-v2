@@ -22,15 +22,43 @@ const breadcrumbJson = JSON.parse(`{
     { "@type": "ListItem", "position": 3, "name": "Corporate Wellbeing", "item": "${siteOrigin}/services/corporate" }
   ]
 }`);
+
+const faqs = [
+  {
+    q: 'What corporate wellbeing services do you offer in Lahore?',
+    a: 'We offer confidential 1:1 employee counseling, on-site or online workplace mental health training, manager training for supporting struggling employees, organizational and pre-employment psychometric assessments, and post-incident debriefing for teams.',
+  },
+  {
+    q: 'How is pricing worked out for organizations?',
+    a: 'We start with a short conversation about what your organization actually needs — team size, format, and scope — and set pricing from there rather than a fixed package. Get in touch for a free quote.',
+  },
+  {
+    q: 'Can sessions be delivered remotely for distributed teams?',
+    a: 'Yes. Sessions and training can run on-site at your office in Lahore, or entirely online for remote and distributed teams.',
+  },
+  {
+    q: 'Who delivers the training and counseling sessions?',
+    a: 'Every session is led directly by our licensed clinical psychologists, Muhammad Sohail or Sehar Waheed — the same clinicians who see individual clients, not a rotating panel or outsourced call center.',
+  },
+];
 ---
 <Layout
   title="Corporate Wellbeing"
-  fullTitle="Corporate & Workplace Mental Health Services in Lahore | The Psychology Square"
-  description="Employee assistance, workplace mental health training, manager support, and organizational assessments for companies in Lahore — delivered directly by licensed clinical psychologists."
+  fullTitle="Corporate Mental Health Services Lahore | The Psychology Square"
+  description="Employee assistance, workplace mental health training, and organizational assessments for companies in Lahore, from licensed clinical psychologists."
   image={corporateCover.src}
 >
   <script type="application/ld+json" set:html={JSON.stringify(serviceJson)} />
   <script type="application/ld+json" set:html={JSON.stringify(breadcrumbJson)} />
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqs.map((f) => ({
+      "@type": "Question",
+      "name": f.q,
+      "acceptedAnswer": { "@type": "Answer", "text": f.a },
+    })),
+  })} />
 
   <section class="hero">
     <div class="wrap">
@@ -95,7 +123,26 @@ const breadcrumbJson = JSON.parse(`{
         <div class="approach-item">
           <span class="approach-num">03</span>
           <h3>Delivered by real clinicians</h3>
-          <p>Every session is led directly by Muhammad Sohail or Sehar Waheed — the same psychologists who see individual clients, not a rotating panel.</p>
+          <p>Every session is led directly by <a href="/team/sohail">Muhammad Sohail</a> or <a href="/team/sehar">Sehar Waheed</a> — the same psychologists who see individual clients, not a rotating panel.</p>
+        </div>
+      </div>
+
+      <div style="max-width: 960px; margin: 0 auto;">
+        <div class="section-head faq-head">
+          <div>
+            <h2 class="section-title">Frequently asked questions</h2>
+          </div>
+        </div>
+        <div class="faq-columns">
+          {faqs.map((f) => (
+            <details class="faq-item">
+              <summary>
+                <span>{f.q}</span>
+                <span class="faq-icon" aria-hidden="true"></span>
+              </summary>
+              <p>{f.a}</p>
+            </details>
+          ))}
         </div>
       </div>
 
@@ -222,4 +269,5 @@ const breadcrumbJson = JSON.parse(`{
     margin-top: 24px;
   }
   }
+
 </style>

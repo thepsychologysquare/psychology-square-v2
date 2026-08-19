@@ -40,6 +40,25 @@ const breadcrumbJson = {
   ]
 };
 
+const faqs = [
+  {
+    q: 'How much does psychology tutoring cost?',
+    a: 'Tutoring is PKR 35,000 per month, per subject, covering three classes a week — whether you\u2019re joining online or in person in Johar Town, Lahore.',
+  },
+  {
+    q: 'What levels of psychology tutoring do you cover?',
+    a: 'We tutor O Level and A Level (Cambridge / AKU-EB), BS Psychology (Hons. and Applied), MSc, MS, and MPhil, plus students from any other degree with Psychology on their transcript.',
+  },
+  {
+    q: 'Is tutoring available online for students outside Lahore?',
+    a: 'Yes. Tutoring runs online by video call for students anywhere in Pakistan, or in person at our Johar Town, Lahore office — evenings and weekends, three classes a week per subject.',
+  },
+  {
+    q: 'Who teaches the tutoring sessions?',
+    a: 'Sessions are led directly by our licensed clinical psychologists, Muhammad Sohail and Sehar Waheed, both of whom also lecture psychology at the university level.',
+  },
+];
+
 const levels = [
   { name: 'O Level', tag: 'Cambridge / AKU-EB' },
   { name: 'A Level', tag: 'AS & A2' },
@@ -97,12 +116,21 @@ const approach = [
 ---
 <Layout
   title="Psychology Tutoring"
-  fullTitle="Psychology Tutoring for O Level, A Level, BS & MS Students | The Psychology Square"
-  description="One-to-one psychology tutoring for O Level, A Level, BS, MSc, MS and MPhil students across Pakistan. Three classes a week per subject, evenings and weekends. PKR 35,000/month per subject."
+  fullTitle="Psychology Tutoring, O Level to MPhil | The Psychology Square"
+  description="One-to-one psychology tutoring for O Level, A Level, BS, MSc, MS and MPhil students across Pakistan. Three classes a week, per subject, evenings and weekends."
   image={coverImage?.src}
 >
   <script type="application/ld+json" set:html={JSON.stringify(serviceJson)} />
   <script type="application/ld+json" set:html={JSON.stringify(breadcrumbJson)} />
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqs.map((f) => ({
+      "@type": "Question",
+      "name": f.q,
+      "acceptedAnswer": { "@type": "Answer", "text": f.a },
+    })),
+  })} />
 
   <!-- HERO -->
   <section class="hero tut-hero">
@@ -235,6 +263,28 @@ const approach = [
             <h3>{a.title}</h3>
             <p>{a.desc}</p>
           </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section faq-section" id="faq">
+    <div class="wrap" style="max-width: 960px;">
+      <div class="section-head faq-head">
+        <div>
+          <h2 class="section-title">Frequently asked questions</h2>
+        </div>
+      </div>
+      <div class="faq-columns">
+        {faqs.map((f) => (
+          <details class="faq-item">
+            <summary>
+              <span>{f.q}</span>
+              <span class="faq-icon" aria-hidden="true"></span>
+            </summary>
+            <p>{f.a}</p>
+          </details>
         ))}
       </div>
     </div>
@@ -528,6 +578,7 @@ const approach = [
     .subject-filters{ overflow-x: auto; padding-bottom: 14px; width: 100%; flex-wrap: nowrap; }
     .filter-btn{ flex-shrink: 0; }
   }
+
 </style>
 
 <script>

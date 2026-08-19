@@ -22,6 +22,13 @@ const personJson = {
   ],
   "memberOf": { "@type": "Organization", "name": "American Psychological Association" },
   "knowsAbout": specialties,
+  "sameAs": [
+    "https://www.instagram.com/seharthepsychologist",
+    "https://www.tiktok.com/@seharthepsychologist",
+    "https://www.youtube.com/@SeharThePsychologist",
+    "https://www.linkedin.com/in/sehar-waheed",
+    "https://spp.umt.edu.pk/happinesscenter/Meet-Our-Team.aspx",
+  ],
 };
 const breadcrumbJson = {
   "@context": "https://schema.org",
@@ -35,8 +42,8 @@ const breadcrumbJson = {
 ---
 <Layout
   title="Sehar Waheed"
-  fullTitle="Sehar Waheed — Clinical Psychologist & Counselor in Lahore | The Psychology Square"
-  description="Meet Sehar Waheed, Co-CEO of The Psychology Square — Clinical Psychologist at UMT's Happiness Center, Lahore, specializing in campus counseling and crisis intervention."
+  fullTitle="Sehar Waheed, Clinical Psychologist | The Psychology Square"
+  description="Meet Sehar Waheed, Co-CEO of The Psychology Square and Clinical Psychologist at UMT's Happiness Center, Lahore — campus counseling & crisis intervention."
   image="/images/sehar.jpg"
 >
   <script type="application/ld+json" set:html={JSON.stringify(personJson)} />
@@ -98,6 +105,9 @@ const breadcrumbJson = {
       <div class="category-pills">
         {specialties.map((s) => <span class="topic-pill">{s}</span>)}
       </div>
+      <p style="color: var(--ink-700); font-size: 15px; line-height: 1.7; margin-top: 20px;">
+        Sehar sees clients directly through our <a href="/services/therapy">therapy</a> service, leads <a href="/services/corporate">corporate wellbeing</a> training, and teaches through <a href="/services/tutoring">psychology tutoring</a>.
+      </p>
     </div>
   </section>
 

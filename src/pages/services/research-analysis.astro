@@ -151,8 +151,8 @@ const datasetStatus = ['Data already collected', 'Still collecting data', 'Need 
 ---
 <Layout
   title="Research Analysis"
-  fullTitle="Statistical & Research Analysis Services for Psychology | The Psychology Square"
-  description="Statistical consulting for psychology students, researchers, and institutions — descriptive & inferential statistics, psychometrics, SEM/HLM, and defense preparation, in R, SPSS, AMOS, and Python."
+  fullTitle="Statistical & Research Analysis Services | The Psychology Square"
+  description="Statistical consulting for psychology students & researchers — inferential stats, psychometrics, SEM/HLM, and defense prep, in R, SPSS, AMOS & Python."
   image={researchAnalysisCover.src}
 >
   <script type="application/ld+json" set:html={JSON.stringify(serviceJson)} />
@@ -265,20 +265,29 @@ const datasetStatus = ['Data already collected', 'Still collecting data', 'Need 
           </div>
         ))}
       </div>
+
+      <p style="color: var(--ink-600); font-size:15px; line-height:1.7; margin-top: 32px; max-width: 720px;">
+        Analysis is handled directly by <a href="/team/sohail"><strong>Muhammad Sohail</strong></a>, whose own published research covers scale development and psychometric validation, working alongside <a href="/team/sehar"><strong>Sehar Waheed</strong></a> — the same clinicians behind our <a href="/services/therapy">therapy</a> and <a href="/services/corporate">corporate wellbeing</a> services.
+      </p>
     </div>
   </section>
 
   <!-- 6. FAQ -->
-  <section class="section" id="faq">
-    <div class="wrap" style="max-width: 800px;">
-      <div class="section-head" style="margin-bottom: 32px;">
-        <h2 class="section-title">Frequently asked questions</h2>
+  <section class="section faq-section" id="faq">
+    <div class="wrap" style="max-width: 960px;">
+      <div class="section-head faq-head">
+        <div>
+          <h2 class="section-title">Frequently asked questions</h2>
+        </div>
       </div>
 
-      <div class="faq-list">
+      <div class="faq-columns">
         {faqs.map((f) => (
           <details class="faq-item">
-            <summary>{f.q}</summary>
+            <summary>
+              <span>{f.q}</span>
+              <span class="faq-icon" aria-hidden="true"></span>
+            </summary>
             <p>{f.a}</p>
           </details>
         ))}
@@ -429,22 +438,6 @@ const datasetStatus = ['Data already collected', 'Still collecting data', 'Need 
   .approach-num{
     font-family: var(--font-mono); font-size: 13px; color: var(--gold-500);
   }
-
-  /* FAQ */
-  .faq-list{ display:flex; flex-direction:column; gap: 10px; }
-  .faq-item{
-    border: 1px solid var(--line); background: var(--paper-0); padding: 18px 22px; border-radius: 3px;
-  }
-  .faq-item summary{
-    cursor: pointer; font-weight: 600; font-size: 15.5px; list-style: none;
-    display:flex; justify-content:space-between; align-items:center; gap: 16px;
-  }
-  .faq-item summary::-webkit-details-marker{ display:none; }
-  .faq-item summary::after{
-    content: '+'; font-family: var(--font-mono); color: var(--gold-500); font-size: 20px; flex:none;
-  }
-  .faq-item[open] summary::after{ content: '\2212'; }
-  .faq-item p{ color: var(--ink-600); font-size: 14.5px; margin-top: 14px; line-height:1.6; }
 
   /* Intake form */
   .form-row{ display:grid; grid-template-columns: 1fr 1fr; gap: 18px; }

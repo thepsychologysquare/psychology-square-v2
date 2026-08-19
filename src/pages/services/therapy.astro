@@ -24,15 +24,47 @@ const breadcrumbJson = {
     { "@type": "ListItem", "position": 3, "name": "Therapy", "item": `${siteOrigin}/services/therapy` },
   ],
 };
+
+const faqs = [
+  {
+    q: 'How much does a therapy session cost in Lahore?',
+    a: 'Individual therapy is PKR 5,000 per session and couples therapy is PKR 7,000 per session, whether you join online or come in person to our Johar Town office.',
+  },
+  {
+    q: 'Do you offer online therapy as well as in-person sessions?',
+    a: 'Yes. Every session — individual or couples — can be done online by video call from anywhere, or in person at our office in Johar Town, Lahore. Many clients mix both depending on the week.',
+  },
+  {
+    q: 'What issues do you help with?',
+    a: 'We regularly work with anxiety, depression, trauma and distress, addiction and recovery, relationship conflict, and stress and burnout, alongside general life transitions and low mood.',
+  },
+  {
+    q: 'Who will I actually be seeing?',
+    a: 'Every session is led directly by one of our two licensed clinical psychologists, Muhammad Sohail or Sehar Waheed — not a rotating panel or a trainee.',
+  },
+  {
+    q: 'How do I book a session?',
+    a: 'You can book a slot directly through our online booking page, or email us at info@thepsychologysquare.com and we\u2019ll help you find a time that works.',
+  },
+];
 ---
 <Layout
   title="Therapy"
   fullTitle="Individual & Couples Therapy in Lahore | The Psychology Square"
-  description="Individual and couples therapy in Johar Town, Lahore — online or in person. Anxiety, depression, trauma, relationships, and more. Licensed clinical psychologists."
+  description="Individual and couples therapy in Johar Town, Lahore — online or in person, for anxiety, depression, trauma, and relationships. Licensed psychologists."
   image={therapyCover.src}
 >
   <script type="application/ld+json" set:html={JSON.stringify(serviceJson)} />
   <script type="application/ld+json" set:html={JSON.stringify(breadcrumbJson)} />
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqs.map((f) => ({
+      "@type": "Question",
+      "name": f.q,
+      "acceptedAnswer": { "@type": "Answer", "text": f.a },
+    })),
+  })} />
 
   <section class="hero">
     <div class="wrap">
@@ -101,6 +133,30 @@ const breadcrumbJson = {
           <span class="approach-num">03</span>
           <h3>Rooted in real training</h3>
           <p>Grounded in supervised clinical experience across hospital and addiction-treatment settings, not theory alone.</p>
+        </div>
+      </div>
+
+      <h2 style="font-size: 22px; margin-bottom: 16px;">Meet your therapists</h2>
+      <p style="color: var(--ink-600); font-size:15px; line-height:1.7; margin-bottom: 40px;">
+        Every therapy session is led directly by <a href="/team/sohail"><strong>Muhammad Sohail</strong></a>, Founder and Clinical Psychologist specializing in CBT, addiction recovery, and ADHD, or <a href="/team/sehar"><strong>Sehar Waheed</strong></a>, Co-CEO and Clinical Psychologist specializing in crisis intervention and group therapy. Read more about their training and experience on their profiles.
+      </p>
+
+      <div style="max-width: 960px; margin: 0 auto;">
+        <div class="section-head faq-head">
+          <div>
+            <h2 class="section-title">Frequently asked questions</h2>
+          </div>
+        </div>
+        <div class="faq-columns">
+          {faqs.map((f) => (
+            <details class="faq-item">
+              <summary>
+                <span>{f.q}</span>
+                <span class="faq-icon" aria-hidden="true"></span>
+              </summary>
+              <p>{f.a}</p>
+            </details>
+          ))}
         </div>
       </div>
 

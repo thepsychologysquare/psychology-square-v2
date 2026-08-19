@@ -22,6 +22,13 @@ const personJson = {
   ],
   "memberOf": { "@type": "Organization", "name": "American Psychological Association" },
   "knowsAbout": specialties,
+  "sameAs": [
+    "https://www.instagram.com/sohailpsych",
+    "https://www.tiktok.com/@sohailpsych",
+    "https://www.youtube.com/@sohailpsych",
+    "https://web.facebook.com/sohailpsychologist",
+    "https://rlku.edu.pk/faculty-of-social-sciences/muhammad-sohail.php",
+  ],
 };
 const breadcrumbJson = {
   "@context": "https://schema.org",
@@ -35,8 +42,8 @@ const breadcrumbJson = {
 ---
 <Layout
   title="Muhammad Sohail"
-  fullTitle="Muhammad Sohail — Clinical Psychologist & Lecturer in Lahore | The Psychology Square"
-  description="Meet Muhammad Sohail, Founder of The Psychology Square — Clinical Psychologist and Lecturer of Psychology at RLKU, Lahore, specializing in CBT, addiction recovery, and ADHD."
+  fullTitle="Muhammad Sohail, Clinical Psychologist | The Psychology Square"
+  description="Meet Muhammad Sohail, Founder of The Psychology Square — Clinical Psychologist and Lecturer at RLKU, Lahore, specializing in CBT, ADHD & addiction recovery."
   image="/images/sohail.jpg"
 >
   <script type="application/ld+json" set:html={JSON.stringify(personJson)} />
@@ -98,6 +105,9 @@ const breadcrumbJson = {
       <div class="category-pills">
         {specialties.map((s) => <span class="topic-pill">{s}</span>)}
       </div>
+      <p style="color: var(--ink-700); font-size: 15px; line-height: 1.7; margin-top: 20px;">
+        Sohail sees clients directly through our <a href="/services/therapy">therapy</a> service, leads <a href="/services/tutoring">psychology tutoring</a> and <a href="/services/corporate">corporate wellbeing</a> sessions, and provides statistical support through <a href="/services/research-analysis">research analysis</a>.
+      </p>
     </div>
   </section>
 
