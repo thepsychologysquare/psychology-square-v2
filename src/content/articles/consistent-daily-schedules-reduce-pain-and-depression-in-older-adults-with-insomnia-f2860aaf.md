@@ -1,17 +1,20 @@
 ---
-title: "Consistent Daily Schedules Reduce Pain and Depression in Older Adults with Insomnia"
-description: "Research shows that a consistent daily routine can reduce pain and depression in older adults with insomnia, providing a simple, non‑drug self‑care strategy backed by science."
-image: ""
-imageAlt: ""
-imageCredit: ""
-imageCreditUrl: ""
-imageSourceUrl: ""
+title: Consistent Daily Schedules Reduce Pain and Depression in Older Adults
+  with Insomnia
+description: Research shows that a consistent daily routine can reduce pain and
+  depression in older adults with insomnia, providing a simple, non‑drug
+  self‑care strategy backed by science.
+image: /images/daily-routine.jpg
+imageAlt: daily-routine
 category: depression
 tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
+draft: false
+imageCredit: ""
+imageSourceUrl: ""
+imageCreditUrl: ""
 publishDate: 2026-08-19T05:12:11.617Z
-draft: true
 ---
 <script type="application/ld+json">
 {
