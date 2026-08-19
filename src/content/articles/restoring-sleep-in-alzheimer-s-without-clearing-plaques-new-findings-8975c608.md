@@ -3,7 +3,7 @@ title: "Restoring Sleep in Alzheimer’s Without Clearing Plaques: New Findings"
 description: New research reveals targeting brain immune cells can restore sleep
   in Alzheimer’s models without clearing plaques, offering fresh therapeutic
   hope.
-image: /images/a-black-and-white-photo-of-various-mri-images-BDKid0yJcAk.jpg
+image: /images/vitaly-gariev-wz4mx3jbnze-unsplash.jpg
 imageAlt: a black and white photo of various mri images
 category: sleep
 tags: []
