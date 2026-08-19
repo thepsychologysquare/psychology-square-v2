@@ -1,17 +1,19 @@
 ---
-title: "The Brain Begins Deciding Before You’re Aware, New Study Shows"
-description: "New research demonstrates that the brain initiates decision‑making processes before conscious awareness, reshaping our understanding of free will and cognition."
-image: ""
-imageAlt: ""
-imageCredit: ""
-imageCreditUrl: ""
-imageSourceUrl: ""
+title: The Brain Begins Deciding Before You’re Aware, New Study Shows
+description: New research demonstrates that the brain initiates decision‑making
+  processes before conscious awareness, reshaping our understanding of free will
+  and cognition.
+image: /images/brain-scan-image.jpg
+imageAlt: brain-scan-image
 category: neuroscience
 tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
+draft: false
+imageCredit: ""
+imageSourceUrl: ""
+imageCreditUrl: ""
 publishDate: 2026-08-19T04:13:57.137Z
-draft: true
 ---
 <script type="application/ld+json">
 {
