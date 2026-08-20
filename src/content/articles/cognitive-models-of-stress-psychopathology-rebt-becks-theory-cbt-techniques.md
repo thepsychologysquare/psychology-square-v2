@@ -12,6 +12,7 @@ author: Muhammad Sohail
 reviewedBy: Muhammad Sohail
 publishDate: 2026-08-12T09:46:00.000+05:00
 draft: false
+seoTitle: "Cognitive Models of Stress: REBT, Beck & CBT"
 ---
 Cognitive models of stress, anxiety, and psychopathology are foundational frameworks in modern psychology and cognitive behavioral therapy (CBT). They explain how the way people **perceive, interpret, and appraise events** directly shapes their emotional responses, coping strategies, and overall psychological well-being.
 

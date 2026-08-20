@@ -11,6 +11,7 @@ author: Muhammad Sohail
 reviewedBy: Sehar Waheed
 publishDate: 2026-08-16T15:05:00.000+05:00
 draft: false
+seoTitle: "Can THC Help With PTSD Nightmares?"
 ---
 <script type="application/ld+json">
 {

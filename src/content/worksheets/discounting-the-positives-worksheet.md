@@ -12,6 +12,7 @@ age:
 fileUrl: /worksheets/discounting-the-positives-worksheet.pdf
 order: 0
 draft: false
+seoTitle: "Discounting the Positives Worksheet"
 ---
 # Discounting the Positives Worksheet
 

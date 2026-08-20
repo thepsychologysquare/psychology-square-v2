@@ -14,6 +14,7 @@ imageCredit: ""
 imageSourceUrl: https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral
 imageCreditUrl: https://unsplash.com/@jonasleupe?utm_source=the_psychology_square&utm_medium=referral
 publishDate: 2026-08-18T07:10:25.042Z
+seoTitle: "Binge-Watching and the Midlife TV Brain Effect"
 ---
 <script type="application/ld+json">
 {

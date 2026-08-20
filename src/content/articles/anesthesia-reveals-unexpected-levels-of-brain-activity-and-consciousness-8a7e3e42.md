@@ -14,6 +14,7 @@ imageCredit: ""
 imageSourceUrl: ""
 imageCreditUrl: ""
 publishDate: 2026-08-19T06:05:17.981Z
+seoTitle: "Anesthesia Reveals Unexpected Brain Activity"
 ---
 <script type="application/ld+json">
 {

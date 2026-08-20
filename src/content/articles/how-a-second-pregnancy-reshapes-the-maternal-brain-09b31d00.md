@@ -13,6 +13,7 @@ imageCredit: freestocks
 imageSourceUrl: https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral
 imageCreditUrl: https://unsplash.com/@freestocks?utm_source=the_psychology_square&utm_medium=referral
 publishDate: 2026-08-19T05:54:36.424Z
+seoTitle: "How a Second Pregnancy Reshapes the Brain"
 ---
 <script type="application/ld+json">
 {

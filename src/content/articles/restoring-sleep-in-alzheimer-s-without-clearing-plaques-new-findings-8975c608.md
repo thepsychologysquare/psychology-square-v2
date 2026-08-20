@@ -14,6 +14,7 @@ imageCredit: National Cancer Institute
 imageSourceUrl: https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral
 imageCreditUrl: https://unsplash.com/@nci?utm_source=the_psychology_square&utm_medium=referral
 publishDate: 2026-08-19T05:54:36.400Z
+seoTitle: "Restoring Sleep in Alzheimer's Without Clearing Plaques"
 ---
 <script type="application/ld+json">
 {

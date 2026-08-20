@@ -13,6 +13,7 @@ imageCredit: Etactics Inc
 imageSourceUrl: https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral
 imageCreditUrl: https://unsplash.com/@etactics?utm_source=the_psychology_square&utm_medium=referral
 publishDate: 2026-08-19T05:44:35.962Z
+seoTitle: "Laxative Drug May Ease Depression-Related Brain Fog"
 ---
 <script type="application/ld+json">
 {

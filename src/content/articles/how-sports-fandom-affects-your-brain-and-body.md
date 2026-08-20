@@ -14,6 +14,7 @@ imageCredit: Jimmy Conover
 imageSourceUrl: https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral
 imageCreditUrl: https://unsplash.com/@jimmy_conover?utm_source=the_psychology_square&utm_medium=referral
 publishDate: 2026-08-16T10:28:49.422Z
+seoTitle: "How Sports Fandom Affects Your Brain and Body"
 ---
 <script type="application/ld+json">
 {

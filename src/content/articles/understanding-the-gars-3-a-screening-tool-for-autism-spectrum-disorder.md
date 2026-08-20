@@ -9,6 +9,7 @@ tags:
 author: Muhammad Sohail
 publishDate: 2026-08-11T10:36:00.000+05:00
 draft: false
+seoTitle: "Understanding the GARS-3 Autism Screening Tool"
 ---
 # Understanding the GARS-3: A Screening Tool for Autism Spectrum Disorder
 

@@ -8,4 +8,5 @@ scoringSummary: "Each of the 7 items is scored 0–3, for a total range of 0–2
 sourceNote: "Spitzer, Kroenke, Williams & Löwe (2006)"
 order: 1
 draft: false
+seoTitle: "GAD-7 Anxiety Scale | The Psychology Square"
 ---

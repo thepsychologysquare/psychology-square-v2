@@ -11,6 +11,7 @@ author: Muhammad Sohail
 reviewedBy: Sehar Waheed
 publishDate: 2026-08-12T10:00:00.000+05:00
 draft: false
+seoTitle: "The Availability Heuristic and Bad Decisions"
 ---
 # The Availability Heuristic: How Your Mind Tricks You Into Bad Decisions
 

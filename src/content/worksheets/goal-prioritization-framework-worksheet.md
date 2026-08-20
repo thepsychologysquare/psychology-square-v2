@@ -12,6 +12,7 @@ age:
 fileUrl: /worksheets/goal-prioritization-framework-worksheet.pdf
 order: 0
 draft: false
+seoTitle: "Goal Prioritization Framework Worksheet"
 ---
 # Goal Prioritization Framework Worksheet
 

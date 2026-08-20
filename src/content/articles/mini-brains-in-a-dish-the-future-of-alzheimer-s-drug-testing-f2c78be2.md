@@ -13,6 +13,7 @@ imageCredit: Google DeepMind
 imageSourceUrl: https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral
 imageCreditUrl: https://unsplash.com/@googledeepmind?utm_source=the_psychology_square&utm_medium=referral
 publishDate: 2026-08-18T08:56:25.129Z
+seoTitle: "Mini Brains in a Dish: The Future of Alzheimer's Research"
 ---
 <script type="application/ld+json">
 {

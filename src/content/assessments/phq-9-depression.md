@@ -8,4 +8,5 @@ scoringSummary: "Each of the 9 items is scored 0–3, for a total range of 0–2
 sourceNote: "American Psychiatric Association, adapted from Kroenke, Spitzer & Williams (2001)"
 order: 2
 draft: false
+seoTitle: "PHQ-9 Depression Severity Scale"
 ---

@@ -13,6 +13,7 @@ imageCredit: Megan te Boekhorst
 imageSourceUrl: https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral
 imageCreditUrl: https://unsplash.com/@thesequoialife?utm_source=the_psychology_square&utm_medium=referral
 publishDate: 2026-08-18T08:57:10.672Z
+seoTitle: "Why One Gene Makes Bad Sleep Worse for Your Brain"
 ---
 <script type="application/ld+json">
 {

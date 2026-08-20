@@ -8,4 +8,5 @@ scoringSummary: "Items 1–47 are rated 0 (never) to 3 (very often); a score of 
 sourceNote: "NICHQ / American Academy of Pediatrics, adapted from Wolraich"
 order: 1
 draft: false
+seoTitle: "NICHQ Vanderbilt ADHD Scale (Parent Form)"
 ---

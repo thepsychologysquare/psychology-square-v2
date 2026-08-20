@@ -14,6 +14,7 @@ imageCredit: ""
 imageSourceUrl: ""
 imageCreditUrl: ""
 publishDate: 2026-08-19T04:17:23.784Z
+seoTitle: "Intensive Training Can Reshape the Brain for Multitasking"
 ---
 <script type="application/ld+json">
 {

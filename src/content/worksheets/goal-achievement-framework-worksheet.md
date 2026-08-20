@@ -12,6 +12,7 @@ age:
 fileUrl: /worksheets/goal-achievement-framework.pdf
 order: 0
 draft: false
+seoTitle: "Goal Achievement Framework Worksheet"
 ---
 # Goal Achievement Framework Worksheet
 

@@ -14,6 +14,7 @@ imageCredit: Taylor Brandon
 imageSourceUrl: https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral
 imageCreditUrl: https://unsplash.com/@house_42?utm_source=the_psychology_square&utm_medium=referral
 publishDate: 2026-08-17T07:37:26.940Z
+seoTitle: "The Hidden Danger of Drinking to Cope"
 ---
 <script type="application/ld+json">
 {

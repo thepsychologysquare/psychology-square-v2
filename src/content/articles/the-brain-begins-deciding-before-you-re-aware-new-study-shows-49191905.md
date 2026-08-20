@@ -14,6 +14,7 @@ imageCredit: ""
 imageSourceUrl: ""
 imageCreditUrl: ""
 publishDate: 2026-08-19T04:13:57.137Z
+seoTitle: "Your Brain Decides Before You're Aware, Study Finds"
 ---
 <script type="application/ld+json">
 {

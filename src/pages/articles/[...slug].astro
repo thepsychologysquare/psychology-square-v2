@@ -73,7 +73,7 @@ const mainImgAbsolute = mainImgSrc
 <Layout
   title={article.data.title}
   description={article.data.description}
-  fullTitle={`${article.data.title} — The Psychology Square`}
+  fullTitle={article.data.seoTitle ?? `${article.data.title} — The Psychology Square`}
   image={mainImgSrc}
 >
   <script type="application/ld+json" set:html={JSON.stringify({
@@ -89,7 +89,7 @@ const mainImgAbsolute = mainImgSrc
       ...(teamUrl(article.data.author) ? { "url": teamUrl(article.data.author) } : {}),
     },
     ...(article.data.reviewedBy ? {
-      "reviewedBy": {
+      "editor": {
         "@type": "Person",
         "name": article.data.reviewedBy,
         ...(teamUrl(article.data.reviewedBy) ? { "url": teamUrl(article.data.reviewedBy) } : {}),

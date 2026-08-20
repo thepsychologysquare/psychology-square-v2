@@ -14,6 +14,7 @@ imageCredit: NOAA
 imageSourceUrl: https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral
 imageCreditUrl: https://unsplash.com/@noaa?utm_source=the_psychology_square&utm_medium=referral
 publishDate: 2026-08-17T09:46:56.812Z
+seoTitle: "What Antarctica Teaches Us About Surviving on Mars"
 ---
 <script type="application/ld+json">
 {

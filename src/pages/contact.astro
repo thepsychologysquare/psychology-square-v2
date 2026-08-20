@@ -19,22 +19,8 @@ const contactPageSchema = {
           { "@type": "ListItem", "position": 1, "name": "Home", "item": `${siteOrigin}/` },
           { "@type": "ListItem", "position": 2, "name": "Contact", "item": `${siteOrigin}/contact` }
         ]
-      }
-    },
-    {
-      "@type": "MedicalBusiness",
-      "@id": `${siteOrigin}/#organization`,
-      "name": "The Psychology Square",
-      "url": siteOrigin,
-      "email": "info@thepsychologysquare.com",
-      "address": {
-        "@type": "PostalAddress",
-        "addressLocality": "Lahore",
-        "addressRegion": "Punjab",
-        "addressCountry": "PK"
       },
-      "areaServed": ["Lahore", "Pakistan", "Worldwide (Online Therapy)"],
-      "medicalSpecialty": ["ClinicalPsychology", "Psychotherapy"]
+      "about": { "@id": `${siteOrigin}/#business` }
     }
   ]
 };

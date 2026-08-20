@@ -13,6 +13,7 @@ imageCredit: ""
 imageSourceUrl: ""
 imageCreditUrl: ""
 publishDate: 2026-08-19T04:13:57.175Z
+seoTitle: "Creatine Shows Promise as a Depression Treatment"
 ---
 <script type="application/ld+json">
 {

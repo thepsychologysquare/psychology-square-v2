@@ -15,6 +15,7 @@ imageCredit: ""
 imageSourceUrl: ""
 imageCreditUrl: ""
 publishDate: 2026-08-19T05:12:11.617Z
+seoTitle: "Daily Schedules Ease Pain & Depression in Seniors"
 ---
 <script type="application/ld+json">
 {

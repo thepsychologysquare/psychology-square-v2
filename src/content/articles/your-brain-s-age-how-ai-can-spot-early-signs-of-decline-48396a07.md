@@ -14,6 +14,7 @@ imageCredit: ""
 imageSourceUrl: ""
 imageCreditUrl: ""
 publishDate: 2026-08-18T07:07:09.496Z
+seoTitle: "How AI Can Spot Early Signs of Brain Decline"
 ---
 <script type="application/ld+json">
 {

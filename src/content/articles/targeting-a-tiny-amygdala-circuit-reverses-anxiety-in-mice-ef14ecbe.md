@@ -14,6 +14,7 @@ imageCredit: ""
 imageSourceUrl: ""
 imageCreditUrl: ""
 publishDate: 2026-08-19T04:17:23.786Z
+seoTitle: "Targeting an Amygdala Circuit Reverses Anxiety in Mice"
 ---
 <script type="application/ld+json">
 {

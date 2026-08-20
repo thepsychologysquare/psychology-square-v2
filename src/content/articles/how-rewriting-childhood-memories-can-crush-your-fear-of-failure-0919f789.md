@@ -14,6 +14,7 @@ imageCredit: ""
 imageSourceUrl: https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral
 imageCreditUrl: https://unsplash.com/@silverkblack?utm_source=the_psychology_square&utm_medium=referral
 publishDate: 2026-08-18T07:10:25.039Z
+seoTitle: "Rewriting Childhood Memories to Beat Fear of Failure"
 ---
 <script type="application/ld+json">
 {

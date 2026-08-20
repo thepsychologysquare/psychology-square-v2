@@ -65,7 +65,7 @@ const breadcrumbJson = {
 <Layout
   title={assessment.data.title}
   description={assessment.data.description}
-  fullTitle={`${assessment.data.title} — The Psychology Square`}
+  fullTitle={assessment.data.seoTitle ?? `${assessment.data.title} — The Psychology Square`}
 >
   <script type="application/ld+json" set:html={JSON.stringify(creativeWorkJson)} />
   <script type="application/ld+json" set:html={JSON.stringify(breadcrumbJson)} />

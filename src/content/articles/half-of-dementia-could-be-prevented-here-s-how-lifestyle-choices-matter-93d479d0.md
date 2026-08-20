@@ -14,6 +14,7 @@ imageCredit: Carl Barcelo
 imageSourceUrl: https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral
 imageCreditUrl: https://unsplash.com/@barcelocarl?utm_source=the_psychology_square&utm_medium=referral
 publishDate: 2026-08-17T09:46:17.976Z
+seoTitle: "Half of Dementia Cases Are Preventable"
 ---
 <script type="application/ld+json">
 {

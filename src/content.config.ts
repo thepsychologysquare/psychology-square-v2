@@ -24,6 +24,10 @@ const articles = defineCollection({
     reviewedBy: z.string().optional(),
     publishDate: z.date(),
     draft: z.boolean().default(false),
+    // Optional shorter title for the <title> tag / meta / JSON-LD headline
+    // when the real headline (above) runs long for search snippets. Never
+    // changes the on-page H1, breadcrumb, or body — see [...slug].astro.
+    seoTitle: z.string().optional(),
     // Safe, non-destructive optional fields for Decap CMS uploads:
     image: z.string().optional(),
     imageAlt: z.string().optional(),
@@ -45,6 +49,8 @@ const worksheets = defineCollection({
     fileUrl: z.string().optional(),
     order: z.number().default(0),
     draft: z.boolean().default(false),
+    // See the matching field on the articles collection above.
+    seoTitle: z.string().optional(),
     // Safe, non-destructive optional fields for Decap CMS uploads:
     image: z.string().optional(),
     imageAlt: z.string().optional(),
@@ -62,6 +68,8 @@ const assessments = defineCollection({
     sourceNote: z.string().optional(),
     order: z.number().default(0),
     draft: z.boolean().default(false),
+    // See the matching field on the articles collection above.
+    seoTitle: z.string().optional(),
   }),
 });
 const courses = defineCollection({

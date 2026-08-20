@@ -145,9 +145,33 @@ const navAllArticleCategories = navCategorySlugsInUse
           "postalCode": "54000",
           "addressCountry": "PK"
         },
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": 31.4697,
+          "longitude": 74.2728
+        },
+        "openingHoursSpecification": {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday",
+            "Sunday"
+          ],
+          "opens": "09:00",
+          "closes": "21:00"
+        },
         "email": "info@thepsychologysquare.com",
-        "medicalSpecialty": "Psychiatric",
+        "telephone": "+923331597844",
         "areaServed": "Lahore, Pakistan",
+        "sameAs": [
+          "https://www.facebook.com/thepsychologysquare/",
+          "https://www.youtube.com/@thepsychologysquare",
+          "https://www.linkedin.com/company/the-psychology-square"
+        ],
         "founder": [
           {
             "@type": "Person",
@@ -335,6 +359,18 @@ const navAllArticleCategories = navCategorySlugsInUse
       border-color: var(--ink-900, #131a22);
     }
   </style>
+
+  {(import.meta.env.PUBLIC_GA_MEASUREMENT_ID || 'G-9PH2ERQZBD') && (
+    <>
+      <script async src={`https://www.googletagmanager.com/gtag/js?id=${import.meta.env.PUBLIC_GA_MEASUREMENT_ID || 'G-9PH2ERQZBD'}`}></script>
+      <script define:vars={{ gaId: import.meta.env.PUBLIC_GA_MEASUREMENT_ID || 'G-9PH2ERQZBD' }}>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', gaId);
+      </script>
+    </>
+  )}
 </head>
 <body>
 

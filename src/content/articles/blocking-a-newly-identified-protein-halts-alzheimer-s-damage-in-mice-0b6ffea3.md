@@ -14,6 +14,7 @@ imageCredit: ""
 imageSourceUrl: ""
 imageCreditUrl: ""
 publishDate: 2026-08-19T04:17:23.777Z
+seoTitle: "New Protein Blocker Halts Alzheimer's Damage"
 ---
 <script type="application/ld+json">
 {
