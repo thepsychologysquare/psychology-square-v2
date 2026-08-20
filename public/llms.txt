@@ -1,0 +1,31 @@
+# The Psychology Square
+
+> The Psychology Square is a clinical psychology practice based in Johar Town, Lahore, Pakistan, offering individual and couples therapy (online and in person), corporate mental health services, research/statistical analysis support, and psychology tutoring. The site also publishes free psychology articles, assessments, and worksheets.
+
+This file follows the llms.txt convention to help AI systems understand and reference this site's content accurately. See our robots.txt for machine-readable content-use permissions (search and AI-answer citation are allowed; AI training is not).
+
+## Services
+
+- [Therapy](https://thepsychologysquare.com/services/therapy/): Individual and couples therapy, online and in-person in Lahore.
+- [Corporate & Workplace Mental Health](https://thepsychologysquare.com/services/corporate/): Employee assistance, workplace training, manager support, and organizational assessments.
+- [Research & Statistical Analysis](https://thepsychologysquare.com/services/research-analysis/): Statistical and research analysis support for psychology research.
+- [Psychology Tutoring](https://thepsychologysquare.com/services/tutoring/): Tutoring for O Level, A Level, BS, and MS psychology students.
+
+## Resources
+
+- [Articles](https://thepsychologysquare.com/articles/): Psychology articles covering anxiety, depression, ADHD, autism, neuroscience, and more.
+- [Assessments](https://thepsychologysquare.com/resources/assessments/): Free psychological screening scales (e.g. GAD-7, PHQ-9, Vanderbilt ADHD).
+- [Worksheets](https://thepsychologysquare.com/resources/worksheets/): Free and paid therapy worksheets (e.g. cost-benefit analysis, locus of control).
+
+## Team
+
+- [Team](https://thepsychologysquare.com/team/): Meet our clinical psychologists.
+
+## Contact
+
+- [Contact / Booking](https://thepsychologysquare.com/contact/): Get in touch or book a session.
+
+## Notes
+
+- All clinical content is written or reviewed by licensed clinical psychologists.
+- For citation or reference in AI-generated answers, please link back to the source page on thepsychologysquare.com.

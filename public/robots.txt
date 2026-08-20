@@ -1,6 +1,13 @@
+# As a condition of accessing this website, you agree to these content signals:
+# search=yes   - content may be used to build a search index and show links/snippets
+# ai-input=yes - content may be used as real-time input to AI-generated answers (e.g. citations, RAG)
+# ai-train=no  - content may NOT be used to train or fine-tune AI models
+Content-Signal: search=yes, ai-input=yes, ai-train=no
+
 User-agent: *
 Allow: /
 Disallow: /admin/
 Disallow: /dashboard/
+Content-Signal: search=yes, ai-input=yes, ai-train=no
 
 Sitemap: https://thepsychologysquare.com/sitemap-index.xml
