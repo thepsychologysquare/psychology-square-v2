@@ -35,7 +35,6 @@ collections:
         field: draft
     fields:
       - {label: "Title", name: "title", widget: "string"}
-      - {label: "SEO Title", name: "seoTitle", widget: "string", required: false, hint: "Only needed if the Title above is long. Overrides the browser tab / Google snippet / social share title — never changes the on-page headline. Keep under 60 characters."}
       - {label: "Description", name: "description", widget: "text", hint: "One or two sentences — shows on article cards and in search results."}
       - {label: "Featured Image", name: "image", widget: "image", required: false, hint: "Optional header image for the article card."}
       - {label: "Image Alt Text", name: "imageAlt", widget: "string", required: false, hint: "Brief description of the image for accessibility/SEO."}
@@ -69,7 +68,6 @@ collections:
     slug: "{{slug}}"
     fields:
       - {label: "Title", name: "title", widget: "string"}
-      - {label: "SEO Title", name: "seoTitle", widget: "string", required: false, hint: "Only needed if the Title above is long. Overrides the browser tab / Google snippet / social share title — never changes the on-page headline. Keep under 60 characters."}
       - {label: "Description", name: "description", widget: "text", hint: "One or two sentences shown on the card."}
       - {label: "Featured Image", name: "image", widget: "image", required: false, hint: "Optional thumbnail image for the worksheet card."}
       - {label: "Image Alt Text", name: "imageAlt", widget: "string", required: false, hint: "Brief description of the image for accessibility/SEO."}
@@ -120,7 +118,6 @@ collections:
     slug: "{{slug}}"
     fields:
       - {label: "Title", name: "title", widget: "string"}
-      - {label: "SEO Title", name: "seoTitle", widget: "string", required: false, hint: "Only needed if the Title above is long. Overrides the browser tab / Google snippet / social share title — never changes the on-page headline. Keep under 60 characters."}
       - {label: "Description", name: "description", widget: "text", hint: "What the scale measures, in one or two sentences."}
       - label: "Topic"
         name: "category"
