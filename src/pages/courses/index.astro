@@ -40,7 +40,13 @@ const categoriesInUse = [...new Set(sorted.map((c) => c.data.category))];
             <button type="button" id="logoutBtn" class="btn btn--text">Log out</button>
           </div>
         ) : (
-          <a href="/my-certificates" class="btn btn--text">Login &rarr;</a>
+          <a href="/my-certificates" class="icon-login-btn" aria-label="Log In">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+              <polyline points="10 17 15 12 10 7" />
+              <line x1="15" y1="12" x2="3" y2="12" />
+            </svg>
+          </a>
         )}
       </div>
       <h1>Courses</h1>
@@ -174,6 +180,46 @@ const categoriesInUse = [...new Set(sorted.map((c) => c.data.category))];
   .session-status a{ color:var(--gold-500); text-decoration:none; }
   .session-status a:hover{ text-decoration:underline; }
   .session-status .btn--text{ font-size:13.5px; }
+
+  .icon-login-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    padding: 0;
+    padding-top: 30px;
+
+    background: var(--navy-950);
+    color: var(--gold-500);
+    border: 1px solid transparent;
+    border-radius: 999px;
+    cursor: pointer;
+    box-shadow: 0 10px 30px rgba(19, 26, 34, 0.06);
+
+    transition: all 0.25s var(--ease);
+  }
+  .icon-login-btn svg {
+    width: 20px;
+    height: 20px;
+    transition: transform 0.2s var(--ease);
+  }
+  .icon-login-btn:hover {
+    background: var(--navy-800);
+    color: var(--gold-300);
+  }
+  .icon-login-btn:hover svg {
+    transform: translateX(2px);
+  }
+  .icon-login-btn:active {
+    background: var(--navy-700);
+    transform: scale(0.95);
+  }
+  .icon-login-btn:focus-visible {
+    outline: 3px solid var(--gold-300);
+    outline-offset: 2px;
+  }
+
   .courses-hero h1{ font-family:var(--font-display); font-size:clamp(32px,4vw,44px); margin:6px 0 14px; }
   .courses-hero .lede{ max-width:560px; color:var(--ink-600); font-size:17px; line-height:1.6; margin-bottom:20px; }
   .eyebrow{ font-family:var(--font-mono); font-size:12px; letter-spacing:0.08em; text-transform:uppercase; color:var(--gold-500); }
