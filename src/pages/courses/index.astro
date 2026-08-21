@@ -41,7 +41,7 @@ const categoriesInUse = [...new Set(sorted.map((c) => c.data.category))];
             <button type="button" id="logoutBtn" class="btn btn--text">Log out</button>
           </div>
         ) : (
-          <a href="/my-certificates" class="icon-login-btn" aria-label="Log In">
+          <a href="/my-certificates?redirect=/courses" class="icon-login-btn" aria-label="Log In">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
               <polyline points="10 17 15 12 10 7" />
@@ -51,14 +51,14 @@ const categoriesInUse = [...new Set(sorted.map((c) => c.data.category))];
         )}
       </div>
 
-      <p class="lede">Short, practical courses. Pass the quiz at the end and we'll email you a verifiable certificate immediately â€” free or paid, the certificate never costs extra.</p>
+      <p class="lede">Short, practical courses. Pass the quiz at the end and we'll email you a verifiable certificate immediately —” free or paid, the certificate never costs extra.</p>
     </div>
   </section>
 
   <section class="courses-grid-section">
     <div class="wrap">
       {sorted.length === 0 && (
-        <p class="empty-state">No courses are available yet â€” check back soon.</p>
+        <p class="empty-state">No courses are available yet —” check back soon.</p>
       )}
 
       {sorted.length > 0 && (
@@ -88,7 +88,7 @@ const categoriesInUse = [...new Set(sorted.map((c) => c.data.category))];
             <div class="course-card__top">
               <span class="course-card__category">{categoryMeta[course.data.category] ?? course.data.category}</span>
               <span class={`tier-badge ${course.data.isPaid ? 'tier-badge--paid' : 'tier-badge--free'}`}>
-                {course.data.isPaid ? `Rs. ${course.data.pricePkr?.toLocaleString('en-US') ?? 'â€”'}` : 'Free'}
+                {course.data.isPaid ? `Rs. ${course.data.pricePkr?.toLocaleString('en-US') ?? '—”'}` : 'Free'}
               </span>
             </div>
             <h2>{course.data.title}</h2>
@@ -107,15 +107,15 @@ const categoriesInUse = [...new Set(sorted.map((c) => c.data.category))];
   <section class="transparency-section">
     <div class="wrap">
       <div class="transparency-block">
-        <h2>Free vs. paid â€” what's the difference?</h2>
+        <h2>Free vs. paid —” what's the difference?</h2>
         <div class="transparency-grid">
           <div class="transparency-card">
             <span class="transparency-card__label">Free courses</span>
-            <p>Enroll instantly with just your email â€” no payment step. All lessons, the final quiz, and a verifiable digital certificate on completion, at no cost.</p>
+            <p>Enroll instantly with just your email —” no payment step. All lessons, the final quiz, and a verifiable digital certificate on completion, at no cost.</p>
           </div>
           <div class="transparency-card">
             <span class="transparency-card__label">Paid courses</span>
-            <p>Enroll after a quick payment confirmation (easypaisa, JazzCash, or bank transfer â€” same as our therapy bookings). Includes every lesson and the same free, automatic digital certificate on completion. The payment only ever gates lesson access, never the credential.</p>
+            <p>Enroll after a quick payment confirmation (easypaisa, JazzCash, or bank transfer —” same as our therapy bookings). Includes every lesson and the same free, automatic digital certificate on completion. The payment only ever gates lesson access, never the credential.</p>
           </div>
         </div>
       </div>
@@ -181,7 +181,7 @@ const categoriesInUse = [...new Set(sorted.map((c) => c.data.category))];
   .session-status strong{ color:var(--ink-900); }
   .session-status a{ color:var(--gold-500); text-decoration:none; }
   .session-status a:hover{ text-decoration:underline; }
-  .session-status .btn--text{ font-size:13.5px; }
+  .session-status .btn--text{ font-size:13.5px; color:var(--ink-900); text-decoration:underline; padding:0; }
 
   .icon-login-btn {
     display: inline-flex;
