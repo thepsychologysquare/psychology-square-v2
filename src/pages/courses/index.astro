@@ -1,4 +1,4 @@
----
+﻿---
 export const prerender = false;
 import { env } from 'cloudflare:workers';
 import { listCourses } from '../../lib/courses';
@@ -31,7 +31,8 @@ const categoriesInUse = [...new Set(sorted.map((c) => c.data.category))];
 >
   <section class="courses-hero">
     <div class="wrap">
-      <div class="hero-top" style="justify-content: flex-end;">
+      <div class="hero-top">
+        <h1>Courses</h1>
         {session ? (
           <div class="session-status">
             <span class="session-status__dot" aria-hidden="true"></span>
@@ -49,15 +50,15 @@ const categoriesInUse = [...new Set(sorted.map((c) => c.data.category))];
           </a>
         )}
       </div>
-      <h1>Courses</h1>
-      <p class="lede">Short, practical courses. Pass the quiz at the end and we'll email you a verifiable certificate immediately — free or paid, the certificate never costs extra.</p>
+
+      <p class="lede">Short, practical courses. Pass the quiz at the end and we'll email you a verifiable certificate immediately â€” free or paid, the certificate never costs extra.</p>
     </div>
   </section>
 
   <section class="courses-grid-section">
     <div class="wrap">
       {sorted.length === 0 && (
-        <p class="empty-state">No courses are available yet — check back soon.</p>
+        <p class="empty-state">No courses are available yet â€” check back soon.</p>
       )}
 
       {sorted.length > 0 && (
@@ -87,7 +88,7 @@ const categoriesInUse = [...new Set(sorted.map((c) => c.data.category))];
             <div class="course-card__top">
               <span class="course-card__category">{categoryMeta[course.data.category] ?? course.data.category}</span>
               <span class={`tier-badge ${course.data.isPaid ? 'tier-badge--paid' : 'tier-badge--free'}`}>
-                {course.data.isPaid ? `Rs. ${course.data.pricePkr?.toLocaleString('en-US') ?? '—'}` : 'Free'}
+                {course.data.isPaid ? `Rs. ${course.data.pricePkr?.toLocaleString('en-US') ?? 'â€”'}` : 'Free'}
               </span>
             </div>
             <h2>{course.data.title}</h2>
@@ -106,15 +107,15 @@ const categoriesInUse = [...new Set(sorted.map((c) => c.data.category))];
   <section class="transparency-section">
     <div class="wrap">
       <div class="transparency-block">
-        <h2>Free vs. paid — what's the difference?</h2>
+        <h2>Free vs. paid â€” what's the difference?</h2>
         <div class="transparency-grid">
           <div class="transparency-card">
             <span class="transparency-card__label">Free courses</span>
-            <p>Enroll instantly with just your email — no payment step. All lessons, the final quiz, and a verifiable digital certificate on completion, at no cost.</p>
+            <p>Enroll instantly with just your email â€” no payment step. All lessons, the final quiz, and a verifiable digital certificate on completion, at no cost.</p>
           </div>
           <div class="transparency-card">
             <span class="transparency-card__label">Paid courses</span>
-            <p>Enroll after a quick payment confirmation (easypaisa, JazzCash, or bank transfer — same as our therapy bookings). Includes every lesson and the same free, automatic digital certificate on completion. The payment only ever gates lesson access, never the credential.</p>
+            <p>Enroll after a quick payment confirmation (easypaisa, JazzCash, or bank transfer â€” same as our therapy bookings). Includes every lesson and the same free, automatic digital certificate on completion. The payment only ever gates lesson access, never the credential.</p>
           </div>
         </div>
       </div>
@@ -174,6 +175,7 @@ const categoriesInUse = [...new Set(sorted.map((c) => c.data.category))];
 <style>
   .courses-hero{ padding:72px 0 40px; border-bottom:1px solid var(--line); }
   .hero-top{ display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+  .hero-top h1{ margin:0; }
   .session-status{ display:flex; align-items:center; gap:10px; font-size:13.5px; color:var(--ink-600); flex-wrap:wrap; }
   .session-status__dot{ width:8px; height:8px; border-radius:50%; background:#2E7D5B; flex-shrink:0; }
   .session-status strong{ color:var(--ink-900); }
@@ -187,7 +189,7 @@ const categoriesInUse = [...new Set(sorted.map((c) => c.data.category))];
     justify-content: center;
     width: 48px;
     height: 48px;
-	margin-top: 40px;  
+
     background: var(--navy-950);
     color: var(--gold-500);
     border: 1px solid transparent;
