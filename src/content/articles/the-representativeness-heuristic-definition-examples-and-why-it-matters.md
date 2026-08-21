@@ -6,7 +6,6 @@ description: "Discover the representativeness heuristic: how judging by
 image: /images/represntativeness-heuristic.jpg
 imageAlt: represntativeness-heuristic
 category: general
-tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
 publishDate: 2026-08-12T10:07:00.000+05:00

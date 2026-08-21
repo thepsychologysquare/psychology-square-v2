@@ -1,0 +1,83 @@
+---
+// Small, visible crisis-resources note shown on articles whose category
+// covers topics where a reader could be in acute distress (anxiety,
+// depression, trauma, addiction-recovery). Previously this information only
+// lived on /disclaimer, which almost nobody reading an article would find.
+//
+// NOTE on the phone number below: Rescue 1122 is Punjab's official
+// emergency response service (confirmed via the Lahore district government
+// site) and is accurate for Lahore/Punjab. There isn't yet a specific,
+// verified-current Pakistan mental-health/suicide helpline number in this
+// component — if The Psychology Square wants to name one (e.g. a specific
+// NGO helpline), Sohail or Sehar should confirm the current number directly
+// with that organization before it's added, since publishing a wrong crisis
+// number is worse than not publishing one.
+---
+<aside class="crisis-callout" role="note" aria-label="Crisis resources">
+  <p class="crisis-callout__title">If you're in crisis</p>
+  <p class="crisis-callout__body">
+    This article is educational and isn't a substitute for immediate help. If you or someone you know is
+    experiencing suicidal thoughts, severe self-harm urges, or any medical emergency, please reach out right away:
+  </p>
+  <ul class="crisis-callout__list">
+    <li>In Lahore or elsewhere in Punjab, Pakistan: call <strong>Rescue 1122</strong> or go to your nearest hospital emergency department.</li>
+    <li>Outside Punjab or outside Pakistan: contact your local emergency services or nearest emergency department.</li>
+  </ul>
+  <p class="crisis-callout__footer">See our full <a href="/disclaimer">disclaimer</a> for more on what The Psychology Square can and can't help with.</p>
+</aside>
+
+<style>
+  .crisis-callout {
+    margin: 0 0 40px;
+    padding: 20px 22px;
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--sage-500);
+    border-radius: 4px;
+    background: var(--paper-50);
+  }
+
+  .crisis-callout__title {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--sage-500);
+    margin: 0 0 8px;
+    font-weight: 600;
+  }
+
+  .crisis-callout__body {
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--ink-900);
+    margin: 0 0 10px;
+  }
+
+  .crisis-callout__list {
+    margin: 0 0 12px;
+    padding-left: 20px;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--ink-900);
+  }
+
+  .crisis-callout__list li {
+    margin-bottom: 4px;
+  }
+
+  .crisis-callout__footer {
+    font-size: 13px;
+    color: var(--ink-600);
+    margin: 0;
+  }
+
+  .crisis-callout__footer a {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .crisis-callout__footer a:hover {
+    color: var(--gold-500);
+  }
+</style>

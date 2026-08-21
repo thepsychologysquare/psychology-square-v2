@@ -5,7 +5,6 @@ description: Learn how lab‑grown mini brains are being used to predict effecti
 image: /images/a-wireframe-human-brain-with-purple-and-green-highlights-on-a-light-background-LaKwLAmcnBc.jpg
 imageAlt: A wireframe human brain with purple and green highlights on a light background
 category: neuroscience
-tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
 draft: false

@@ -6,7 +6,6 @@ description: Discover how a new memory‑rewriting therapy can reduce fear of
 image: /images/article-image-m-82PNzgFq4.jpg
 imageAlt: ""
 category: therapy
-tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
 draft: false

@@ -7,7 +7,6 @@ description: Explore cognitive models of stress and psychopathology — REBT,
 image: /images/a-woman-experiencing-stress-while-working-on-a-laptop.jpg
 imageAlt: a woman experiencing stress while working on a laptop
 category: stress-burnout
-tags: []
 author: Muhammad Sohail
 reviewedBy: Muhammad Sohail
 publishDate: 2026-08-12T09:46:00.000+05:00

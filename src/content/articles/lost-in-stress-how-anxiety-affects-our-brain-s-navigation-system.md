@@ -5,7 +5,6 @@ description: Discover how stress affects the brain's internal GPS system and
 image: /images/a-close-up-of-a-human-brain-on-a-black-background.jpg
 imageAlt: a close up of a human brain on a black background
 category: neuroscience
-tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
 publishDate: 2026-08-16T13:58:00.000+05:00

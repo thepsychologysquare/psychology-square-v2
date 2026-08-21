@@ -6,7 +6,6 @@ description: Explore how a 10‑month Antarctic study reveals the mental toll of
 image: /images/white-and-brown-biplane-on-snow-covered-field-7xFGmIEr8k0.jpg
 imageAlt: white and brown biplane on snow-covered field
 category: general
-tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
 draft: false

@@ -6,7 +6,6 @@ description: Discover 10 practical tips for getting the most out of online
 image: /images/a-person-taking-online-therapy.jpg
 imageAlt: a person taking online therapy
 category: therapy
-tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
 publishDate: 2026-08-12T09:54:00.000+05:00

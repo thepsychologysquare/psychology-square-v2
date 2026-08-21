@@ -6,7 +6,6 @@ description: Discover how THC medication is being used to treat PTSD nightmares,
 image: /images/woman-sleeping-on-bed-under-blankets.jpg
 imageAlt: woman sleeping on bed under blankets
 category: therapy
-tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
 publishDate: 2026-08-16T15:05:00.000+05:00

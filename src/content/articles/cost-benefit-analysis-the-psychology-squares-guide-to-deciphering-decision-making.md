@@ -6,8 +6,6 @@ description: Unlock better decision-making with The Psychology Square's expert
   today!
 image: /images/cost-benefit-analysis-the-psychology-square-s-guide-to-deciphering-decision-making.jpg
 category: depression
-tags:
-  - Worksheet
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
 publishDate: 2026-08-11T10:20:00.000+05:00

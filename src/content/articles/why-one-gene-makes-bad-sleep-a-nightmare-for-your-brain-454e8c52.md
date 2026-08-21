@@ -5,7 +5,6 @@ description: Discover how a specific gene links poor sleep to increased
 image: /images/shadow-of-woman-on-bed-3sn9MUlx2ZE.jpg
 imageAlt: shadow of woman on bed
 category: neuroscience
-tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
 draft: false

@@ -47,7 +47,6 @@ collections:
         value_field: "{{slug}}"
         hint: "Search for an existing category. Don't see it? Go to the Categories tab, add it there, then come back here."
       - {label: "Subcategory", name: "subcategory", widget: "string", required: false, hint: "Optional — a more specific label, e.g. 'coping-skills' or 'couples-conflict'."}
-      - {label: "Tags", name: "tags", widget: "list", default: []}
       - label: "Author"
         name: "author"
         widget: "select"
@@ -58,6 +57,7 @@ collections:
         options: ["Muhammad Sohail", "Sehar Waheed"]
         required: false
       - {label: "Publish Date", name: "publishDate", widget: "datetime"}
+      - {label: "Last Updated", name: "lastUpdated", widget: "datetime", required: false, hint: "Only set this when you actually revise the article after publishing — leave blank otherwise. Shows an \"Updated\" byline and updates the schema.org dateModified date."}
       - {label: "Draft", name: "draft", widget: "boolean", default: false, hint: "Turn ON to hide this article from the live site until it's ready."}
       - {label: "Body", name: "body", widget: "markdown"}
 

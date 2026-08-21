@@ -22,9 +22,8 @@ function categoryLabel(slug: string) {
   return categoryMeta[slug] || slug.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 }
 
-// Auto-derived from actual content — adding a category or tag later needs zero page edits.
+// Auto-derived from actual content — adding a category later needs zero page edits.
 const categoriesPresent = [...new Set(sorted.map((a) => a.data.category))].sort();
-const tagsPresent = [...new Set(sorted.flatMap((a) => a.data.tags))].sort();
 
 const siteOrigin = 'https://thepsychologysquare.com';
 const blogJson = {
@@ -59,7 +58,7 @@ const breadcrumbJson = {
 <Layout
   title="Articles"
   fullTitle="Psychology Articles — Anxiety, Depression, ADHD & More | The Psychology Square"
-  description="Clinically-reviewed articles on anxiety, depression, ADHD, trauma, relationships, and more — written and reviewed by licensed clinical psychologists in Lahore."
+  description="Clinically-reviewed articles on anxiety, depression, ADHD, trauma, relationships, and more — written and reviewed by clinical psychologists in Lahore."
 >
   <script type="application/ld+json" set:html={JSON.stringify(blogJson)} />
   <script type="application/ld+json" set:html={JSON.stringify(breadcrumbJson)} />
@@ -80,7 +79,7 @@ const breadcrumbJson = {
   <section class="section" style="padding-bottom: 0;">
     <div class="wrap">
       <p class="articles-intro">
-        Every article here is written or reviewed by a licensed clinical psychologist at The Psychology Square, drawing on real clinical training rather than generic wellness content. Below you'll find {sorted.length} article{sorted.length === 1 ? '' : 's'} across {categoriesPresent.length} topic areas — use the search and filters to find what's relevant, or browse by topic:
+        Every article here is written or reviewed by a clinical psychologist at The Psychology Square, drawing on real clinical training rather than generic wellness content. Below you'll find {sorted.length} article{sorted.length === 1 ? '' : 's'} across {categoriesPresent.length} topic areas — use the search and filters to find what's relevant, or browse by topic:
       </p>
       <div class="topic-link-row">
         {categoriesPresent.map((cat) => (
@@ -112,19 +111,7 @@ const breadcrumbJson = {
               </div>
             </div>
 
-            {tagsPresent.length > 0 && (
-              <div class="filter-group">
-                <h3 class="filter-heading">Tags</h3>
-                <div class="checkbox-list" id="tag-filters">
-                  {tagsPresent.map((tag) => (
-                    <label class="checkbox-row">
-                      <input type="checkbox" value={tag} class="tag-checkbox" data-label={tag} />
-                      <span>{tag}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            )}
+
 
             <div class="filter-panel-actions">
               <button type="button" id="clear-filters" class="clear-filters-btn">Clear all</button>
@@ -148,7 +135,6 @@ const breadcrumbJson = {
               data-title={article.data.title.toLowerCase()}
               data-description={article.data.description.toLowerCase()}
               data-category={article.data.category}
-              data-tags={article.data.tags.join(',')}
             >
               {imgSrc && (
                 <div class="card-image-wrap">
@@ -412,7 +398,7 @@ const breadcrumbJson = {
 <script>
   import { createPaginator } from '../../lib/pagination';
 
-  type FilterEntry = { type: 'category' | 'tag'; value: string; label: string };
+  type FilterEntry = { type: 'category'; value: string; label: string };
 
   const paginator = createPaginator({ pagerEl: document.getElementById('pager')! });
 
@@ -420,7 +406,6 @@ const breadcrumbJson = {
   const filterDropdown = document.getElementById('filter-dropdown') as HTMLDetailsElement;
   const filterBadge = document.getElementById('filter-badge') as HTMLElement;
   const categoryCheckboxes = document.querySelectorAll<HTMLInputElement>('.category-checkbox');
-  const tagCheckboxes = document.querySelectorAll<HTMLInputElement>('.tag-checkbox');
   const clearBtn = document.getElementById('clear-filters');
   const doneBtn = document.getElementById('filter-done');
   const cards = document.querySelectorAll<HTMLElement>('#article-grid .article-card');
@@ -447,16 +432,11 @@ const breadcrumbJson = {
     container.after(btn);
   }
   setupShowMore('category-filters');
-  setupShowMore('tag-filters');
 
   function getActiveFilters(): FilterEntry[] {
-    const cats = [...categoryCheckboxes]
+    return [...categoryCheckboxes]
       .filter((c) => c.checked)
       .map((c) => ({ type: 'category' as const, value: c.value, label: c.dataset.label || c.value }));
-    const tags = [...tagCheckboxes]
-      .filter((c) => c.checked)
-      .map((c) => ({ type: 'tag' as const, value: c.value, label: c.dataset.label || c.value }));
-    return [...cats, ...tags];
   }
 
   function renderChips() {
@@ -468,8 +448,7 @@ const breadcrumbJson = {
       chip.className = 'active-chip';
       chip.innerHTML = `${f.label} <button type="button" aria-label="Remove filter">✕</button>`;
       chip.querySelector('button')?.addEventListener('click', () => {
-        const source = f.type === 'category' ? categoryCheckboxes : tagCheckboxes;
-        source.forEach((c) => { if (c.value === f.value) c.checked = false; });
+        categoryCheckboxes.forEach((c) => { if (c.value === f.value) c.checked = false; });
         applyFilters();
       });
       activeChipsContainer.appendChild(chip);
@@ -484,7 +463,6 @@ const breadcrumbJson = {
   function applyFilters() {
     const query = searchInput.value.trim().toLowerCase();
     const activeCategories = [...categoryCheckboxes].filter((c) => c.checked).map((c) => c.value);
-    const activeTags = [...tagCheckboxes].filter((c) => c.checked).map((c) => c.value);
 
     let visibleCount = 0;
 
@@ -492,13 +470,11 @@ const breadcrumbJson = {
       const title = card.dataset.title || '';
       const description = card.dataset.description || '';
       const category = card.dataset.category || '';
-      const tags = (card.dataset.tags || '').split(',').filter(Boolean);
 
       const matchesSearch = !query || title.includes(query) || description.includes(query);
       const matchesCategory = activeCategories.length === 0 || activeCategories.includes(category);
-      const matchesTags = activeTags.length === 0 || activeTags.every((t) => tags.includes(t));
 
-      const show = matchesSearch && matchesCategory && matchesTags;
+      const show = matchesSearch && matchesCategory;
       card.classList.toggle('is-hidden', !show);
       if (show) visibleCount++;
     });
@@ -516,12 +492,10 @@ const breadcrumbJson = {
 
   searchInput.addEventListener('input', applyFilters);
   categoryCheckboxes.forEach((cb) => cb.addEventListener('change', applyFilters));
-  tagCheckboxes.forEach((cb) => cb.addEventListener('change', applyFilters));
 
   clearBtn?.addEventListener('click', () => {
     searchInput.value = '';
     categoryCheckboxes.forEach((cb) => (cb.checked = false));
-    tagCheckboxes.forEach((cb) => (cb.checked = false));
     applyFilters();
   });
 

@@ -25,15 +25,20 @@ export default defineConfig({
   integrations: [
     sitemap({
       // Keep the sitemap to public, indexable, non-thin content only.
+      // Legal pages (terms, privacy, refund-and-cancellation, disclaimer)
+      // are real, unique, indexable content, so they're intentionally
+      // NOT filtered out here. /articles/category/ and /assessments/ are
+      // filtered out deliberately — thin/duplicate listing pages that
+      // don't need to be indexed on their own.
       filter: (page) =>
         !page.includes('/dashboard/') &&
         !page.includes('/my-certificates/') &&
         !page.includes('/certificates/') &&
-        !page.includes('/terms/') &&
-        !page.includes('/privacy/') &&
-        !page.includes('/refund-and-cancellation/') &&
-        !page.includes('/disclaimer/') &&
         !page.includes('/articles/category/') &&
+        // Real assessments listing (the one the audit meant) plus the old
+        // pre-migration /assessments/ URL, which is now just a redirect
+        // stub with no content of its own and shouldn't be indexed either.
+        page !== 'https://thepsychologysquare.com/resources/assessments/' &&
         page !== 'https://thepsychologysquare.com/assessments/',
     }),
   ],

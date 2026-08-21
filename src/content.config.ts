@@ -19,10 +19,14 @@ const articles = defineCollection({
     description: z.string(),
     category: categoryEnum,
     subcategory: z.string().optional(),
-    tags: z.array(z.string()).default([]),
     author: z.string(),
     reviewedBy: z.string().optional(),
     publishDate: z.date(),
+    // Real "last updated" tracking (Phase 5 / §3.2 of the audit). Optional
+    // and only set when an article is actually revised after publishing —
+    // falls back to publishDate everywhere it's used so untouched articles
+    // don't show a fake "updated" date.
+    lastUpdated: z.date().optional(),
     draft: z.boolean().default(false),
     // Optional shorter title for the <title> tag / meta / JSON-LD headline
     // when the real headline (above) runs long for search snippets. Never

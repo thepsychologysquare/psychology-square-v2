@@ -5,7 +5,6 @@ description: "Understand anxiety and its core concepts, including symptoms,
 image: /images/understanding-anxiety-symptoms-disorders-and-effective-coping-mechanisms.jpg
 imageAlt: A person having anxiety
 category: anxiety
-tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
 publishDate: 2026-08-11T09:35:00.000+05:00

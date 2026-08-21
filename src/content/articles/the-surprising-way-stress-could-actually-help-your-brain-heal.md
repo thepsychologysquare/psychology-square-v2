@@ -5,7 +5,6 @@ description: Discover how a stress hormone could help brain repair and recovery,
 image: /images/a-close-up-of-a-human-brain-on-a-black-background.jpg
 imageAlt: a close up of a human brain on a black background
 category: neuroscience
-tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
 draft: false

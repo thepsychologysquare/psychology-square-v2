@@ -6,7 +6,6 @@ description: Discover how regular cannabis use impacts morning cortisol levels
 image: /images/woman-in-orange-tank-top-and-black-skirt-sitting-on-bed.jpg
 imageAlt: woman in orange tank top and black skirt sitting on bed
 category: addiction-recovery
-tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
 publishDate: 2026-08-16T13:10:00.000+05:00

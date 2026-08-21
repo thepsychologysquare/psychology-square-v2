@@ -5,7 +5,6 @@ description: Discover the hidden brain rhythm that could improve Parkinson's
 image: /images/person-with-parkisnson-disease.jpg
 imageAlt: person with parkisnson disease
 category: neuroscience
-tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
 draft: false

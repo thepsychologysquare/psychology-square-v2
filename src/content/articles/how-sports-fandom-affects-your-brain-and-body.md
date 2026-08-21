@@ -6,7 +6,6 @@ description: Discover the surprising science behind sports fandom and how live
 image: /images/people-watching-baseball.jpg
 imageAlt: people watching baseball
 category: neuroscience
-tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
 draft: false

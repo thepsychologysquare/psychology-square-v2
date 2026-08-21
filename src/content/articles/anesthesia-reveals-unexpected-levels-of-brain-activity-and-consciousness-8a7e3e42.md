@@ -6,7 +6,6 @@ description: Study finds significant brain activity persists under general
 image: /images/patient-undergoing-surgery-under-anesthesia.jpg
 imageAlt: ""
 category: neuroscience
-tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
 draft: false

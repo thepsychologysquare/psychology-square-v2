@@ -8,8 +8,6 @@ image: /images/psychopathy.jpg
 imageAlt: psychopathy
 category: general
 subcategory: ""
-tags:
-  - Psychopathy
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
 publishDate: 2026-08-15T10:43:48.966Z

@@ -7,7 +7,6 @@ description: Research shows that a consistent daily routine can reduce pain and
 image: /images/daily-routine.jpg
 imageAlt: daily-routine
 category: depression
-tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
 draft: false

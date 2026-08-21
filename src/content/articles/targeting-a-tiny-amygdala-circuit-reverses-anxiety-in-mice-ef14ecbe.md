@@ -6,7 +6,6 @@ description: A new study reveals that correcting activity in a tiny amygdala
 image: /images/amygdala.jpg
 imageAlt: ""
 category: neuroscience
-tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
 draft: false

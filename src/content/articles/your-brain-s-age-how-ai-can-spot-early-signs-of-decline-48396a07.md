@@ -6,7 +6,6 @@ description: Learn how AI analyzes sleep EEG to detect accelerated brain aging,
 image: /images/steve-a-johnson-_0iv9lmpdn0-unsplash.jpg
 imageAlt: ai brain simulation representation
 category: neuroscience
-tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
 draft: false

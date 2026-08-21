@@ -6,7 +6,6 @@ description: Discover how smoking, blood pressure, heart disease, and
 image: /images/man-in-white-crew-neck-shirt-wearing-black-sunglasses-C3x3tMBskDw.jpg
 imageAlt: man in white crew neck shirt wearing black sunglasses
 category: general
-tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
 draft: false

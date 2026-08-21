@@ -6,7 +6,6 @@ description: Researchers identify a protein that fuels Alzheimer’s and develop
 image: /images/old-man-with-alzheimer.jpg
 imageAlt: old-man-with-alzheimer
 category: neuroscience
-tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
 draft: false

@@ -6,7 +6,6 @@ description: Explore the hidden danger of drinking to cope with stress and how
 image: /images/man-in-black-knit-cap-holding-clear-glass-mug-suI00gcXNwk.jpg
 imageAlt: man in black knit cap holding clear glass mug
 category: addiction-recovery
-tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
 draft: false

@@ -6,7 +6,6 @@ description: New research reveals targeting brain immune cells can restore sleep
 image: /images/vitaly-gariev-wz4mx3jbnze-unsplash.jpg
 imageAlt: a black and white photo of various mri images
 category: sleep
-tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
 draft: false

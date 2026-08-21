@@ -6,8 +6,6 @@ description: "Discover how recent neuroimaging research reveals that psilocybin
 image: /images/psychedelics.jpg
 imageAlt: psychedelic experience
 category: general
-tags:
-  - Psychedelics
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
 publishDate: 2026-08-15T18:34:00.000+05:00

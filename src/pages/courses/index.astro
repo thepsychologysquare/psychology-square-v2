@@ -27,12 +27,11 @@ const categoriesInUse = [...new Set(sorted.map((c) => c.data.category))];
 ---
 <Layout
   title="Courses"
-  description="Continuing education courses from The Psychology Square. Complete a course, pass the quiz, and receive a verifiable certificate by email."
+  description="Self-paced psychology courses from The Psychology Square. Complete a course, pass the quiz, and receive a verifiable certificate by email."
 >
   <section class="courses-hero">
     <div class="wrap">
-      <div class="hero-top">
-        <span class="eyebrow">Continuing Education</span>
+      <div class="hero-top" style="justify-content: flex-end;">
         {session ? (
           <div class="session-status">
             <span class="session-status__dot" aria-hidden="true"></span>

@@ -5,7 +5,6 @@ description: A common constipation medication may reduce depression-related
 image: /images/a-toy-figure-on-a-table-Wp4uMpruDc8.jpg
 imageAlt: a toy figure on a table
 category: depression
-tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
 draft: false

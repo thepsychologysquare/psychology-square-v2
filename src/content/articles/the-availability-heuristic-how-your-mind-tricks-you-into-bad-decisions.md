@@ -6,7 +6,6 @@ description: Learn how the availability heuristic distorts risk perception,
 image: /images/availability-heuristic.jpg
 imageAlt: availability heuristic
 category: general
-tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
 publishDate: 2026-08-12T10:00:00.000+05:00

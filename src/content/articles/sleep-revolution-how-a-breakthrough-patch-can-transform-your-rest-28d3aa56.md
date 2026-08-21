@@ -6,7 +6,6 @@ image: /images/man-in-blue-shirt-sleeping-hfvFunLkFgg.jpg
 imageAlt: man in blue shirt sleeping
 category: sleep
 subcategory: ""
-tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
 draft: false

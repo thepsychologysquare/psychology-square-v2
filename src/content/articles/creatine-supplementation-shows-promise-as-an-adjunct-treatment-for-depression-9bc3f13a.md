@@ -5,7 +5,6 @@ description: A recent trial finds creatine supplementation can reduce depressive
 image: /images/creatine-powder-setup-for-daily-fitness-routine..jpg
 imageAlt: Creatine powder setup for daily fitness routine.
 category: depression
-tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
 draft: false

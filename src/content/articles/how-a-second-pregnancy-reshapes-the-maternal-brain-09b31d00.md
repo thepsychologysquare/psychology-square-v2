@@ -5,7 +5,6 @@ description: Research shows a second pregnancy induces distinct brain changes,
 image: /images/pregnant-woman-cradling-her-belly-ux53SGpRAHU.jpg
 imageAlt: pregnant woman cradling her belly
 category: general
-tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
 draft: false

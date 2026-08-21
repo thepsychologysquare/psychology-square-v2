@@ -6,7 +6,6 @@ description: Explore how the Mediterranean diet stimulates mitochondrial
 image: /images/article-image-IjrBf8rtKXE.jpg
 imageAlt: ""
 category: neuroscience
-tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
 draft: false

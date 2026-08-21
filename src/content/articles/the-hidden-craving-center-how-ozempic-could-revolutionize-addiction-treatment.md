@@ -7,7 +7,6 @@ description: Discover how Ozempic, a diabetes medication, may have revealed the
 image: /images/iridescent-brain-render-on-blue-purple-background.jpg
 imageAlt: iridescent brain render on blue purple background
 category: addiction-recovery
-tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
 publishDate: 2026-08-16T09:27:51.188Z

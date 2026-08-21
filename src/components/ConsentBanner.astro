@@ -1,0 +1,199 @@
+---
+// Cookie consent banner + Google Consent Mode v2 wiring.
+//
+// How it fits together with Layout.astro:
+// 1. Layout.astro sets Consent Mode v2 defaults to "denied" BEFORE gtag.js loads.
+// 2. This component renders the banner and, on user choice, calls
+//    gtag('consent', 'update', ...) plus stores the choice in localStorage.
+// 3. A "Cookie preferences" link (in the footer) re-opens this banner so
+//    visitors can change their mind later — required by most CMP guidelines,
+//    including AdSense's EU User Consent Policy.
+//
+// NOTE: this is a functional, self-hosted Consent Mode v2 implementation.
+// It covers the technical requirement (default-denied consent state, real
+// consent signals sent to Google before any personalization). AdSense's EU
+// User Consent Policy recommends using a Google-certified CMP (e.g. Google
+// Funding Choices) — swapping this banner for Funding Choices later is a
+// drop-in replacement and worth doing once an AdSense publisher ID exists,
+// since it also handles some jurisdiction detection and legal-text upkeep
+// automatically.
+---
+<div id="consent-banner" class="consent-banner" role="dialog" aria-live="polite" aria-label="Cookie consent" hidden>
+  <div class="consent-banner-inner">
+    <p class="consent-text">
+      We use cookies for basic site analytics. Some cookies are only set if you
+      agree. Read our <a href="/privacy">Privacy Policy</a> for details.
+    </p>
+    <div class="consent-actions">
+      <button type="button" id="consent-reject" class="consent-btn consent-btn-ghost">Reject non-essential</button>
+      <button type="button" id="consent-accept" class="consent-btn consent-btn-solid">Accept all</button>
+    </div>
+  </div>
+</div>
+
+<script is:inline>
+  (function () {
+    var STORAGE_KEY = 'tps-consent-v1';
+
+    function applyConsent(state) {
+      if (typeof window.gtag !== 'function') return;
+      window.gtag('consent', 'update', {
+        ad_storage: state,
+        ad_user_data: state,
+        ad_personalization: state,
+        analytics_storage: state,
+      });
+    }
+
+    function getStoredChoice() {
+      try {
+        return localStorage.getItem(STORAGE_KEY);
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function storeChoice(choice) {
+      try {
+        localStorage.setItem(STORAGE_KEY, choice);
+      } catch (e) {
+        /* ignore — banner will just reappear next visit */
+      }
+    }
+
+    function showBanner() {
+      var banner = document.getElementById('consent-banner');
+      if (banner) banner.hidden = false;
+    }
+
+    function hideBanner() {
+      var banner = document.getElementById('consent-banner');
+      if (banner) banner.hidden = true;
+    }
+
+    function handleChoice(choice) {
+      storeChoice(choice);
+      applyConsent(choice === 'accepted' ? 'granted' : 'denied');
+      hideBanner();
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      var existing = getStoredChoice();
+
+      if (existing === 'accepted' || existing === 'rejected') {
+        applyConsent(existing === 'accepted' ? 'granted' : 'denied');
+      } else {
+        showBanner();
+      }
+
+      var acceptBtn = document.getElementById('consent-accept');
+      var rejectBtn = document.getElementById('consent-reject');
+      if (acceptBtn) acceptBtn.addEventListener('click', function () { handleChoice('accepted'); });
+      if (rejectBtn) rejectBtn.addEventListener('click', function () { handleChoice('rejected'); });
+
+      // Footer "Cookie preferences" link re-opens the banner.
+      var reopenLink = document.getElementById('reopen-consent-banner');
+      if (reopenLink) {
+        reopenLink.addEventListener('click', function (e) {
+          e.preventDefault();
+          showBanner();
+        });
+      }
+    });
+  })();
+</script>
+
+<style>
+  .consent-banner {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1000;
+    background: var(--navy-950);
+    color: #F4F1EA;
+    border-top: 1px solid var(--line-onDark);
+    padding: 16px;
+  }
+
+  .consent-banner[hidden] {
+    display: none;
+  }
+
+  .consent-banner-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .consent-text {
+    margin: 0;
+    font-family: var(--font-body);
+    font-size: 14px;
+    line-height: 1.5;
+    color: #F4F1EA;
+    max-width: 640px;
+  }
+
+  .consent-text a {
+    color: var(--gold-300);
+    text-decoration: underline;
+  }
+
+  .consent-actions {
+    display: flex;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+
+  .consent-btn {
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 500;
+    padding: 10px 16px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background-color 0.2s var(--ease), color 0.2s var(--ease), border-color 0.2s var(--ease);
+    white-space: nowrap;
+  }
+
+  .consent-btn-solid {
+    background: var(--gold-500);
+    color: var(--navy-950);
+    border: 1px solid var(--gold-500);
+  }
+
+  .consent-btn-solid:hover {
+    background: var(--gold-300);
+    border-color: var(--gold-300);
+  }
+
+  .consent-btn-ghost {
+    background: transparent;
+    color: #F4F1EA;
+    border: 1px solid var(--line-onDark);
+  }
+
+  .consent-btn-ghost:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  @media (max-width: 640px) {
+    .consent-banner-inner {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .consent-actions {
+      justify-content: stretch;
+    }
+
+    .consent-btn {
+      flex: 1;
+    }
+  }
+</style>

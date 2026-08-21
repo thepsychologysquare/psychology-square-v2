@@ -59,11 +59,23 @@ const categories = [...counts.entries()]
     graphic: `bg-placeholder-${(i % 9) + 1}`,
   }))
   .sort((a, b) => a.label.localeCompare(b.label));
+
+// A–Z index (mirrors the verywellmind.com/conditions-a-z layout): a full
+// alphabet strip up top, then categories grouped under their first letter.
+// Letters with no categories still render in the strip, just inactive.
+const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+const lettersInUse = new Set(categories.map((c) => c.label[0].toUpperCase()));
+const groupedByLetter = alphabet
+  .map((letter) => ({
+    letter,
+    items: categories.filter((c) => c.label[0].toUpperCase() === letter),
+  }))
+  .filter((group) => group.items.length > 0);
 ---
 
 <Layout
-  title="All Categories"
-  fullTitle="All Article Categories | The Psychology Square"
+  title="Categories A-Z"
+  fullTitle="Categories A-Z | The Psychology Square"
   description="Browse every article topic on The Psychology Square, from anxiety and depression to trauma, relationships, and neuroscience."
 >
   <section class="hero">
@@ -76,26 +88,104 @@ const categories = [...counts.entries()]
         <span class="crumb-current">Categories</span>
       </nav>
       <p class="eyebrow">Browse by Topic</p>
-      <h1 class="hero-title" style="font-size: clamp(32px, 4vw, 48px); margin-bottom: 16px;">All Categories</h1>
-      <p class="hero-sub">Every topic we've written about, from {categories.length} categor{categories.length === 1 ? 'y' : 'ies'} in total.</p>
+      <h1 class="hero-title" style="font-size: clamp(32px, 4vw, 48px); margin-bottom: 16px;">Categories A-Z</h1>
+      <p class="hero-sub">Every topic we've written about, organized alphabetically so you can find it fast.</p>
+    </div>
+  </section>
+
+  <section class="section" style="padding-bottom: 0;">
+    <div class="wrap">
+      <p class="az-intro">
+        The Psychology Square publishes clinically reviewed articles, neuroscience research summaries, therapy
+        guides, and self-help worksheets across a growing set of topics — from specific mental health conditions
+        to broader themes in psychology and wellbeing. This page groups everything we've written by category, so
+        whether you already know what you're looking for or just want to browse, you can jump straight to a
+        letter below or search by name to see every article we have on that topic in one place.
+      </p>
     </div>
   </section>
 
   <section class="section">
     <div class="wrap">
-      <div class="card-grid">
-        {categories.map((cat) => (
-          <a class="article-card category-card" href={`/articles/category/${cat.slug}`}>
-            <div class={`card-image-wrap ${cat.img ? '' : cat.graphic}`}>
-              {cat.img && <img src={cat.img.src} alt={cat.label} loading="lazy" />}
+      <div class="az-search-wrap">
+        <svg class="az-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>
+          <path d="M20 20L16.5 16.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <input type="text" id="az-search" class="az-search-input" placeholder="Search categories…" autocomplete="off" />
+      </div>
+
+      <p class="az-label">Find a topic by its first letter:</p>
+      <nav class="az-bar" aria-label="Jump to categories by letter" id="az-bar">
+        {alphabet.map((letter) => (
+          lettersInUse.has(letter)
+            ? <a href={`#letter-${letter}`} class="az-letter az-letter--active" data-letter={letter}>{letter}</a>
+            : <span class="az-letter" data-letter={letter}>{letter}</span>
+        ))}
+      </nav>
+
+      <div id="az-groups">
+        {groupedByLetter.map((group) => (
+          <div class="az-group" id={`letter-${group.letter}`} data-letter={group.letter}>
+            <span class="az-group-badge">{group.letter}</span>
+            <div class="az-group-list">
+              {group.items.map((cat) => (
+                <a class="az-item" href={`/articles/category/${cat.slug}`} data-name={cat.label.toLowerCase()}>
+                  <span class={`az-item-thumb ${cat.img ? '' : cat.graphic}`}>
+                    {cat.img && <img src={cat.img.src} alt={cat.label} loading="lazy" />}
+                  </span>
+                  <span class="az-item-label">{cat.label}</span>
+                </a>
+              ))}
             </div>
-            <h3>{cat.label}</h3>
-          </a>
+          </div>
         ))}
       </div>
+
+      <p class="az-no-results" id="az-no-results" hidden>No categories match "<span id="az-no-results-query"></span>".</p>
     </div>
   </section>
 </Layout>
+
+<script>
+  const searchInput = document.getElementById('az-search') as HTMLInputElement;
+  const groups = [...document.querySelectorAll<HTMLElement>('#az-groups .az-group')];
+  const letters = [...document.querySelectorAll<HTMLElement>('#az-bar .az-letter')];
+  const noResults = document.getElementById('az-no-results');
+  const noResultsQuery = document.getElementById('az-no-results-query');
+
+  searchInput?.addEventListener('input', () => {
+    const query = searchInput.value.trim().toLowerCase();
+    const lettersWithMatches = new Set<string>();
+    let totalVisible = 0;
+
+    groups.forEach((group) => {
+      const items = [...group.querySelectorAll<HTMLElement>('.az-item')];
+      let visibleInGroup = 0;
+      items.forEach((item) => {
+        const matches = !query || (item.dataset.name || '').includes(query);
+        item.hidden = !matches;
+        if (matches) visibleInGroup++;
+      });
+      group.hidden = visibleInGroup === 0;
+      if (visibleInGroup > 0) {
+        lettersWithMatches.add(group.dataset.letter || '');
+        totalVisible += visibleInGroup;
+      }
+    });
+
+    letters.forEach((letter) => {
+      if (!query) {
+        letter.classList.toggle('az-letter--dimmed', false);
+        return;
+      }
+      letter.classList.toggle('az-letter--dimmed', !lettersWithMatches.has(letter.dataset.letter || ''));
+    });
+
+    if (noResults) noResults.hidden = totalVisible !== 0;
+    if (noResultsQuery) noResultsQuery.textContent = searchInput.value.trim();
+  });
+</script>
 
 <style>
   .breadcrumbs{
@@ -112,20 +202,159 @@ const categories = [...counts.entries()]
   .crumb-sep{ color: rgba(248,249,246,0.3); }
   .crumb-current{ color: rgba(248,249,246,0.85); }
 
-  .card-image-wrap{
+  .az-intro{
+    max-width: 720px;
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--ink-600);
+  }
+
+  .az-search-wrap{
+    position: relative;
+    max-width: 420px;
+    margin-bottom: 32px;
+  }
+  .az-search-icon{
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--ink-600);
+    pointer-events: none;
+  }
+  .az-search-input{
     width: 100%;
-    aspect-ratio: 16 / 9;
-    overflow: hidden;
+    padding: 11px 14px 11px 38px;
+    border: 1px solid var(--paper-50);
     border-radius: 6px;
+    font-size: 15px;
+    font-family: inherit;
+    color: var(--ink-900);
+    background: var(--paper-0);
+    transition: border-color 0.2s var(--ease);
+  }
+  .az-search-input:focus{
+    outline: none;
+    border-color: var(--gold-500);
+  }
+
+  .az-no-results{
+    font-family: var(--font-mono);
+    font-size: 14px;
+    color: var(--ink-600);
+    padding: 24px 0;
+  }
+
+  .az-label{
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--ink-600);
+    margin-bottom: 12px;
+  }
+  .az-bar{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 40px;
+  }
+  .az-letter{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--paper-50);
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(19,26,34,0.25);
+    text-decoration: none;
+  }
+  .az-letter--active{
+    color: var(--ink-900);
+    border-color: var(--ink-900);
+    transition: all 0.2s var(--ease);
+  }
+  .az-letter--active:hover{
+    background: var(--ink-900);
+    color: var(--paper-0);
+  }
+  .az-letter--dimmed{
+    opacity: 0.3;
+  }
+
+  .az-group{
+    display: flex;
+    gap: 24px;
+    padding: 20px 0;
+    border-top: 1px solid var(--paper-50);
+    scroll-margin-top: 100px;
+  }
+  .az-group:last-child{ border-bottom: 1px solid var(--paper-50); }
+  .az-group-badge{
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: var(--ink-900);
+    color: var(--paper-0);
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 14px;
+    border-radius: 4px;
+  }
+  .az-group-list{
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 16px;
+    flex: 1;
+  }
+  .az-item{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    color: var(--ink-900);
+    text-decoration: none;
+    border: 1px solid var(--paper-50);
+    border-radius: 10px;
+    padding: 10px;
+    transition: border-color 0.2s var(--ease), transform 0.2s var(--ease), box-shadow 0.2s var(--ease);
+  }
+  .az-item:hover{
+    border-color: var(--gold-500);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(19,26,34,0.08);
+  }
+  .az-item-thumb{
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    border-radius: 7px;
+    overflow: hidden;
     background-color: var(--paper-50);
     background-size: cover;
     background-position: center;
   }
-  .card-image-wrap img{
+  .az-item-thumb img{
     width: 100%;
     height: 100%;
     object-fit: cover;
     transition: transform 0.3s var(--ease);
   }
-  .category-card:hover .card-image-wrap img{ transform: scale(1.03); }
+  .az-item:hover .az-item-thumb img{ transform: scale(1.06); }
+  .az-item-label{
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+
+  @media (max-width: 640px){
+    .az-group-list{
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 12px;
+    }
+  }
 </style>

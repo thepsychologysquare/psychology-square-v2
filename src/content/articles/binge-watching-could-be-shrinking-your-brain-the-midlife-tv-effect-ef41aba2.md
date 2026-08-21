@@ -6,7 +6,6 @@ description: Heavy TV watching in midlife is linked to brain shrinkage; discover
 image: /images/article-image-dZmNJKFDuVI.jpg
 imageAlt: ""
 category: neuroscience
-tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
 draft: false

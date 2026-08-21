@@ -2,6 +2,7 @@
 import '../styles/global.css';
 import { Image } from 'astro:assets';
 import { getCollection } from 'astro:content';
+import ConsentBanner from '../components/ConsentBanner.astro';
 
 export interface Props {
   title: string;
@@ -362,6 +363,23 @@ const navAllArticleCategories = navCategorySlugsInUse
 
   {(import.meta.env.PUBLIC_GA_MEASUREMENT_ID || 'G-9PH2ERQZBD') && (
     <>
+      {/*
+        Consent Mode v2: defaults must be set before gtag.js loads and before
+        any config/event call. Everything starts denied; ConsentBanner.astro
+        calls gtag('consent','update', ...) once the visitor makes a choice
+        (or immediately, on repeat visits, from their stored choice).
+      */}
+      <script is:inline>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('consent', 'default', {
+          ad_storage: 'denied',
+          ad_user_data: 'denied',
+          ad_personalization: 'denied',
+          analytics_storage: 'denied',
+          wait_for_update: 500,
+        });
+      </script>
       <script async src={`https://www.googletagmanager.com/gtag/js?id=${import.meta.env.PUBLIC_GA_MEASUREMENT_ID || 'G-9PH2ERQZBD'}`}></script>
       <script define:vars={{ gaId: import.meta.env.PUBLIC_GA_MEASUREMENT_ID || 'G-9PH2ERQZBD' }}>
         window.dataLayer = window.dataLayer || [];
@@ -373,6 +391,7 @@ const navAllArticleCategories = navCategorySlugsInUse
   )}
 </head>
 <body>
+  <ConsentBanner />
 
   <div class="header-strip-layer">
   <header class="header-floating-wrapper">
@@ -917,6 +936,7 @@ const navAllArticleCategories = navCategorySlugsInUse
       <a href="/terms">Terms of Service</a>
       <a href="/refund-and-cancellation">Refund &amp; Cancellation</a>
       <a href="/disclaimer">Disclaimer</a>
+      <a href="#" id="reopen-consent-banner">Cookie Preferences</a>
     </nav>
 
   </div>

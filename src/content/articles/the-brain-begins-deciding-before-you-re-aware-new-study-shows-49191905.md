@@ -6,7 +6,6 @@ description: New research demonstrates that the brain initiates decision‑makin
 image: /images/brain-scan-image.jpg
 imageAlt: brain-scan-image
 category: neuroscience
-tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
 draft: false

@@ -6,7 +6,6 @@ description: New research reveals that intensive training can reorganize brain
 image: /images/woman-doing-intensive-training-exercise.jpg
 imageAlt: woman doing intensive training exercise
 category: neuroscience
-tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
 draft: false
