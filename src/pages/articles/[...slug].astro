@@ -184,13 +184,6 @@ const mainImgAbsolute = mainImgSrc
         <Content />
       </div>
 
-      {article.data.tags.length > 0 && (
-        <div class="tag-row">
-          {article.data.tags.map((tag: string) => (
-            <span class="tag-pill">{tag}</span>
-          ))}
-        </div>
-      )}
     </div>
   </article>
 
@@ -353,25 +346,6 @@ const mainImgAbsolute = mainImgSrc
   }
   .prose :global(iframe), .prose :global(video){
     max-width: 100%;
-  }
-
-  .tag-row{
-    display:flex;
-    flex-wrap:wrap;
-    gap:8px;
-    margin-top: 44px;
-    padding-top: 24px;
-    border-top: 1px solid var(--line);
-  }
-  .tag-pill{
-    font-family: var(--font-mono);
-    font-size: 11.5px;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: var(--sage-500);
-    border: 1px solid var(--line);
-    padding: 6px 12px;
-    border-radius: 999px;
   }
 
   /* Related Article Cards Image Layout */
