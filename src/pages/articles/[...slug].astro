@@ -46,7 +46,6 @@ const related = allArticles
   .map((a) => ({
     entry: a,
     score:
-      a.data.tags.filter((t: string) => article.data.tags.includes(t)).length +
       (a.data.category === article.data.category ? 1 : 0),
   }))
   .filter((a) => a.score > 0)
