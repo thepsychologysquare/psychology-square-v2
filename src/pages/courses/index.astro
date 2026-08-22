@@ -24,13 +24,83 @@ const session = env?.CLIENT_SESSION_SECRET
   : null;
 
 const categoriesInUse = [...new Set(sorted.map((c) => c.data.category))];
+
+// Stable, non-random gradient placeholder for cards without a cover image —
+// same course always gets the same one, no layout shift between reloads.
+const placeholderClasses = [
+  'bg-placeholder-1', 'bg-placeholder-2', 'bg-placeholder-3', 'bg-placeholder-4',
+  'bg-placeholder-5', 'bg-placeholder-6', 'bg-placeholder-7', 'bg-placeholder-8', 'bg-placeholder-9',
+];
+function placeholderFor(id: string) {
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
+  return placeholderClasses[hash % placeholderClasses.length];
+}
+
+const siteOrigin = 'https://thepsychologysquare.com';
+
+// Course schema per listed course, plus a CollectionPage/ItemList wrapper —
+// gives search engines rich, structured course data (provider, price,
+// format) straight from the listing page, not just the individual pages.
+const coursesJson = {
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  name: 'Psychology Courses — The Psychology Square',
+  description: 'Self-paced psychology courses with a verifiable certificate on completion.',
+  numberOfItems: sorted.length,
+  itemListElement: sorted.map((course, i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    item: {
+      '@type': 'Course',
+      name: course.data.title,
+      description: course.data.description,
+      url: `${siteOrigin}/courses/${course.id}`,
+      ...(course.data.image ? { image: course.data.image } : {}),
+      provider: {
+        '@type': 'Organization',
+        name: 'The Psychology Square',
+        sameAs: siteOrigin,
+      },
+      ...(course.data.author ? { author: { '@type': 'Person', name: course.data.author } } : {}),
+      hasCourseInstance: {
+        '@type': 'CourseInstance',
+        courseMode: 'Online',
+        courseWorkload: `PT${course.data.estimatedHours}H`,
+      },
+      offers: {
+        '@type': 'Offer',
+        price: course.data.isPaid ? course.data.pricePkr ?? 0 : 0,
+        priceCurrency: 'PKR',
+        category: course.data.isPaid ? 'Paid' : 'Free',
+      },
+    },
+  })),
+};
+const breadcrumbJson = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: `${siteOrigin}/` },
+    { '@type': 'ListItem', position: 2, name: 'Courses', item: `${siteOrigin}/courses` },
+  ],
+};
 ---
 <Layout
   title="Courses"
-  description="Self-paced psychology courses from The Psychology Square. Complete a course, pass the quiz, and receive a verifiable certificate by email."
+  fullTitle="Psychology Courses Online — Anxiety, CBT, ADHD & More | The Psychology Square"
+  description="Self-paced online psychology courses from The Psychology Square — CBT fundamentals, anxiety, ADHD, trauma, and more. Pass the quiz, get a free verifiable certificate by email."
 >
+  <script type="application/ld+json" set:html={JSON.stringify(coursesJson)} />
+  <script type="application/ld+json" set:html={JSON.stringify(breadcrumbJson)} />
+
   <section class="courses-hero">
     <div class="wrap">
+      <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <a href="/">Home</a>
+        <span class="crumb-sep">/</span>
+        <span class="crumb-current">Courses</span>
+      </nav>
       <div class="hero-top">
         <h1>Courses</h1>
         {session ? (
@@ -51,14 +121,14 @@ const categoriesInUse = [...new Set(sorted.map((c) => c.data.category))];
         )}
       </div>
 
-      <p class="lede">Short, practical courses. Pass the quiz at the end and we'll email you a verifiable certificate immediately —” free or paid, the certificate never costs extra.</p>
+      <p class="lede">Short, practical courses. Pass the quiz at the end and we'll email you a verifiable certificate immediately — free or paid, the certificate never costs extra.</p>
     </div>
   </section>
 
   <section class="courses-grid-section">
     <div class="wrap">
       {sorted.length === 0 && (
-        <p class="empty-state">No courses are available yet —” check back soon.</p>
+        <p class="empty-state">No courses are available yet — check back soon.</p>
       )}
 
       {sorted.length > 0 && (
@@ -68,6 +138,7 @@ const categoriesInUse = [...new Set(sorted.map((c) => c.data.category))];
             <button type="button" class="filter-chip" data-tier="free">Free</button>
             <button type="button" class="filter-chip" data-tier="paid">Paid</button>
           </div>
+          <span class="filter-divider" aria-hidden="true"></span>
           <div class="filter-group" id="categoryFilters">
             <button type="button" class="filter-chip is-active" data-category="all">All topics</button>
             {categoriesInUse.map((cat) => (
@@ -85,40 +156,45 @@ const categoriesInUse = [...new Set(sorted.map((c) => c.data.category))];
             data-tier={course.data.isPaid ? 'paid' : 'free'}
             data-category={course.data.category}
           >
-            <div class="course-card__top">
-              <span class="course-card__category">{categoryMeta[course.data.category] ?? course.data.category}</span>
+            <div class={`course-card__media ${course.data.image ? '' : placeholderFor(course.id)}`}>
+              {course.data.image ? (
+                <img
+                  src={course.data.image}
+                  alt={course.data.imageAlt || course.data.title}
+                  loading="lazy"
+                  decoding="async"
+                  width="400"
+                  height="225"
+                />
+              ) : (
+                <span class="course-card__media-fallback" aria-hidden="true">
+                  {(categoryMeta[course.data.category] ?? course.data.category).charAt(0)}
+                </span>
+              )}
               <span class={`tier-badge ${course.data.isPaid ? 'tier-badge--paid' : 'tier-badge--free'}`}>
-                {course.data.isPaid ? `Rs. ${course.data.pricePkr?.toLocaleString('en-US') ?? '—”'}` : 'Free'}
+                {course.data.isPaid ? `Rs. ${course.data.pricePkr?.toLocaleString('en-US') ?? '—'}` : 'Free'}
               </span>
             </div>
-            <h2>{course.data.title}</h2>
-            <p>{course.data.description}</p>
-            <div class="course-card__meta">
-              <span>{course.data.estimatedHours} {course.data.estimatedHours === 1 ? 'hour' : 'hours'}</span>
-              <span>{course.data.quiz.length} question quiz</span>
+            <div class="course-card__body">
+              <span class="course-card__category">{categoryMeta[course.data.category] ?? course.data.category}</span>
+              <h2>{course.data.title}</h2>
+              <p>{course.data.description}</p>
+              <div class="course-card__meta">
+                <span>{course.data.estimatedHours} {course.data.estimatedHours === 1 ? 'hour' : 'hours'}</span>
+                <span class="meta-dot" aria-hidden="true">&middot;</span>
+                <span>{course.data.quiz.length} question quiz</span>
+                {course.data.author && (
+                  <>
+                    <span class="meta-dot" aria-hidden="true">&middot;</span>
+                    <span>{course.data.author}</span>
+                  </>
+                )}
+              </div>
             </div>
           </a>
         ))}
       </div>
       <p class="filter-empty" id="filterEmptyMsg" hidden>No courses match those filters.</p>
-    </div>
-  </section>
-
-  <section class="transparency-section">
-    <div class="wrap">
-      <div class="transparency-block">
-        <h2>Free vs. paid —” what's the difference?</h2>
-        <div class="transparency-grid">
-          <div class="transparency-card">
-            <span class="transparency-card__label">Free courses</span>
-            <p>Enroll instantly with just your email —” no payment step. All lessons, the final quiz, and a verifiable digital certificate on completion, at no cost.</p>
-          </div>
-          <div class="transparency-card">
-            <span class="transparency-card__label">Paid courses</span>
-            <p>Enroll after a quick payment confirmation (easypaisa, JazzCash, or bank transfer —” same as our therapy bookings). Includes every lesson and the same free, automatic digital certificate on completion. The payment only ever gates lesson access, never the credential.</p>
-          </div>
-        </div>
-      </div>
     </div>
   </section>
 </Layout>
@@ -174,6 +250,14 @@ const categoriesInUse = [...new Set(sorted.map((c) => c.data.category))];
 
 <style>
   .courses-hero{ padding:72px 0 40px; border-bottom:1px solid var(--line); }
+  .breadcrumbs{
+    font-family:var(--font-mono); font-size:12px; color:var(--ink-600);
+    margin-bottom:18px; display:flex; flex-wrap:wrap; gap:6px; align-items:center;
+  }
+  .breadcrumbs a{ color:var(--ink-600); }
+  .breadcrumbs a:hover{ color:var(--gold-500); }
+  .crumb-sep{ color:var(--line); }
+  .crumb-current{ color:var(--ink-900); }
   .hero-top{ display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-top: 50px}
   .hero-top h1{ margin:0; }
   .session-status{ display:flex; align-items:center; gap:10px; font-size:13.5px; color:var(--ink-600); flex-wrap:wrap; }
@@ -227,8 +311,13 @@ const categoriesInUse = [...new Set(sorted.map((c) => c.data.category))];
   .courses-grid-section{ padding:56px 0 40px; }
   .empty-state{ color:var(--ink-600); }
 
-  .filter-bar{ display:flex; flex-direction:column; gap:12px; margin-bottom:32px; }
+  .filter-bar{
+    display:flex; flex-wrap:wrap; align-items:center; gap:8px 14px; margin-bottom:32px;
+  }
   .filter-group{ display:flex; gap:8px; flex-wrap:wrap; }
+  .filter-divider{
+    width:1px; align-self:stretch; min-height:20px; background:var(--line);
+  }
   .filter-chip{
     font-family:var(--font-mono); font-size:12px; letter-spacing:0.05em; text-transform:uppercase;
     padding:8px 14px; border:1px solid var(--line); border-radius:20px; background:transparent;
@@ -238,38 +327,46 @@ const categoriesInUse = [...new Set(sorted.map((c) => c.data.category))];
   .filter-chip.is-active{ border-color:var(--gold-500); color:var(--ink-900); background:rgba(199,164,74,0.1); }
   .filter-empty{ color:var(--ink-600); padding:32px 0; text-align:center; }
 
-  .courses-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:24px; }
+  .courses-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:28px; }
   .course-card{
-    display:flex; flex-direction:column; gap:10px; padding:26px;
-    border:1px solid var(--line); border-radius:2px; background:var(--paper-0);
-    text-decoration:none; color:inherit; transition:border-color .15s ease, transform .15s ease;
+    display:flex; flex-direction:column;
+    border:1px solid var(--line); border-radius:6px; background:var(--paper-0); overflow:hidden;
+    text-decoration:none; color:inherit; transition:border-color .15s ease, transform .15s ease, box-shadow .15s ease;
   }
-  .course-card:hover{ border-color:var(--gold-500); transform:translateY(-2px); }
-  .course-card__top{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .course-card:hover{ border-color:var(--gold-500); transform:translateY(-3px); box-shadow:0 14px 30px rgba(19,26,34,0.08); }
+
+  .course-card__media{
+    position:relative; width:100%; aspect-ratio:16/9; overflow:hidden;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .course-card__media img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .course-card__media-fallback{
+    font-family:var(--font-display); font-size:52px; color:rgba(255,255,255,0.85);
+  }
+  .course-card__media .tier-badge{
+    position:absolute; top:12px; right:12px;
+  }
+
+  .course-card__body{ display:flex; flex-direction:column; gap:8px; padding:22px 24px 26px; flex-grow:1; }
   .course-card__category{
     font-family:var(--font-mono); font-size:11px; letter-spacing:0.06em; text-transform:uppercase; color:var(--gold-500);
   }
   .tier-badge{
     font-family:var(--font-mono); font-size:11px; letter-spacing:0.04em; font-weight:600;
-    padding:3px 10px; border-radius:20px; white-space:nowrap;
+    padding:4px 11px; border-radius:20px; white-space:nowrap; box-shadow:0 2px 8px rgba(19,26,34,0.12);
   }
-  .tier-badge--free{ background:rgba(46,125,91,0.12); color:#2E7D5B; }
-  .tier-badge--paid{ background:rgba(199,164,74,0.15); color:#8a6d1f; }
-  .course-card h2{ font-family:var(--font-display); font-size:20px; margin:2px 0 0; }
-  .course-card p{ color:var(--ink-600); font-size:14.5px; line-height:1.55; flex-grow:1; }
+  .tier-badge--free{ background:#eaf5ef; color:#2E7D5B; }
+  .tier-badge--paid{ background:#faf3df; color:#8a6d1f; }
+  .course-card h2{
+    font-family:var(--font-display); font-size:19px; margin:0; line-height:1.3;
+  }
+  .course-card p{
+    color:var(--ink-600); font-size:14.5px; line-height:1.55; flex-grow:1;
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+  }
   .course-card__meta{
-    display:flex; gap:14px; font-family:var(--font-mono); font-size:12px; color:var(--ink-600);
-    padding-top:12px; border-top:1px solid var(--line);
+    display:flex; align-items:center; flex-wrap:wrap; gap:6px; font-family:var(--font-mono); font-size:12px; color:var(--ink-600);
+    padding-top:14px; margin-top:2px; border-top:1px solid var(--line);
   }
-
-  .transparency-section{ padding:0 0 96px; }
-  .transparency-block{ border-top:1px solid var(--line); padding-top:48px; }
-  .transparency-block h2{ font-family:var(--font-display); font-size:24px; margin-bottom:20px; }
-  .transparency-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:20px; }
-  .transparency-card{ padding:22px 24px; border:1px solid var(--line); border-radius:2px; background:var(--paper-50); }
-  .transparency-card__label{
-    display:block; font-family:var(--font-mono); font-size:12px; letter-spacing:0.05em; text-transform:uppercase;
-    color:var(--gold-500); margin-bottom:10px;
-  }
-  .transparency-card p{ color:var(--ink-600); font-size:14.5px; line-height:1.6; margin:0; }
+  .meta-dot{ color:var(--line); }
 </style>
