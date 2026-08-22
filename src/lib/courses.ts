@@ -171,7 +171,7 @@ export async function isStudioManaged(env: any, slug: string): Promise<boolean> 
   return !!row;
 }
 
-function slugify(title: string): string {
+export function slugify(title: string): string {
   return (
     title
       .toLowerCase()
