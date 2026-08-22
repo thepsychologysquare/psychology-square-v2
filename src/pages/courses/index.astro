@@ -1,5 +1,4 @@
-﻿---
-export const prerender = false;
+﻿export const prerender = false;
 import { env } from 'cloudflare:workers';
 import { listCourses } from '../../lib/courses';
 import { getClientSession } from '../../lib/clientAuth';
@@ -179,16 +178,8 @@ const breadcrumbJson = {
               <span class="course-card__category">{categoryMeta[course.data.category] ?? course.data.category}</span>
               <h2>{course.data.title}</h2>
               <p>{course.data.description}</p>
-              <div class="course-card__meta">
-                <span>{course.data.estimatedHours} {course.data.estimatedHours === 1 ? 'hour' : 'hours'}</span>
-                <span class="meta-dot" aria-hidden="true">&middot;</span>
-                <span>{course.data.quiz.length} question quiz</span>
-                {course.data.author && (
-                  <>
-                    <span class="meta-dot" aria-hidden="true">&middot;</span>
-                    <span>{course.data.author}</span>
-                  </>
-                )}
+              <div class="course-card__footer">
+                <span class="btn btn--primary course-enroll-btn">Enroll</span>
               </div>
             </div>
           </a>
@@ -364,9 +355,12 @@ const breadcrumbJson = {
     color:var(--ink-600); font-size:14.5px; line-height:1.55; flex-grow:1;
     display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
   }
-  .course-card__meta{
-    display:flex; align-items:center; flex-wrap:wrap; gap:6px; font-family:var(--font-mono); font-size:12px; color:var(--ink-600);
+  .course-card__footer{
     padding-top:14px; margin-top:2px; border-top:1px solid var(--line);
+    display:flex; align-items:center;
   }
-  .meta-dot{ color:var(--line); }
+  .course-enroll-btn{
+    padding:8px 20px;
+    font-size:13px;
+  }
 </style>
