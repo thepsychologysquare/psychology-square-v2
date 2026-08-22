@@ -1,0 +1,119 @@
+---
+// Dedicated client sign-in page — separate from /my-certificates.
+// /my-certificates is about *viewing certificates* (requires a session);
+// this page is about *signing in*, and sends you on to wherever you were
+// headed (?redirect=) or to /my-certificates by default once you're in.
+export const prerender = false;
+import { env } from 'cloudflare:workers';
+import Layout from '../layouts/Layout.astro';
+import { getClientSession } from '../lib/clientAuth';
+
+const cookieHeader = Astro.request.headers.get('cookie');
+const session = env?.CLIENT_SESSION_SECRET
+  ? await getClientSession(cookieHeader, env.CLIENT_SESSION_SECRET)
+  : null;
+
+const redirect = Astro.url.searchParams.get('redirect') || '/my-certificates';
+
+// Already signed in? Don't show a login form — just send them on.
+if (session) {
+  return Astro.redirect(redirect);
+}
+
+const expired = Astro.url.searchParams.get('expired') === '1';
+---
+<Layout title="Sign in" description="Sign in to The Psychology Square.">
+  <section class="my-certs">
+    <div class="wrap wrap--narrow">
+      <div class="login-panel">
+        <span class="eyebrow">Sign in</span>
+        <h1>Sign in to your account</h1>
+        <p class="lede">Enter your email and we'll send you a one-time sign-in link — no password needed.</p>
+
+        {expired && <p class="notice">That link has expired or was already used. Please request a new one below.</p>}
+
+        <form id="magicLinkForm" class="magic-form" data-redirect={redirect}>
+          <div class="field">
+            <label for="email">Email address</label>
+            <input type="email" id="email" name="email" required autocomplete="email" placeholder="you@example.com" />
+          </div>
+          <button type="submit" class="btn btn--primary" id="magicLinkBtn">Send me a link</button>
+          <p class="form-error" id="formError" role="alert" hidden></p>
+        </form>
+
+        <div id="sentMessage" class="sent-message" hidden>
+          <h2>Check your email</h2>
+          <p>If that address has an account, a sign-in link is on its way. It expires in 15 minutes.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<script>
+  const form = document.getElementById('magicLinkForm') as HTMLFormElement;
+  const btn = document.getElementById('magicLinkBtn') as HTMLButtonElement;
+  const errorEl = document.getElementById('formError') as HTMLParagraphElement;
+  const sentMessage = document.getElementById('sentMessage') as HTMLDivElement;
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    errorEl.hidden = true;
+    btn.disabled = true;
+    btn.textContent = 'Sending…';
+
+    const email = (document.getElementById('email') as HTMLInputElement).value.trim();
+    const redirect = form.dataset.redirect || undefined;
+
+    try {
+      const res = await fetch('/api/certificates/request-link', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ email, redirect }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        errorEl.textContent = data.error || 'Something went wrong. Please try again.';
+        errorEl.hidden = false;
+        btn.disabled = false;
+        btn.textContent = 'Send me a link';
+        return;
+      }
+
+      form.hidden = true;
+      sentMessage.hidden = false;
+    } catch {
+      errorEl.textContent = 'Could not reach the server. Please check your connection and try again.';
+      errorEl.hidden = false;
+      btn.disabled = false;
+      btn.textContent = 'Send me a link';
+    }
+  });
+</script>
+
+<style>
+  .my-certs{ padding:120px 0 96px; }
+  .wrap--narrow{ max-width:640px; margin:0 auto; padding:0 24px; }
+  .eyebrow{ font-family:var(--font-mono); font-size:12px; letter-spacing:0.08em; text-transform:uppercase; color:var(--gold-500); }
+
+  .login-panel h1{ font-family:var(--font-display); font-size:32px; margin:8px 0 12px; }
+  .lede{ color:var(--ink-600); font-size:16px; line-height:1.6; margin-bottom:28px; }
+  .notice{ background:var(--paper-50); border:1px solid var(--line); padding:12px 16px; border-radius:2px; font-size:14px; margin-bottom:20px; }
+
+  .magic-form{ display:flex; flex-direction:column; gap:16px; max-width:360px; }
+  .field{ display:flex; flex-direction:column; gap:6px; }
+  label{ font-size:14px; font-weight:500; }
+  input[type="email"]{
+    font-family:var(--font-body); font-size:15px; padding:12px 14px;
+    border:1px solid var(--line); border-radius:2px;
+  }
+  input:focus-visible{ outline:2px solid var(--gold-500); outline-offset:1px; }
+  .btn{ font-family:var(--font-body); cursor:pointer; border:none; }
+  .btn--primary{ background:var(--gold-500); color:var(--ink-900); padding:12px 24px; border-radius:2px; margin-top:4px; }
+  .btn--primary:disabled{ opacity:0.6; cursor:default; }
+  .form-error{ color:#B4432E; font-size:14px; }
+
+  .sent-message h2{ font-family:var(--font-display); font-size:22px; margin-bottom:8px; }
+  .sent-message p{ color:var(--ink-600); }
+</style>

@@ -759,6 +759,7 @@ body.nav-menu-locked {
   border: 1px solid transparent; /* Layout shift safety buffer */
   transition: all .25s var(--ease);
   width: fit-content;
+  cursor: pointer;
 }
 
 /* --- Core Color Variants --- */
