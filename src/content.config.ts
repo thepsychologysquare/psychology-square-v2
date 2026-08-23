@@ -104,6 +104,20 @@ const courses = defineCollection({
     // Safe, non-destructive optional fields for Decap CMS uploads:
     image: z.string().optional(),
     imageAlt: z.string().optional(),
+    // --- SEO / marketing fields (all optional, additive) ---
+    // Shorter/keyword-forward title for <title> + JSON-LD when the real
+    // title runs long. Falls back to `title` everywhere it's used.
+    seoTitle: z.string().optional(),
+    // Free-text keyword phrases, shown nowhere directly but folded into
+    // the Course JSON-LD `keywords` field.
+    keywords: z.array(z.string()).default([]),
+    // Public "what you'll learn" bullets — shown on the course page even
+    // to visitors who haven't enrolled, so the page has real indexable
+    // content instead of just an enrollment form.
+    whatYoullLearn: z.array(z.string()).default([]),
+    // Public FAQ shown on the course page + FAQPage JSON-LD.
+    faqs: z.array(z.object({ question: z.string(), answer: z.string() })).default([]),
+    level: z.enum(['beginner', 'intermediate', 'advanced', 'all-levels']).default('all-levels'),
   }),
 });
 

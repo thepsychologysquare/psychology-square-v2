@@ -66,6 +66,11 @@ export const POST: APIRoute = async ({ request }) => {
     image: body.image || null,
     imageAlt: body.imageAlt || null,
     draft: body.draft !== false,
+    seoTitle: body.seoTitle || null,
+    keywords: Array.isArray(body.keywords) ? body.keywords : [],
+    whatYoullLearn: Array.isArray(body.whatYoullLearn) ? body.whatYoullLearn : [],
+    faqs: Array.isArray(body.faqs) ? body.faqs : [],
+    level: body.level || 'all-levels',
   });
 
   return new Response(JSON.stringify({ slug }), { status: 201, headers: { 'content-type': 'application/json' } });

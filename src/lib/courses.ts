@@ -36,6 +36,11 @@ export interface CourseData {
   imageAlt?: string;
   order: number;
   draft: boolean;
+  seoTitle?: string;
+  keywords: string[];
+  whatYoullLearn: string[];
+  faqs: { question: string; answer: string }[];
+  level: string;
 }
 
 export interface CourseEntry {
@@ -65,6 +70,21 @@ interface CourseRow {
   source: string;
   created_at: string;
   updated_at: string;
+  seo_title?: string | null;
+  keywords?: string | null;
+  what_youll_learn?: string | null;
+  faqs?: string | null;
+  level?: string | null;
+}
+
+function safeJsonArray<T>(raw: string | null | undefined): T[] {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
 }
 
 function rowToData(row: CourseRow): CourseData {
@@ -88,6 +108,11 @@ function rowToData(row: CourseRow): CourseData {
     imageAlt: row.image_alt ?? undefined,
     order: row.sort_order,
     draft: !!row.draft,
+    seoTitle: row.seo_title ?? undefined,
+    keywords: safeJsonArray<string>(row.keywords),
+    whatYoullLearn: safeJsonArray<string>(row.what_youll_learn),
+    faqs: safeJsonArray<{ question: string; answer: string }>(row.faqs),
+    level: row.level || 'all-levels',
   };
 }
 
@@ -206,6 +231,11 @@ export interface CourseInput {
   image?: string | null;
   imageAlt?: string | null;
   draft: boolean;
+  seoTitle?: string | null;
+  keywords?: string[];
+  whatYoullLearn?: string[];
+  faqs?: { question: string; answer: string }[];
+  level?: string;
 }
 
 export async function createCourse(env: any, slug: string, input: CourseInput): Promise<void> {
@@ -213,8 +243,8 @@ export async function createCourse(env: any, slug: string, input: CourseInput): 
   const max = await env.DB.prepare(`SELECT COALESCE(MAX(sort_order), -1) AS m FROM courses`).first<{ m: number }>();
   await env.DB.prepare(
     `INSERT INTO courses
-      (slug, title, description, category, estimated_hours, author, is_paid, price_pkr, pass_score_percent, quiz, image, image_alt, sort_order, draft, source, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, '[]', ?, ?, ?, ?, 'studio', ?, ?)`
+      (slug, title, description, category, estimated_hours, author, is_paid, price_pkr, pass_score_percent, quiz, image, image_alt, sort_order, draft, source, created_at, updated_at, seo_title, keywords, what_youll_learn, faqs, level)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, '[]', ?, ?, ?, ?, 'studio', ?, ?, ?, ?, ?, ?, ?)`
   )
     .bind(
       slug,
@@ -231,7 +261,12 @@ export async function createCourse(env: any, slug: string, input: CourseInput): 
       (max?.m ?? -1) + 1,
       input.draft ? 1 : 0,
       now,
-      now
+      now,
+      input.seoTitle ?? null,
+      JSON.stringify(input.keywords ?? []),
+      JSON.stringify(input.whatYoullLearn ?? []),
+      JSON.stringify(input.faqs ?? []),
+      input.level || 'all-levels'
     )
     .run();
 }
@@ -251,13 +286,19 @@ export async function updateCourse(env: any, slug: string, patch: Record<string,
     imageAlt: 'image_alt',
     order: 'sort_order',
     draft: 'draft',
+    seoTitle: 'seo_title',
+    keywords: 'keywords',
+    whatYoullLearn: 'what_youll_learn',
+    faqs: 'faqs',
+    level: 'level',
   };
+  const arrayFields = new Set(['keywords', 'whatYoullLearn', 'faqs']);
   const fields: Record<string, any> = {};
   for (const [key, col] of Object.entries(columnMap)) {
     if (!(key in patch)) continue;
     let value = patch[key];
     if (key === 'isPaid' || key === 'draft') value = value ? 1 : 0;
-    if (key === 'quiz') value = JSON.stringify(value || []);
+    if (key === 'quiz' || arrayFields.has(key)) value = JSON.stringify(value || []);
     fields[col] = value;
   }
   if (Object.keys(fields).length === 0) return;
@@ -282,6 +323,11 @@ export async function updateCourse(env: any, slug: string, patch: Record<string,
       image: current.data.image ?? null,
       imageAlt: current.data.imageAlt ?? null,
       draft: current.data.draft,
+      seoTitle: current.data.seoTitle ?? null,
+      keywords: current.data.keywords || [],
+      whatYoullLearn: current.data.whatYoullLearn || [],
+      faqs: current.data.faqs || [],
+      level: current.data.level || 'all-levels',
     });
     await env.DB.prepare(`UPDATE courses SET quiz = ? WHERE slug = ?`)
       .bind(JSON.stringify(current.data.quiz || []), slug)

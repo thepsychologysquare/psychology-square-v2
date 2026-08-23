@@ -9,12 +9,18 @@ export interface Props {
   description?: string;
   fullTitle?: string;
   image?: string;
+  // Set true for auth-gated / app-state pages (e.g. an in-progress lesson
+  // view) that shouldn't be indexed on their own — they either require a
+  // session to render anything meaningful or duplicate a public page's
+  // content. `follow` is kept on so link equity still flows through.
+  noindex?: boolean;
 }
 const {
   title,
   description = "The Psychology Square — individual and couples therapy, online and in person in Johar Town, Lahore.",
   fullTitle,
   image = '/images/og-cover.png',
+  noindex = false,
 } = Astro.props;
 const pageTitle = fullTitle ?? `${title} — The Psychology Square`;
 const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://thepsychologysquare.com');
@@ -103,6 +109,7 @@ const navAllArticleCategories = navCategorySlugsInUse
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{pageTitle}</title>
   <meta name="description" content={description} />
+  {noindex && <meta name="robots" content="noindex,follow" />}
   <link rel="canonical" href={canonicalURL} />
 
   <meta property="og:type" content="website" />

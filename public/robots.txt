@@ -11,3 +11,4 @@ Disallow: /dashboard/
 Content-Signal: search=yes, ai-input=yes, ai-train=no
 
 Sitemap: https://thepsychologysquare.com/sitemap-index.xml
+Sitemap: https://thepsychologysquare.com/sitemap-courses.xml

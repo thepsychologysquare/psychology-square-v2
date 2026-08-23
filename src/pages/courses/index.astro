@@ -85,6 +85,41 @@ const breadcrumbJson = {
     { '@type': 'ListItem', position: 2, name: 'Courses', item: `${siteOrigin}/courses` },
   ],
 };
+
+const paidCount = sorted.filter((c) => c.data.isPaid).length;
+const freeCount = sorted.length - paidCount;
+
+const coursesFaqs = [
+  {
+    question: 'Is the certificate really free?',
+    answer: "Yes. Every course — free or paid — includes a verifiable digital certificate the moment you pass the quiz. The certificate itself never costs extra, and it's emailed to you immediately.",
+  },
+  {
+    question: 'Do I need an account to browse courses?',
+    answer: "No — you can browse the full catalog and read what each course covers without signing in. You'll only need an email to sign in once you're ready to enroll.",
+  },
+  {
+    question: "What if I don't pass the quiz on my first try?",
+    answer: 'You can retake it as many times as you need. Review the lesson material and try again — there\'s no penalty and no extra cost.',
+  },
+  {
+    question: 'How are free and paid courses different?',
+    answer: "Paid courses go deeper on their topic and unlock after a quick payment review (usually within 24 hours). Free courses unlock instantly. Both include the full lessons and the same free certificate.",
+  },
+  {
+    question: 'Who writes and reviews the courses?',
+    answer: 'Courses are written by practicing clinical psychologists at The Psychology Square, drawing on established, peer-reviewed psychological research and clinical practice.',
+  },
+];
+const coursesFaqJson = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: coursesFaqs.map((f) => ({
+    '@type': 'Question',
+    name: f.question,
+    acceptedAnswer: { '@type': 'Answer', text: f.answer },
+  })),
+};
 ---
 <Layout
   title="Courses"
@@ -93,6 +128,7 @@ const breadcrumbJson = {
 >
   <script type="application/ld+json" set:html={JSON.stringify(coursesJson)} />
   <script type="application/ld+json" set:html={JSON.stringify(breadcrumbJson)} />
+  <script type="application/ld+json" set:html={JSON.stringify(coursesFaqJson)} />
 
   <section class="courses-hero">
     <div class="wrap">
@@ -122,6 +158,52 @@ const breadcrumbJson = {
       </div>
 
       <p class="lede">Short, practical courses. Pass the quiz at the end and we'll email you a verifiable certificate immediately — free or paid, the certificate never costs extra. Let's do it.</p>
+      {sorted.length > 0 && (
+        <p class="course-count">
+          {sorted.length} {sorted.length === 1 ? 'course' : 'courses'} available
+          {freeCount > 0 && <> &middot; {freeCount} free</>}
+          {paidCount > 0 && <> &middot; {paidCount} paid</>}
+        </p>
+      )}
+
+      <ul class="trust-bar">
+        <li class="trust-item">
+          <span class="trust-item__icon" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M8.7 13.3 7 22l5-3 5 3-1.7-8.7"/></svg>
+          </span>
+          <div>
+            <strong>Free verifiable certificate</strong>
+            <span>Emailed instantly on every course, paid or free</span>
+          </div>
+        </li>
+        <li class="trust-item">
+          <span class="trust-item__icon" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+          </span>
+          <div>
+            <strong>Self-paced</strong>
+            <span>Start, stop, and pick up again anytime</span>
+          </div>
+        </li>
+        <li class="trust-item">
+          <span class="trust-item__icon" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 3 7l9 4 9-4-9-4Z"/><path d="M3 12l9 4 9-4"/><path d="M3 17l9 4 9-4"/></svg>
+          </span>
+          <div>
+            <strong>Written by clinical psychologists</strong>
+            <span>Grounded in established, peer-reviewed research</span>
+          </div>
+        </li>
+        <li class="trust-item">
+          <span class="trust-item__icon" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+          </span>
+          <div>
+            <strong>No login to browse</strong>
+            <span>Explore every course free — sign in only to enroll</span>
+          </div>
+        </li>
+      </ul>
     </div>
   </section>
 
@@ -187,6 +269,19 @@ const breadcrumbJson = {
         ))}
       </div>
       <p class="filter-empty" id="filterEmptyMsg" hidden>No courses match those filters.</p>
+    </div>
+  </section>
+
+  <section class="courses-faq-section">
+    <div class="wrap wrap--narrow">
+      <span class="eyebrow">FAQ</span>
+      <h2>Questions about our courses</h2>
+      {coursesFaqs.map((f) => (
+        <details class="faq-item">
+          <summary>{f.question}</summary>
+          <p>{f.answer}</p>
+        </details>
+      ))}
     </div>
   </section>
 </Layout>
@@ -297,11 +392,38 @@ const breadcrumbJson = {
   }
 
   .courses-hero h1{ font-family:var(--font-display); font-size:clamp(32px,4vw,44px); margin:6px 0 14px; }
-  .courses-hero .lede{ max-width:560px; color:var(--ink-600); font-size:17px; line-height:1.6; margin-bottom:20px; }
+  .courses-hero .lede{ max-width:560px; color:var(--ink-600); font-size:17px; line-height:1.6; margin-bottom:6px; }
+  .course-count{ font-family:var(--font-mono); font-size:12.5px; color:var(--ink-600); margin-bottom:26px; }
   .eyebrow{ font-family:var(--font-mono); font-size:12px; letter-spacing:0.08em; text-transform:uppercase; color:var(--gold-500); }
+
+  .trust-bar{
+    list-style:none; margin:0; padding:0;
+    display:grid; grid-template-columns:repeat(auto-fit, minmax(210px, 1fr)); gap:1px;
+    background:var(--line); border:1px solid var(--line); border-radius:6px; overflow:hidden;
+  }
+  .trust-item{
+    display:flex; align-items:flex-start; gap:12px; padding:20px; background:var(--paper-0);
+  }
+  .trust-item__icon{
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    width:38px; height:38px; border-radius:50%; background:rgba(199,164,74,0.12); color:var(--gold-500);
+  }
+  .trust-item__icon svg{ width:19px; height:19px; }
+  .trust-item strong{ display:block; font-size:14px; font-weight:600; color:var(--ink-900); margin-bottom:3px; }
+  .trust-item span{ display:block; font-size:12.5px; color:var(--ink-600); line-height:1.4; }
 
   .courses-grid-section{ padding:56px 0 40px; }
   .empty-state{ color:var(--ink-600); }
+
+  .courses-faq-section{ padding:16px 0 88px; }
+  .courses-faq-section .wrap--narrow{ max-width:760px; margin:0 auto; padding:0 24px; box-sizing:border-box; }
+  .courses-faq-section h2{ font-family:var(--font-display); font-size:clamp(24px,3vw,30px); margin:8px 0 24px; }
+  .faq-item{ border:1px solid var(--line); border-radius:2px; padding:16px 20px; margin-bottom:10px; }
+  .faq-item summary{ cursor:pointer; font-weight:600; font-size:15px; list-style:none; }
+  .faq-item summary::-webkit-details-marker{ display:none; }
+  .faq-item summary::before{ content:"+"; display:inline-block; width:18px; color:var(--gold-500); font-weight:700; }
+  .faq-item[open] summary::before{ content:"–"; }
+  .faq-item p{ margin:12px 0 0 18px; color:var(--ink-600); font-size:14.5px; line-height:1.6; }
 
   .filter-bar{
     display:flex; flex-wrap:wrap; align-items:center; gap:8px 14px; margin-bottom:32px;
