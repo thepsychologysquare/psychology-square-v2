@@ -45,7 +45,7 @@ const options: string[] = step.question_options ? JSON.parse(step.question_optio
         </span>
       </label>
 
-      <div class="learn-sidebar__scroll">
+      <div class="learn-sidebar__scroll" id="sidebarScrollArea">
         <a href={`/courses/${course.id}`} class="learn-sidebar__back">&larr; {course.data.title}</a>
         <div class="progress-track"><div class="progress-fill" id="progressFill" style={`width:${(completed.size / flatSteps.length) * 100}%`}></div></div>
         <p class="progress-label" id="progressLabel">{completed.size} of {flatSteps.length} steps complete</p>
@@ -56,7 +56,7 @@ const options: string[] = step.question_options ? JSON.parse(step.question_optio
             <ul>
               {m.steps.map((s) => (
                 <li>
-                  <a href={`/courses/${course.id}/learn/${s.id}`} class={s.id === step.id ? 'is-active' : ''}>
+                  <a href={`/courses/${course.id}/learn/${s.id}`} class={s.id === step.id ? 'is-active' : ''} data-sidebar-link={s.id}>
                     <span class="learn-check" data-step-check={s.id} data-done={completed.has(s.id)}>{completed.has(s.id) ? '✓' : ''}</span>
                     {s.title}
                   </a>
@@ -74,26 +74,28 @@ const options: string[] = step.question_options ? JSON.parse(step.question_optio
         <h1>{step.title}</h1>
       </header>
 
-      <div class="lesson-card">
-        {step.content_type === 'video' && step.video_url && (
-          <div class="module-video"><iframe src={step.video_url} title={step.title} allowfullscreen loading="lazy"></iframe></div>
-        )}
+      <div class="lesson-card-wrapper">
+        <div class="lesson-card">
+          {step.content_type === 'video' && step.video_url && (
+            <div class="module-video"><iframe src={step.video_url} title={step.title} allowfullscreen loading="lazy"></iframe></div>
+          )}
 
-        {step.content_body && <div class="course-content" set:html={textToHtml(step.content_body)} />}
+          {step.content_body && <div class="course-content" set:html={textToHtml(step.content_body)} />}
 
-        {step.question && (
-          <div class="module-checkin">
-            <h3>Quick check-in</h3>
-            <p class="module-checkin__hint">Just for your own review — this doesn't affect your certificate.</p>
-            <p class="module-checkin__question">{step.question}</p>
-            <div class="checkin-options">
-              {options.map((opt, i) => (
-                <button type="button" class="checkin-opt" data-correct={i === step.question_correct_index}>{opt}</button>
-              ))}
+          {step.question && (
+            <div class="module-checkin">
+              <h3>Quick check-in</h3>
+              <p class="module-checkin__hint">Just for your own review — this doesn't affect your certificate.</p>
+              <p class="module-checkin__question">{step.question}</p>
+              <div class="checkin-options">
+                {options.map((opt, i) => (
+                  <button type="button" class="checkin-opt" data-correct={i === step.question_correct_index}>{opt}</button>
+                ))}
+              </div>
+              <p class="checkin-feedback" id="checkinFeedback" hidden></p>
             </div>
-            <p class="checkin-feedback" id="checkinFeedback" hidden></p>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       <div class="learn-nav">
@@ -124,36 +126,32 @@ const options: string[] = step.question_options ? JSON.parse(step.question_optio
 
 <style>
   /* ---------------------------------------------------------------
-     Layout: sidebar + main column each scroll independently. The
-     sidebar is capped to the viewport height and scrolls on its own
-     once the module list is longer than the screen, instead of the
-     whole page carrying it along.
+     Layout: Proper top spacing (at least 120px to clear nav menu)
   --------------------------------------------------------------- */
   .learn-layout {
     display: grid;
     grid-template-columns: 300px 1fr;
     gap: 40px;
-    padding: 72px 0 64px;
+    padding: 120px 20px 64px;
     align-items: start;
+    max-width: 1320px;
+    margin: 0 auto;
   }
 
   /* ---------------------------------------------------------------
-     Sidebar. Plain, always-rendered element on desktop -- no
-     browser-dependent tricks. Mobile collapse is a checkbox hack
-     (hidden checkbox + label acting as the toggle), which needs no
-     JS and no reliance on how a given browser handles closed
-     <details> content.
+     Sidebar styling with pinned active state management
   --------------------------------------------------------------- */
   .learn-sidebar {
     position: sticky;
-    top: 24px;
-    max-height: calc(100vh - 48px);
+    top: 100px;
+    max-height: calc(100vh - 140px);
     display: flex;
     flex-direction: column;
     border: 1px solid var(--line);
-    border-radius: 2px;
+    border-radius: 4px;
     background: var(--paper-0);
     overflow: hidden;
+    box-shadow: 0 4px 20px rgba(13, 18, 24, 0.04);
   }
   .sidebar-checkbox { display: none; }
   .learn-sidebar__toggle { display: none; }
@@ -162,6 +160,7 @@ const options: string[] = step.question_options ? JSON.parse(step.question_optio
     overflow-y: auto;
     scrollbar-width: thin;
     scrollbar-color: var(--line) transparent;
+    max-height: calc(100vh - 190px);
   }
   .learn-sidebar__scroll::-webkit-scrollbar { width: 8px; }
   .learn-sidebar__scroll::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
@@ -225,7 +224,7 @@ const options: string[] = step.question_options ? JSON.parse(step.question_optio
   .learn-sidebar a.is-active .learn-check[data-done="true"] { border-color: var(--gold-300); background: transparent; color: var(--gold-300); }
 
   /* ---------------------------------------------------------------
-     Main column
+     Main column & Internal text area scrolling setup
   --------------------------------------------------------------- */
   .learn-header { margin-bottom: 24px; }
   .learn-header h1 {
@@ -234,19 +233,28 @@ const options: string[] = step.question_options ? JSON.parse(step.question_optio
     margin-top: 8px;
   }
 
+  .lesson-card-wrapper {
+    width: 100%;
+  }
+
   .lesson-card {
     background: #fff;
     border: 1px solid var(--line);
-    border-radius: 2px;
+    border-radius: 4px;
     box-shadow: 0 10px 30px rgba(19, 26, 34, 0.06);
     padding: 40px 44px;
+    max-height: 65vh;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--line) transparent;
   }
+  .lesson-card::-webkit-scrollbar { width: 8px; }
+  .lesson-card::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  .lesson-card::-webkit-scrollbar-track { background: transparent; }
 
   .module-video { margin-bottom: 28px; }
   .module-video iframe { width: 100%; aspect-ratio: 16/9; border: none; border-radius: 2px; }
 
-  /* Prose styling for content_body -- this is what was missing before,
-     which is why paragraphs and headings ran together with no spacing. */
   .course-content {
     font-size: 17px;
     line-height: 1.75;
@@ -329,13 +337,10 @@ const options: string[] = step.question_options ? JSON.parse(step.question_optio
   .qa-sent { color: #2E7D5B; font-size: 13.5px; }
 
   /* ---------------------------------------------------------------
-     Mobile: sidebar collapses behind a "Course contents" toggle
-     instead of a full-length module list shoved above the lesson.
-     Checkbox hack: sidebar__scroll starts collapsed, expands when
-     the hidden checkbox is checked (clicking the label toggles it).
+     Mobile Optimization
   --------------------------------------------------------------- */
   @media (max-width: 860px) {
-    .learn-layout { grid-template-columns: 1fr; gap: 20px; padding: 96px 0 48px; }
+    .learn-layout { grid-template-columns: 1fr; gap: 20px; padding: 100px 16px 48px; }
 
     .learn-sidebar {
       position: static;
@@ -370,12 +375,20 @@ const options: string[] = step.question_options ? JSON.parse(step.question_optio
     }
     .sidebar-checkbox:checked ~ .learn-sidebar__scroll { display: block; }
 
-    .lesson-card { padding: 28px 22px; }
+    .lesson-card { padding: 28px 22px; max-height: none; overflow-y: visible; }
     .learn-header h1 { font-size: 26px; }
   }
 </style>
 
 <script define:vars={{ courseSlug: course.id, stepId: step.id, stepTitle: step.title, learnerName: enrollment.name, nextStepUrl: nextStep ? `/courses/${course.id}/learn/${nextStep.id}` : null, quizUrl: `/courses/${course.id}#quizSection` }}>
+  // Automatically scroll the active link into view inside the sidebar
+  window.addEventListener('DOMContentLoaded', () => {
+    const activeLink = document.querySelector('.learn-sidebar a.is-active');
+    if (activeLink) {
+      activeLink.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+  });
+
   document.getElementById('completeBtn')?.addEventListener('click', async (e) => {
     const btn = e.target;
     btn.disabled = true;
