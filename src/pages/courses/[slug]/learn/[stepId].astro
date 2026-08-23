@@ -35,6 +35,12 @@ const options: string[] = step.question_options ? JSON.parse(step.question_optio
 ---
 <Layout title={`${step.title} — ${course.data.title}`} description={course.data.description}>
   <div class="learn-layout wrap">
+    <!-- Dynamic Course Title Header (Spans full grid width, just below nav) -->
+    <div class="learn-course-banner">
+      <span class="learn-course-banner__tag">Course</span>
+      <h2 class="learn-course-banner__title">{course.data.title}</h2>
+    </div>
+
     <aside class="learn-sidebar">
       <input type="checkbox" id="sidebarToggle" class="sidebar-checkbox" />
       <label for="sidebarToggle" class="learn-sidebar__toggle">
@@ -135,11 +141,45 @@ const options: string[] = step.question_options ? JSON.parse(step.question_optio
   .learn-layout {
     display: grid;
     grid-template-columns: 300px 1fr;
-    gap: 40px;
+    grid-template-rows: auto 1fr;
+    gap: 24px 40px;
     padding: 120px 20px 64px;
     align-items: start;
     max-width: 1320px;
     margin: 0 auto;
+  }
+
+  /* ---------------------------------------------------------------
+     Dynamic Course Banner Header
+  --------------------------------------------------------------- */
+  .learn-course-banner {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 8px;
+  }
+  .learn-course-banner__tag {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--sage-500);
+    background: var(--paper-50);
+    border: 1px solid var(--line);
+    padding: 2px 8px;
+    border-radius: 2px;
+  }
+  .learn-course-banner__title {
+    font-family: var(--font-display);
+    font-size: clamp(20px, 2.2vw, 26px);
+    font-weight: 600;
+    color: var(--navy-950, var(--ink-900));
+    margin: 0;
+    line-height: 1.2;
   }
 
   /* ---------------------------------------------------------------
@@ -355,7 +395,8 @@ const options: string[] = step.question_options ? JSON.parse(step.question_optio
      Mobile Optimization
   --------------------------------------------------------------- */
   @media (max-width: 860px) {
-    .learn-layout { grid-template-columns: 1fr; gap: 20px; padding: 100px 16px 48px; }
+    .learn-layout { grid-template-columns: 1fr; grid-template-rows: auto; gap: 20px; padding: 100px 16px 48px; }
+    .learn-course-banner { margin-bottom: 0; padding-bottom: 14px; }
 
     .learn-sidebar {
       position: static;
