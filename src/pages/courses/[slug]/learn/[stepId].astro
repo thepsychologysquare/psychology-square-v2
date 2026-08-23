@@ -28,18 +28,13 @@ if (stepIndex === -1) return Astro.redirect(`/courses/${slug}/learn`, 302);
 const completed = await getCompletedStepIds(env.DB, course.id, session.email);
 
 // Enforce sequential progression check:
-// A user can access a step if:
-// 1. It's the very first step
-// 2. They have already completed it
-// 3. They have completed the immediately preceding step
 if (stepIndex > 0) {
   const prevStepId = flatSteps[stepIndex - 1].id;
   const isPreviousCompleted = completed.has(prevStepId);
   const isCurrentCompleted = completed.has(stepId);
 
   if (!isPreviousCompleted && !isCurrentCompleted) {
-    // Find the first uncompleted step or redirect to the latest available step
-    return Astro.redirect(`/courses/${course.id}/learn/${prevStepId}`, 302);
+    return Astro.redirect(`/courses/${course.id}/learn/${prevStepId}?locked=true`, 302);
   }
 }
 
@@ -49,6 +44,7 @@ const nextStep = flatSteps[stepIndex + 1];
 const isLastStep = stepIndex === flatSteps.length - 1;
 
 const options: string[] = step.question_options ? JSON.parse(step.question_options) : [];
+const showLockedWarning = Astro.url.searchParams.get('locked') === 'true';
 ---
 <Layout title={`${step.title} — ${course.data.title}`} description={course.data.description}>
   <div class="learn-layout wrap">
@@ -96,6 +92,16 @@ const options: string[] = step.question_options ? JSON.parse(step.question_optio
     </aside>
 
     <main class="learn-main">
+      {showLockedWarning && (
+        <div class="locked-warning-banner" id="lockedWarningBanner" role="alert">
+          <div class="locked-warning-content">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+            <span>Please complete the previous lessons in order before moving forward.</span>
+          </div>
+          <button type="button" class="locked-warning-close" id="closeWarningBtn">&times;</button>
+        </div>
+      )}
+
       <header class="learn-header">
         <span class="eyebrow">{step.moduleTitle}</span>
         <h1>{step.title}</h1>
@@ -153,8 +159,45 @@ const options: string[] = step.question_options ? JSON.parse(step.question_optio
 
 <style>
   /* ---------------------------------------------------------------
-     Layout: Proper top spacing (at least 120px to clear nav menu)
+     Layout & Locked Warning Banner
   --------------------------------------------------------------- */
+  .locked-warning-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #FFF8F6;
+    border: 1px solid #F5C6CB;
+    color: #9C2C1A;
+    padding: 14px 18px;
+    border-radius: 4px;
+    margin-bottom: 24px;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(180, 67, 46, 0.08);
+    animation: slideDown 0.3s ease-out;
+  }
+  .locked-warning-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .locked-warning-close {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #9C2C1A;
+    padding: 0 4px;
+    line-height: 1;
+  }
+  .locked-warning-close:hover {
+    opacity: 0.7;
+  }
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
   .learn-layout {
     display: grid;
     grid-template-columns: 300px 1fr;
@@ -166,9 +209,6 @@ const options: string[] = step.question_options ? JSON.parse(step.question_optio
     margin: 0 auto;
   }
 
-  /* ---------------------------------------------------------------
-     Dynamic Course Banner Header
-  --------------------------------------------------------------- */
   .learn-course-banner {
     grid-column: 1 / -1;
     display: flex;
@@ -201,9 +241,6 @@ const options: string[] = step.question_options ? JSON.parse(step.question_optio
     align-self: center;
   }
 
-  /* ---------------------------------------------------------------
-     Sidebar styling with fixed pinned course title & scrollable list
-  --------------------------------------------------------------- */
   .learn-sidebar {
     position: sticky;
     top: 100px;
@@ -219,7 +256,6 @@ const options: string[] = step.question_options ? JSON.parse(step.question_optio
   .sidebar-checkbox { display: none; }
   .learn-sidebar__toggle { display: none; }
 
-  /* This section stays completely pinned at the top */
   .learn-sidebar__pinned {
     padding: 22px 20px 16px;
     background: var(--paper-0);
@@ -228,7 +264,6 @@ const options: string[] = step.question_options ? JSON.parse(step.question_optio
     z-index: 2;
   }
 
-  /* Only this section containing the modules/steps scrolls */
   .learn-sidebar__scroll {
     padding: 16px 20px 24px;
     overflow-y: auto;
@@ -297,9 +332,6 @@ const options: string[] = step.question_options ? JSON.parse(step.question_optio
   .learn-check[data-done="true"] { border-color: #2E7D5B; background: rgba(46,125,91,0.12); color: #2E7D5B; }
   .learn-sidebar a.is-active .learn-check[data-done="true"] { border-color: var(--gold-300); background: transparent; color: var(--gold-300); }
 
-  /* ---------------------------------------------------------------
-     Main column & Internal text area scrolling setup
-  --------------------------------------------------------------- */
   .learn-header { margin-bottom: 24px; }
   .learn-header h1 {
     font-size: clamp(26px, 3.2vw, 36px);
@@ -307,9 +339,7 @@ const options: string[] = step.question_options ? JSON.parse(step.question_optio
     margin-top: 8px;
   }
 
-  .lesson-card-wrapper {
-    width: 100%;
-  }
+  .lesson-card-wrapper { width: 100%; }
 
   .lesson-card {
     background: #fff;
@@ -410,9 +440,6 @@ const options: string[] = step.question_options ? JSON.parse(step.question_optio
   .qa-error { color: #B4432E; font-size: 13.5px; }
   .qa-sent { color: #2E7D5B; font-size: 13.5px; }
 
-  /* ---------------------------------------------------------------
-     Mobile Optimization
-  --------------------------------------------------------------- */
   @media (max-width: 860px) {
     .learn-layout { grid-template-columns: 1fr; grid-template-rows: auto; gap: 20px; padding: 100px 16px 48px; }
     .learn-course-banner { margin-bottom: 0; padding-bottom: 14px; }
@@ -445,19 +472,10 @@ const options: string[] = step.question_options ? JSON.parse(step.question_optio
     .chevron { transition: transform 0.2s var(--ease); flex: none; }
     .sidebar-checkbox:checked ~ .learn-sidebar__toggle .chevron { transform: rotate(180deg); }
 
-    .learn-sidebar__pinned {
-      display: none;
-    }
+    .learn-sidebar__pinned { display: none; }
+    .sidebar-checkbox:checked ~ .learn-sidebar__pinned { display: block; }
 
-    .sidebar-checkbox:checked ~ .learn-sidebar__pinned {
-      display: block;
-    }
-
-    .learn-sidebar__scroll {
-      display: none;
-      border-top: none;
-      max-height: 60vh;
-    }
+    .learn-sidebar__scroll { display: none; border-top: none; max-height: 60vh; }
     .sidebar-checkbox:checked ~ .learn-sidebar__scroll { display: block; }
 
     .lesson-card { padding: 28px 22px; max-height: none; overflow-y: visible; }
@@ -466,11 +484,22 @@ const options: string[] = step.question_options ? JSON.parse(step.question_optio
 </style>
 
 <script define:vars={{ courseSlug: course.id, stepId: step.id, stepTitle: step.title, learnerName: enrollment.name, nextStepUrl: nextStep ? `/courses/${course.id}/learn/${nextStep.id}` : null, quizUrl: `/courses/${course.id}#quizSection` }}>
-  // Automatically scroll the active link into view inside the sidebar
   window.addEventListener('DOMContentLoaded', () => {
     const activeLink = document.querySelector('.learn-sidebar a.is-active');
     if (activeLink) {
       activeLink.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+
+    // Dismiss warning banner capability & cleanup URL query params
+    const closeWarningBtn = document.getElementById('closeWarningBtn');
+    const warningBanner = document.getElementById('lockedWarningBanner');
+    if (closeWarningBtn && warningBanner) {
+      closeWarningBtn.addEventListener('click', () => {
+        warningBanner.style.display = 'none';
+        const url = new URL(window.location.href);
+        url.searchParams.delete('locked');
+        window.history.replaceState({}, '', url);
+      });
     }
   });
 
@@ -496,7 +525,6 @@ const options: string[] = step.question_options ? JSON.parse(step.question_optio
     });
   });
 
-  // ---------- Moderated Q&A ----------
   function escapeHtml(s) {
     return String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   }
