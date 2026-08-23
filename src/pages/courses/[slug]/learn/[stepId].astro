@@ -1,4 +1,5 @@
 ---
+---
 export const prerender = false;
 import Layout from '../../../../layouts/Layout.astro';
 import { env } from 'cloudflare:workers';
@@ -25,12 +26,29 @@ const flatSteps = outline.flatMap((m) => m.steps.map((s) => ({ ...s, moduleTitle
 const stepIndex = flatSteps.findIndex((s) => s.id === stepId);
 if (stepIndex === -1) return Astro.redirect(`/courses/${slug}/learn`, 302);
 
+const completed = await getCompletedStepIds(env.DB, course.id, session.email);
+
+// Enforce sequential progression check:
+// A user can access a step if:
+// 1. It's the very first step
+// 2. They have already completed it
+// 3. They have completed the immediately preceding step
+if (stepIndex > 0) {
+  const prevStepId = flatSteps[stepIndex - 1].id;
+  const isPreviousCompleted = completed.has(prevStepId);
+  const isCurrentCompleted = completed.has(stepId);
+
+  if (!isPreviousCompleted && !isCurrentCompleted) {
+    // Find the first uncompleted step or redirect to the latest available step
+    return Astro.redirect(`/courses/${course.id}/learn/${prevStepId}`, 302);
+  }
+}
+
 const step = flatSteps[stepIndex];
 const prevStep = flatSteps[stepIndex - 1];
 const nextStep = flatSteps[stepIndex + 1];
 const isLastStep = stepIndex === flatSteps.length - 1;
 
-const completed = await getCompletedStepIds(env.DB, course.id, session.email);
 const options: string[] = step.question_options ? JSON.parse(step.question_options) : [];
 ---
 <Layout title={`${step.title} — ${course.data.title}`} description={course.data.description}>
@@ -125,7 +143,7 @@ const options: string[] = step.question_options ? JSON.parse(step.question_optio
 
         <form id="qaForm" class="qa-form">
           <textarea id="qaQuestion" required maxlength="2000" placeholder="Ask a question about this course…" rows="3"></textarea>
-          <button type="submit" class="btn btn--text" id="qaSubmitBtn">Submit question</button>
+          <button type="submit" class="btn btn--primary" id="qaSubmitBtn">Submit question</button>
           <p class="qa-error" id="qaError" role="alert" hidden></p>
           <p class="qa-sent" id="qaSent" hidden>Thanks — we'll review it and publish an answer here.</p>
         </form>
