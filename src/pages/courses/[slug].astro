@@ -24,9 +24,6 @@ const isEnrolled = !!enrollment && enrollment.status === 'active';
 const isPendingPayment = !!enrollment && enrollment.status === 'pending';
 const isDeclinedPayment = !!enrollment && enrollment.status === 'declined';
 
-// A course built in the new Course Builder (D1-backed modules/steps) skips
-// the legacy Decap-based module player entirely and sends the learner to
-// the step-by-step player instead. Courses with no rows here are untouched.
 let hasNewModules = false;
 if (isEnrolled && env?.DB) {
   const row = await env.DB.prepare(
@@ -45,21 +42,11 @@ if (hasNewModules && env?.DB) {
   newModulesAllComplete = (totals?.n || 0) > 0 && (done?.n || 0) >= (totals?.n || 0);
 }
 
-// Only rendered/sent to the browser at all once enrolled — an
-// unenrolled visitor's page source never contains the lesson content or
-// the quiz questions, not just a visually-hidden version of them.
-// `render()` needs a real Decap-authored entry (with compiled body internals).
-// A course created entirely in the Studio never had a markdown file, so it
-// always ships with modules — meaning this legacy single-page path (guarded
-// by !hasNewModules further down) never actually needs to render it.
 const { Content } = isEnrolled && !hasNewModules && course.body ? await render(course as any) : { Content: null };
 const clientQuiz = isEnrolled
   ? course.data.quiz.map((q) => ({ question: q.question, options: q.options }))
   : [];
 
-// Modules are optional: a course with none falls back to the legacy
-// single-page + quiz layout below, completely unchanged. A course with
-// module files gets the sidebar/progress player instead.
 const allModules = isEnrolled
   ? (await getCollection('courseModules', (d) => !d.data.draft && d.data.courseSlug === course.id))
       .sort((a, b) => a.data.order - b.data.order)
@@ -274,7 +261,6 @@ const moduleQuestionsForClient = renderedModules.map((m) =>
 <script type="application/json" id="quizData" set:html={JSON.stringify(clientQuiz)}></script>
 <script type="application/json" id="moduleQuestionsData" set:html={JSON.stringify(moduleQuestionsForClient)}></script>
 <script define:vars={{ courseSlug: course.id, currentUrl: Astro.url.pathname, isEnrolled, hasModules, totalModules: renderedModules.length, learnerEmail: session?.email || '', isPaidCourse: course.data.isPaid }}>
-  // ---------- Enroll gate ----------
   const enrollForm = document.getElementById('enrollForm');
   if (enrollForm) {
     const btn = document.getElementById('enrollBtn');
@@ -347,7 +333,6 @@ const moduleQuestionsForClient = renderedModules.map((m) =>
     });
   }
 
-  // ---------- Paid-course payment form ----------
   const paymentForm = document.getElementById('paymentForm');
   if (paymentForm) {
     const PAYMENT_ACCOUNTS = {
@@ -416,7 +401,6 @@ const moduleQuestionsForClient = renderedModules.map((m) =>
     });
   }
 
-  // ---------- Module player (sidebar navigation + progress) ----------
   if (isEnrolled && hasModules) {
     const progressKey = `courseProgress:${courseSlug}:${learnerEmail}`;
     const completed = new Set(JSON.parse(localStorage.getItem(progressKey) || '[]'));
@@ -468,7 +452,6 @@ const moduleQuestionsForClient = renderedModules.map((m) =>
         if (index < totalModules - 1) showModule(index + 1);
       });
 
-      // Render this module's optional check-in question(s), if any.
       const questions = moduleQuestions[index] || [];
       const checkinEl = pane.querySelector('.module-checkin__questions');
       if (checkinEl && questions.length > 0) {
@@ -501,7 +484,6 @@ const moduleQuestionsForClient = renderedModules.map((m) =>
     updateProgressUI();
   }
 
-  // ---------- Quiz (only present in the DOM once enrolled) ----------
   if (isEnrolled) {
     const quiz = JSON.parse(document.getElementById('quizData').textContent);
     const questionsEl = document.getElementById('quizQuestions');
@@ -605,12 +587,12 @@ const moduleQuestionsForClient = renderedModules.map((m) =>
 
 <style>
   .course-article{ padding:64px 0 96px; }
-  .wrap--narrow{ max-width:720px; margin:0 auto; padding:0 24px; }
+  .wrap--narrow{ max-width:720px; margin:0 auto; padding:0 24px; box-sizing: border-box; width: 100%; }
   .eyebrow{ font-family:var(--font-mono); font-size:12px; letter-spacing:0.08em; text-transform:uppercase; color:var(--gold-500); }
   .course-article h1{ font-family:var(--font-display); font-size:clamp(30px,4vw,42px); margin:8px 0 12px; }
   .lede{ color:var(--ink-600); font-size:17px; line-height:1.6; margin-bottom:36px; }
 
-  .enroll-gate{ margin-top:20px; padding:32px; border:1px solid var(--line); border-radius:2px; background:var(--paper-50); }
+  .enroll-gate{ margin-top:20px; padding:32px; border:1px solid var(--line); border-radius:2px; background:var(--paper-50); box-sizing: border-box; max-width: 100%; overflow: hidden; }
   .enroll-gate h2{ font-family:var(--font-display); font-size:22px; margin-bottom:8px; }
   .enroll-copy{ color:var(--ink-600); margin-bottom:24px; }
   .signed-in-as{ font-size:14px; margin-bottom:16px; }
@@ -628,7 +610,7 @@ const moduleQuestionsForClient = renderedModules.map((m) =>
   .payment-option{ display:flex; align-items:center; gap:10px; min-width:0; border:1px solid var(--line); border-radius:2px; padding:12px 16px; cursor:pointer; }
   .payment-option:has(input:checked){ border-color:var(--gold-500); background:rgba(199,164,74,0.06); }
   .payment-option input{ accent-color:var(--gold-500); flex-shrink:0; }
-  .payment-details{ margin-top:10px; padding:16px; background:var(--paper-0); border:1px solid var(--line); border-radius:2px; font-family:var(--font-mono); font-size:13.5px; line-height:1.8; color:var(--ink-900); }
+  .payment-details{ margin-top:10px; padding:16px; background:var(--paper-0); border:1px solid var(--line); border-radius:2px; font-family:var(--font-mono); font-size:13.5px; line-height:1.8; color:var(--ink-900); overflow-x: auto; }
 
   .course-content{ font-size:16px; line-height:1.75; }
   .course-content :global(h2){ font-family:var(--font-display); font-size:24px; margin:40px 0 14px; }
@@ -636,7 +618,6 @@ const moduleQuestionsForClient = renderedModules.map((m) =>
   .course-content :global(ul), .course-content :global(ol){ margin:0 0 16px 22px; }
   .course-content :global(li){ margin-bottom:6px; }
 
-  /* ---------- Module player ---------- */
   .course-player{ display:grid; grid-template-columns:260px 1fr; gap:36px; margin-top:24px; align-items:start; }
   @media (max-width: 760px){ .course-player{ grid-template-columns:1fr; } }
 
@@ -673,17 +654,22 @@ const moduleQuestionsForClient = renderedModules.map((m) =>
   .quiz-section h2{ font-family:var(--font-display); font-size:26px; margin-bottom:6px; }
   .quiz-intro{ color:var(--ink-600); margin-bottom:28px; }
 
-  .field-row{ display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px; }
-  .field{ display:flex; flex-direction:column; gap:6px; }
+  .field-row{ display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px; width:100%; }
+  @media (max-width: 600px) {
+    .field-row { grid-template-columns: 1fr; }
+    .enroll-gate { padding: 20px 16px; }
+  }
+
+  .field{ display:flex; flex-direction:column; gap:6px; width:100%; min-width:0; }
   label{ font-size:14px; font-weight:500; }
-  input[type="text"], input[type="email"]{
+  input[type="text"], input[type="email"], input[type="file"]{
     font-family:var(--font-body); font-size:15px; padding:12px 14px;
-    border:1px solid var(--line); border-radius:2px;
+    border:1px solid var(--line); border-radius:2px; width:100%; box-sizing: border-box; max-width: 100%;
   }
   input:focus-visible{ outline:2px solid var(--gold-500); outline-offset:1px; }
 
   .btn{ font-family:var(--font-body); cursor:pointer; border:none; }
-  .btn--primary{ background:var(--gold-500); color:var(--navy-950, var(--ink-900)); padding:12px 26px; border-radius:2px; margin-top:6px; }
+  .btn--primary{ background:var(--gold-500); color:var(--navy-950, var(--ink-900)); padding:12px 26px; border-radius:2px; margin-top:6px; max-width: 100%; word-break: break-word; }
   .btn--primary:disabled{ opacity:0.6; cursor:default; }
   .btn--text{ background:none; color:var(--ink-900); text-decoration:underline; padding:0; }
   .quiz-error{ color:#B4432E; font-size:14px; margin-top:12px; }
@@ -691,33 +677,24 @@ const moduleQuestionsForClient = renderedModules.map((m) =>
   .quiz-result{ margin-top:8px; }
 </style>
 
-<!--
-  Astro scopes styles by tagging server-rendered elements with a hash
-  attribute. Elements built at runtime via document.createElement /
-  innerHTML (the check-in buttons and quiz options below) never get that
-  attribute, so scoped rules silently don't match them — this is what was
-  causing quiz/check-in options to fall back to inline default layout
-  (all on one line). These rules are marked is:global so they apply to
-  those dynamically-created elements too.
--->
 <style is:global>
   .checkin-question{ margin-bottom:18px; }
   .checkin-question__text{ font-weight:600; font-size:14px; margin-bottom:10px; }
   .checkin-option{
     display:block; width:100%; text-align:left; font-family:var(--font-body); font-size:14px;
     padding:9px 12px; margin-bottom:6px; border:1px solid var(--line); border-radius:2px;
-    background:var(--paper-0); cursor:pointer;
+    background:var(--paper-0); cursor:pointer; box-sizing: border-box;
   }
   .checkin-option:disabled{ cursor:default; }
   .checkin-option.is-correct{ border-color:#2E7D5B; background:rgba(46,125,91,0.1); }
   .checkin-option.is-incorrect{ border-color:#B4432E; background:rgba(180,67,46,0.1); }
 
-  .quiz-question{ border:none; padding:0; margin:0 0 26px; display:block; }
-  .quiz-question legend{ font-weight:600; margin-bottom:10px; padding:0; }
+  .quiz-question{ border:none; padding:0; margin:0 0 26px; display:block; width: 100%; }
+  .quiz-question legend{ font-weight:600; margin-bottom:10px; padding:0; word-break: break-word; }
   .quiz-option{ display:flex; align-items:center; gap:10px; padding:8px 0; font-size:15px; cursor:pointer; }
   .quiz-option input{ margin:0; }
 
-  .result{ padding:28px; border:1px solid var(--line); border-radius:2px; }
+  .result{ padding:28px; border:1px solid var(--line); border-radius:2px; box-sizing: border-box; }
   .result--pass{ background:var(--paper-50); }
   .result h3{ font-family:var(--font-display); font-size:22px; margin-bottom:8px; }
   .result p{ color:var(--ink-600); margin-bottom:18px; }
