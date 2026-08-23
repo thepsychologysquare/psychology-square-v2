@@ -92,7 +92,7 @@ const freeCount = sorted.length - paidCount;
 const coursesFaqs = [
   {
     question: 'Is the certificate really free?',
-    answer: "Yes. Every course — free or paid — includes a verifiable digital certificate the moment you pass the quiz. The certificate itself never costs extra, and it's emailed to you immediately.",
+    answer: "Yes. Every course — free or paid — includes a digital certificate the moment you pass the quiz. It comes with a unique certificate ID and a public verification link, so anyone can confirm it's real. The certificate itself never costs extra, and it's emailed to you immediately.",
   },
   {
     question: 'Do I need an account to browse courses?',
@@ -137,6 +137,7 @@ const coursesFaqJson = {
         <span class="crumb-sep">/</span>
         <span class="crumb-current">Courses</span>
       </nav>
+      <span class="eyebrow">Self-Paced &amp; Free To Try</span>
       <div class="hero-top">
         <h1>Courses</h1>
         {session ? (
@@ -157,7 +158,8 @@ const coursesFaqJson = {
         )}
       </div>
 
-      <p class="lede">Short, practical courses. Pass the quiz at the end and we'll email you a verifiable certificate immediately — free or paid, the certificate never costs extra. Let's do it.</p>
+      <p class="lede">Short, practical courses. Pass the quiz at the end and we'll email you a certificate immediately — free or paid, the certificate never costs extra. Let's do it.</p>
+      <p class="verify-note">Every certificate carries a unique ID and a public <a href="/certificates/verify">verification link</a> — anyone can confirm it's real.</p>
       {sorted.length > 0 && (
         <p class="course-count">
           {sorted.length} {sorted.length === 1 ? 'course' : 'courses'} available
@@ -172,8 +174,8 @@ const coursesFaqJson = {
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M8.7 13.3 7 22l5-3 5 3-1.7-8.7"/></svg>
           </span>
           <div>
-            <strong>Free verifiable certificate</strong>
-            <span>Emailed instantly on every course, paid or free</span>
+            <strong>Verifiable certificate, free</strong>
+            <span>Unique ID + public verify link, emailed instantly</span>
           </div>
         </li>
         <li class="trust-item">
@@ -199,8 +201,8 @@ const coursesFaqJson = {
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
           </span>
           <div>
-            <strong>No login to browse</strong>
-            <span>Explore every course free — sign in only to enroll</span>
+            <strong>Browse without an account</strong>
+            <span>See the full catalog — sign in only when you enroll</span>
           </div>
         </li>
       </ul>
@@ -273,15 +275,17 @@ const coursesFaqJson = {
   </section>
 
   <section class="courses-faq-section">
-    <div class="wrap wrap--narrow">
-      <span class="eyebrow">FAQ</span>
-      <h2>Questions about our courses</h2>
-      {coursesFaqs.map((f) => (
-        <details class="faq-item">
-          <summary>{f.question}</summary>
-          <p>{f.answer}</p>
-        </details>
-      ))}
+    <div class="wrap">
+      <div class="faq-inner">
+        <span class="eyebrow">FAQ</span>
+        <h2>Questions about our courses</h2>
+        {coursesFaqs.map((f) => (
+          <details class="faq-item">
+            <summary>{f.question}</summary>
+            <p>{f.answer}</p>
+          </details>
+        ))}
+      </div>
     </div>
   </section>
 </Layout>
@@ -336,23 +340,31 @@ const coursesFaqJson = {
 </script>
 
 <style>
-  .courses-hero{ padding:72px 0 40px; border-bottom:1px solid var(--line); }
+  /* Hero now matches the site's standard dark hero (see .hero in global.css)
+     instead of a bespoke light-bg treatment. */
+  .courses-hero{
+    background: var(--navy-950);
+    color: var(--paper-0);
+    padding: 96px 0 40px;
+    background-image:
+      radial-gradient(circle at top right, rgba(197, 160, 89, 0.15), transparent 60%),
+      radial-gradient(circle at bottom left, rgba(28, 49, 76, 0.5), transparent 55%);
+  }
   .breadcrumbs{
-    font-family:var(--font-mono); font-size:12px; color:var(--ink-600);
+    font-family:var(--font-mono); font-size:12px; color:rgba(248,249,246,0.6);
     margin-bottom:18px; display:flex; flex-wrap:wrap; gap:6px; align-items:center;
   }
-  .breadcrumbs a{ color:var(--ink-600); }
-  .breadcrumbs a:hover{ color:var(--gold-500); }
-  .crumb-sep{ color:var(--line); }
-  .crumb-current{ color:var(--ink-900); }
-  .hero-top{ display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-top: 50px}
-  .hero-top h1{ margin:0; }
-  .session-status{ display:flex; align-items:center; gap:10px; font-size:13.5px; color:var(--ink-600); flex-wrap:wrap; }
-  .session-status__dot{ width:8px; height:8px; border-radius:50%; background:#2E7D5B; flex-shrink:0; }
-  .session-status strong{ color:var(--ink-900); }
-  .session-status a{ color:var(--gold-500); text-decoration:none; }
+  .breadcrumbs a:hover{ color:var(--gold-300); }
+  .crumb-sep{ color:rgba(248,249,246,0.3); }
+  .crumb-current{ color:rgba(248,249,246,0.85); }
+  .hero-top{ display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-top:14px; }
+  .hero-top h1{ margin:0; color:var(--paper-0); }
+  .session-status{ display:flex; align-items:center; gap:10px; font-size:13.5px; color:rgba(248,249,246,0.72); flex-wrap:wrap; }
+  .session-status__dot{ width:8px; height:8px; border-radius:50%; background:#4CAF7D; flex-shrink:0; }
+  .session-status strong{ color:var(--paper-0); }
+  .session-status a{ color:var(--gold-300); text-decoration:none; }
   .session-status a:hover{ text-decoration:underline; }
-  .session-status .btn--text{ font-size:13.5px; color:var(--ink-900); text-decoration:underline; padding:0; }
+  .session-status .btn--text{ font-size:13.5px; color:rgba(248,249,246,0.85); text-decoration:underline; padding:0; }
 
   .icon-login-btn {
     display: inline-flex;
@@ -361,29 +373,28 @@ const coursesFaqJson = {
     width: 48px;
     height: 48px;
 
-    background: var(--navy-950);
-    color: var(--gold-500);
+    background: var(--gold-500);
+    color: var(--navy-950);
     border: 1px solid transparent;
     border-radius: 999px;
     cursor: pointer;
-    box-shadow: 0 10px 30px rgba(19, 26, 34, 0.06);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
 
     transition: all 0.25s var(--ease);
   }
   .icon-login-btn svg {
+    display: block;
     width: 20px;
     height: 20px;
     transition: transform 0.2s var(--ease);
   }
   .icon-login-btn:hover {
-    background: var(--navy-800);
-    color: var(--gold-300);
+    background: var(--gold-300);
   }
   .icon-login-btn:hover svg {
     transform: translateX(2px);
   }
   .icon-login-btn:active {
-    background: var(--navy-700);
     transform: scale(0.95);
   }
   .icon-login-btn:focus-visible {
@@ -392,14 +403,17 @@ const coursesFaqJson = {
   }
 
   .courses-hero h1{ font-family:var(--font-display); font-size:clamp(32px,4vw,44px); margin:6px 0 14px; }
-  .courses-hero .lede{ max-width:560px; color:var(--ink-600); font-size:17px; line-height:1.6; margin-bottom:6px; }
-  .course-count{ font-family:var(--font-mono); font-size:12.5px; color:var(--ink-600); margin-bottom:26px; }
+  .courses-hero .lede{ max-width:560px; color:rgba(248,249,246,0.72); font-size:17px; line-height:1.6; margin-bottom:10px; }
+  .verify-note{ max-width:560px; font-size:13.5px; color:rgba(248,249,246,0.6); margin-bottom:26px; }
+  .verify-note a{ color:var(--gold-300); text-decoration:underline; text-underline-offset:2px; }
+  .verify-note a:hover{ color:var(--gold-500); }
+  .course-count{ font-family:var(--font-mono); font-size:12.5px; color:rgba(248,249,246,0.55); margin-bottom:26px; }
   .eyebrow{ font-family:var(--font-mono); font-size:12px; letter-spacing:0.08em; text-transform:uppercase; color:var(--gold-500); }
 
   .trust-bar{
     list-style:none; margin:0; padding:0;
     display:grid; grid-template-columns:repeat(auto-fit, minmax(210px, 1fr)); gap:1px;
-    background:var(--line); border:1px solid var(--line); border-radius:6px; overflow:hidden;
+    background:var(--line-onDark); border:1px solid var(--line-onDark); border-radius:6px; overflow:hidden;
   }
   .trust-item{
     display:flex; align-items:flex-start; gap:12px; padding:20px; background:var(--paper-0);
@@ -407,8 +421,9 @@ const coursesFaqJson = {
   .trust-item__icon{
     display:flex; align-items:center; justify-content:center; flex-shrink:0;
     width:38px; height:38px; border-radius:50%; background:rgba(199,164,74,0.12); color:var(--gold-500);
+    line-height:0;
   }
-  .trust-item__icon svg{ width:19px; height:19px; }
+  .trust-item__icon svg{ display:block; width:19px; height:19px; }
   .trust-item strong{ display:block; font-size:14px; font-weight:600; color:var(--ink-900); margin-bottom:3px; }
   .trust-item span{ display:block; font-size:12.5px; color:var(--ink-600); line-height:1.4; }
 
@@ -416,7 +431,10 @@ const coursesFaqJson = {
   .empty-state{ color:var(--ink-600); }
 
   .courses-faq-section{ padding:16px 0 88px; }
-  .courses-faq-section .wrap--narrow{ max-width:760px; margin:0 auto; padding:0 24px; box-sizing:border-box; }
+  /* Same left edge as every other section on the page (.wrap), instead of a
+     narrower block re-centered on the full viewport — that mismatch was what
+     made the FAQ read as shifted right relative to the hero/grid above it. */
+  .faq-inner{ max-width:760px; }
   .courses-faq-section h2{ font-family:var(--font-display); font-size:clamp(24px,3vw,30px); margin:8px 0 24px; }
   .faq-item{ border:1px solid var(--line); border-radius:2px; padding:16px 20px; margin-bottom:10px; }
   .faq-item summary{ cursor:pointer; font-weight:600; font-size:15px; list-style:none; }
