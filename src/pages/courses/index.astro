@@ -158,8 +158,7 @@ const coursesFaqJson = {
         )}
       </div>
 
-      <p class="lede">Short, practical courses. Pass the quiz at the end and we'll email you a certificate immediately — free or paid, the certificate never costs extra. Let's do it.</p>
-      <p class="verify-note">Every certificate carries a unique ID and a public <a href="/certificates/verify">verification link</a> — anyone can confirm it's real.</p>
+      <p class="lede">Self-paced online psychology courses covering anxiety, CBT, ADHD, trauma, and more — written by clinical psychologists. Pass the short quiz at the end and get your certificate by email, free or paid.</p>
       {sorted.length > 0 && (
         <p class="course-count">
           {sorted.length} {sorted.length === 1 ? 'course' : 'courses'} available
@@ -279,12 +278,17 @@ const coursesFaqJson = {
       <div class="faq-inner">
         <span class="eyebrow">FAQ</span>
         <h2>Questions about our courses</h2>
-        {coursesFaqs.map((f) => (
-          <details class="faq-item">
-            <summary>{f.question}</summary>
-            <p>{f.answer}</p>
-          </details>
-        ))}
+        <div class="faq-columns faq-columns--single">
+          {coursesFaqs.map((f) => (
+            <details class="faq-item">
+              <summary>
+                <span>{f.question}</span>
+                <span class="faq-icon" aria-hidden="true"></span>
+              </summary>
+              <p>{f.answer}</p>
+            </details>
+          ))}
+        </div>
       </div>
     </div>
   </section>
@@ -364,7 +368,7 @@ const coursesFaqJson = {
   .session-status strong{ color:var(--paper-0); }
   .session-status a{ color:var(--gold-300); text-decoration:none; }
   .session-status a:hover{ text-decoration:underline; }
-  .session-status .btn--text{ font-size:13.5px; color:rgba(248,249,246,0.85); text-decoration:underline; padding:0; }
+  .session-status .btn--text{ font-size:13.5px; color:rgba(248,249,246,0.85); text-decoration:underline; padding:0; background:transparent; border:none; appearance:none; }
 
   .icon-login-btn {
     display: inline-flex;
@@ -419,11 +423,13 @@ const coursesFaqJson = {
     display:flex; align-items:flex-start; gap:12px; padding:20px; background:var(--paper-0);
   }
   .trust-item__icon{
-    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    position:relative; flex-shrink:0;
     width:38px; height:38px; border-radius:50%; background:rgba(199,164,74,0.12); color:var(--gold-500);
-    line-height:0;
   }
-  .trust-item__icon svg{ display:block; width:19px; height:19px; }
+  .trust-item__icon svg{
+    position:absolute; top:50%; left:50%; width:19px; height:19px;
+    transform:translate(-50%,-50%); display:block;
+  }
   .trust-item strong{ display:block; font-size:14px; font-weight:600; color:var(--ink-900); margin-bottom:3px; }
   .trust-item span{ display:block; font-size:12.5px; color:var(--ink-600); line-height:1.4; }
 
@@ -436,12 +442,7 @@ const coursesFaqJson = {
      made the FAQ read as shifted right relative to the hero/grid above it. */
   .faq-inner{ max-width:760px; }
   .courses-faq-section h2{ font-family:var(--font-display); font-size:clamp(24px,3vw,30px); margin:8px 0 24px; }
-  .faq-item{ border:1px solid var(--line); border-radius:2px; padding:16px 20px; margin-bottom:10px; }
-  .faq-item summary{ cursor:pointer; font-weight:600; font-size:15px; list-style:none; }
-  .faq-item summary::-webkit-details-marker{ display:none; }
-  .faq-item summary::before{ content:"+"; display:inline-block; width:18px; color:var(--gold-500); font-weight:700; }
-  .faq-item[open] summary::before{ content:"–"; }
-  .faq-item p{ margin:12px 0 0 18px; color:var(--ink-600); font-size:14.5px; line-height:1.6; }
+  .faq-columns--single{ columns:1; }
 
   .filter-bar{
     display:flex; flex-wrap:wrap; align-items:center; gap:8px 14px; margin-bottom:32px;
