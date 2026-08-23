@@ -45,11 +45,15 @@ const options: string[] = step.question_options ? JSON.parse(step.question_optio
         </span>
       </label>
 
-      <div class="learn-sidebar__scroll" id="sidebarScrollArea">
+      <!-- Pinned header wrapper -->
+      <div class="learn-sidebar__pinned">
         <a href={`/courses/${course.id}`} class="learn-sidebar__back">&larr; {course.data.title}</a>
         <div class="progress-track"><div class="progress-fill" id="progressFill" style={`width:${(completed.size / flatSteps.length) * 100}%`}></div></div>
         <p class="progress-label" id="progressLabel">{completed.size} of {flatSteps.length} steps complete</p>
+      </div>
 
+      <!-- Scrollable steps list area -->
+      <div class="learn-sidebar__scroll" id="sidebarScrollArea">
         {outline.map((m) => (
           <div class="learn-sidebar__module">
             <p class="learn-sidebar__module-title">{m.title}</p>
@@ -139,7 +143,7 @@ const options: string[] = step.question_options ? JSON.parse(step.question_optio
   }
 
   /* ---------------------------------------------------------------
-     Sidebar styling with pinned active state management
+     Sidebar styling with fixed pinned course title & scrollable list
   --------------------------------------------------------------- */
   .learn-sidebar {
     position: sticky;
@@ -155,12 +159,23 @@ const options: string[] = step.question_options ? JSON.parse(step.question_optio
   }
   .sidebar-checkbox { display: none; }
   .learn-sidebar__toggle { display: none; }
+
+  /* This section stays completely pinned at the top */
+  .learn-sidebar__pinned {
+    padding: 22px 20px 16px;
+    background: var(--paper-0);
+    border-bottom: 1px solid var(--line);
+    flex-shrink: 0;
+    z-index: 2;
+  }
+
+  /* Only this section containing the modules/steps scrolls */
   .learn-sidebar__scroll {
-    padding: 22px 20px 24px;
+    padding: 16px 20px 24px;
     overflow-y: auto;
     scrollbar-width: thin;
     scrollbar-color: var(--line) transparent;
-    max-height: calc(100vh - 190px);
+    flex-grow: 1;
   }
   .learn-sidebar__scroll::-webkit-scrollbar { width: 8px; }
   .learn-sidebar__scroll::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
@@ -168,7 +183,7 @@ const options: string[] = step.question_options ? JSON.parse(step.question_optio
 
   .learn-sidebar__back {
     display: block;
-    margin-bottom: 18px;
+    margin-bottom: 12px;
     font-size: 13.5px;
     font-weight: 600;
     color: var(--navy-700);
@@ -177,7 +192,7 @@ const options: string[] = step.question_options ? JSON.parse(step.question_optio
 
   .progress-track { height: 5px; background: var(--paper-50); border-radius: 999px; overflow: hidden; }
   .progress-fill { height: 100%; background: var(--gold-500); border-radius: 999px; }
-  .progress-label { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.04em; color: var(--ink-600); margin: 8px 0 22px; }
+  .progress-label { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.04em; color: var(--ink-600); margin: 8px 0 0; }
 
   .learn-sidebar__module + .learn-sidebar__module { margin-top: 20px; }
   .learn-sidebar__module-title {
@@ -356,6 +371,8 @@ const options: string[] = step.question_options ? JSON.parse(step.question_optio
       font-weight: 600;
       font-size: 14.5px;
       color: var(--ink-900);
+      background: var(--paper-0);
+      border-bottom: 1px solid var(--line);
     }
     .learn-sidebar__toggle-meta {
       display: flex;
@@ -368,9 +385,17 @@ const options: string[] = step.question_options ? JSON.parse(step.question_optio
     .chevron { transition: transform 0.2s var(--ease); flex: none; }
     .sidebar-checkbox:checked ~ .learn-sidebar__toggle .chevron { transform: rotate(180deg); }
 
+    .learn-sidebar__pinned {
+      display: none;
+    }
+
+    .sidebar-checkbox:checked ~ .learn-sidebar__pinned {
+      display: block;
+    }
+
     .learn-sidebar__scroll {
       display: none;
-      border-top: 1px solid var(--line);
+      border-top: none;
       max-height: 60vh;
     }
     .sidebar-checkbox:checked ~ .learn-sidebar__scroll { display: block; }
