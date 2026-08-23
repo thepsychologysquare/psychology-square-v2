@@ -35,14 +35,15 @@ const options: string[] = step.question_options ? JSON.parse(step.question_optio
 ---
 <Layout title={`${step.title} — ${course.data.title}`} description={course.data.description}>
   <div class="learn-layout wrap">
-    <details class="learn-sidebar" open={false}>
-      <summary class="learn-sidebar__toggle">
+    <aside class="learn-sidebar">
+      <input type="checkbox" id="sidebarToggle" class="sidebar-checkbox" />
+      <label for="sidebarToggle" class="learn-sidebar__toggle">
         <span>Course contents</span>
         <span class="learn-sidebar__toggle-meta">
           {completed.size}/{flatSteps.length}
           <svg class="chevron" width="11" height="7" viewBox="0 0 11 7" fill="none"><path d="M1 1L5.5 5.5L10 1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </span>
-      </summary>
+      </label>
 
       <div class="learn-sidebar__scroll">
         <a href={`/courses/${course.id}`} class="learn-sidebar__back">&larr; {course.data.title}</a>
@@ -65,7 +66,7 @@ const options: string[] = step.question_options ? JSON.parse(step.question_optio
           </div>
         ))}
       </div>
-    </details>
+    </aside>
 
     <main class="learn-main">
       <header class="learn-header">
@@ -132,15 +133,16 @@ const options: string[] = step.question_options ? JSON.parse(step.question_optio
     display: grid;
     grid-template-columns: 300px 1fr;
     gap: 40px;
-    padding: 48px 0 64px;
+    padding: 72px 0 64px;
     align-items: start;
   }
 
   /* ---------------------------------------------------------------
-     Sidebar. A native <details> element: always rendered open on
-     desktop (summary hidden), and a real collapsible disclosure on
-     mobile so the module list doesn't shove the lesson content down
-     the page before someone can start reading.
+     Sidebar. Plain, always-rendered element on desktop -- no
+     browser-dependent tricks. Mobile collapse is a checkbox hack
+     (hidden checkbox + label acting as the toggle), which needs no
+     JS and no reliance on how a given browser handles closed
+     <details> content.
   --------------------------------------------------------------- */
   .learn-sidebar {
     position: sticky;
@@ -153,8 +155,8 @@ const options: string[] = step.question_options ? JSON.parse(step.question_optio
     background: var(--paper-0);
     overflow: hidden;
   }
+  .sidebar-checkbox { display: none; }
   .learn-sidebar__toggle { display: none; }
-
   .learn-sidebar__scroll {
     padding: 22px 20px 24px;
     overflow-y: auto;
@@ -327,15 +329,18 @@ const options: string[] = step.question_options ? JSON.parse(step.question_optio
   .qa-sent { color: #2E7D5B; font-size: 13.5px; }
 
   /* ---------------------------------------------------------------
-     Mobile: sidebar becomes a real collapsible disclosure instead of
-     a full-length module list shoved above the lesson content.
+     Mobile: sidebar collapses behind a "Course contents" toggle
+     instead of a full-length module list shoved above the lesson.
+     Checkbox hack: sidebar__scroll starts collapsed, expands when
+     the hidden checkbox is checked (clicking the label toggles it).
   --------------------------------------------------------------- */
   @media (max-width: 860px) {
-    .learn-layout { grid-template-columns: 1fr; gap: 20px; padding: 28px 0 48px; }
+    .learn-layout { grid-template-columns: 1fr; gap: 20px; padding: 96px 0 48px; }
 
     .learn-sidebar {
       position: static;
       max-height: none;
+      z-index: 1;
     }
     .learn-sidebar__toggle {
       display: flex;
@@ -343,12 +348,10 @@ const options: string[] = step.question_options ? JSON.parse(step.question_optio
       justify-content: space-between;
       padding: 14px 18px;
       cursor: pointer;
-      list-style: none;
       font-weight: 600;
       font-size: 14.5px;
       color: var(--ink-900);
     }
-    .learn-sidebar__toggle::-webkit-details-marker { display: none; }
     .learn-sidebar__toggle-meta {
       display: flex;
       align-items: center;
@@ -357,19 +360,18 @@ const options: string[] = step.question_options ? JSON.parse(step.question_optio
       font-size: 12.5px;
       color: var(--ink-600);
     }
-    .chevron { transition: transform 0.2s var(--ease); }
-    .learn-sidebar[open] .chevron { transform: rotate(180deg); }
-    .learn-sidebar:not([open]) { border-color: var(--line); }
-    .learn-sidebar__scroll { border-top: 1px solid var(--line); max-height: 60vh; }
+    .chevron { transition: transform 0.2s var(--ease); flex: none; }
+    .sidebar-checkbox:checked ~ .learn-sidebar__toggle .chevron { transform: rotate(180deg); }
+
+    .learn-sidebar__scroll {
+      display: none;
+      border-top: 1px solid var(--line);
+      max-height: 60vh;
+    }
+    .sidebar-checkbox:checked ~ .learn-sidebar__scroll { display: block; }
 
     .lesson-card { padding: 28px 22px; }
     .learn-header h1 { font-size: 26px; }
-  }
-
-  @media (min-width: 861px) {
-    /* Force the disclosure fully open on desktop regardless of the
-       [open] attribute -- it's a static sidebar there, not a toggle. */
-    .learn-sidebar > *:not(.learn-sidebar__toggle) { display: revert !important; }
   }
 </style>
 
