@@ -1,17 +1,18 @@
 ---
-title: "APOE4 Gene Shrinks Brain Cells Long Before Alzheimer’s Symptoms"
-description: "Study finds APOE4 gene causes brain cell shrinkage long before Alzheimer’s symptoms, highlighting a potential early‑intervention window."
-image: "/images/nervous-tissue-spinal-cord-motor-neuron-WkDk5Dt3tk0.jpg"
+title: APOE4 Gene Shrinks Brain Cells Long Before Alzheimer’s Symptoms
+description: Study finds APOE4 gene causes brain cell shrinkage long before
+  Alzheimer’s symptoms, highlighting a potential early‑intervention window.
+image: /images/nervous-tissue-spinal-cord-motor-neuron-WkDk5Dt3tk0.jpg
 imageAlt: "Nervous Tissue: Spinal Cord Motor Neuron"
-imageCredit: "Bioscience Image Library by Fayette Reynolds"
-imageCreditUrl: "https://unsplash.com/@berkshirecommunitycollege?utm_source=the_psychology_square&utm_medium=referral"
-imageSourceUrl: "https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral"
 category: memory
-tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
-publishDate: 2026-08-24T07:46:20.358Z
-draft: true
+draft: false
+imageCredit: Bioscience Image Library by Fayette Reynolds
+tags: []
+imageSourceUrl: https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral
+imageCreditUrl: https://unsplash.com/@berkshirecommunitycollege?utm_source=the_psychology_square&utm_medium=referral
+publishDate: 2026-08-24T14:48:00.000+05:00
 ---
 <script type="application/ld+json">
 {
