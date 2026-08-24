@@ -1,17 +1,19 @@
 ---
-title: "Widespread Synapse Loss Maps Schizophrenia Brain Connectivity"
-description: "Brain scans uncover a widespread loss of synapses in schizophrenia, especially on the left side, offering fresh insights into the disorder’s biology."
-image: "/images/a-black-and-white-photo-of-a-brain-m-yAg03XdOk.jpg"
-imageAlt: "A black and white photo of a brain"
-imageCredit: "Bhautik Patel"
-imageCreditUrl: "https://unsplash.com/@bhautik_patel3?utm_source=the_psychology_square&utm_medium=referral"
-imageSourceUrl: "https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral"
+title: Widespread Synapse Loss Maps Schizophrenia Brain Connectivity
+description: Brain scans uncover a widespread loss of synapses in schizophrenia,
+  especially on the left side, offering fresh insights into the disorder’s
+  biology.
+image: /images/a-black-and-white-photo-of-a-brain-m-yAg03XdOk.jpg
+imageAlt: A black and white photo of a brain
 category: neuroscience
-tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
-publishDate: 2026-08-24T07:46:20.454Z
-draft: true
+draft: false
+imageCredit: Bhautik Patel
+tags: []
+imageSourceUrl: https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral
+imageCreditUrl: https://unsplash.com/@bhautik_patel3?utm_source=the_psychology_square&utm_medium=referral
+publishDate: 2026-08-24T14:51:00.000+05:00
 ---
 <script type="application/ld+json">
 {
