@@ -1,17 +1,18 @@
 ---
-title: "Probiotic Supplement Reduces Depression and Anxiety in Seniors"
-description: "A clinical trial shows a daily probiotic can lower depression and anxiety symptoms in older adults, highlighting gut‑brain links."
-image: "/images/orange-and-white-plastic-bottle-on-white-textile-hn2hQoALBCk.jpg"
-imageAlt: "orange and white plastic bottle on white textile"
-imageCredit: "Towfiqu barbhuiya"
-imageCreditUrl: "https://unsplash.com/@towfiqu999999?utm_source=the_psychology_square&utm_medium=referral"
-imageSourceUrl: "https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral"
+title: Probiotic Supplement Reduces Depression and Anxiety in Seniors
+description: A clinical trial shows a daily probiotic can lower depression and
+  anxiety symptoms in older adults, highlighting gut‑brain links.
+image: /images/orange-and-white-plastic-bottle-on-white-textile-hn2hQoALBCk.jpg
+imageAlt: orange and white plastic bottle on white textile
 category: depression
-tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
+draft: false
+imageCredit: Towfiqu barbhuiya
+tags: []
+imageSourceUrl: https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral
+imageCreditUrl: https://unsplash.com/@towfiqu999999?utm_source=the_psychology_square&utm_medium=referral
 publishDate: 2026-08-24T07:46:20.452Z
-draft: true
 ---
 <script type="application/ld+json">
 {
