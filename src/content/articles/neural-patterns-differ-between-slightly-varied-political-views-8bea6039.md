@@ -1,17 +1,18 @@
 ---
-title: "Neural Patterns Differ Between Slightly Varied Political Views"
-description: "Functional MRI reveals that slight political differences correspond to distinct brain activity patterns, shedding light on cognitive bias."
-image: ""
-imageAlt: ""
-imageCredit: ""
-imageCreditUrl: ""
-imageSourceUrl: ""
+title: Neural Patterns Differ Between Slightly Varied Political Views
+description: Functional MRI reveals that slight political differences correspond
+  to distinct brain activity patterns, shedding light on cognitive bias.
+image: /images/shawn-day-znkhpagiolm-unsplash.jpg
+imageAlt: Neural Pathways Representation
 category: neuroscience
-tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
+draft: false
+imageCredit: ""
+tags: []
+imageSourceUrl: ""
+imageCreditUrl: ""
 publishDate: 2026-08-24T07:46:40.451Z
-draft: true
 ---
 <script type="application/ld+json">
 {
