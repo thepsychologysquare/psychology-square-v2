@@ -31,6 +31,7 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
         <button class="tab-btn" data-tab="availability">Availability</button>
         <button class="tab-btn" data-tab="coursePayments">Course Payment Requests</button>
         <button class="tab-btn" data-tab="enrollments">Course Enrollments</button>
+        <button class="tab-btn" data-tab="workshopEnroll">Workshop Signups</button>
         <button class="tab-btn" data-tab="qa">Q&amp;A</button>
         <button class="tab-btn" data-tab="certificates">Certificates</button>
       </div>
@@ -235,6 +236,44 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
               </tr>
             </thead>
             <tbody id="enrollBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ===== WORKSHOP SIGNUPS TAB ===== -->
+      <div id="tabWorkshopEnroll" class="tab-panel" hidden>
+        <div class="dash-toolbar">
+          <input type="text" id="wkEnrollSearchBox" placeholder="Search by name, email, or workshop" />
+          <div class="dash-filters" id="wkEnrollFilters">
+            <button class="filter-btn is-active" data-status="all">All</button>
+            <button class="filter-btn" data-status="pending">Pending</button>
+            <button class="filter-btn" data-status="active">Confirmed</button>
+            <button class="filter-btn" data-status="declined">Declined</button>
+          </div>
+          <button id="wkEnrollExportBtn" class="btn btn--ghost export-btn">Download as Excel (.csv)</button>
+        </div>
+        <div id="wkEnrollBulkBar" class="bulk-bar" hidden>
+          <span id="wkEnrollBulkCount"></span>
+          <button id="wkEnrollBulkDelete" class="btn btn--ghost bulk-delete-btn">Delete selected</button>
+        </div>
+        <p id="wkEnrollLoadingMsg" class="dash-empty">Loading…</p>
+        <p id="wkEnrollEmptyMsg" class="dash-empty" hidden>No workshop signups yet.</p>
+        <div class="table-scroll">
+          <table class="bookings-table" id="wkEnrollTable" hidden>
+            <thead>
+              <tr>
+                <th class="col-check"><input type="checkbox" id="wkEnrollSelectAll" /></th>
+                <th>Name</th>
+                <th>Contact</th>
+                <th>Workshop</th>
+                <th>Amount</th>
+                <th>Method</th>
+                <th>Submitted</th>
+                <th>Status</th>
+                <th class="col-actions">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="wkEnrollBody"></tbody>
           </table>
         </div>
       </div>
@@ -558,6 +597,7 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
   const tabAvailability = document.getElementById('tabAvailability');
   const tabCoursePayments = document.getElementById('tabCoursePayments');
   const tabEnrollments = document.getElementById('tabEnrollments');
+  const tabWorkshopEnroll = document.getElementById('tabWorkshopEnroll');
   const tabQa = document.getElementById('tabQa');
   const tabCertificates = document.getElementById('tabCertificates');
 
@@ -567,11 +607,13 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
     tabAvailability.hidden = tab !== 'availability';
     tabCoursePayments.hidden = tab !== 'coursePayments';
     tabEnrollments.hidden = tab !== 'enrollments';
+    tabWorkshopEnroll.hidden = tab !== 'workshopEnroll';
     tabQa.hidden = tab !== 'qa';
     tabCertificates.hidden = tab !== 'certificates';
     if (tab === 'availability') loadAvailability();
     if (tab === 'coursePayments') loadCoursePaymentRequests();
     if (tab === 'enrollments') loadEnrollments();
+    if (tab === 'workshopEnroll') loadWorkshopEnrollments();
     if (tab === 'qa') loadQuestions();
     if (tab === 'certificates') loadCertificates();
     history.replaceState(null, '', `#${tab}`);
@@ -581,7 +623,7 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
     if (!btn) return;
     activateTab(btn.dataset.tab);
   });
-  const initialTab = ['availability', 'coursePayments', 'enrollments', 'qa', 'certificates'].includes(location.hash.slice(1))
+  const initialTab = ['availability', 'coursePayments', 'enrollments', 'workshopEnroll', 'qa', 'certificates'].includes(location.hash.slice(1))
     ? location.hash.slice(1) : 'bookings';
   activateTab(initialTab);
 
@@ -697,6 +739,144 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
     const a = document.createElement('a');
     a.href = url;
     a.download = `course-enrollments-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  // ===== Workshop Signups =====
+  let allWkEnrollments = [];
+  let wkEnrollFilter = 'all';
+  const wkEnrollBody = document.getElementById('wkEnrollBody');
+  const wkEnrollTable = document.getElementById('wkEnrollTable');
+  const wkEnrollLoadingMsg = document.getElementById('wkEnrollLoadingMsg');
+  const wkEnrollEmptyMsg = document.getElementById('wkEnrollEmptyMsg');
+  const wkEnrollSearchBox = document.getElementById('wkEnrollSearchBox');
+  const wkEnrollFilters = document.getElementById('wkEnrollFilters');
+  const wkEnrollExportBtn = document.getElementById('wkEnrollExportBtn');
+
+  async function loadWorkshopEnrollments() {
+    wkEnrollLoadingMsg.hidden = false;
+    wkEnrollTable.hidden = true;
+    const res = await fetch('/api/admin/workshop-enrollments');
+    if (res.status === 401) { window.location.href = '/dashboard/login'; return; }
+    const data = await res.json();
+    allWkEnrollments = data.requests || [];
+    wkEnrollLoadingMsg.hidden = true;
+    renderWkEnrollments();
+  }
+
+  function renderWkEnrollments() {
+    const term = (wkEnrollSearchBox.value || '').toLowerCase();
+    const items = allWkEnrollments.filter((e) =>
+      (wkEnrollFilter === 'all' || e.status === wkEnrollFilter) &&
+      (!term || e.name.toLowerCase().includes(term) || e.email.toLowerCase().includes(term) || e.workshop_title.toLowerCase().includes(term))
+    );
+    wkEnrollEmptyMsg.hidden = items.length > 0;
+    wkEnrollTable.hidden = items.length === 0;
+    wkEnrollBody.innerHTML = items.map((e) => `
+      <tr>
+        <td class="col-check"><input type="checkbox" class="wkenroll-row-check" data-selid="${e.id}" /></td>
+        <td>${escapeHtml(e.name)}${e.notes ? `<br/><span class="row-note">${escapeHtml(e.notes)}</span>` : ''}</td>
+        <td>${escapeHtml(e.email)}<br/><span class="row-note">${escapeHtml(e.phone)}</span></td>
+        <td>${escapeHtml(e.workshop_title)}</td>
+        <td>PKR ${escapeHtml(String(e.amount_pkr))}</td>
+        <td>${escapeHtml(e.payment_method)}</td>
+        <td>${formatDate(e.created_at)}</td>
+        <td><span class="status-badge ${statusBadgeClass(e.status)}">${e.status === 'active' ? 'confirmed' : e.status}</span></td>
+        <td class="col-actions">
+          <button class="icon-btn" data-wkshot="${e.id}" title="View screenshot">View</button>
+          ${e.status !== 'active' ? `<button class="icon-btn confirm" data-wkid="${e.id}" data-wkstatus="active" title="Approve">✓</button>` : ''}
+          ${e.status !== 'declined' ? `<button class="icon-btn decline" data-wkid="${e.id}" data-wkstatus="declined" title="Decline">✕</button>` : ''}
+          <button class="icon-btn delete" data-wkdelete="${e.id}" title="Delete">🗑</button>
+        </td>
+      </tr>
+    `).join('');
+    wkEnrollBulk.sync();
+  }
+  wkEnrollSearchBox.addEventListener('input', renderWkEnrollments);
+  const wkEnrollBulk = makeBulkSelector({
+    selectAllEl: document.getElementById('wkEnrollSelectAll'),
+    bulkBarEl: document.getElementById('wkEnrollBulkBar'),
+    bulkCountEl: document.getElementById('wkEnrollBulkCount'),
+    bulkDeleteBtn: document.getElementById('wkEnrollBulkDelete'),
+    rowCheckSelector: '.wkenroll-row-check',
+    containerEl: wkEnrollBody,
+    getItems: () => allWkEnrollments,
+    setItems: (v) => { allWkEnrollments = v; },
+    idOf: (e) => e.id,
+    deleteUrl: (id) => `/api/admin/workshop-enrollments?id=${id}`,
+    confirmMsg: (n) => `Delete ${n} workshop signup(s) permanently?`,
+    render: renderWkEnrollments,
+  });
+  wkEnrollFilters.addEventListener('click', (e) => {
+    const btn = e.target.closest('.filter-btn');
+    if (!btn) return;
+    wkEnrollFilters.querySelectorAll('.filter-btn').forEach((b) => b.classList.remove('is-active'));
+    btn.classList.add('is-active');
+    wkEnrollFilter = btn.dataset.status || 'all';
+    renderWkEnrollments();
+  });
+
+  wkEnrollBody.addEventListener('click', async (e) => {
+    const shotBtn = e.target.closest('[data-wkshot]');
+    if (shotBtn) {
+      const win = window.open('', '_blank');
+      shotBtn.disabled = true;
+      const originalText = shotBtn.textContent;
+      shotBtn.textContent = 'Loading…';
+      try {
+        const res = await fetch(`/api/admin/workshop-screenshot/${shotBtn.dataset.wkshot}`, { credentials: 'same-origin' });
+        if (!res.ok) throw new Error(`Server said ${res.status}`);
+        const blob = await res.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        if (win) win.location.href = blobUrl;
+      } catch (err) {
+        if (win) win.close();
+        window.alert(`Could not load the screenshot: ${err.message || err}`);
+      } finally {
+        shotBtn.disabled = false;
+        shotBtn.textContent = originalText;
+      }
+      return;
+    }
+    const btn = e.target.closest('.icon-btn.confirm, .icon-btn.decline');
+    if (!btn) {
+      const delBtn = e.target.closest('[data-wkdelete]');
+      if (!delBtn) return;
+      const delId = delBtn.dataset.wkdelete;
+      const ok = await showConfirm('Delete this workshop signup permanently?');
+      if (!ok) return;
+      delBtn.disabled = true;
+      await fetch(`/api/admin/workshop-enrollments?id=${delId}`, { method: 'DELETE' });
+      allWkEnrollments = allWkEnrollments.filter((x) => x.id !== delId);
+      renderWkEnrollments();
+      return;
+    }
+    const id = btn.dataset.wkid, status = btn.dataset.wkstatus;
+    const ok = await showConfirm(`Mark this workshop signup as ${status === 'active' ? 'approved' : status}?`);
+    if (!ok) return;
+    btn.disabled = true;
+    await fetch('/api/admin/workshop-enrollments', {
+      method: 'PATCH', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ id, status }),
+    });
+    const item = allWkEnrollments.find((x) => x.id === id);
+    if (item) item.status = status;
+    renderWkEnrollments();
+  });
+
+  wkEnrollExportBtn.addEventListener('click', () => {
+    const header = ['Name', 'Email', 'Phone', 'Workshop', 'Amount (PKR)', 'Method', 'Submitted', 'Status'];
+    const rows = allWkEnrollments.map((e) => [
+      e.name, e.email, e.phone, e.workshop_title, e.amount_pkr, e.payment_method, e.created_at,
+      e.status === 'active' ? 'confirmed' : e.status,
+    ].map((v) => `"${String(v ?? '').replace(/"/g, '""')}"`).join(','));
+    const csv = [header.join(','), ...rows].join('\r\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `workshop-signups-${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   });

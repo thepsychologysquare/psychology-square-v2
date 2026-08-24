@@ -71,12 +71,12 @@ const { results: enrollments } = await env.DB.prepare(
             <label for="maxSeats">Max. seats</label>
             <input type="number" id="maxSeats" min="1" value={workshop.max_seats ?? ''} placeholder="No cap" />
           </div>
-          <div class="field field--toggle">
-            <label class="toggle">
-              <input type="checkbox" id="draft" checked={!!workshop.draft} />
-              <span>Draft (hidden from /workshops)</span>
-            </label>
-          </div>
+        </div>
+        <div class="field field--toggle">
+          <label class="toggle">
+            <input type="checkbox" id="draft" checked={!!workshop.draft} />
+            <span>Draft (hidden from /workshops)</span>
+          </label>
         </div>
         <p class="form-error" id="editError" role="alert" hidden></p>
         <p class="form-success" id="editSuccess" hidden>Saved ✓</p>
@@ -167,18 +167,19 @@ const { results: enrollments } = await env.DB.prepare(
   .panel-header-row h2 { margin: 0; }
 
   .edit-form, .confirm-form { display: grid; gap: 16px; }
-  .field { display: grid; gap: 6px; }
+  .field { display: grid; gap: 6px; min-width: 0; }
   .field-row { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-end; }
   .field-row .field { flex: 1; min-width: 140px; }
-  .field--narrow { max-width: 140px; }
-  .field--toggle { flex: 1 1 100%; }
+  .field--narrow { flex: 1 1 160px; max-width: 200px; }
+  .field--toggle { margin-top: -2px; }
   label { font-size: 13.5px; font-weight: 600; color: var(--navy-950); }
   input[type="text"], input[type="number"], input[type="url"], select, textarea {
     padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; font: inherit; font-size: 14.5px;
+    width: 100%; box-sizing: border-box;
   }
   textarea { resize: vertical; }
   .toggle { display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500; }
-  .toggle input { width: 16px; height: 16px; }
+  .toggle input { width: 16px; height: 16px; flex-shrink: 0; }
 
   .form-error { color: #B3261E; font-size: 13.5px; margin: 0; }
   .form-success { color: #3d5b46; font-size: 13.5px; margin: 0; }
@@ -212,6 +213,8 @@ const { results: enrollments } = await env.DB.prepare(
 
   @media (max-width: 640px) {
     .panel { padding: 18px; }
+    .field-row { flex-direction: column; align-items: stretch; }
+    .field--narrow { max-width: none; }
     .enroll-table { display: block; overflow-x: auto; }
   }
 </style>

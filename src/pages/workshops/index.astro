@@ -30,11 +30,7 @@ const INSTRUCTOR_NAMES: Record<string, string> = { sohail: 'Muhammad Sohail', se
       )}
 
       <div class="wk-grid">
-        {workshops.map((w) => {
-          const seatsLabel = w.status === 'confirmed'
-            ? 'Confirmed — seats still open'
-            : `${w.activeCount} of ${w.min_seats} spots filled`;
-          return (
+        {workshops.map((w) => (
             <a href={`/workshops/${w.slug}`} class="wk-card">
               {w.image && <img src={w.image} alt={w.image_alt || w.title} class="wk-card__image" loading="lazy" />}
               <div class="wk-card__body">
@@ -46,13 +42,11 @@ const INSTRUCTOR_NAMES: Record<string, string> = { sohail: 'Muhammad Sohail', se
                 <p class="wk-card__desc">{w.description}</p>
                 <div class="wk-card__meta">
                   <span class="wk-card__price">PKR {w.price_pkr.toLocaleString('en-US')}</span>
-                  <span class="wk-card__seats">{seatsLabel}</span>
                 </div>
                 {w.instructor && <span class="wk-card__instructor">With {INSTRUCTOR_NAMES[w.instructor] || w.instructor}</span>}
               </div>
             </a>
-          );
-        })}
+        ))}
       </div>
 
       <div class="request-cta-banner">
@@ -113,9 +107,8 @@ const INSTRUCTOR_NAMES: Record<string, string> = { sohail: 'Muhammad Sohail', se
   .badge--confirmed{ background:rgba(124,152,133,0.18); color:#3d5b46; }
   .wk-card__title{ font-family:var(--font-display); font-size:19px; margin:0; color:var(--navy-950); }
   .wk-card__desc{ margin:0; color:var(--ink-600); font-size:14px; line-height:1.5; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
-  .wk-card__meta{ display:flex; justify-content:space-between; align-items:center; font-size:13px; margin-top:4px; }
+  .wk-card__meta{ display:flex; align-items:center; font-size:13px; margin-top:4px; }
   .wk-card__price{ font-weight:700; color:var(--navy-950); }
-  .wk-card__seats{ color:var(--ink-600); }
   .wk-card__instructor{ font-size:12.5px; color:var(--ink-600); }
 
   .request-cta-banner{

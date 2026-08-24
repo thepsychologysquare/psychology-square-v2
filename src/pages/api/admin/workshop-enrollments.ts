@@ -60,3 +60,22 @@ export const PATCH: APIRoute = async ({ request }) => {
 
   return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { 'content-type': 'application/json' } });
 };
+
+export const DELETE: APIRoute = async ({ request, url }) => {
+  const session = await getSession(request.headers.get('cookie'), env?.ADMIN_SESSION_SECRET || '');
+  if (!session) return new Response(JSON.stringify({ error: 'Not signed in.' }), { status: 401 });
+
+  const id = url.searchParams.get('id');
+  if (!id) return new Response(JSON.stringify({ error: 'Missing id.' }), { status: 400 });
+
+  const row = await env.DB.prepare(
+    `SELECT screenshot_key FROM workshop_enrollments WHERE id = ?`
+  ).bind(id).first<{ screenshot_key: string | null }>();
+
+  await env.DB.prepare(`DELETE FROM workshop_enrollments WHERE id = ?`).bind(id).run();
+  if (row?.screenshot_key) {
+    await env.SCREENSHOTS.delete(row.screenshot_key).catch(() => {});
+  }
+
+  return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { 'content-type': 'application/json' } });
+};

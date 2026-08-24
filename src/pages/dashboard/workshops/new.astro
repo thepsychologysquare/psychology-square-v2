@@ -93,17 +93,17 @@ if (!session) return Astro.redirect('/dashboard/login');
   .new-main { padding: 24px 0 96px; max-width: 720px; }
 
   .new-form { display: grid; gap: 20px; background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 28px; }
-  .field { display: grid; gap: 6px; }
+  .field { display: grid; gap: 6px; min-width: 0; }
   .field-row { display: flex; gap: 16px; flex-wrap: wrap; }
   .field-row .field { flex: 1; min-width: 160px; }
-  .field--narrow { max-width: 160px; }
+  .field--narrow { flex: 1 1 180px; max-width: 220px; }
   label { font-size: 13.5px; font-weight: 600; color: var(--navy-950); }
   .field-optional { font-weight: 400; color: var(--ink-600); }
   .field-hint { margin: 2px 0 0; font-size: 12.5px; color: var(--ink-600); }
 
   input[type="text"], input[type="number"], select, textarea {
     padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; font: inherit; font-size: 14.5px;
-    background: var(--paper-0); color: var(--ink-900);
+    background: var(--paper-0); color: var(--ink-900); width: 100%; box-sizing: border-box;
   }
   input:focus, select:focus, textarea:focus { outline: none; border-color: var(--navy-950); background: #fff; }
   textarea { resize: vertical; font-family: var(--font-body); }
@@ -121,6 +121,8 @@ if (!session) return Astro.redirect('/dashboard/login');
   @media (max-width: 640px) {
     .new-main { padding: 16px 0 64px; }
     .new-form { padding: 18px; border-radius: 10px; gap: 16px; }
+    .field-row { flex-direction: column; }
+    .field--narrow { max-width: none; }
     .form-actions { flex-direction: column-reverse; }
     .form-actions .btn { width: 100%; justify-content: center; }
   }
@@ -133,10 +135,24 @@ if (!session) return Astro.redirect('/dashboard/login');
   const errorEl = document.getElementById('formError') as HTMLElement;
   const createBtn = document.getElementById('createBtn') as HTMLButtonElement;
 
+  const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+  const ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
+
   let uploadedImageUrl = '';
   imageFile.addEventListener('change', async () => {
     const file = imageFile.files?.[0];
     if (!file) return;
+    uploadedImageUrl = '';
+    if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
+      imageStatus.textContent = `"${file.name}" isn't a supported image type. Please use JPG, PNG, WebP, or GIF.`;
+      imageFile.value = '';
+      return;
+    }
+    if (file.size > MAX_IMAGE_BYTES) {
+      imageStatus.textContent = `"${file.name}" is too large (${(file.size / (1024 * 1024)).toFixed(1)}MB). Please use an image under 5MB.`;
+      imageFile.value = '';
+      return;
+    }
     imageStatus.textContent = 'Uploading...';
     const fd = new FormData();
     fd.append('image', file);

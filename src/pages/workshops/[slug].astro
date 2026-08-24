@@ -97,7 +97,10 @@ const instructorName = INSTRUCTOR_NAMES[workshop.instructor] || workshop.instruc
                     <span>Bank transfer — UBL (Muhammad Sohail)</span>
                   </label>
                 </div>
-                <p class="payment-amount">Amount to send: <strong>PKR {workshop.price_pkr.toLocaleString('en-US')}</strong></p>
+                <div class="payment-details">
+                  <p class="payment-amount">Amount to send: <strong id="amountDisplay">PKR {workshop.price_pkr.toLocaleString('en-US')}</strong></p>
+                  <div class="payment-instructions" id="paymentInstructions"></div>
+                </div>
               </div>
 
               <div class="form-block">
@@ -106,6 +109,11 @@ const instructorName = INSTRUCTOR_NAMES[workshop.instructor] || workshop.instruc
                   <label for="screenshot">Upload a screenshot of the payment</label>
                   <input type="file" id="screenshot" name="screenshot" accept="image/*" required />
                   <p class="field-hint">A clear screenshot of the transaction confirmation is all we need (under 5MB, images only).</p>
+                  <p class="upload-error" id="uploadError" role="alert" hidden></p>
+                  <div class="upload-preview" id="uploadPreview" hidden>
+                    <span id="uploadPreviewName"></span>
+                    <button type="button" id="uploadRemoveBtn" class="upload-remove-btn">Remove ✕</button>
+                  </div>
                 </div>
               </div>
 
@@ -160,8 +168,21 @@ const instructorName = INSTRUCTOR_NAMES[workshop.instructor] || workshop.instruc
   .optional{ font-weight:400; color:var(--ink-600); }
 
   .payment-methods{ display:flex; flex-direction:column; gap:8px; }
-  .payment-option{ display:flex; align-items:center; gap:8px; font-size:14px; padding:10px 12px; border:1px solid var(--line); border-radius:8px; cursor:pointer; }
-  .payment-amount{ font-size:14px; margin-top:6px; }
+  .payment-option{ display:flex; align-items:center; gap:8px; min-width:0; font-size:14px; padding:10px 12px; border:1px solid var(--line); border-radius:8px; cursor:pointer; }
+  .payment-option input{ flex-shrink:0; }
+  .payment-option span{ min-width:0; }
+  .payment-details{ margin-top:10px; padding:14px 16px; background:var(--paper-1, #f4f4f0); border-radius:8px; }
+  .payment-amount{ font-size:14px; margin:0 0 8px; }
+  .payment-instructions{ font-family:var(--font-mono); font-size:13px; line-height:1.75; color:var(--ink-900); white-space:pre-line; word-break:break-word; }
+
+  .upload-error{ font-size:12.5px; color:#a33; margin:8px 0 0; }
+  .upload-preview{
+    display:flex; align-items:center; justify-content:space-between; gap:12px; min-width:0;
+    margin-top:8px; padding:8px 12px; background:var(--paper-1, #f4f4f0); border:1px solid var(--line); border-radius:8px;
+    font-size:12.5px; color:var(--ink-900);
+  }
+  .upload-preview span{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; }
+  .upload-remove-btn{ background:none; border:none; color:#a33; font-size:12.5px; font-weight:600; cursor:pointer; flex:none; padding:0; }
 
   .btn{ display:inline-flex; align-items:center; justify-content:center; gap:8px; font-weight:600; font-size:15px; padding:13px 20px; border-radius:8px; text-decoration:none; border:none; cursor:pointer; width:100%; }
   .btn--primary{ background:var(--navy-950); color:#fff; }
@@ -175,11 +196,69 @@ const instructorName = INSTRUCTOR_NAMES[workshop.instructor] || workshop.instruc
 </style>
 
 <script>
+  const PAYMENT_DETAILS: Record<string, string> = {
+    jazzcash: `JazzCash\nAccount number: 0333-1597844\nName: Muhammad Sohail`,
+    bank_hbl: `Habib Bank Limited (HBL)\nAccount title: Sehar Waheed\nAccount number: 23057904517003\nIBAN: PK64HABB0023057904517003`,
+    bank_ubl: `United Bank Limited (UBL)\nAccount title: Muhammad Sohail\nAccount number: 1486274438499\nIBAN: PK93UNIL0109000274438499`,
+  };
+
   const form = document.getElementById('workshopForm') as HTMLFormElement | null;
   const submitBtn = document.getElementById('submitBtn') as HTMLButtonElement | null;
   const formError = document.getElementById('formError') as HTMLParagraphElement | null;
   const confirmationPanel = document.getElementById('confirmationPanel') as HTMLElement | null;
   const confirmationRef = document.getElementById('confirmationRef') as HTMLElement | null;
+  const paymentInstructions = document.getElementById('paymentInstructions') as HTMLElement | null;
+
+  function currentPaymentMethod(): string {
+    return (form?.querySelector('input[name="payment_method"]:checked') as HTMLInputElement)?.value ?? 'jazzcash';
+  }
+  function updatePaymentInstructions() {
+    if (paymentInstructions) paymentInstructions.textContent = PAYMENT_DETAILS[currentPaymentMethod()];
+  }
+  form?.querySelectorAll('input[name="payment_method"]').forEach((el) => {
+    el.addEventListener('change', updatePaymentInstructions);
+  });
+  updatePaymentInstructions();
+
+  const MAX_SCREENSHOT_BYTES = 5 * 1024 * 1024;
+  const screenshotInput = document.getElementById('screenshot') as HTMLInputElement | null;
+  const uploadError = document.getElementById('uploadError') as HTMLParagraphElement | null;
+  const uploadPreview = document.getElementById('uploadPreview') as HTMLDivElement | null;
+  const uploadPreviewName = document.getElementById('uploadPreviewName') as HTMLSpanElement | null;
+  const uploadRemoveBtn = document.getElementById('uploadRemoveBtn') as HTMLButtonElement | null;
+
+  function clearUpload() {
+    if (!screenshotInput || !uploadPreview || !uploadError) return;
+    screenshotInput.value = '';
+    uploadPreview.hidden = true;
+    uploadError.hidden = true;
+  }
+
+  screenshotInput?.addEventListener('change', () => {
+    if (!uploadError || !uploadPreview || !uploadPreviewName || !screenshotInput) return;
+    const file = screenshotInput.files?.[0];
+    uploadError.hidden = true;
+    uploadPreview.hidden = true;
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      uploadError.textContent = `"${file.name}" isn't an image file. Please attach a screenshot (JPG, PNG, etc.) — not a PDF or document.`;
+      uploadError.hidden = false;
+      screenshotInput.value = '';
+      return;
+    }
+    if (file.size > MAX_SCREENSHOT_BYTES) {
+      uploadError.textContent = `"${file.name}" is too large (${(file.size / (1024 * 1024)).toFixed(1)}MB). Please attach a screenshot under 5MB.`;
+      uploadError.hidden = false;
+      screenshotInput.value = '';
+      return;
+    }
+
+    uploadPreviewName.textContent = file.name;
+    uploadPreview.hidden = false;
+  });
+
+  uploadRemoveBtn?.addEventListener('click', clearUpload);
 
   form?.addEventListener('submit', async (e) => {
     e.preventDefault();
