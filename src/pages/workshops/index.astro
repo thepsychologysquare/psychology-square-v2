@@ -1,0 +1,153 @@
+---
+export const prerender = false;
+import Layout from '../../layouts/Layout.astro';
+import { env } from 'cloudflare:workers';
+import { listPublicWorkshops } from '../../lib/workshops';
+
+const workshops = await listPublicWorkshops(env);
+
+const CATEGORY_LABELS: Record<string, string> = {
+  general: 'General', anxiety: 'Anxiety', depression: 'Depression', adhd: 'ADHD',
+  'addiction-recovery': 'Addiction Recovery', trauma: 'Trauma', relationships: 'Relationships',
+  'stress-burnout': 'Stress & Burnout',
+};
+
+const INSTRUCTOR_NAMES: Record<string, string> = { sohail: 'Muhammad Sohail', sehar: 'Sehar Waheed' };
+---
+<Layout title="Workshops" description="Live, small-group workshops on The Psychology Square — held over Google Meet once enough people have joined.">
+  <section class="wk-hero">
+    <div class="wrap">
+      <span class="eyebrow">Live &amp; Interactive</span>
+      <h1>Workshops.</h1>
+      <p class="wk-hero-sub">Small-group sessions held live over Google Meet — not pre-recorded. Each one runs once enough people have signed up, so the earlier you join, the sooner it happens.</p>
+    </div>
+  </section>
+
+  <section class="wk-section">
+    <div class="wrap">
+      {workshops.length === 0 && (
+        <p class="empty-state">No workshops are open right now — check back soon, or request one below.</p>
+      )}
+
+      <div class="wk-grid">
+        {workshops.map((w) => {
+          const seatsLabel = w.status === 'confirmed'
+            ? 'Confirmed — seats still open'
+            : `${w.activeCount} of ${w.min_seats} spots filled`;
+          return (
+            <a href={`/workshops/${w.slug}`} class="wk-card">
+              {w.image && <img src={w.image} alt={w.image_alt || w.title} class="wk-card__image" loading="lazy" />}
+              <div class="wk-card__body">
+                <div class="wk-card__top">
+                  <span class="badge">{CATEGORY_LABELS[w.category] || w.category}</span>
+                  {w.status === 'confirmed' && <span class="badge badge--confirmed">Confirmed</span>}
+                </div>
+                <h2 class="wk-card__title">{w.title}</h2>
+                <p class="wk-card__desc">{w.description}</p>
+                <div class="wk-card__meta">
+                  <span class="wk-card__price">PKR {w.price_pkr.toLocaleString('en-US')}</span>
+                  <span class="wk-card__seats">{seatsLabel}</span>
+                </div>
+                {w.instructor && <span class="wk-card__instructor">With {INSTRUCTOR_NAMES[w.instructor] || w.instructor}</span>}
+              </div>
+            </a>
+          );
+        })}
+      </div>
+
+      <div class="request-cta-banner">
+        <p>Don't see a workshop on the topic you need?</p>
+        <button type="button" class="btn btn--primary" id="openWorkshopRequest">Request a workshop →</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="modal-overlay" id="requestModalOverlay">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <button class="modal-close" id="modalClose" aria-label="Close">✕</button>
+      <h2 id="modalTitle" class="section-title" style="font-size:22px; margin-bottom:8px;">Request a workshop</h2>
+      <p style="color: var(--ink-600); margin-bottom: 24px; font-size:14px;">Tell us what topic you're looking for — we'll email you once we've got a group forming.</p>
+
+      <form action="https://formspree.io/f/mdaqlngp" method="POST" class="request-form">
+        <label>
+          Topic
+          <input type="text" name="workshop_topic" placeholder="e.g. Managing anxiety at work" />
+        </label>
+        <label>
+          Your name
+          <input type="text" name="name" required />
+        </label>
+        <label>
+          Your email
+          <input type="email" name="email" required />
+        </label>
+        <label>
+          Message (optional)
+          <textarea name="message" rows="3"></textarea>
+        </label>
+        <button type="submit" class="btn btn--primary">Send request</button>
+      </form>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .wk-hero{ background:var(--navy-950); color:var(--paper-0); padding:64px 0 48px; }
+  .wk-hero h1{ font-size:clamp(32px,4vw,44px); color:var(--paper-0); margin-top:10px; }
+  .wk-hero-sub{ color:rgba(248,249,246,0.72); font-size:16px; max-width:560px; margin-top:14px; }
+
+  .wk-section{ padding:56px 0 96px; }
+  .empty-state{ text-align:center; padding:48px 24px; color:var(--ink-600); }
+
+  .wk-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:24px; }
+  .wk-card{
+    display:flex; flex-direction:column; background:#fff; border:1px solid var(--line);
+    border-radius:12px; overflow:hidden; text-decoration:none; color:inherit;
+    transition:border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+  }
+  .wk-card:hover{ border-color:var(--gold-500); box-shadow:0 4px 18px rgba(11,20,31,0.08); transform:translateY(-2px); }
+  .wk-card__image{ width:100%; height:160px; object-fit:cover; }
+  .wk-card__body{ padding:18px 20px; display:flex; flex-direction:column; gap:8px; }
+  .wk-card__top{ display:flex; gap:8px; flex-wrap:wrap; }
+  .badge{ font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; padding:3px 9px; border-radius:20px; background:rgba(28,49,76,0.08); color:var(--navy-700); }
+  .badge--confirmed{ background:rgba(124,152,133,0.18); color:#3d5b46; }
+  .wk-card__title{ font-family:var(--font-display); font-size:19px; margin:0; color:var(--navy-950); }
+  .wk-card__desc{ margin:0; color:var(--ink-600); font-size:14px; line-height:1.5; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .wk-card__meta{ display:flex; justify-content:space-between; align-items:center; font-size:13px; margin-top:4px; }
+  .wk-card__price{ font-weight:700; color:var(--navy-950); }
+  .wk-card__seats{ color:var(--ink-600); }
+  .wk-card__instructor{ font-size:12.5px; color:var(--ink-600); }
+
+  .request-cta-banner{
+    margin-top:48px; padding:24px 28px; background:var(--paper-1, #f4f4f0); border-radius:12px;
+    display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;
+  }
+  .request-cta-banner p{ margin:0; font-weight:600; color:var(--navy-950); }
+
+  .btn{ display:inline-flex; align-items:center; gap:8px; font-weight:600; font-size:14.5px; padding:11px 20px; border-radius:8px; text-decoration:none; border:none; cursor:pointer; }
+  .btn--primary{ background:var(--navy-950); color:#fff; }
+  .btn--primary:hover{ background:var(--navy-700); }
+
+  .modal-overlay{ display:none; position:fixed; inset:0; background:rgba(11,20,31,0.5); z-index:100; align-items:center; justify-content:center; padding:20px; }
+  .modal-overlay.is-open{ display:flex; }
+  .modal{ background:#fff; border-radius:14px; padding:32px; max-width:440px; width:100%; position:relative; max-height:90vh; overflow-y:auto; }
+  .modal-close{ position:absolute; top:16px; right:16px; background:none; border:none; font-size:16px; cursor:pointer; color:var(--ink-600); }
+  .request-form{ display:flex; flex-direction:column; gap:18px; }
+  .request-form label{ display:flex; flex-direction:column; gap:6px; font-size:14px; color:var(--ink-600); font-weight:500; }
+  .request-form input, .request-form textarea{ padding:10px 12px; border:1px solid var(--line); border-radius:8px; font-size:14px; font-family:inherit; }
+  .request-form input:focus, .request-form textarea:focus{ outline:2px solid var(--gold-500); outline-offset:1px; }
+  .request-form button{ align-self:flex-start; border:none; cursor:pointer; }
+
+  @media (max-width:640px){
+    .request-cta-banner{ flex-direction:column; align-items:flex-start; }
+  }
+</style>
+
+<script>
+  const overlay = document.getElementById('requestModalOverlay');
+  const openBtn = document.getElementById('openWorkshopRequest');
+  const closeBtn = document.getElementById('modalClose');
+  openBtn?.addEventListener('click', () => overlay?.classList.add('is-open'));
+  closeBtn?.addEventListener('click', () => overlay?.classList.remove('is-open'));
+  overlay?.addEventListener('click', (e) => { if (e.target === overlay) overlay.classList.remove('is-open'); });
+</script>

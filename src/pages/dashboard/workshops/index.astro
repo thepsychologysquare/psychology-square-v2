@@ -1,0 +1,106 @@
+---
+export const prerender = false;
+import DashboardLayout from '../../../layouts/DashboardLayout.astro';
+import { env } from 'cloudflare:workers';
+import { getSession } from '../../../lib/adminAuth';
+import { listAllWorkshops } from '../../../lib/workshops';
+
+const session = await getSession(Astro.request.headers.get('cookie'), env?.ADMIN_SESSION_SECRET || '');
+if (!session) return Astro.redirect('/dashboard/login');
+
+const workshops = await listAllWorkshops(env);
+
+const STATUS_LABELS: Record<string, string> = { open: 'Open', confirmed: 'Confirmed', cancelled: 'Cancelled', completed: 'Completed' };
+---
+<DashboardLayout title="Workshops" backHref="/dashboard" backLabel="Back to dashboard">
+  <Fragment slot="header">
+    <header class="studio-list-header">
+      <div class="wrap">
+        <div class="studio-list-header__row">
+          <div>
+            <span class="eyebrow">Workshops</span>
+            <h1>Workshops</h1>
+            <p class="studio-list-hint">Live, cohort-based sessions over Google Meet. Each one fills up before it's confirmed — approve enrollments here, then confirm once enough people are in.</p>
+          </div>
+          <a href="/dashboard/workshops/new" class="btn btn--primary">+ New workshop</a>
+        </div>
+      </div>
+    </header>
+  </Fragment>
+
+  <main class="wrap studio-list-main">
+    {workshops.length === 0 && (
+      <div class="empty-state">
+        <p>No workshops yet.</p>
+        <a href="/dashboard/workshops/new" class="btn btn--primary">Create your first workshop</a>
+      </div>
+    )}
+
+    <ul class="course-list">
+      {workshops.map((w) => (
+        <li class="course-list__item">
+          <a href={`/dashboard/workshops/${w.slug}`} class="course-list__link">
+            <div class="course-list__main">
+              <div class="course-list__title-row">
+                <span class="course-list__title">{w.title}</span>
+                <span class={`badge ${w.draft ? 'badge--draft' : 'badge--published'}`}>{w.draft ? 'Draft' : 'Published'}</span>
+                <span class={`badge badge--status-${w.status}`}>{STATUS_LABELS[w.status] || w.status}</span>
+                {w.pendingCount > 0 && <span class="badge badge--pending">{w.pendingCount} pending</span>}
+              </div>
+              <p class="course-list__desc">{w.description}</p>
+            </div>
+            <div class="course-list__meta">
+              <span>{w.activeCount} of {w.min_seats} seats</span>
+              <span>Rs. {w.price_pkr.toLocaleString('en-US')}</span>
+            </div>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </main>
+</DashboardLayout>
+
+<style>
+  .studio-list-header { padding: 20px 0 8px; }
+  .studio-list-header__row { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .eyebrow { display: block; font-size: 12.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--gold-500); margin-bottom: 4px; }
+  h1 { font-family: var(--font-display); font-size: 30px; margin: 0 0 6px; color: var(--navy-950); }
+  .studio-list-hint { color: var(--ink-600); max-width: 60ch; margin: 0; font-size: 14.5px; }
+
+  .btn { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14.5px; padding: 11px 20px; border-radius: 8px; text-decoration: none; border: none; cursor: pointer; transition: all 0.15s; }
+  .btn--primary { background: var(--navy-950); color: #fff; }
+  .btn--primary:hover { background: var(--navy-700); }
+
+  .studio-list-main { padding: 24px 0 96px; }
+  .empty-state { text-align: center; padding: 64px 24px; color: var(--ink-600); display: grid; gap: 16px; justify-items: center; }
+
+  .course-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+  .course-list__link {
+    display: flex; justify-content: space-between; align-items: center; gap: 20px;
+    padding: 18px 22px; background: #fff; border: 1px solid var(--line); border-radius: 12px;
+    text-decoration: none; color: inherit; transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .course-list__link:hover { border-color: var(--gold-500); box-shadow: 0 2px 12px rgba(11,20,31,0.06); }
+  .course-list__main { min-width: 0; }
+  .course-list__title-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
+  .course-list__title { font-weight: 700; font-size: 16.5px; font-family: var(--font-display); }
+  .course-list__desc { margin: 0; color: var(--ink-600); font-size: 14px; max-width: 60ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .course-list__meta { display: flex; flex-direction: column; gap: 4px; text-align: right; font-size: 12.5px; color: var(--ink-600); flex-shrink: 0; }
+
+  .badge { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 3px 9px; border-radius: 20px; }
+  .badge--draft { background: rgba(199,164,74,0.16); color: #8a6d1f; }
+  .badge--published { background: rgba(124,152,133,0.18); color: #3d5b46; }
+  .badge--status-open { background: rgba(28,49,76,0.08); color: var(--navy-700); }
+  .badge--status-confirmed { background: rgba(124,152,133,0.18); color: #3d5b46; }
+  .badge--status-cancelled { background: rgba(163,51,51,0.12); color: #a33; }
+  .badge--status-completed { background: rgba(28,49,76,0.08); color: var(--navy-700); }
+  .badge--pending { background: rgba(199,164,74,0.2); color: #8a6d1f; }
+
+  @media (max-width: 640px) {
+    .studio-list-header__row { align-items: stretch; }
+    .studio-list-header__row .btn { width: 100%; justify-content: center; }
+    .course-list__link { flex-direction: column; align-items: flex-start; gap: 10px; padding: 16px 18px; }
+    .course-list__desc { white-space: normal; max-width: 100%; }
+    .course-list__meta { flex-direction: row; gap: 12px; text-align: left; }
+  }
+</style>

@@ -1,0 +1,214 @@
+---
+export const prerender = false;
+import Layout from '../../layouts/Layout.astro';
+import { env } from 'cloudflare:workers';
+import { getWorkshopBySlug, countActiveEnrollments } from '../../lib/workshops';
+
+const { slug } = Astro.params;
+const workshop = slug ? await getWorkshopBySlug(env, slug) : undefined;
+
+if (!workshop || workshop.draft) {
+  return Astro.redirect('/workshops');
+}
+
+const activeCount = await countActiveEnrollments(env, workshop.slug);
+const isFull = workshop.max_seats != null && activeCount >= workshop.max_seats;
+const isClosed = workshop.status === 'cancelled' || workshop.status === 'completed';
+
+const INSTRUCTOR_NAMES: Record<string, string> = { sohail: 'Muhammad Sohail', sehar: 'Sehar Waheed' };
+const instructorName = INSTRUCTOR_NAMES[workshop.instructor] || workshop.instructor;
+---
+<Layout title={workshop.title} description={workshop.description} image={workshop.image || undefined}>
+  <section class="wk-hero">
+    <div class="wrap">
+      <a href="/workshops" class="wk-back">&larr; All workshops</a>
+      <h1>{workshop.title}</h1>
+      <p class="wk-hero-sub">{workshop.description}</p>
+      <div class="wk-hero-meta">
+        <span>PKR {workshop.price_pkr.toLocaleString('en-US')}</span>
+        {instructorName && <span>With {instructorName}</span>}
+        <span>Live via Google Meet</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="wk-section">
+    <div class="wrap wk-layout">
+      <div class="wk-info">
+        {workshop.status === 'confirmed' ? (
+          <div class="status-banner status-banner--confirmed">
+            <strong>This workshop is confirmed.</strong>
+            <p>{workshop.scheduled_at}</p>
+            <p>You'll receive the Google Meet link by email once your payment is reviewed.</p>
+          </div>
+        ) : (
+          <div class="status-banner">
+            <strong>{activeCount} of {workshop.min_seats} spots filled.</strong>
+            <p>This workshop runs live once enough people have joined. We'll email everyone the exact date, time, and Google Meet link the moment it's confirmed.</p>
+          </div>
+        )}
+
+        {workshop.image && <img src={workshop.image} alt={workshop.image_alt || workshop.title} class="wk-detail-image" />}
+      </div>
+
+      <div class="wk-form-panel">
+        {isClosed ? (
+          <p class="closed-note">This workshop is no longer accepting signups.</p>
+        ) : isFull ? (
+          <p class="closed-note">This workshop is full. Please get in touch to be waitlisted for the next one.</p>
+        ) : (
+          <>
+            <form id="workshopForm" class="workshop-form" novalidate>
+              <input type="hidden" name="workshop_slug" value={workshop.slug} />
+
+              <div class="form-block">
+                <span class="form-step">01 — Your details</span>
+                <div class="field">
+                  <label for="name">Full name</label>
+                  <input type="text" id="name" name="name" required autocomplete="name" placeholder="Your Name" />
+                </div>
+                <div class="field">
+                  <label for="email">Email</label>
+                  <input type="email" id="email" name="email" required autocomplete="email" placeholder="name@example.com" />
+                </div>
+                <div class="field">
+                  <label for="phone">Phone</label>
+                  <input type="tel" id="phone" name="phone" required autocomplete="tel" placeholder="03XX-XXXXXXX" />
+                </div>
+                <div class="field">
+                  <label for="notes">Anything you'd like us to know <span class="optional">(optional)</span></label>
+                  <textarea id="notes" name="notes" rows="3"></textarea>
+                </div>
+              </div>
+
+              <div class="form-block">
+                <span class="form-step">02 — Send payment</span>
+                <div class="payment-methods" role="radiogroup" aria-label="Payment method">
+                  <label class="payment-option">
+                    <input type="radio" name="payment_method" value="jazzcash" checked />
+                    <span>JazzCash</span>
+                  </label>
+                  <label class="payment-option">
+                    <input type="radio" name="payment_method" value="bank_hbl" />
+                    <span>Bank transfer — HBL (Sehar Waheed)</span>
+                  </label>
+                  <label class="payment-option">
+                    <input type="radio" name="payment_method" value="bank_ubl" />
+                    <span>Bank transfer — UBL (Muhammad Sohail)</span>
+                  </label>
+                </div>
+                <p class="payment-amount">Amount to send: <strong>PKR {workshop.price_pkr.toLocaleString('en-US')}</strong></p>
+              </div>
+
+              <div class="form-block">
+                <span class="form-step">03 — Attach your receipt</span>
+                <div class="field">
+                  <label for="screenshot">Upload a screenshot of the payment</label>
+                  <input type="file" id="screenshot" name="screenshot" accept="image/*" required />
+                  <p class="field-hint">A clear screenshot of the transaction confirmation is all we need (under 5MB, images only).</p>
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn--primary submit-btn" id="submitBtn">Submit signup</button>
+              <p class="form-error" id="formError" role="alert" hidden></p>
+            </form>
+
+            <aside class="wk-confirmation" id="confirmationPanel" hidden>
+              <span class="eyebrow">Signup received</span>
+              <h2>We've got it.</h2>
+              <p>Your reference number is</p>
+              <p class="confirmation-ref" id="confirmationRef"></p>
+              <p>We'll confirm your seat by email once we've checked the payment, then email you again once the workshop is confirmed.</p>
+            </aside>
+          </>
+        )}
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .wk-hero{ background:var(--navy-950); color:var(--paper-0); padding:48px 0 40px; }
+  .wk-back{ color:rgba(248,249,246,0.7); font-size:13px; text-decoration:none; display:inline-block; margin-bottom:14px; }
+  .wk-back:hover{ color:#fff; }
+  .wk-hero h1{ font-size:clamp(28px,4vw,40px); color:var(--paper-0); margin:0 0 12px; }
+  .wk-hero-sub{ color:rgba(248,249,246,0.72); font-size:15.5px; max-width:600px; }
+  .wk-hero-meta{ display:flex; gap:16px; flex-wrap:wrap; margin-top:16px; font-size:13.5px; color:rgba(248,249,246,0.85); }
+
+  .wk-section{ padding:48px 0 96px; }
+  .wk-layout{ display:grid; grid-template-columns:1fr 380px; gap:40px; align-items:start; min-width:0; }
+  .wk-layout > *{ min-width:0; }
+  @media (max-width:900px){ .wk-layout{ grid-template-columns:minmax(0,1fr); } }
+
+  .status-banner{ background:var(--paper-1, #f4f4f0); border-radius:12px; padding:20px 22px; margin-bottom:24px; }
+  .status-banner strong{ display:block; margin-bottom:6px; color:var(--navy-950); }
+  .status-banner p{ margin:4px 0 0; font-size:14px; color:var(--ink-600); }
+  .status-banner--confirmed{ background:rgba(124,152,133,0.14); }
+
+  .wk-detail-image{ width:100%; border-radius:12px; }
+
+  .wk-form-panel{ background:#fff; border:1px solid var(--line); border-radius:14px; padding:28px; }
+  .closed-note{ color:var(--ink-600); font-size:15px; }
+
+  .workshop-form{ display:flex; flex-direction:column; gap:28px; }
+  .form-block{ display:flex; flex-direction:column; gap:12px; }
+  .form-step{ font-family:var(--font-mono); font-size:11px; letter-spacing:0.05em; text-transform:uppercase; color:var(--ink-600); }
+  .field{ display:flex; flex-direction:column; gap:6px; }
+  .field label{ font-size:13.5px; font-weight:600; color:var(--ink-700); }
+  .field input, .field textarea{ padding:10px 12px; border:1px solid var(--line); border-radius:8px; font-size:14px; font-family:inherit; }
+  .field-hint{ font-size:12.5px; color:var(--ink-600); margin:0; }
+  .optional{ font-weight:400; color:var(--ink-600); }
+
+  .payment-methods{ display:flex; flex-direction:column; gap:8px; }
+  .payment-option{ display:flex; align-items:center; gap:8px; font-size:14px; padding:10px 12px; border:1px solid var(--line); border-radius:8px; cursor:pointer; }
+  .payment-amount{ font-size:14px; margin-top:6px; }
+
+  .btn{ display:inline-flex; align-items:center; justify-content:center; gap:8px; font-weight:600; font-size:15px; padding:13px 20px; border-radius:8px; text-decoration:none; border:none; cursor:pointer; width:100%; }
+  .btn--primary{ background:var(--navy-950); color:#fff; }
+  .btn--primary:hover{ background:var(--navy-700); }
+  .btn--primary:disabled{ opacity:0.6; cursor:not-allowed; }
+
+  .form-error{ color:#a33; font-size:13.5px; }
+
+  .wk-confirmation{ text-align:center; }
+  .confirmation-ref{ font-family:var(--font-mono); font-size:20px; font-weight:700; color:var(--navy-950); }
+</style>
+
+<script>
+  const form = document.getElementById('workshopForm') as HTMLFormElement | null;
+  const submitBtn = document.getElementById('submitBtn') as HTMLButtonElement | null;
+  const formError = document.getElementById('formError') as HTMLParagraphElement | null;
+  const confirmationPanel = document.getElementById('confirmationPanel') as HTMLElement | null;
+  const confirmationRef = document.getElementById('confirmationRef') as HTMLElement | null;
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!formError || !submitBtn) return;
+    formError.hidden = true;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Submitting…';
+
+    try {
+      const formData = new FormData(form);
+      const res = await fetch('/api/workshops', { method: 'POST', body: formData });
+
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}));
+        throw new Error(errBody.error || 'Something went wrong. Please try again.');
+      }
+
+      const data = await res.json();
+      if (confirmationRef) confirmationRef.textContent = data.reference;
+      form.hidden = true;
+      if (confirmationPanel) {
+        confirmationPanel.hidden = false;
+        confirmationPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    } catch (err: any) {
+      formError.textContent = err.message || 'Something went wrong. Please try again.';
+      formError.hidden = false;
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Submit signup';
+    }
+  });
+</script>

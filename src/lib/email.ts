@@ -308,6 +308,134 @@ export async function sendCourseEnrollmentStatusEmail(
   });
 }
 
+// ---------- Workshops: payment proof -> admin review -> group confirms ----------
+// Same shape as the booking/course-payment emails above, plus one new one
+// (sendWorkshopConfirmedEmail) that fires once for every approved
+// enrollee the moment an admin locks in the date + Meet link.
+
+export async function sendWorkshopEnrollmentReceivedEmail(
+  env: { RESEND_API_KEY?: string; EMAIL_FROM?: string },
+  args: { toEmail: string; toName: string; workshopTitle: string; reference: string }
+): Promise<{ ok: boolean; error?: string }> {
+  if (!env.RESEND_API_KEY || !env.EMAIL_FROM) {
+    return { ok: false, error: 'Email is not configured yet.' };
+  }
+  if (!EMAIL_RE.test(args.toEmail)) {
+    return { ok: false, error: 'Contact on file is not a valid email address.' };
+  }
+  const html = emailShell(`
+    <h1 style="font-size:22px;margin:0 0 16px;">We received your workshop signup</h1>
+    <p style="font-size:15px;line-height:1.6;">Hi ${escapeHtml(args.toName)},</p>
+    <p style="font-size:15px;line-height:1.6;">
+      Thank you for signing up for <strong>${escapeHtml(args.workshopTitle)}</strong>. We've received your payment
+      submission and we'll confirm your seat within 24 hours. The workshop itself will run once enough people
+      have joined -- we'll email you the date, time, and Google Meet link the moment it's locked in.
+    </p>
+    <p style="font-size:13px;color:#4B5760;margin-top:24px;">Reference: ${escapeHtml(args.reference)}</p>
+  `);
+  return sendEmail({
+    apiKey: env.RESEND_API_KEY,
+    from: env.EMAIL_FROM,
+    to: args.toEmail,
+    subject: `We've received your signup — ${args.workshopTitle}`,
+    html,
+  });
+}
+
+export async function sendNewWorkshopEnrollmentAdminEmail(
+  env: { RESEND_API_KEY?: string; EMAIL_FROM?: string; ADMIN_EMAIL?: string },
+  args: {
+    reference: string; name: string; email: string; phone: string; workshopTitle: string;
+    amountPkr: number; paymentMethod: string; notes?: string;
+  }
+): Promise<{ ok: boolean; error?: string }> {
+  if (!env.RESEND_API_KEY || !env.EMAIL_FROM) {
+    return { ok: false, error: 'Email is not configured yet.' };
+  }
+  const adminAddress = env.ADMIN_EMAIL || env.EMAIL_FROM;
+  const html = emailShell(`
+    <h1 style="font-size:20px;margin:0 0 16px;">New Workshop Signup</h1>
+    <p style="font-size:14px;line-height:1.5;">A new workshop payment has been submitted and requires review:</p>
+    <ul style="font-size:14px;line-height:1.6;padding-left:20px;">
+      <li><strong>Reference:</strong> ${escapeHtml(args.reference)}</li>
+      <li><strong>Workshop:</strong> ${escapeHtml(args.workshopTitle)}</li>
+      <li><strong>Name:</strong> ${escapeHtml(args.name)}</li>
+      <li><strong>Email:</strong> ${escapeHtml(args.email)}</li>
+      <li><strong>Phone:</strong> ${escapeHtml(args.phone)}</li>
+      <li><strong>Amount:</strong> PKR ${args.amountPkr} via ${escapeHtml(args.paymentMethod)}</li>
+      ${args.notes ? `<li><strong>Notes:</strong> ${escapeHtml(args.notes)}</li>` : ''}
+    </ul>
+    <p style="font-size:13px;color:#4B5760;">Review it from the workshop's page in the dashboard.</p>
+  `);
+  return sendEmail({
+    apiKey: env.RESEND_API_KEY,
+    from: env.EMAIL_FROM,
+    to: adminAddress,
+    subject: `[New Workshop Signup] ${args.workshopTitle} - ${args.name}`,
+    html,
+  });
+}
+
+export async function sendWorkshopEnrollmentStatusEmail(
+  env: { RESEND_API_KEY?: string; EMAIL_FROM?: string },
+  args: { toEmail: string; toName: string; workshopTitle: string; status: 'active' | 'declined' }
+): Promise<{ ok: boolean; error?: string }> {
+  if (!env.RESEND_API_KEY || !env.EMAIL_FROM) {
+    return { ok: false, error: 'Email is not configured yet.' };
+  }
+  if (!EMAIL_RE.test(args.toEmail)) {
+    return { ok: false, error: 'Contact on file is not a valid email address.' };
+  }
+  const isConfirmed = args.status === 'active';
+  const heading = isConfirmed ? 'Your seat is confirmed' : 'About your workshop payment';
+  const body = isConfirmed
+    ? `Your payment for <strong>${escapeHtml(args.workshopTitle)}</strong> has been confirmed and your seat is reserved. We'll email you the date, time, and Google Meet link once enough people have joined and the workshop is locked in.`
+    : `We couldn't confirm your payment for <strong>${escapeHtml(args.workshopTitle)}</strong> — usually this means the screenshot was unclear. Please resubmit with a clearer screenshot, or get in touch with us directly.`;
+  const html = emailShell(`
+    <h1 style="font-size:22px;margin:0 0 16px;">${heading}</h1>
+    <p style="font-size:15px;line-height:1.6;">Hi ${escapeHtml(args.toName)},</p>
+    <p style="font-size:15px;line-height:1.6;">${body}</p>
+  `);
+  return sendEmail({
+    apiKey: env.RESEND_API_KEY,
+    from: env.EMAIL_FROM,
+    to: args.toEmail,
+    subject: isConfirmed ? `Your seat is confirmed — ${args.workshopTitle}` : `About your payment — ${args.workshopTitle}`,
+    html,
+  });
+}
+
+export async function sendWorkshopConfirmedEmail(
+  env: { RESEND_API_KEY?: string; EMAIL_FROM?: string },
+  args: { toEmail: string; toName: string; workshopTitle: string; scheduledAt: string; meetLink: string }
+): Promise<{ ok: boolean; error?: string }> {
+  if (!env.RESEND_API_KEY || !env.EMAIL_FROM) {
+    return { ok: false, error: 'Email is not configured yet.' };
+  }
+  if (!EMAIL_RE.test(args.toEmail)) {
+    return { ok: false, error: 'Contact on file is not a valid email address.' };
+  }
+  const html = emailShell(`
+    <h1 style="font-size:22px;margin:0 0 16px;">We're on — the workshop is confirmed</h1>
+    <p style="font-size:15px;line-height:1.6;">Hi ${escapeHtml(args.toName)},</p>
+    <p style="font-size:15px;line-height:1.6;">
+      Enough people have joined <strong>${escapeHtml(args.workshopTitle)}</strong>, so it's officially happening.
+    </p>
+    <p style="font-size:15px;line-height:1.6;"><strong>When:</strong> ${escapeHtml(args.scheduledAt)}</p>
+    <p style="margin:28px 0;">
+      <a href="${args.meetLink}" style="background:#C7A44A;color:#131A22;text-decoration:none;padding:12px 24px;border-radius:2px;font-weight:600;display:inline-block;">Join on Google Meet</a>
+    </p>
+    <p style="font-size:13px;color:#4B5760;">Save this email — you'll need the link above at the scheduled time.</p>
+  `);
+  return sendEmail({
+    apiKey: env.RESEND_API_KEY,
+    from: env.EMAIL_FROM,
+    to: args.toEmail,
+    subject: `Confirmed: ${args.workshopTitle} — ${args.scheduledAt}`,
+    html,
+  });
+}
+
 export async function sendBookingReceivedClientEmail(
   env: { RESEND_API_KEY?: string; EMAIL_FROM?: string },
   args: { toEmail: string; toName: string; reference: string }

@@ -1,0 +1,310 @@
+---
+export const prerender = false;
+import DashboardLayout from '../../../layouts/DashboardLayout.astro';
+import { env } from 'cloudflare:workers';
+import { getSession } from '../../../lib/adminAuth';
+import { getWorkshopBySlug, countActiveEnrollments } from '../../../lib/workshops';
+
+const session = await getSession(Astro.request.headers.get('cookie'), env?.ADMIN_SESSION_SECRET || '');
+if (!session) return Astro.redirect('/dashboard/login');
+
+const { slug } = Astro.params;
+const workshop = slug ? await getWorkshopBySlug(env, slug) : undefined;
+if (!workshop) return Astro.redirect('/dashboard/workshops');
+
+const activeCount = await countActiveEnrollments(env, workshop.slug);
+
+const { results: enrollments } = await env.DB.prepare(
+  `SELECT id, name, email, phone, notes, status, amount_pkr, payment_method, screenshot_type, created_at, reviewed_at
+   FROM workshop_enrollments WHERE workshop_slug = ? ORDER BY created_at DESC`
+).bind(workshop.slug).all();
+---
+<DashboardLayout title={workshop.title} backHref="/dashboard/workshops" backLabel="All workshops">
+  <Fragment slot="header">
+    <header class="edit-header">
+      <div class="wrap">
+        <span class="eyebrow">Workshop</span>
+        <h1>{workshop.title}</h1>
+      </div>
+    </header>
+  </Fragment>
+
+  <main class="wrap edit-main">
+    <section class="panel">
+      <h2>Details</h2>
+      <form id="editForm" class="edit-form">
+        <div class="field">
+          <label for="title">Title</label>
+          <input type="text" id="title" value={workshop.title} required />
+        </div>
+        <div class="field">
+          <label for="description">Description</label>
+          <textarea id="description" rows="3">{workshop.description}</textarea>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="category">Topic</label>
+            <select id="category">
+              {['general','anxiety','depression','adhd','addiction-recovery','trauma','relationships','stress-burnout'].map((c) => (
+                <option value={c} selected={c === workshop.category}>{c}</option>
+              ))}
+            </select>
+          </div>
+          <div class="field">
+            <label for="instructor">Instructor</label>
+            <select id="instructor">
+              <option value="sohail" selected={workshop.instructor === 'sohail'}>Muhammad Sohail</option>
+              <option value="sehar" selected={workshop.instructor === 'sehar'}>Sehar Waheed</option>
+            </select>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field field--narrow">
+            <label for="pricePkr">Price (PKR)</label>
+            <input type="number" id="pricePkr" min="0" value={workshop.price_pkr} />
+          </div>
+          <div class="field field--narrow">
+            <label for="minSeats">Min. seats</label>
+            <input type="number" id="minSeats" min="1" value={workshop.min_seats} />
+          </div>
+          <div class="field field--narrow">
+            <label for="maxSeats">Max. seats</label>
+            <input type="number" id="maxSeats" min="1" value={workshop.max_seats ?? ''} placeholder="No cap" />
+          </div>
+          <div class="field field--toggle">
+            <label class="toggle">
+              <input type="checkbox" id="draft" checked={!!workshop.draft} />
+              <span>Draft (hidden from /workshops)</span>
+            </label>
+          </div>
+        </div>
+        <p class="form-error" id="editError" role="alert" hidden></p>
+        <p class="form-success" id="editSuccess" hidden>Saved ✓</p>
+        <div class="form-actions">
+          <button type="submit" class="btn btn--primary" id="saveBtn">Save changes</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="panel">
+      <div class="panel-header-row">
+        <h2>Cohort status</h2>
+        <span class="status-pill status-pill--{workshop.status}">{workshop.status}</span>
+      </div>
+
+      {workshop.status === 'confirmed' ? (
+        <p class="confirmed-info"><strong>Scheduled:</strong> {workshop.scheduled_at}<br/><strong>Meet link:</strong> <a href={workshop.meet_link || '#'} target="_blank" rel="noopener">{workshop.meet_link}</a></p>
+      ) : workshop.status === 'open' ? (
+        <>
+          <p class="seat-count">{activeCount} of {workshop.min_seats} required seats approved.</p>
+          <form id="confirmForm" class="confirm-form">
+            <div class="field">
+              <label for="scheduledAt">Date &amp; time</label>
+              <input type="text" id="scheduledAt" placeholder="e.g. Sat, 6 Sep 2026, 7:00 PM PKT" required />
+            </div>
+            <div class="field">
+              <label for="meetLink">Google Meet link</label>
+              <input type="url" id="meetLink" placeholder="https://meet.google.com/xxx-xxxx-xxx" required />
+            </div>
+            <p class="form-error" id="confirmError" role="alert" hidden></p>
+            <div class="form-actions">
+              <button type="button" class="btn btn--ghost" id="cancelWorkshopBtn">Cancel workshop</button>
+              <button type="submit" class="btn btn--primary" id="confirmBtn" disabled={activeCount < workshop.min_seats}>
+                {activeCount < workshop.min_seats ? `Need ${workshop.min_seats - activeCount} more approved` : 'Confirm & notify everyone'}
+              </button>
+            </div>
+          </form>
+        </>
+      ) : (
+        <p class="seat-count">This workshop is {workshop.status} — no further signups.</p>
+      )}
+    </section>
+
+    <section class="panel">
+      <h2>Enrollments ({enrollments.length})</h2>
+      {enrollments.length === 0 ? (
+        <p class="empty-note">No signups yet.</p>
+      ) : (
+        <table class="enroll-table">
+          <thead>
+            <tr><th>Name</th><th>Contact</th><th>Amount</th><th>Method</th><th>Status</th><th>Receipt</th><th>Action</th></tr>
+          </thead>
+          <tbody id="enrollTableBody">
+            {enrollments.map((e: any) => (
+              <tr data-id={e.id}>
+                <td>{e.name}{e.notes && <><br/><span class="row-note">{e.notes}</span></>}</td>
+                <td>{e.email}<br/><span class="row-note">{e.phone}</span></td>
+                <td>Rs. {e.amount_pkr}</td>
+                <td>{e.payment_method}</td>
+                <td><span class={`status-pill status-pill--${e.status}`}>{e.status}</span></td>
+                <td><a href={`/api/admin/workshop-screenshot/${e.id}`} target="_blank" rel="noopener">View</a></td>
+                <td class="row-actions">
+                  {e.status === 'pending' && (
+                    <>
+                      <button type="button" class="btn-mini btn-mini--approve" data-action="active" data-id={e.id}>Approve</button>
+                      <button type="button" class="btn-mini btn-mini--decline" data-action="declined" data-id={e.id}>Decline</button>
+                    </>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </section>
+  </main>
+</DashboardLayout>
+
+<style>
+  .edit-header { padding: 20px 0 8px; }
+  .eyebrow { display: block; font-size: 12.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--gold-500); margin-bottom: 4px; }
+  h1 { font-family: var(--font-display); font-size: 28px; margin: 0; color: var(--navy-950); }
+  .edit-main { padding: 24px 0 96px; max-width: 820px; display: grid; gap: 24px; }
+
+  .panel { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 24px 28px; }
+  .panel h2 { font-family: var(--font-display); font-size: 18px; margin: 0 0 16px; color: var(--navy-950); }
+  .panel-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .panel-header-row h2 { margin: 0; }
+
+  .edit-form, .confirm-form { display: grid; gap: 16px; }
+  .field { display: grid; gap: 6px; }
+  .field-row { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-end; }
+  .field-row .field { flex: 1; min-width: 140px; }
+  .field--narrow { max-width: 140px; }
+  .field--toggle { flex: 1 1 100%; }
+  label { font-size: 13.5px; font-weight: 600; color: var(--navy-950); }
+  input[type="text"], input[type="number"], input[type="url"], select, textarea {
+    padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; font: inherit; font-size: 14.5px;
+  }
+  textarea { resize: vertical; }
+  .toggle { display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500; }
+  .toggle input { width: 16px; height: 16px; }
+
+  .form-error { color: #B3261E; font-size: 13.5px; margin: 0; }
+  .form-success { color: #3d5b46; font-size: 13.5px; margin: 0; }
+  .form-actions { display: flex; justify-content: flex-end; gap: 10px; }
+  .btn { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14.5px; padding: 11px 20px; border-radius: 8px; border: none; cursor: pointer; }
+  .btn--primary { background: var(--navy-950); color: #fff; }
+  .btn--primary:hover { background: var(--navy-700); }
+  .btn--primary:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn--ghost { background: transparent; color: #a33; border: 1px solid var(--line); }
+  .btn--ghost:hover { border-color: #a33; }
+
+  .seat-count { font-size: 14.5px; color: var(--ink-700); margin: 0 0 14px; }
+  .confirmed-info { font-size: 14.5px; color: var(--ink-700); line-height: 1.7; }
+
+  .status-pill { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 3px 10px; border-radius: 20px; }
+  .status-pill--open { background: rgba(28,49,76,0.08); color: var(--navy-700); }
+  .status-pill--confirmed, .status-pill--active { background: rgba(124,152,133,0.18); color: #3d5b46; }
+  .status-pill--cancelled, .status-pill--declined { background: rgba(163,51,51,0.12); color: #a33; }
+  .status-pill--completed { background: rgba(28,49,76,0.08); color: var(--navy-700); }
+  .status-pill--pending { background: rgba(199,164,74,0.2); color: #8a6d1f; }
+
+  .empty-note { color: var(--ink-600); font-size: 14px; }
+  .enroll-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  .enroll-table th { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); color: var(--ink-600); font-weight: 600; }
+  .enroll-table td { padding: 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .row-note { color: var(--ink-600); font-size: 12px; }
+  .row-actions { white-space: nowrap; }
+  .btn-mini { font-size: 12px; font-weight: 600; padding: 6px 10px; border-radius: 6px; border: none; cursor: pointer; margin-right: 6px; }
+  .btn-mini--approve { background: rgba(124,152,133,0.18); color: #3d5b46; }
+  .btn-mini--decline { background: rgba(163,51,51,0.12); color: #a33; }
+
+  @media (max-width: 640px) {
+    .panel { padding: 18px; }
+    .enroll-table { display: block; overflow-x: auto; }
+  }
+</style>
+
+<script define:vars={{ slug: workshop.slug }}>
+  const editForm = document.getElementById('editForm');
+  const editError = document.getElementById('editError');
+  const editSuccess = document.getElementById('editSuccess');
+  const saveBtn = document.getElementById('saveBtn');
+
+  editForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    editError.hidden = true;
+    editSuccess.hidden = true;
+    saveBtn.disabled = true;
+    const get = (id) => document.getElementById(id).value;
+    try {
+      const res = await fetch('/api/admin/workshops', {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          slug,
+          title: get('title'),
+          description: get('description'),
+          category: get('category'),
+          instructor: get('instructor'),
+          pricePkr: parseFloat(get('pricePkr')) || 0,
+          minSeats: parseInt(get('minSeats'), 10) || undefined,
+          maxSeats: get('maxSeats') ? parseInt(get('maxSeats'), 10) : null,
+          draft: document.getElementById('draft').checked,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Something went wrong.');
+      editSuccess.hidden = false;
+      setTimeout(() => location.reload(), 700);
+    } catch (err) {
+      editError.textContent = err.message || 'Something went wrong.';
+      editError.hidden = false;
+    } finally {
+      saveBtn.disabled = false;
+    }
+  });
+
+  const confirmForm = document.getElementById('confirmForm');
+  confirmForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const confirmError = document.getElementById('confirmError');
+    const confirmBtn = document.getElementById('confirmBtn');
+    confirmError.hidden = true;
+    confirmBtn.disabled = true;
+    try {
+      const res = await fetch('/api/admin/workshops', {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          slug, action: 'confirm',
+          scheduledAt: document.getElementById('scheduledAt').value,
+          meetLink: document.getElementById('meetLink').value,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Something went wrong.');
+      location.reload();
+    } catch (err) {
+      confirmError.textContent = err.message || 'Something went wrong.';
+      confirmError.hidden = false;
+      confirmBtn.disabled = false;
+    }
+  });
+
+  document.getElementById('cancelWorkshopBtn')?.addEventListener('click', async () => {
+    if (!confirm('Cancel this workshop? This cannot be undone from here.')) return;
+    const res = await fetch('/api/admin/workshops', {
+      method: 'PATCH',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ slug, action: 'cancel' }),
+    });
+    if (res.ok) location.reload();
+  });
+
+  document.getElementById('enrollTableBody')?.addEventListener('click', async (e) => {
+    const btn = e.target.closest('.btn-mini');
+    if (!btn) return;
+    const id = btn.dataset.id;
+    const status = btn.dataset.action;
+    btn.closest('tr').style.opacity = '0.5';
+    const res = await fetch('/api/admin/workshop-enrollments', {
+      method: 'PATCH',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ id, status }),
+    });
+    if (res.ok) location.reload();
+    else btn.closest('tr').style.opacity = '1';
+  });
+</script>
