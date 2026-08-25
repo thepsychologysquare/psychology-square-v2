@@ -6,6 +6,17 @@ import sitemap from '@astrojs/sitemap';
 // https://astro.build/config
 export default defineConfig({
   site: 'https://thepsychologysquare.com',
+  // Canonical form is "always" trailing-slash (matches how the site already
+  // links internally in most places: /articles/, /services/therapy/,
+  // /team/, /resources/worksheets/...). Without this Astro's default
+  // ("ignore") lets a page render at both /services and /services/ with no
+  // preference, and each self-canonicalizes to whatever it was requested
+  // as — that's what let Google index both forms as separate "valid" pages
+  // (see GSC coverage: 0 duplicates in June, 81 by August). The actual
+  // enforcement (redirecting the non-slash form) happens in
+  // src/middleware.ts, since this setting alone doesn't make the server
+  // redirect existing indexed no-slash URLs.
+  trailingSlash: 'always',
   adapter: cloudflare({
     prerenderEnvironment: 'node',
   }),

@@ -23,7 +23,14 @@ const {
   noindex = false,
 } = Astro.props;
 const pageTitle = fullTitle ?? `${title} — The Psychology Square`;
-const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://thepsychologysquare.com');
+// Always emit the trailing-slash form in the canonical tag itself, as a
+// backstop to the middleware redirect — so even if a page ever gets
+// rendered directly under the no-slash path (a proxy, a cache edge case,
+// etc.), it never self-canonicalizes to the non-canonical URL.
+const canonicalPath = Astro.url.pathname.endsWith('/')
+  ? Astro.url.pathname
+  : `${Astro.url.pathname}/`;
+const canonicalURL = new URL(canonicalPath, Astro.site ?? 'https://thepsychologysquare.com');
 
 const ogImage = new URL(image, canonicalURL.origin);
 
@@ -257,18 +264,36 @@ const navAllArticleCategories = navCategorySlugsInUse
           {
             "@type": "SiteNavigationElement",
             "position": 10,
+            "name": "Workshops",
+            "url": "https://thepsychologysquare.com/workshops/"
+          },
+          {
+            "@type": "SiteNavigationElement",
+            "position": 11,
             "name": "Meet the Team",
             "url": "https://thepsychologysquare.com/team/"
           },
           {
             "@type": "SiteNavigationElement",
-            "position": 11,
+            "position": 12,
+            "name": "Muhammad Sohail",
+            "url": "https://thepsychologysquare.com/team/sohail/"
+          },
+          {
+            "@type": "SiteNavigationElement",
+            "position": 13,
+            "name": "Sehar Waheed",
+            "url": "https://thepsychologysquare.com/team/sehar/"
+          },
+          {
+            "@type": "SiteNavigationElement",
+            "position": 14,
             "name": "Book a Session",
             "url": "https://thepsychologysquare.com/book/"
           },
           {
             "@type": "SiteNavigationElement",
-            "position": 12,
+            "position": 15,
             "name": "Contact",
             "url": "https://thepsychologysquare.com/contact/"
           }
