@@ -13,7 +13,6 @@ if (!workshop || workshop.draft) {
 
 const activeCount = await countActiveEnrollments(env, workshop.slug);
 const isFull = workshop.max_seats != null && activeCount >= workshop.max_seats;
-const isClosed = workshop.status === 'cancelled' || workshop.status === 'completed';
 
 const INSTRUCTOR_NAMES: Record<string, string> = { sohail: 'Muhammad Sohail', sehar: 'Sehar Waheed' };
 const instructorName = INSTRUCTOR_NAMES[workshop.instructor] || workshop.instructor;
@@ -35,16 +34,16 @@ const instructorName = INSTRUCTOR_NAMES[workshop.instructor] || workshop.instruc
   <section class="wk-section">
     <div class="wrap wk-layout">
       <div class="wk-info">
-        {workshop.status === 'confirmed' ? (
-          <div class="status-banner status-banner--confirmed">
-            <strong>This workshop is confirmed.</strong>
+        {workshop.scheduled_at ? (
+          <div class="status-banner status-banner--tentative">
+            <strong>Tentative date &amp; time</strong>
             <p>{workshop.scheduled_at}</p>
-            <p>You'll receive the Google Meet link by email once your payment is reviewed.</p>
+            <p>This is subject to change. We'll confirm the exact time and send the Google Meet link by email once your payment is reviewed.</p>
           </div>
         ) : (
           <div class="status-banner">
-            <strong>{activeCount} of {workshop.min_seats} spots filled.</strong>
-            <p>This workshop runs live once enough people have joined. We'll email everyone the exact date, time, and Google Meet link the moment it's confirmed.</p>
+            <strong>Date &amp; time to be announced.</strong>
+            <p>This workshop runs live once enough people have joined. We'll email you the date, time, and Google Meet link once it's settled.</p>
           </div>
         )}
 
@@ -52,9 +51,7 @@ const instructorName = INSTRUCTOR_NAMES[workshop.instructor] || workshop.instruc
       </div>
 
       <div class="wk-form-panel">
-        {isClosed ? (
-          <p class="closed-note">This workshop is no longer accepting signups.</p>
-        ) : isFull ? (
+        {isFull ? (
           <p class="closed-note">This workshop is full. Please get in touch to be waitlisted for the next one.</p>
         ) : (
           <>
@@ -151,7 +148,7 @@ const instructorName = INSTRUCTOR_NAMES[workshop.instructor] || workshop.instruc
   .status-banner{ background:var(--paper-1, #f4f4f0); border-radius:12px; padding:20px 22px; margin-bottom:24px; }
   .status-banner strong{ display:block; margin-bottom:6px; color:var(--navy-950); }
   .status-banner p{ margin:4px 0 0; font-size:14px; color:var(--ink-600); }
-  .status-banner--confirmed{ background:rgba(124,152,133,0.14); }
+  .status-banner--tentative{ background:rgba(124,152,133,0.14); }
 
   .wk-detail-image{ width:100%; border-radius:12px; }
 

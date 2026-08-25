@@ -9,8 +9,6 @@ const session = await getSession(Astro.request.headers.get('cookie'), env?.ADMIN
 if (!session) return Astro.redirect('/dashboard/login');
 
 const workshops = await listAllWorkshops(env);
-
-const STATUS_LABELS: Record<string, string> = { open: 'Open', confirmed: 'Confirmed', cancelled: 'Cancelled', completed: 'Completed' };
 ---
 <DashboardLayout title="Workshops" backHref="/dashboard" backLabel="Back to dashboard">
   <Fragment slot="header">
@@ -20,7 +18,7 @@ const STATUS_LABELS: Record<string, string> = { open: 'Open', confirmed: 'Confir
           <div>
             <span class="eyebrow">Workshops</span>
             <h1>Workshops</h1>
-            <p class="studio-list-hint">Live, cohort-based sessions over Google Meet. Each one fills up before it's confirmed — approve enrollments here, then confirm once enough people are in.</p>
+            <p class="studio-list-hint">Publish when you're ready for signups. Once enough people join, message them yourself with the exact date, time, and Meet link.</p>
           </div>
           <a href="/dashboard/workshops/new" class="btn btn--primary">+ New workshop</a>
         </div>
@@ -44,13 +42,12 @@ const STATUS_LABELS: Record<string, string> = { open: 'Open', confirmed: 'Confir
               <div class="course-list__title-row">
                 <span class="course-list__title">{w.title}</span>
                 <span class={`badge ${w.draft ? 'badge--draft' : 'badge--published'}`}>{w.draft ? 'Draft' : 'Published'}</span>
-                <span class={`badge badge--status-${w.status}`}>{STATUS_LABELS[w.status] || w.status}</span>
                 {w.pendingCount > 0 && <span class="badge badge--pending">{w.pendingCount} pending</span>}
               </div>
               <p class="course-list__desc">{w.description}</p>
             </div>
             <div class="course-list__meta">
-              <span>{w.activeCount} of {w.min_seats} seats</span>
+              <span>{w.activeCount} approved</span>
               <span>Rs. {w.price_pkr.toLocaleString('en-US')}</span>
             </div>
           </a>
@@ -90,10 +87,6 @@ const STATUS_LABELS: Record<string, string> = { open: 'Open', confirmed: 'Confir
   .badge { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 3px 9px; border-radius: 20px; }
   .badge--draft { background: rgba(199,164,74,0.16); color: #8a6d1f; }
   .badge--published { background: rgba(124,152,133,0.18); color: #3d5b46; }
-  .badge--status-open { background: rgba(28,49,76,0.08); color: var(--navy-700); }
-  .badge--status-confirmed { background: rgba(124,152,133,0.18); color: #3d5b46; }
-  .badge--status-cancelled { background: rgba(163,51,51,0.12); color: #a33; }
-  .badge--status-completed { background: rgba(28,49,76,0.08); color: var(--navy-700); }
   .badge--pending { background: rgba(199,164,74,0.2); color: #8a6d1f; }
 
   @media (max-width: 640px) {

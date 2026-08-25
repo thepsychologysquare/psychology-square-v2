@@ -3,9 +3,9 @@ import { env } from 'cloudflare:workers';
 import { getSession } from '../../../lib/adminAuth';
 import {
   listAllWorkshops, getWorkshopBySlug, generateUniqueSlug, createWorkshop, updateWorkshop,
-  confirmWorkshop, cancelWorkshop, countActiveEnrollments, ALLOWED_CATEGORIES, WORKSHOP_MIN_SEATS_DEFAULT,
+  deleteWorkshop, WORKSHOP_MIN_SEATS_DEFAULT,
 } from '../../../lib/workshops';
-import { sendWorkshopConfirmedEmail } from '../../../lib/email';
+import { validateCategory } from '../../../lib/workshopCategories';
 
 export const prerender = false;
 
@@ -29,8 +29,7 @@ export const POST: APIRoute = async ({ request }) => {
   if (!body?.title?.trim()) return jsonError('Title is required.', 400);
   if (!Number.isFinite(body.pricePkr) || body.pricePkr < 0) return jsonError('A valid price is required.', 400);
 
-  let category = String(body.category || 'general').trim().toLowerCase();
-  if (!(ALLOWED_CATEGORIES as readonly string[]).includes(category)) category = 'general';
+  const category = await validateCategory(env, body.category);
 
   const slug = await generateUniqueSlug(env, body.title.trim());
   await createWorkshop(env, slug, {
@@ -49,9 +48,10 @@ export const POST: APIRoute = async ({ request }) => {
   return new Response(JSON.stringify({ slug }), { status: 201, headers: { 'content-type': 'application/json' } });
 };
 
-// Handles both a plain field edit and the two one-way actions
-// ('confirm' / 'cancel') via an `action` field in the body, so the studio
-// UI only needs one endpoint to talk to.
+// Plain field edit only now — publish/unpublish is just `draft`, same as
+// courses, and "confirm"/"cancel" cohort actions were removed: the admin
+// sets a free-text tentative date (`scheduledAt`) whenever they like and
+// messages enrollees manually once a time is settled.
 export const PATCH: APIRoute = async ({ request }) => {
   const session = await getSession(request.headers.get('cookie'), env?.ADMIN_SESSION_SECRET || '');
   if (!session) return jsonError('Not signed in.', 401);
@@ -63,49 +63,40 @@ export const PATCH: APIRoute = async ({ request }) => {
   const workshop = await getWorkshopBySlug(env, slug);
   if (!workshop) return jsonError('Workshop not found.', 404);
 
-  if (body.action === 'confirm') {
-    const scheduledAt = String(body.scheduledAt || '').trim();
-    const meetLink = String(body.meetLink || '').trim();
-    if (!scheduledAt) return jsonError('Please provide a date/time.', 400);
-    if (!meetLink) return jsonError('Please provide the Google Meet link.', 400);
-
-    const activeCount = await countActiveEnrollments(env, slug);
-    if (activeCount < workshop.min_seats) {
-      return jsonError(`Only ${activeCount} of ${workshop.min_seats} required seats are approved — approve more enrollments first, or confirm anyway isn't supported to avoid running an under-filled cohort by accident.`, 400);
-    }
-
-    await confirmWorkshop(env, slug, scheduledAt, meetLink);
-
-    const { results: enrollees } = await env.DB.prepare(
-      `SELECT name, email FROM workshop_enrollments WHERE workshop_slug = ? AND status = 'active'`
-    ).bind(slug).all();
-
-    for (const person of enrollees as { name: string; email: string }[]) {
-      await sendWorkshopConfirmedEmail(env, {
-        toEmail: person.email, toName: person.name, workshopTitle: workshop.title, scheduledAt, meetLink,
-      }).catch(() => {});
-    }
-
-    return new Response(JSON.stringify({ ok: true, notified: enrollees.length }), { status: 200, headers: { 'content-type': 'application/json' } });
-  }
-
-  if (body.action === 'cancel') {
-    await cancelWorkshop(env, slug);
-    return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { 'content-type': 'application/json' } });
-  }
-
-  // Plain field edit.
   const patch: Record<string, any> = {};
-  for (const key of ['title', 'description', 'instructor', 'pricePkr', 'minSeats', 'maxSeats', 'image', 'imageAlt', 'draft']) {
+  for (const key of ['title', 'description', 'instructor', 'pricePkr', 'minSeats', 'maxSeats', 'image', 'imageAlt', 'draft', 'scheduledAt']) {
     if (key in body) patch[key] = body[key];
   }
   if ('category' in body) {
-    let category = String(body.category || 'general').trim().toLowerCase();
-    if (!(ALLOWED_CATEGORIES as readonly string[]).includes(category)) category = 'general';
-    patch.category = category;
+    patch.category = await validateCategory(env, body.category);
   }
   if (Object.keys(patch).length === 0) return jsonError('Nothing to update.', 400);
 
   await updateWorkshop(env, slug, patch);
+  return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { 'content-type': 'application/json' } });
+};
+
+// Full delete — the workshop and every enrollment tied to it. Screenshot
+// cleanup in R2 happens here too since this route has the binding.
+export const DELETE: APIRoute = async ({ request, url }) => {
+  const session = await getSession(request.headers.get('cookie'), env?.ADMIN_SESSION_SECRET || '');
+  if (!session) return jsonError('Not signed in.', 401);
+
+  const slug = url.searchParams.get('slug');
+  if (!slug) return jsonError('Missing workshop slug.', 400);
+
+  const workshop = await getWorkshopBySlug(env, slug);
+  if (!workshop) return jsonError('Workshop not found.', 404);
+
+  const { results: shots } = await env.DB.prepare(
+    `SELECT screenshot_key FROM workshop_enrollments WHERE workshop_slug = ? AND screenshot_key IS NOT NULL`
+  ).bind(slug).all();
+
+  await deleteWorkshop(env, slug);
+
+  for (const row of shots as { screenshot_key: string }[]) {
+    if (row.screenshot_key) await env.SCREENSHOTS.delete(row.screenshot_key).catch(() => {});
+  }
+
   return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { 'content-type': 'application/json' } });
 };

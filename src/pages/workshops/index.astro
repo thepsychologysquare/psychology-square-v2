@@ -3,14 +3,10 @@ export const prerender = false;
 import Layout from '../../layouts/Layout.astro';
 import { env } from 'cloudflare:workers';
 import { listPublicWorkshops } from '../../lib/workshops';
+import { categoryLabelMap } from '../../lib/workshopCategories';
 
 const workshops = await listPublicWorkshops(env);
-
-const CATEGORY_LABELS: Record<string, string> = {
-  general: 'General', anxiety: 'Anxiety', depression: 'Depression', adhd: 'ADHD',
-  'addiction-recovery': 'Addiction Recovery', trauma: 'Trauma', relationships: 'Relationships',
-  'stress-burnout': 'Stress & Burnout',
-};
+const CATEGORY_LABELS = await categoryLabelMap(env);
 
 const INSTRUCTOR_NAMES: Record<string, string> = { sohail: 'Muhammad Sohail', sehar: 'Sehar Waheed' };
 ---
@@ -36,13 +32,13 @@ const INSTRUCTOR_NAMES: Record<string, string> = { sohail: 'Muhammad Sohail', se
               <div class="wk-card__body">
                 <div class="wk-card__top">
                   <span class="badge">{CATEGORY_LABELS[w.category] || w.category}</span>
-                  {w.status === 'confirmed' && <span class="badge badge--confirmed">Confirmed</span>}
                 </div>
                 <h2 class="wk-card__title">{w.title}</h2>
                 <p class="wk-card__desc">{w.description}</p>
                 <div class="wk-card__meta">
                   <span class="wk-card__price">PKR {w.price_pkr.toLocaleString('en-US')}</span>
                 </div>
+                {w.scheduled_at && <span class="wk-card__tentative">Tentative: {w.scheduled_at}</span>}
                 {w.instructor && <span class="wk-card__instructor">With {INSTRUCTOR_NAMES[w.instructor] || w.instructor}</span>}
               </div>
             </a>
@@ -104,11 +100,11 @@ const INSTRUCTOR_NAMES: Record<string, string> = { sohail: 'Muhammad Sohail', se
   .wk-card__body{ padding:18px 20px; display:flex; flex-direction:column; gap:8px; }
   .wk-card__top{ display:flex; gap:8px; flex-wrap:wrap; }
   .badge{ font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; padding:3px 9px; border-radius:20px; background:rgba(28,49,76,0.08); color:var(--navy-700); }
-  .badge--confirmed{ background:rgba(124,152,133,0.18); color:#3d5b46; }
   .wk-card__title{ font-family:var(--font-display); font-size:19px; margin:0; color:var(--navy-950); }
   .wk-card__desc{ margin:0; color:var(--ink-600); font-size:14px; line-height:1.5; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
   .wk-card__meta{ display:flex; align-items:center; font-size:13px; margin-top:4px; }
   .wk-card__price{ font-weight:700; color:var(--navy-950); }
+  .wk-card__tentative{ font-size:12px; color:var(--ink-600); }
   .wk-card__instructor{ font-size:12.5px; color:var(--ink-600); }
 
   .request-cta-banner{

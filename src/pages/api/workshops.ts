@@ -81,9 +81,6 @@ export const POST: APIRoute = async ({ request }) => {
 
   const workshop = await getWorkshopBySlug(env, workshopSlug);
   if (!workshop || workshop.draft) return jsonError('Workshop not found.', 404);
-  if (workshop.status === 'cancelled' || workshop.status === 'completed') {
-    return jsonError('This workshop is no longer accepting signups.', 400);
-  }
   if (workshop.max_seats != null) {
     const activeCount = await countActiveEnrollments(env, workshopSlug);
     if (activeCount >= workshop.max_seats) {

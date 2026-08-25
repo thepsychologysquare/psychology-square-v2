@@ -4,9 +4,12 @@ import DashboardLayout from '../../../layouts/DashboardLayout.astro';
 import { env } from 'cloudflare:workers';
 import { getSession } from '../../../lib/adminAuth';
 import { WORKSHOP_MIN_SEATS_DEFAULT } from '../../../lib/workshops';
+import { listWorkshopCategories } from '../../../lib/workshopCategories';
 
 const session = await getSession(Astro.request.headers.get('cookie'), env?.ADMIN_SESSION_SECRET || '');
 if (!session) return Astro.redirect('/dashboard/login');
+
+const categories = await listWorkshopCategories(env);
 ---
 <DashboardLayout title="New workshop" backHref="/dashboard/workshops" backLabel="All workshops">
   <Fragment slot="header">
@@ -35,15 +38,17 @@ if (!session) return Astro.redirect('/dashboard/login');
         <div class="field">
           <label for="category">Topic</label>
           <select id="category">
-            <option value="general">General</option>
-            <option value="anxiety">Anxiety</option>
-            <option value="depression">Depression</option>
-            <option value="adhd">ADHD</option>
-            <option value="addiction-recovery">Addiction &amp; Recovery</option>
-            <option value="trauma">Trauma</option>
-            <option value="relationships">Relationships</option>
-            <option value="stress-burnout">Stress &amp; Burnout</option>
+            {categories.map((c) => (
+              <option value={c.value}>{c.label}</option>
+            ))}
           </select>
+          <button type="button" class="add-topic-link" id="addTopicLink">+ Add a new topic</button>
+          <div class="add-topic-row" id="addTopicRow" hidden>
+            <input type="text" id="newTopicInput" placeholder="e.g. Grief" />
+            <button type="button" class="btn btn--ghost btn--small" id="addTopicBtn">Add</button>
+            <button type="button" class="btn btn--ghost btn--small" id="cancelTopicBtn">Cancel</button>
+          </div>
+          <p class="field-error" id="addTopicError" role="alert" hidden></p>
         </div>
         <div class="field">
           <label for="instructor">Instructor</label>
@@ -101,6 +106,12 @@ if (!session) return Astro.redirect('/dashboard/login');
   .field-optional { font-weight: 400; color: var(--ink-600); }
   .field-hint { margin: 2px 0 0; font-size: 12.5px; color: var(--ink-600); }
 
+  .add-topic-link { background: none; border: none; padding: 0; margin-top: 2px; font-size: 12.5px; color: var(--navy-700); font-weight: 600; cursor: pointer; text-align: left; }
+  .add-topic-link:hover { text-decoration: underline; }
+  .add-topic-row { display: flex; gap: 8px; margin-top: 4px; }
+  .add-topic-row input { flex: 1; min-width: 0; }
+  .field-error { color: #B3261E; font-size: 12.5px; margin: 2px 0 0; }
+
   input[type="text"], input[type="number"], select, textarea {
     padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; font: inherit; font-size: 14.5px;
     background: var(--paper-0); color: var(--ink-900); width: 100%; box-sizing: border-box;
@@ -117,6 +128,7 @@ if (!session) return Astro.redirect('/dashboard/login');
   .btn--primary:disabled { opacity: 0.6; cursor: wait; }
   .btn--ghost { background: transparent; color: var(--ink-600); border: 1px solid var(--line); }
   .btn--ghost:hover { border-color: var(--navy-950); color: var(--navy-950); }
+  .btn--small { padding: 6px 12px; font-size: 12.5px; }
 
   @media (max-width: 640px) {
     .new-main { padding: 16px 0 64px; }
@@ -134,6 +146,54 @@ if (!session) return Astro.redirect('/dashboard/login');
   const form = document.getElementById('newWorkshopForm') as HTMLFormElement;
   const errorEl = document.getElementById('formError') as HTMLElement;
   const createBtn = document.getElementById('createBtn') as HTMLButtonElement;
+  const categorySelect = document.getElementById('category') as HTMLSelectElement;
+
+  // ---------- Add a new topic inline ----------
+  const addTopicLink = document.getElementById('addTopicLink') as HTMLButtonElement;
+  const addTopicRow = document.getElementById('addTopicRow') as HTMLElement;
+  const newTopicInput = document.getElementById('newTopicInput') as HTMLInputElement;
+  const addTopicBtn = document.getElementById('addTopicBtn') as HTMLButtonElement;
+  const cancelTopicBtn = document.getElementById('cancelTopicBtn') as HTMLButtonElement;
+  const addTopicError = document.getElementById('addTopicError') as HTMLElement;
+
+  addTopicLink.addEventListener('click', () => {
+    addTopicLink.hidden = true;
+    addTopicRow.hidden = false;
+    newTopicInput.focus();
+  });
+  cancelTopicBtn.addEventListener('click', () => {
+    addTopicRow.hidden = true;
+    addTopicLink.hidden = false;
+    addTopicError.hidden = true;
+    newTopicInput.value = '';
+  });
+  addTopicBtn.addEventListener('click', async () => {
+    const label = newTopicInput.value.trim();
+    addTopicError.hidden = true;
+    if (!label) { addTopicError.textContent = 'Please enter a topic name.'; addTopicError.hidden = false; return; }
+    addTopicBtn.disabled = true;
+    try {
+      const res = await fetch('/api/admin/workshop-categories', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ label }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Could not add that topic.');
+      const opt = document.createElement('option');
+      opt.value = data.category.value;
+      opt.textContent = data.category.label;
+      categorySelect.appendChild(opt);
+      categorySelect.value = data.category.value;
+      addTopicRow.hidden = true;
+      addTopicLink.hidden = false;
+      newTopicInput.value = '';
+    } catch (err: any) {
+      addTopicError.textContent = err.message || 'Could not add that topic.';
+      addTopicError.hidden = false;
+    } finally {
+      addTopicBtn.disabled = false;
+    }
+  });
 
   const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
   const ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);

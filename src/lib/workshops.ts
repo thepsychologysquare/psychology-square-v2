@@ -7,11 +7,6 @@
 
 export const WORKSHOP_MIN_SEATS_DEFAULT = 6; // same number for every workshop, per how these are run today
 
-export const ALLOWED_CATEGORIES = [
-  'general', 'anxiety', 'depression', 'adhd', 'addiction-recovery',
-  'trauma', 'relationships', 'stress-burnout',
-] as const;
-
 export interface WorkshopRow {
   slug: string;
   title: string;
@@ -23,9 +18,9 @@ export interface WorkshopRow {
   max_seats: number | null;
   image: string | null;
   image_alt: string | null;
-  status: 'open' | 'confirmed' | 'cancelled' | 'completed';
-  scheduled_at: string | null;
-  meet_link: string | null;
+  status: 'open' | 'confirmed' | 'cancelled' | 'completed'; // legacy — publish/unpublish is via `draft` now; status stays 'open'
+  scheduled_at: string | null; // free-text "tentative date & time", set manually by the admin, not gated on enrollment count
+  meet_link: string | null; // unused for now — sent manually to enrollees once a time is settled
   draft: number;
   sort_order: number;
   created_at: string;
@@ -186,16 +181,10 @@ export async function updateWorkshop(env: any, slug: string, patch: Record<strin
     .run();
 }
 
-/**
- * Locks in the workshop's date/time + Meet link and flips it to 'confirmed'.
- * Caller (the admin API route) is responsible for emailing every 'active'
- * enrollee afterward -- kept out of this function so it stays a pure DB
- * write, easy to reason about independent of email delivery succeeding.
- */
-export async function confirmWorkshop(env: any, slug: string, scheduledAt: string, meetLink: string): Promise<void> {
-  await updateWorkshop(env, slug, { status: 'confirmed', scheduledAt, meetLink });
-}
-
-export async function cancelWorkshop(env: any, slug: string): Promise<void> {
-  await updateWorkshop(env, slug, { status: 'cancelled' });
+/** Deletes a workshop and everything tied to it (enrollments; screenshots are cleaned up by the caller, which has the R2 binding). */
+export async function deleteWorkshop(env: any, slug: string): Promise<void> {
+  await env.DB.batch([
+    env.DB.prepare(`DELETE FROM workshop_enrollments WHERE workshop_slug = ?`).bind(slug),
+    env.DB.prepare(`DELETE FROM workshops WHERE slug = ?`).bind(slug),
+  ]);
 }
