@@ -3,6 +3,7 @@ export const prerender = false;
 import Layout from '../../layouts/Layout.astro';
 import { env } from 'cloudflare:workers';
 import { getWorkshopBySlug, countActiveEnrollments } from '../../lib/workshops';
+import { textToHtml } from '../../lib/richText';
 
 const { slug } = Astro.params;
 const workshop = slug ? await getWorkshopBySlug(env, slug) : undefined;
@@ -16,8 +17,50 @@ const isFull = workshop.max_seats != null && activeCount >= workshop.max_seats;
 
 const INSTRUCTOR_NAMES: Record<string, string> = { sohail: 'Muhammad Sohail', sehar: 'Sehar Waheed' };
 const instructorName = INSTRUCTOR_NAMES[workshop.instructor] || workshop.instructor;
+
+const siteOrigin = 'https://thepsychologysquare.com';
+const pageUrl = `${siteOrigin}/workshops/${workshop.slug}`;
+const detailsHtml = workshop.details?.trim() ? textToHtml(workshop.details) : '';
+
+// Course schema (not Event) since scheduled_at is a free-text, tentative
+// value rather than a machine-readable date -- Course doesn't require one,
+// so this stays valid without overclaiming a fixed start time.
+const courseJson: Record<string, any> = {
+  '@context': 'https://schema.org',
+  '@type': 'Course',
+  name: workshop.title,
+  description: workshop.description,
+  url: pageUrl,
+  provider: { '@id': `${siteOrigin}/#business` },
+  offers: {
+    '@type': 'Offer',
+    price: workshop.price_pkr,
+    priceCurrency: 'PKR',
+    availability: isFull ? 'https://schema.org/SoldOut' : 'https://schema.org/InStock',
+    url: pageUrl,
+  },
+  hasCourseInstance: {
+    '@type': 'CourseInstance',
+    courseMode: 'online',
+    ...(instructorName ? { instructor: { '@type': 'Person', name: instructorName } } : {}),
+  },
+};
+if (workshop.image) courseJson.image = workshop.image;
+
+const breadcrumbJson = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: `${siteOrigin}/` },
+    { '@type': 'ListItem', position: 2, name: 'Workshops', item: `${siteOrigin}/workshops` },
+    { '@type': 'ListItem', position: 3, name: workshop.title, item: pageUrl },
+  ],
+};
 ---
 <Layout title={workshop.title} description={workshop.description} image={workshop.image || undefined}>
+  <script type="application/ld+json" set:html={JSON.stringify(courseJson)} />
+  <script type="application/ld+json" set:html={JSON.stringify(breadcrumbJson)} />
+
   <section class="hero">
     <div class="wrap">
       <a href="/workshops" class="wk-back">&larr; All workshops</a>
@@ -48,6 +91,13 @@ const instructorName = INSTRUCTOR_NAMES[workshop.instructor] || workshop.instruc
         )}
 
         {workshop.image && <img src={workshop.image} alt={workshop.image_alt || workshop.title} class="wk-detail-image" />}
+
+        {detailsHtml && (
+          <section class="wk-details" aria-labelledby="wk-details-heading">
+            <h2 id="wk-details-heading">Workshop Details</h2>
+            <div class="wk-details-body" set:html={detailsHtml} />
+          </section>
+        )}
       </div>
 
       <div class="wk-form-panel">
@@ -149,6 +199,22 @@ const instructorName = INSTRUCTOR_NAMES[workshop.instructor] || workshop.instruc
   .status-banner--tentative{ background:rgba(124,152,133,0.14); }
 
   .wk-detail-image{ width:100%; border-radius:12px; }
+
+  .wk-details{ margin-top:28px; }
+  .wk-details h2{ font-size:22px; margin:0 0 14px; color:var(--navy-950); }
+  .wk-details-body{ font-size:15px; line-height:1.7; color:var(--ink-700); max-width:68ch; overflow-wrap:break-word; }
+  .wk-details-body :global(h2){ font-size:19px; margin:28px 0 12px; color:var(--navy-950); }
+  .wk-details-body :global(h2:first-child){ margin-top:0; }
+  .wk-details-body :global(h3){ font-size:16px; margin:22px 0 10px; color:var(--navy-950); }
+  .wk-details-body :global(h3:first-child){ margin-top:0; }
+  .wk-details-body :global(h4){ font-size:14.5px; margin:18px 0 8px; color:var(--navy-950); text-transform:uppercase; letter-spacing:0.03em; }
+  .wk-details-body :global(p){ margin:0 0 16px; }
+  .wk-details-body :global(p:last-child){ margin-bottom:0; }
+  .wk-details-body :global(ul), .wk-details-body :global(ol){ margin:0 0 16px; padding-left:22px; }
+  .wk-details-body :global(li){ margin-bottom:6px; }
+  .wk-details-body :global(li:last-child){ margin-bottom:0; }
+  .wk-details-body :global(strong), .wk-details-body :global(b){ font-weight:700; color:var(--ink-900); }
+  .wk-details-body :global(blockquote){ margin:0 0 16px; padding-left:16px; border-left:3px solid var(--line); color:var(--ink-600); font-style:italic; }
 
   .wk-form-panel{ background:#fff; border:1px solid var(--line); border-radius:14px; padding:28px; }
   .closed-note{ color:var(--ink-600); font-size:15px; }

@@ -43,6 +43,7 @@ export const POST: APIRoute = async ({ request }) => {
     image: body.image ?? null,
     imageAlt: body.imageAlt ?? null,
     scheduledAt: body.scheduledAt ?? null,
+    details: body.details || '',
     draft: body.draft !== false,
   });
 
@@ -65,7 +66,7 @@ export const PATCH: APIRoute = async ({ request }) => {
   if (!workshop) return jsonError('Workshop not found.', 404);
 
   const patch: Record<string, any> = {};
-  for (const key of ['title', 'description', 'instructor', 'pricePkr', 'minSeats', 'maxSeats', 'image', 'imageAlt', 'draft', 'scheduledAt']) {
+  for (const key of ['title', 'description', 'instructor', 'pricePkr', 'minSeats', 'maxSeats', 'image', 'imageAlt', 'draft', 'scheduledAt', 'details']) {
     if (key in body) patch[key] = body[key];
   }
   if ('category' in body) {

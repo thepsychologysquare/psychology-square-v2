@@ -18,6 +18,7 @@ export interface WorkshopRow {
   max_seats: number | null;
   image: string | null;
   image_alt: string | null;
+  details: string; // long-form "Workshop details" copy shown below the image on the public page -- see migrations-2026-08-workshop-details.sql
   status: 'open' | 'confirmed' | 'cancelled' | 'completed'; // legacy — publish/unpublish is via `draft` now; status stays 'open'
   scheduled_at: string | null; // free-text "tentative date & time", set manually by the admin, not gated on enrollment count
   meet_link: string | null; // unused for now — sent manually to enrollees once a time is settled
@@ -122,6 +123,7 @@ export interface WorkshopInput {
   image?: string | null;
   imageAlt?: string | null;
   scheduledAt?: string | null;
+  details?: string;
   draft: boolean;
 }
 
@@ -130,8 +132,8 @@ export async function createWorkshop(env: any, slug: string, input: WorkshopInpu
   const max = await env.DB.prepare(`SELECT COALESCE(MAX(sort_order), -1) AS m FROM workshops`).first<{ m: number }>();
   await env.DB.prepare(
     `INSERT INTO workshops
-      (slug, title, description, category, instructor, price_pkr, min_seats, max_seats, image, image_alt, status, scheduled_at, draft, sort_order, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'open', ?, ?, ?, ?, ?)`
+      (slug, title, description, category, instructor, price_pkr, min_seats, max_seats, image, image_alt, status, scheduled_at, details, draft, sort_order, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'open', ?, ?, ?, ?, ?, ?)`
   ).bind(
     slug,
     input.title,
@@ -144,6 +146,7 @@ export async function createWorkshop(env: any, slug: string, input: WorkshopInpu
     input.image ?? null,
     input.imageAlt ?? null,
     input.scheduledAt ?? null,
+    input.details ?? '',
     input.draft ? 1 : 0,
     (max?.m ?? -1) + 1,
     now,
@@ -166,6 +169,7 @@ export async function updateWorkshop(env: any, slug: string, patch: Record<strin
     status: 'status',
     scheduledAt: 'scheduled_at',
     meetLink: 'meet_link',
+    details: 'details',
   };
   const fields: Record<string, any> = {};
   for (const [key, col] of Object.entries(columnMap)) {

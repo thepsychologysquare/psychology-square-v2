@@ -91,6 +91,12 @@ const categories = await listWorkshopCategories(env);
         <p class="field-hint" id="imageStatus"></p>
       </div>
 
+      <div class="field">
+        <label for="details">Workshop details <span class="field-optional">(optional — the long-form content shown below the image on the public page; this is what helps the page rank in search)</span></label>
+        <textarea id="details" rows="10" placeholder={'What this workshop covers, who it\u2019s for, what\u2019s included, etc. Blank lines become paragraphs. You can also type <h2>Section</h2> or <h3>Sub-section</h3> to add real subheadings.'}></textarea>
+        <p class="field-hint">Write real, specific copy here — this is the main text Google indexes for this workshop, separate from the short description above.</p>
+      </div>
+
       <p class="form-error" id="formError" role="alert" hidden></p>
 
       <div class="form-actions">
@@ -278,6 +284,7 @@ const categories = await listWorkshopCategories(env);
           minSeats: parseInt(get('minSeats'), 10) || undefined,
           maxSeats: get('maxSeats') ? parseInt(get('maxSeats'), 10) : null,
           scheduledAt: get('scheduledAt').trim() || null,
+          details: get('details'),
           image: uploadedImageUrl || undefined,
           draft: true,
         }),

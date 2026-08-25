@@ -95,6 +95,11 @@ const { results: enrollments } = await env.DB.prepare(
           <label for="scheduledAt">Tentative date &amp; time <span class="field-optional">(optional — shown to visitors as tentative; message enrollees the exact plan and Meet link yourself once it's settled)</span></label>
           <input type="text" id="scheduledAt" value={workshop.scheduled_at ?? ''} placeholder="e.g. Sat, 6 Sep 2026, 7:00 PM PKT (tentative)" />
         </div>
+        <div class="field">
+          <label for="details">Workshop details <span class="field-optional">(optional — the long-form content shown below the image on the public page; this is what helps the page rank in search)</span></label>
+          <textarea id="details" rows="10" placeholder={'What this workshop covers, who it\u2019s for, what\u2019s included, etc. Blank lines become paragraphs. You can also type <h2>Section</h2> or <h3>Sub-section</h3> to add real subheadings.'}>{workshop.details}</textarea>
+          <p class="field-hint">Write real, specific copy here — this is the main text Google indexes for this workshop, separate from the short description above.</p>
+        </div>
         <p class="form-error" id="editError" role="alert" hidden></p>
         <p class="form-success" id="editSuccess" hidden>Saved ✓</p>
         <div class="form-actions">
@@ -172,6 +177,7 @@ const { results: enrollments } = await env.DB.prepare(
   .field--narrow { flex: 1 1 160px; max-width: 200px; }
   label { font-size: 13.5px; font-weight: 600; color: var(--navy-950); }
   .field-optional { font-weight: 400; color: var(--ink-600); }
+  .field-hint { margin: 2px 0 0; font-size: 12.5px; color: var(--ink-600); }
   input[type="text"], input[type="number"], input[type="url"], select, textarea {
     padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; font: inherit; font-size: 14.5px;
     width: 100%; box-sizing: border-box;
@@ -244,6 +250,7 @@ const { results: enrollments } = await env.DB.prepare(
           minSeats: parseInt(get('minSeats'), 10) || undefined,
           maxSeats: get('maxSeats') ? parseInt(get('maxSeats'), 10) : null,
           scheduledAt: get('scheduledAt').trim() || null,
+          details: get('details'),
         }),
       });
       const data = await res.json();

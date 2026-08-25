@@ -1,0 +1,21 @@
+-- Adds a long-form "Workshop details" content field to `workshops`, shown
+-- on the public workshop page (src/pages/workshops/[slug].astro) right
+-- below the cover image. Unlike `description` (a one-or-two-sentence
+-- summary used on cards and the hero), `details` is meant to be a real
+-- chunk of unique, keyword-relevant copy for that workshop -- what it
+-- covers, who it's for, what's included -- which is what actually helps an
+-- individual workshop page rank, since there was previously almost no
+-- indexable body text on these pages.
+--
+-- Authored as plain text in the dashboard textarea (blank lines become
+-- paragraphs) or with a light set of HTML tags for structure -- see
+-- src/lib/richText.ts for exactly what's allowed and rendered.
+--
+-- Additive only -- safe default, existing rows and the read path in
+-- src/lib/workshops.ts keep working untouched for any workshop that
+-- hasn't set this yet.
+--
+-- Run once against your D1 database:
+--   npx wrangler d1 execute psychology-square-bookings --remote --file=./migrations-2026-08-workshop-details.sql
+
+ALTER TABLE workshops ADD COLUMN details TEXT NOT NULL DEFAULT '';
