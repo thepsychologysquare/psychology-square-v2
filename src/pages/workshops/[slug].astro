@@ -18,11 +18,11 @@ const INSTRUCTOR_NAMES: Record<string, string> = { sohail: 'Muhammad Sohail', se
 const instructorName = INSTRUCTOR_NAMES[workshop.instructor] || workshop.instructor;
 ---
 <Layout title={workshop.title} description={workshop.description} image={workshop.image || undefined}>
-  <section class="wk-hero">
+  <section class="hero">
     <div class="wrap">
       <a href="/workshops" class="wk-back">&larr; All workshops</a>
       <h1>{workshop.title}</h1>
-      <p class="wk-hero-sub">{workshop.description}</p>
+      <p class="hero-sub">{workshop.description}</p>
       <div class="wk-hero-meta">
         <span>PKR {workshop.price_pkr.toLocaleString('en-US')}</span>
         {instructorName && <span>With {instructorName}</span>}
@@ -133,11 +133,9 @@ const instructorName = INSTRUCTOR_NAMES[workshop.instructor] || workshop.instruc
 </Layout>
 
 <style>
-  .wk-hero{ background:var(--navy-950); color:var(--paper-0); padding:48px 0 40px; }
   .wk-back{ color:rgba(248,249,246,0.7); font-size:13px; text-decoration:none; display:inline-block; margin-bottom:14px; }
   .wk-back:hover{ color:#fff; }
   .wk-hero h1{ font-size:clamp(28px,4vw,40px); color:var(--paper-0); margin:0 0 12px; margin-top: 50px; }
-  .wk-hero-sub{ color:rgba(248,249,246,0.72); font-size:15.5px; max-width:600px; }
   .wk-hero-meta{ display:flex; gap:16px; flex-wrap:wrap; margin-top:16px; font-size:13.5px; color:rgba(248,249,246,0.85); }
 
   .wk-section{ padding:48px 0 96px; }
