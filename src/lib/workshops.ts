@@ -121,6 +121,7 @@ export interface WorkshopInput {
   maxSeats?: number | null;
   image?: string | null;
   imageAlt?: string | null;
+  scheduledAt?: string | null;
   draft: boolean;
 }
 
@@ -129,8 +130,8 @@ export async function createWorkshop(env: any, slug: string, input: WorkshopInpu
   const max = await env.DB.prepare(`SELECT COALESCE(MAX(sort_order), -1) AS m FROM workshops`).first<{ m: number }>();
   await env.DB.prepare(
     `INSERT INTO workshops
-      (slug, title, description, category, instructor, price_pkr, min_seats, max_seats, image, image_alt, status, draft, sort_order, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'open', ?, ?, ?, ?)`
+      (slug, title, description, category, instructor, price_pkr, min_seats, max_seats, image, image_alt, status, scheduled_at, draft, sort_order, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'open', ?, ?, ?, ?, ?)`
   ).bind(
     slug,
     input.title,
@@ -142,6 +143,7 @@ export async function createWorkshop(env: any, slug: string, input: WorkshopInpu
     input.maxSeats ?? null,
     input.image ?? null,
     input.imageAlt ?? null,
+    input.scheduledAt ?? null,
     input.draft ? 1 : 0,
     (max?.m ?? -1) + 1,
     now,

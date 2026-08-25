@@ -75,8 +75,19 @@ const categories = await listWorkshopCategories(env);
       </div>
 
       <div class="field">
+        <label for="scheduledAt">Tentative date &amp; time <span class="field-optional">(optional — shown to visitors as tentative; message enrollees the exact plan and Meet link yourself once it's settled)</span></label>
+        <input type="text" id="scheduledAt" placeholder="e.g. Sat, 6 Sep 2026, 7:00 PM PKT (tentative)" />
+      </div>
+
+      <div class="field">
         <label>Cover image <span class="field-optional">(optional)</span></label>
-        <input type="file" id="imageFile" accept="image/*" />
+        <div class="image-upload">
+          <img class="cover-preview" id="imagePreview" alt="" hidden />
+          <div class="image-upload__controls">
+            <input type="file" id="imageFile" accept="image/*" />
+            <button type="button" class="remove-image-link" id="removeImageBtn" hidden>Remove image</button>
+          </div>
+        </div>
         <p class="field-hint" id="imageStatus"></p>
       </div>
 
@@ -98,13 +109,19 @@ const categories = await listWorkshopCategories(env);
   .new-main { padding: 24px 0 96px; max-width: 720px; }
 
   .new-form { display: grid; gap: 20px; background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 28px; }
-  .field { display: grid; gap: 6px; min-width: 0; }
-  .field-row { display: flex; gap: 16px; flex-wrap: wrap; }
+  .field { display: grid; gap: 6px; min-width: 0; align-content: start; }
+  .field-row { display: flex; gap: 16px; flex-wrap: wrap; align-items: start; }
   .field-row .field { flex: 1; min-width: 160px; }
   .field--narrow { flex: 1 1 180px; max-width: 220px; }
   label { font-size: 13.5px; font-weight: 600; color: var(--navy-950); }
   .field-optional { font-weight: 400; color: var(--ink-600); }
   .field-hint { margin: 2px 0 0; font-size: 12.5px; color: var(--ink-600); }
+
+  .image-upload { display: grid; gap: 10px; }
+  .cover-preview { max-width: 220px; max-height: 160px; object-fit: cover; border-radius: 8px; border: 1px solid var(--line); display: block; }
+  .image-upload__controls { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .remove-image-link { background: none; border: none; padding: 0; font-size: 12.5px; color: #B3261E; font-weight: 600; cursor: pointer; text-align: left; }
+  .remove-image-link:hover { text-decoration: underline; }
 
   .add-topic-link { background: none; border: none; padding: 0; margin-top: 2px; font-size: 12.5px; color: var(--navy-700); font-weight: 600; cursor: pointer; text-align: left; }
   .add-topic-link:hover { text-decoration: underline; }
@@ -143,6 +160,8 @@ const categories = await listWorkshopCategories(env);
 <script>
   const imageFile = document.getElementById('imageFile') as HTMLInputElement;
   const imageStatus = document.getElementById('imageStatus') as HTMLElement;
+  const imagePreview = document.getElementById('imagePreview') as HTMLImageElement;
+  const removeImageBtn = document.getElementById('removeImageBtn') as HTMLButtonElement;
   const form = document.getElementById('newWorkshopForm') as HTMLFormElement;
   const errorEl = document.getElementById('formError') as HTMLElement;
   const createBtn = document.getElementById('createBtn') as HTMLButtonElement;
@@ -221,10 +240,22 @@ const categories = await listWorkshopCategories(env);
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Upload failed');
       uploadedImageUrl = data.url;
+      imagePreview.src = data.url;
+      imagePreview.hidden = false;
+      removeImageBtn.hidden = false;
       imageStatus.textContent = 'Image uploaded ✓';
     } catch (err: any) {
       imageStatus.textContent = err.message || 'Upload failed — you can still save without an image.';
     }
+  });
+
+  removeImageBtn.addEventListener('click', () => {
+    uploadedImageUrl = '';
+    imageFile.value = '';
+    imagePreview.src = '';
+    imagePreview.hidden = true;
+    removeImageBtn.hidden = true;
+    imageStatus.textContent = '';
   });
 
   form.addEventListener('submit', async (e) => {
@@ -246,6 +277,7 @@ const categories = await listWorkshopCategories(env);
           pricePkr: parseFloat(get('pricePkr')) || 0,
           minSeats: parseInt(get('minSeats'), 10) || undefined,
           maxSeats: get('maxSeats') ? parseInt(get('maxSeats'), 10) : null,
+          scheduledAt: get('scheduledAt').trim() || null,
           image: uploadedImageUrl || undefined,
           draft: true,
         }),

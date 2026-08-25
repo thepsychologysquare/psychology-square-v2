@@ -42,6 +42,7 @@ export const POST: APIRoute = async ({ request }) => {
     maxSeats: Number.isFinite(body.maxSeats) ? body.maxSeats : null,
     image: body.image ?? null,
     imageAlt: body.imageAlt ?? null,
+    scheduledAt: body.scheduledAt ?? null,
     draft: body.draft !== false,
   });
 
