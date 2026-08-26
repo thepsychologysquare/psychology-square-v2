@@ -1,8 +1,6 @@
 ---
 title: "Isolation on Ice: What Antarctica Teaches Us About Surviving on Mars"
-description: Explore how a 10‑month Antarctic study reveals the mental toll of
-  isolation and its implications for future Mars missions, offering insights for
-  coping with extreme solitude.
+description: "A 10-month Antarctic study reveals the psychological toll of extreme isolation — and what it means for future long-duration Mars missions."
 image: /images/white-and-brown-biplane-on-snow-covered-field-7xFGmIEr8k0.jpg
 imageAlt: white and brown biplane on snow-covered field
 category: general
@@ -13,7 +11,7 @@ imageCredit: NOAA
 imageSourceUrl: https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral
 imageCreditUrl: https://unsplash.com/@noaa?utm_source=the_psychology_square&utm_medium=referral
 publishDate: 2026-08-17T09:46:56.812Z
-seoTitle: "What Antarctica Teaches Us About Surviving on Mars"
+seoTitle: "What Antarctic Isolation Teaches Us About Surviving on Mars"
 ---
 <script type="application/ld+json">
 {

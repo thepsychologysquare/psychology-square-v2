@@ -1,8 +1,6 @@
 ---
 title: "The Representativeness Heuristic: Definition, Examples, and Why It Matters"
-description: "Discover the representativeness heuristic: how judging by
-  resemblance shapes decisions in medicine, driving, and cross-cultural
-  thinking."
+description: "Learn what the representativeness heuristic is, how it leads to flawed judgments, and real-world examples of this common cognitive bias."
 image: /images/represntativeness-heuristic.jpg
 imageAlt: represntativeness-heuristic
 category: general
@@ -10,7 +8,7 @@ author: Muhammad Sohail
 reviewedBy: Sehar Waheed
 publishDate: 2026-08-12T10:07:00.000+05:00
 draft: false
-seoTitle: "The Representativeness Heuristic, Explained"
+seoTitle: "The Representativeness Heuristic: Definition & Examples"
 ---
 Heuristics are mental shortcuts that help people make fast, efficient judgments and decisions, especially when facing uncertainty or complex information. Rather than analyzing every available detail, the brain relies on simplified rules to reach conclusions quickly, often prioritizing speed over accuracy.
 

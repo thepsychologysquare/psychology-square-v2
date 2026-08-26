@@ -1,8 +1,6 @@
 ---
 title: "Your Brain’s Age: How AI Can Spot Early Signs of Decline"
-description: Learn how AI analyzes sleep EEG to detect accelerated brain aging,
-  offering an early warning sign for dementia and practical steps to protect
-  cognition.
+description: "AI analysis of sleep EEG patterns can detect accelerated brain aging, offering an early warning sign for dementia and steps to help protect your brain."
 image: /images/steve-a-johnson-_0iv9lmpdn0-unsplash.jpg
 imageAlt: ai brain simulation representation
 category: neuroscience
@@ -13,7 +11,7 @@ imageCredit: ""
 imageSourceUrl: ""
 imageCreditUrl: ""
 publishDate: 2026-08-18T07:07:09.496Z
-seoTitle: "How AI Can Spot Early Signs of Brain Decline"
+seoTitle: "Your Brain's Age: How AI Can Spot Early Decline"
 ---
 <script type="application/ld+json">
 {

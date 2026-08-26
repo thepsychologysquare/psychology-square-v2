@@ -1,7 +1,6 @@
 ---
 title: Probiotic Supplement Reduces Depression and Anxiety in Seniors
-description: A clinical trial shows a daily probiotic can lower depression and
-  anxiety symptoms in older adults, highlighting gut‑brain links.
+description: "A clinical trial finds a daily probiotic supplement lowered depression and anxiety symptoms in older adults, highlighting the gut-brain connection."
 image: /images/orange-and-white-plastic-bottle-on-white-textile-hn2hQoALBCk.jpg
 imageAlt: orange and white plastic bottle on white textile
 category: depression
@@ -13,6 +12,7 @@ tags: []
 imageSourceUrl: https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral
 imageCreditUrl: https://unsplash.com/@towfiqu999999?utm_source=the_psychology_square&utm_medium=referral
 publishDate: 2026-08-24T07:46:20.452Z
+seoTitle: "Daily Probiotic Reduces Depression and Anxiety in Seniors"
 ---
 <script type="application/ld+json">
 {

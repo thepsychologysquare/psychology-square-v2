@@ -1,8 +1,6 @@
 ---
 title: Discounting the Positives - Worksheet
-description: Overcome cognitive distortions with our Discounting the Positives
-  worksheet. Learn to balance your perspective by objectively mapping good and
-  bad life events.
+description: "Free printable worksheet to spot and correct the 'discounting the positives' thinking trap — map good and bad events objectively to rebalance perspective."
 image: /images/discounting-the-positives-worksheet.png
 imageAlt: Discounting the Positives Worksheet
 tier: free
@@ -12,7 +10,7 @@ age:
 fileUrl: /worksheets/discounting-the-positives-worksheet.pdf
 order: 0
 draft: false
-seoTitle: "Discounting the Positives Worksheet"
+seoTitle: "Discounting the Positives Worksheet — Free PDF"
 ---
 # Discounting the Positives Worksheet
 

@@ -1,8 +1,6 @@
 ---
 title: Half of Dementia Could Be Prevented—Here’s How Lifestyle Choices Matter
-description: Discover how smoking, blood pressure, heart disease, and
-  cholesterol contribute to dementia risk and learn practical steps to halve
-  your chances of developing it.
+description: "Smoking, high blood pressure, and heart disease are among 14 modifiable risk factors that could prevent nearly half of dementia cases, researchers say."
 image: /images/man-in-white-crew-neck-shirt-wearing-black-sunglasses-C3x3tMBskDw.jpg
 imageAlt: man in white crew neck shirt wearing black sunglasses
 category: general
@@ -13,7 +11,7 @@ imageCredit: Carl Barcelo
 imageSourceUrl: https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral
 imageCreditUrl: https://unsplash.com/@barcelocarl?utm_source=the_psychology_square&utm_medium=referral
 publishDate: 2026-08-17T09:46:17.976Z
-seoTitle: "Half of Dementia Cases Are Preventable"
+seoTitle: "Half of Dementia Cases Could Be Prevented — Here's How"
 ---
 <script type="application/ld+json">
 {

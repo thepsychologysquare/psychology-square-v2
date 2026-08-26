@@ -1,7 +1,6 @@
 ---
 title: Why One Gene Makes Bad Sleep a Nightmare for Your Brain
-description: Discover how a specific gene links poor sleep to increased
-  Alzheimer’s risk and what simple sleep habits can protect your brain.
+description: "A specific gene links poor sleep to higher Alzheimer's risk, according to new research — plus simple sleep habits that may help protect your brain."
 image: /images/shadow-of-woman-on-bed-3sn9MUlx2ZE.jpg
 imageAlt: shadow of woman on bed
 category: neuroscience

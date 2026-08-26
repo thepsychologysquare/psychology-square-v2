@@ -1,8 +1,6 @@
 ---
 title: "The Availability Heuristic: How Your Mind Tricks You Into Bad Decisions"
-description: Learn how the availability heuristic distorts risk perception,
-  medical diagnosis, and financial decisions — and 5 strategies to make wiser
-  choices.
+description: "Learn how the availability heuristic distorts risk perception and leads to bad decisions about health, money, and safety — with real-world examples."
 image: /images/availability-heuristic.jpg
 imageAlt: availability heuristic
 category: general
@@ -10,7 +8,7 @@ author: Muhammad Sohail
 reviewedBy: Sehar Waheed
 publishDate: 2026-08-12T10:00:00.000+05:00
 draft: false
-seoTitle: "The Availability Heuristic and Bad Decisions"
+seoTitle: "The Availability Heuristic: How It Skews Your Decisions"
 ---
 # The Availability Heuristic: How Your Mind Tricks You Into Bad Decisions
 

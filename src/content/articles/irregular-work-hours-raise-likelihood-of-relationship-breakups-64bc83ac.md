@@ -1,7 +1,6 @@
 ---
 title: Irregular Work Hours Raise Likelihood of Relationship Breakups
-description: Study finds that irregular work schedules increase the risk of
-  romantic breakups by amplifying stress and reducing intimacy.
+description: "A new study links irregular work schedules to a higher risk of romantic breakups, driven by added stress and reduced time for intimacy."
 image: /images/a-man-and-a-woman-in-grey-shirts-pointing-fingers-at-each-other-mv38TB_Ljj8.jpg
 imageAlt: A man and a woman in grey shirts pointing fingers at each other
 category: stress
@@ -13,6 +12,7 @@ tags: []
 imageSourceUrl: https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral
 imageCreditUrl: https://unsplash.com/@javaistan?utm_source=the_psychology_square&utm_medium=referral
 publishDate: 2026-08-24T14:48:00.000+05:00
+seoTitle: "Irregular Work Hours Raise Risk of Relationship Breakups"
 ---
 <script type="application/ld+json">
 {

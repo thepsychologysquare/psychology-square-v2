@@ -1,8 +1,6 @@
 ---
 title: Anesthesia Reveals Unexpected Levels of Brain Activity and Consciousness
-description: Study finds significant brain activity persists under general
-  anesthesia, challenging assumptions about unconsciousness and informing
-  medical practice.
+description: "Study finds significant brain activity persists under general anesthesia, challenging assumptions about unconsciousness and informing medical practice."
 image: /images/patient-undergoing-surgery-under-anesthesia.jpg
 imageAlt: ""
 category: neuroscience

@@ -1,8 +1,6 @@
 ---
 title: Goal Achievement Framework - Worksheet
-description: Transform your ambitions into reality with our free Goal
-  Achievement Framework worksheet. Learn how to set, break down, and conquer
-  your goals systematically.
+description: "Free printable Goal Achievement Framework worksheet — break big ambitions into concrete steps and track your progress toward them."
 image: /images/goal-acheivement-framework-01.png
 imageAlt: Goal Acheivement Framework-Worksheet
 tier: free
@@ -12,7 +10,7 @@ age:
 fileUrl: /worksheets/goal-achievement-framework.pdf
 order: 0
 draft: false
-seoTitle: "Goal Achievement Framework Worksheet"
+seoTitle: "Goal Achievement Framework Worksheet — Free PDF"
 ---
 # Goal Achievement Framework Worksheet
 

@@ -1,9 +1,7 @@
 ---
 title: "The Reward Glitch: Why Psychopaths Have a 10% Larger 'Craving Center' in
   Their Brains"
-description: "Discover how recent neuroimaging studies reveal that psilocybin
-  creates lasting changes in brain connectivity and the default mode network
-  (DMN). "
+description: "Neuroimaging studies find psychopathic traits are linked to an enlarged reward-processing region, reshaping how researchers understand psychopathy."
 image: /images/psychopathy.jpg
 imageAlt: psychopathy
 category: general
@@ -12,7 +10,7 @@ author: Muhammad Sohail
 reviewedBy: Sehar Waheed
 publishDate: 2026-08-15T10:43:48.966Z
 draft: false
-seoTitle: "Why Psychopaths Have a Larger Brain Craving Center"
+seoTitle: "Why Psychopaths Have a 10% Larger Brain 'Craving Center'"
 ---
 <h2>The Reward Glitch: Why Psychopaths Have a 10% Larger 'Craving Center' in Their Brains</h2>
 

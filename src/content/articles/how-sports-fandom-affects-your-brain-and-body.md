@@ -1,8 +1,6 @@
 ---
 title: How Sports Fandom Affects Your Brain and Body
-description: Discover the surprising science behind sports fandom and how live
-  events can synchronize heart rates and release oxytocin, promoting social
-  bonding and emotional connections.
+description: "Watching live sports synchronizes fans' heart rates and releases oxytocin, research shows — the neuroscience behind why fandom feels so personal."
 image: /images/people-watching-baseball.jpg
 imageAlt: people watching baseball
 category: neuroscience
