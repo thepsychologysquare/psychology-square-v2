@@ -1370,7 +1370,7 @@ body.nav-menu-locked {
 .policy-note{ font-size:13.5px; color:var(--ink-600); padding-top:16px; border-top:1px solid var(--line); }
 .booking-actions{ display:flex; flex-wrap:wrap; gap:14px; justify-content:center; }
 
-.profile-hero{ background:var(--navy-950); color:var(--paper-0); padding:72px 0 64px; }
+.profile-hero{ background:var(--navy-950); color:var(--paper-0); padding:150px 0 24px;}
 .profile-hero-inner{ display:flex; align-items:center; gap:12px; }
 .profile-hero .avatar{ width:104px; height:104px; margin-bottom:0; }
 .profile-hero h1{ font-size:clamp(28px,4vw,40px); color:var(--paper-0); margin-bottom:8px; }
