@@ -1,8 +1,6 @@
 ---
 title: Intensive Training Reshapes the Brain to Enable True Multitasking
-description: New research reveals that intensive training can reorganize brain
-  networks, allowing true multitasking and challenging long‑standing limits on
-  cognitive performance.
+description: "New research shows intensive training reorganizes brain networks enough to enable genuine multitasking, challenging long-standing limits on attention."
 image: /images/woman-doing-intensive-training-exercise.jpg
 imageAlt: woman doing intensive training exercise
 category: neuroscience
@@ -13,7 +11,7 @@ imageCredit: ""
 imageSourceUrl: ""
 imageCreditUrl: ""
 publishDate: 2026-08-19T04:17:23.784Z
-seoTitle: "Intensive Training Can Reshape the Brain for Multitasking"
+seoTitle: "Intensive Training Can Rewire the Brain for Multitasking"
 ---
 <script type="application/ld+json">
 {

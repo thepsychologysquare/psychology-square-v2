@@ -1,9 +1,7 @@
 ---
 title: "Cognitive Models of Stress & Psychopathology: REBT, Beck's Theory & CBT
   Techniques"
-description: Explore cognitive models of stress and psychopathology — REBT,
-  Beck's cognitive theory, and proven CBT techniques for healthier coping and
-  resilience.
+description: "A clear breakdown of REBT, Beck's cognitive theory, and CBT techniques — how each model explains stress and psychopathology, with practical applications."
 image: /images/a-woman-experiencing-stress-while-working-on-a-laptop.jpg
 imageAlt: a woman experiencing stress while working on a laptop
 category: stress
@@ -11,7 +9,7 @@ author: Muhammad Sohail
 reviewedBy: Muhammad Sohail
 publishDate: 2026-08-12T09:46:00.000+05:00
 draft: false
-seoTitle: "Cognitive Models of Stress: REBT, Beck & CBT"
+seoTitle: "Cognitive Models of Stress: REBT, Beck's Theory & CBT"
 ---
 Cognitive models of stress, anxiety, and psychopathology are foundational frameworks in modern psychology and cognitive behavioral therapy (CBT). They explain how the way people **perceive, interpret, and appraise events** directly shapes their emotional responses, coping strategies, and overall psychological well-being.
 

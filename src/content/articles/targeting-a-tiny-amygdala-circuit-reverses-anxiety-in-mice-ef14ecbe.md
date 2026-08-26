@@ -1,8 +1,6 @@
 ---
 title: Targeting a Tiny Amygdala Circuit Reverses Anxiety in Mice
-description: A new study reveals that correcting activity in a tiny amygdala
-  circuit eliminates anxiety in mice, opening a potential pathway for novel
-  anxiety therapies.
+description: "Correcting activity in a specific amygdala circuit eliminated anxiety behaviors in mice, opening a potential new pathway for anxiety treatment."
 image: /images/amygdala.jpg
 imageAlt: ""
 category: neuroscience
@@ -13,7 +11,7 @@ imageCredit: ""
 imageSourceUrl: ""
 imageCreditUrl: ""
 publishDate: 2026-08-19T04:17:23.786Z
-seoTitle: "Targeting an Amygdala Circuit Reverses Anxiety in Mice"
+seoTitle: "Targeting a Tiny Amygdala Circuit Reverses Anxiety in Mice"
 ---
 <script type="application/ld+json">
 {

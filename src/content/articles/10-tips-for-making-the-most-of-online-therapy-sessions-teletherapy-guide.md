@@ -1,8 +1,6 @@
 ---
 title: 10 Tips for Making the Most of Online Therapy Sessions | Teletherapy Guide
-description: Discover 10 practical tips for getting the most out of online
-  therapy sessions — from privacy setup to building open communication with your
-  therapist.
+description: "Discover 10 practical tips for getting the most out of online therapy sessions — from privacy setup to building open communication with your therapist."
 image: /images/a-person-taking-online-therapy.jpg
 imageAlt: a person taking online therapy
 category: therapy

@@ -1,8 +1,6 @@
 ---
 title: Locus of Control - Worksheet
-description: Explore personal agency and external influences with this Locus of
-  Control worksheet. Identify internal vs. external factors shaping your
-  outcomes to foster self-awareness and empowerment.
+description: "Free printable Locus of Control worksheet — identify which outcomes you can influence and which you can't, to build self-awareness and agency."
 image: /images/locus-of-control-worksheet.png
 imageAlt: Locus of Control Worksheet
 tier: free
@@ -12,6 +10,7 @@ age:
 fileUrl: /worksheets/locus-of-control.pdf
 order: 0
 draft: false
+seoTitle: "Locus of Control Worksheet — Free Printable PDF"
 ---
 # Locus of Control Worksheet
 

@@ -1,7 +1,6 @@
 ---
 title: "Mini Brains in a Dish: The Future of Alzheimer’s Drug Testing"
-description: Learn how lab‑grown mini brains are being used to predict effective
-  Alzheimer’s treatments, paving the way for personalized medicine.
+description: "Scientists are using lab-grown 'mini brains' to predict which Alzheimer's treatments work best, paving the way for more personalized medicine."
 image: /images/a-wireframe-human-brain-with-purple-and-green-highlights-on-a-light-background-LaKwLAmcnBc.jpg
 imageAlt: A wireframe human brain with purple and green highlights on a light background
 category: neuroscience
@@ -12,7 +11,7 @@ imageCredit: Google DeepMind
 imageSourceUrl: https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral
 imageCreditUrl: https://unsplash.com/@googledeepmind?utm_source=the_psychology_square&utm_medium=referral
 publishDate: 2026-08-18T08:56:25.129Z
-seoTitle: "Mini Brains in a Dish: The Future of Alzheimer's Research"
+seoTitle: "Lab-Grown Mini Brains Could Speed Up Alzheimer's Drug Testing"
 ---
 <script type="application/ld+json">
 {

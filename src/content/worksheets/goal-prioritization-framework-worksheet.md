@@ -1,8 +1,6 @@
 ---
 title: Goal Prioritization Framework - Worksheet
-description: "Use our free Goal Prioritization Worksheet to score, rank, and
-  focus on the goals that matter most based on impact and feasibility. Stop
-  feeling overwhelmed. "
+description: "Free printable worksheet to score and rank your goals by impact and feasibility, so you know exactly which one to focus on first."
 image: /images/goal-prioritization-framework-worksheet.png
 imageAlt: Goal Prioritization Framework Worksheet
 tier: free
@@ -12,7 +10,7 @@ age:
 fileUrl: /worksheets/goal-prioritization-framework-worksheet.pdf
 order: 0
 draft: false
-seoTitle: "Goal Prioritization Framework Worksheet"
+seoTitle: "Goal Prioritization Framework Worksheet — Free PDF"
 ---
 # Goal Prioritization Framework Worksheet
 

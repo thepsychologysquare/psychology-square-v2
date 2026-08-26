@@ -1,6 +1,6 @@
 ---
 title: "GAD-7 (Generalized Anxiety Disorder Scale)"
-description: "A 7-item self-report scale measuring the frequency of anxiety symptoms over the past two weeks."
+description: "Take the free GAD-7 anxiety screening online — 7 quick questions, instant scoring guidance, and clear cutoffs for mild, moderate, and severe anxiety."
 category: "anxiety"
 age: ["adults"]
 pdfUrl: "https://adaa.org/sites/default/files/2026-01/GAD-7_Anxiety-updated_0.pdf"
@@ -8,5 +8,5 @@ scoringSummary: "Each of the 7 items is scored 0–3, for a total range of 0–2
 sourceNote: "Spitzer, Kroenke, Williams & Löwe (2006)"
 order: 1
 draft: false
-seoTitle: "GAD-7 Anxiety Scale | The Psychology Square"
+seoTitle: "GAD-7 Anxiety Test — Free Online Screening"
 ---

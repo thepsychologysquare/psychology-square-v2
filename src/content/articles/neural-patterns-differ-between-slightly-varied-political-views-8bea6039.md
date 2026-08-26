@@ -1,7 +1,6 @@
 ---
 title: Neural Patterns Differ Between Slightly Varied Political Views
-description: Functional MRI reveals that slight political differences correspond
-  to distinct brain activity patterns, shedding light on cognitive bias.
+description: "fMRI scans show even small differences in political views correspond to distinct brain activity patterns, shedding light on how we process ideology."
 image: /images/shawn-day-znkhpagiolm-unsplash.jpg
 imageAlt: Neural Pathways Representation
 category: neuroscience
@@ -13,6 +12,7 @@ tags: []
 imageSourceUrl: ""
 imageCreditUrl: ""
 publishDate: 2026-08-24T07:46:40.451Z
+seoTitle: "Brain Scans Show Distinct Patterns Across Political Views"
 ---
 <script type="application/ld+json">
 {

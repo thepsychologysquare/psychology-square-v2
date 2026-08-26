@@ -1,8 +1,6 @@
 ---
 title: The Hidden Risk of Morning Cannabis Use
-description: Discover how regular cannabis use impacts morning cortisol levels
-  and stress rhythms. Learn the science, health implications, and alternative
-  stress relief tips.
+description: "Regular cannabis use is linked to elevated morning cortisol and disrupted stress rhythms, according to new research on daily users' hormone patterns."
 image: /images/woman-in-orange-tank-top-and-black-skirt-sitting-on-bed.jpg
 imageAlt: woman in orange tank top and black skirt sitting on bed
 category: addiction-recovery
