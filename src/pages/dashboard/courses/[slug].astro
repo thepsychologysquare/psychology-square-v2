@@ -284,8 +284,9 @@ const outline = env?.DB ? await getCourseOutline(env.DB, slug!) : [];
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Upload failed');
         course.image = data.url;
+        statusEl.textContent = 'Saving...';
+        await saveCourseField({ image: data.url });
         statusEl.textContent = 'Uploaded ✓';
-        debounceSave(() => saveCourseField({ image: data.url }), 100);
         renderSettingsCanvas();
       } catch (e) {
         statusEl.textContent = e.message || 'Upload failed';
