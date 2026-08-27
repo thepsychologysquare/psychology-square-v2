@@ -26,6 +26,19 @@ export const POST: APIRoute = async ({ request }) => {
   const key = `courses/${crypto.randomUUID()}.${ext}`;
   await env.COURSE_ASSETS.put(key, await file.arrayBuffer(), { httpMetadata: { contentType: file.type } });
 
+  // Belt-and-suspenders: confirm the object is actually retrievable before
+  // telling the client (and letting it save this URL to D1) that the upload
+  // succeeded. Without this, a put() that silently didn't persist would
+  // still return a "successful" URL that 404s forever afterward, with the
+  // broken reference then saved to the course row and no error anywhere.
+  const verify = await env.COURSE_ASSETS.head(key);
+  if (!verify) {
+    return new Response(
+      JSON.stringify({ error: 'Upload did not persist to storage. Please try again.' }),
+      { status: 500 }
+    );
+  }
+
   return new Response(JSON.stringify({ url: `/api/courses/image/${key}` }), {
     status: 201,
     headers: { 'content-type': 'application/json' },
