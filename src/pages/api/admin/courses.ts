@@ -9,6 +9,7 @@ import {
   listCourses,
   updateCourse,
 } from '../../../lib/courses';
+import { validateCourseCategory } from '../../../lib/courseCategories';
 
 async function requireAdmin(request: Request) {
   return getSession(request.headers.get('cookie'), env?.ADMIN_SESSION_SECRET || '');
@@ -57,7 +58,7 @@ export const POST: APIRoute = async ({ request }) => {
   await createCourse(env, slug, {
     title,
     description: body.description || '',
-    category: body.category || 'general',
+    category: await validateCourseCategory(env, body.category),
     estimatedHours: Number(body.estimatedHours) || 1,
     author: body.author || '',
     isPaid: !!body.isPaid,
@@ -87,6 +88,10 @@ export const PATCH: APIRoute = async ({ request }) => {
 
   const course = await getCourseBySlug(env, slug);
   if (!course) return new Response(JSON.stringify({ error: 'Not found' }), { status: 404 });
+
+  if ('category' in patch) {
+    patch.category = await validateCourseCategory(env, patch.category);
+  }
 
   await updateCourse(env, slug, patch);
   return new Response(JSON.stringify({ ok: true }));

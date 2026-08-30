@@ -4,20 +4,12 @@ import { env } from 'cloudflare:workers';
 import { listCourses } from '../../lib/courses';
 import { getClientSession } from '../../lib/clientAuth';
 import Layout from '../../layouts/Layout.astro';
+import { courseCategoryLabelMap } from '../../lib/courseCategories';
 
 const allCourses = await listCourses(env, { includeDrafts: false });
 const sorted = allCourses.sort((a, b) => a.data.order - b.data.order);
 
-const categoryMeta: Record<string, string> = {
-  'general': 'General',
-  'anxiety': 'Anxiety',
-  'depression': 'Depression',
-  'adhd': 'ADHD',
-  'addiction-recovery': 'Addiction & Recovery',
-  'trauma': 'Trauma',
-  'relationships': 'Relationships',
-  'stress-burnout': 'Stress & Burnout',
-};
+const categoryMeta = await courseCategoryLabelMap(env);
 
 const session = env?.CLIENT_SESSION_SECRET
   ? await getClientSession(Astro.request.headers.get('cookie'), env.CLIENT_SESSION_SECRET)
