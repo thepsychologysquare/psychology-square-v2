@@ -13,6 +13,7 @@
 
 import { createCourse, getCourseBySlug, generateUniqueSlug, slugify, updateCourse } from './courses';
 import { syncCourseExport } from './courseExport';
+import { ensureCourseCategory } from './courseCategories';
 
 export interface CourseImportStep {
   title: string;
@@ -65,7 +66,7 @@ export async function importCourse(env: any, payload: CourseImportPayload): Prom
   const courseInput = {
     title: payload.title.trim(),
     description: payload.description || '',
-    category: payload.category || 'general',
+    category: payload.category ? await ensureCourseCategory(env, payload.category) : 'general',
     estimatedHours: payload.estimatedHours ?? 1,
     author: payload.author || '',
     isPaid: !!payload.isPaid,

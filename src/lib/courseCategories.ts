@@ -78,3 +78,38 @@ export async function validateCourseCategory(env: any, rawValue: string): Promis
   const rows = await listCourseCategories(env);
   return rows.some((r) => r.value === value) ? value : 'general';
 }
+
+/**
+ * Used by the n8n/automation import path (courseImport.ts), where the
+ * caller is trusted and sends a raw category value directly rather than
+ * going through the dashboard's "+ Add a new topic" box. Unlike
+ * validateCourseCategory (which silently falls back to 'general' for any
+ * value it doesn't recognize -- the right behavior for the human-facing
+ * dashboard forms), this registers the category if it's new, so a course
+ * imported via n8n with a category nobody has used yet still shows up
+ * properly in the dashboard dropdown and gets a readable label on the
+ * public site, instead of silently landing under "General" or showing a
+ * raw slug.
+ */
+export async function ensureCourseCategory(env: any, rawValue: string): Promise<string> {
+  const value = slugifyCourseCategory(String(rawValue || ''));
+  if (!value) return 'general';
+  if (!env?.DB) return value;
+
+  const existing = await env.DB.prepare(
+    `SELECT value FROM course_categories WHERE value = ?`
+  ).bind(value).first<{ value: string }>();
+  if (existing) return existing.value;
+
+  const label = value
+    .split('-')
+    .filter(Boolean)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ');
+  const max = await env.DB.prepare(`SELECT COALESCE(MAX(sort_order), -1) AS m FROM course_categories`).first<{ m: number }>();
+  await env.DB.prepare(
+    `INSERT INTO course_categories (value, label, sort_order, created_at) VALUES (?, ?, ?, ?)`
+  ).bind(value, label, (max?.m ?? -1) + 1, new Date().toISOString()).run();
+
+  return value;
+}

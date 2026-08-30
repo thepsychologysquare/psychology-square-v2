@@ -5,6 +5,7 @@ import { env } from 'cloudflare:workers';
 import { getSession } from '../../../lib/adminAuth';
 import { getCourseBySlug } from '../../../lib/courses';
 import { getCourseOutline } from '../../../lib/courseBuilder';
+import { listCourseCategories } from '../../../lib/courseCategories';
 
 const session = await getSession(Astro.request.headers.get('cookie'), env?.ADMIN_SESSION_SECRET || '');
 if (!session) return Astro.redirect('/dashboard/login');
@@ -14,6 +15,7 @@ const course = await getCourseBySlug(env, slug!);
 if (!course) return Astro.redirect('/dashboard/courses');
 
 const outline = env?.DB ? await getCourseOutline(env.DB, slug!) : [];
+const courseCategories = await listCourseCategories(env);
 ---
 <DashboardLayout title={course.data.title}>
   <Fragment slot="header">
@@ -103,7 +105,7 @@ const outline = env?.DB ? await getCourseOutline(env.DB, slug!) : [];
   .add-module-form input:focus { outline: none; border-style: solid; border-color: var(--navy-950); background: #fff; }
 </style>
 
-<script define:vars={{ courseSlug: course.id, courseData: course.data, initialOutline: outline }}>
+<script define:vars={{ courseSlug: course.id, courseData: course.data, initialOutline: outline, initialCategories: courseCategories.map((c) => [c.value, c.label]) }}>
   const treeModulesEl = document.getElementById('treeModules');
   const canvasEl = document.getElementById('studioCanvas');
   const settingsNavBtn = document.getElementById('settingsNavBtn');
@@ -190,10 +192,7 @@ const outline = env?.DB ? await getCourseOutline(env.DB, slug!) : [];
   }
 
   // ---------- Canvas: Course settings ----------
-  const categories = [
-    ['general', 'General'], ['anxiety', 'Anxiety'], ['depression', 'Depression'], ['adhd', 'ADHD'],
-    ['addiction-recovery', 'Addiction & Recovery'], ['trauma', 'Trauma'], ['relationships', 'Relationships'], ['stress-burnout', 'Stress & Burnout'],
-  ];
+  let categories = initialCategories; // [[value, label], ...] -- kept in sync when a new topic is added below
 
   function renderSettingsCanvas() {
     canvasEl.innerHTML = `
@@ -213,9 +212,16 @@ const outline = env?.DB ? await getCourseOutline(env.DB, slug!) : [];
         <div class="field-row">
           <div class="field">
             <label>Topic</label>
-            <select data-field="category">
+            <select data-field="category" id="categorySelect">
               ${categories.map(([v, l]) => `<option value="${v}" ${course.category === v ? 'selected' : ''}>${l}</option>`).join('')}
             </select>
+            <button type="button" class="add-topic-link" id="addTopicLink">+ Add a new topic</button>
+            <div class="add-topic-row" id="addTopicRow" hidden>
+              <input type="text" id="newTopicInput" placeholder="e.g. Grief" />
+              <button type="button" class="topic-btn" id="addTopicBtn">Add</button>
+              <button type="button" class="topic-btn" id="cancelTopicBtn">Cancel</button>
+            </div>
+            <p class="field-error" id="addTopicError" role="alert" hidden></p>
           </div>
           <div class="field field--narrow">
             <label>Est. hours</label>
@@ -255,7 +261,57 @@ const outline = env?.DB ? await getCourseOutline(env.DB, slug!) : [];
     `;
 
     wireSettingsInputs();
+    wireAddTopic();
     renderQuizEditor();
+  }
+
+  // ---------- Add a new topic inline (re-wired every renderSettingsCanvas() call) ----------
+  function wireAddTopic() {
+    const categorySelect = document.getElementById('categorySelect');
+    const addTopicLink = document.getElementById('addTopicLink');
+    const addTopicRow = document.getElementById('addTopicRow');
+    const newTopicInput = document.getElementById('newTopicInput');
+    const addTopicBtn = document.getElementById('addTopicBtn');
+    const cancelTopicBtn = document.getElementById('cancelTopicBtn');
+    const addTopicError = document.getElementById('addTopicError');
+    if (!addTopicLink) return;
+
+    addTopicLink.addEventListener('click', () => {
+      addTopicLink.hidden = true;
+      addTopicRow.hidden = false;
+      newTopicInput.focus();
+    });
+    cancelTopicBtn.addEventListener('click', () => {
+      addTopicRow.hidden = true;
+      addTopicLink.hidden = false;
+      addTopicError.hidden = true;
+      newTopicInput.value = '';
+    });
+    addTopicBtn.addEventListener('click', async () => {
+      const label = newTopicInput.value.trim();
+      addTopicError.hidden = true;
+      if (!label) { addTopicError.textContent = 'Please enter a topic name.'; addTopicError.hidden = false; return; }
+      addTopicBtn.disabled = true;
+      try {
+        const data = await api('/api/admin/course-categories', 'POST', { label });
+        categories = [...categories, [data.category.value, data.category.label]];
+        const opt = document.createElement('option');
+        opt.value = data.category.value;
+        opt.textContent = data.category.label;
+        categorySelect.appendChild(opt);
+        categorySelect.value = data.category.value;
+        course.category = data.category.value;
+        debounceSave(() => saveCourseField({ category: course.category }));
+        addTopicRow.hidden = true;
+        addTopicLink.hidden = false;
+        newTopicInput.value = '';
+      } catch (err) {
+        addTopicError.textContent = err.message || 'Could not add that topic.';
+        addTopicError.hidden = false;
+      } finally {
+        addTopicBtn.disabled = false;
+      }
+    });
   }
 
   function wireSettingsInputs() {
@@ -712,6 +768,19 @@ const outline = env?.DB ? await getCourseOutline(env.DB, slug!) : [];
   label { font-size: 13px; font-weight: 700; color: var(--navy-950); letter-spacing: 0.01em; }
   .field-optional { font-weight: 400; color: var(--ink-600); }
   .field-hint { margin: 2px 0 0; font-size: 12px; color: var(--ink-600); }
+
+  .add-topic-link { background: none; border: none; padding: 0; margin-top: 2px; font-size: 12.5px; color: var(--navy-700); font-weight: 600; cursor: pointer; text-align: left; }
+  .add-topic-link:hover { text-decoration: underline; }
+  .add-topic-row { display: flex; gap: 8px; margin-top: 4px; }
+  .add-topic-row input { flex: 1; min-width: 0; }
+  .field-error { color: #B3261E; font-size: 12.5px; margin: 2px 0 0; }
+  /* Small secondary button for the add-topic row on a light canvas card
+     (.btn--ghost above is dark-header-only and unreadable here) */
+  .topic-btn {
+    padding: 7px 14px; font-size: 12.5px; font-weight: 600; border-radius: 6px;
+    border: 1px solid var(--line); background: var(--paper-0); color: var(--ink-600); cursor: pointer;
+  }
+  .topic-btn:hover { border-color: var(--navy-950); color: var(--navy-950); }
 
   input[type="text"], input[type="number"], select, textarea {
     padding: 12px 14px; border: 1px solid var(--line); border-radius: 8px; font: inherit; font-size: 15px;
