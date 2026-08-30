@@ -6,17 +6,22 @@ import sitemap from '@astrojs/sitemap';
 // https://astro.build/config
 export default defineConfig({
   site: 'https://thepsychologysquare.com',
-  // Canonical form is "always" trailing-slash (matches how the site already
-  // links internally in most places: /articles/, /services/therapy/,
-  // /team/, /resources/worksheets/...). Without this Astro's default
-  // ("ignore") lets a page render at both /services and /services/ with no
-  // preference, and each self-canonicalizes to whatever it was requested
-  // as — that's what let Google index both forms as separate "valid" pages
-  // (see GSC coverage: 0 duplicates in June, 81 by August). The actual
-  // enforcement (redirecting the non-slash form) happens in
-  // src/middleware.ts, since this setting alone doesn't make the server
-  // redirect existing indexed no-slash URLs.
-  trailingSlash: 'always',
+  // Canonical form is still always-slash (matches how the site already
+  // links internally: /articles/, /services/therapy/, /team/,
+  // /resources/worksheets/...), and that redirect is enforced for real
+  // pages by src/middleware.ts, which already excludes /api/* and any
+  // file-extension path from the redirect.
+  //
+  // This is set to 'ignore' rather than 'always' because Astro's own
+  // built-in trailing-slash enforcement has a routing bug for dynamic
+  // catch-all endpoints whose URL ends in a file extension (e.g.
+  // src/pages/api/courses/image/[...key].ts serving "*.png"): Astro
+  // incorrectly requires a trailing slash that a file URL can never have,
+  // so the route never matches and Astro serves its own 404 page instead
+  // of the endpoint. Since middleware.ts already does the real redirect
+  // work by hand, Astro's built-in enforcement here is redundant for pages
+  // and actively harmful for these API routes — so it's switched off.
+  trailingSlash: 'ignore',
   adapter: cloudflare({
     prerenderEnvironment: 'node',
   }),
