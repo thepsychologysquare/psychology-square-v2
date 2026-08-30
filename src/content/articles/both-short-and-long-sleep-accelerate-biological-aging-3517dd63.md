@@ -8,7 +8,7 @@ imageAlt: a man sleeping on a bed next to a stack of books
 category: sleep
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
-draft: true
+draft: false
 imageCredit: Nubelson Fernandes
 tags: []
 imageSourceUrl: https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral
