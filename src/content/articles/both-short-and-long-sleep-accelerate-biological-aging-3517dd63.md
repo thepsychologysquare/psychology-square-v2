@@ -1,24 +1,26 @@
 ---
-title: "Both Short and Long Sleep Accelerate Biological Aging"
-description: "Study of 23 biological aging clocks reveals that both short and long sleep durations accelerate cellular aging, highlighting an optimal 7‑8 hour window for health."
-image: "/images/a-man-sleeping-on-a-bed-next-to-a-stack-of-books-33vBX7xRGIc.jpg"
-imageAlt: "a man sleeping on a bed next to a stack of books"
-imageCredit: "Nubelson Fernandes"
-imageCreditUrl: "https://unsplash.com/@nublson?utm_source=the_psychology_square&utm_medium=referral"
-imageSourceUrl: "https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral"
+title: "Sleep Duration and Aging: How 7–8 Hours Protects Your Cells"
+description: Discover how sleep duration impacts cellular aging. Research
+  reveals a U-shaped link where both short and long sleep accelerate aging, with
+  7–8 hours as optimal.
+image: /images/a-man-sleeping-on-a-bed-next-to-a-stack-of-books-33vBX7xRGIc.jpg
+imageAlt: a man sleeping on a bed next to a stack of books
 category: sleep
-tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
-publishDate: 2026-08-30T09:58:48.729Z
 draft: true
+imageCredit: Nubelson Fernandes
+tags: []
+imageSourceUrl: https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral
+imageCreditUrl: https://unsplash.com/@nublson?utm_source=the_psychology_square&utm_medium=referral
+publishDate: 2026-08-30T09:58:48.729Z
 ---
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "Article",
-  "headline": "Both Short and Long Sleep Accelerate Biological Aging",
-  "description": "Study of 23 biological aging clocks reveals that both short and long sleep durations accelerate cellular aging, highlighting an optimal 7‑8 hour window for health.",
+  "headline": "Sleep Duration and Aging: How 7–8 Hours Protects Your Cells",
+  "description": "Discover how sleep duration impacts cellular aging. Research reveals a U-shaped link where both short and long sleep accelerate aging, with 7–8 hours as optimal.",
   "image": "/images/a-man-sleeping-on-a-bed-next-to-a-stack-of-books-33vBX7xRGIc.jpg",
   "datePublished": "2026-08-30T09:58:48.729Z",
   "dateModified": "2026-08-30T09:58:48.729Z",
