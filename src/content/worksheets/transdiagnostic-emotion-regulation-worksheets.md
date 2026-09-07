@@ -13,7 +13,7 @@ fileUrl: /worksheets/transdiagnostic-emotion-regulation-worksheets.docx.pdf
 order: 0
 draft: false
 ---
-Understanding your emotions starts with tracking them accurately — not just naming what you feel, but noticing what triggers it, how intense it is, and how you respond. This transdiagnostic emotion log is built on principles used across modern CBT and emotion-focused treatment approaches, designed to work across anxiety, depression, anger, and other emotional difficulties rather than targeting just one diagnosis.
+Understanding your emotions starts with tracking them accurately, not just naming what you feel, but noticing what triggers it, how intense it is, and how you respond. This transdiagnostic emotion log is built on principles used across modern CBT and emotion-focused treatment approaches, designed to work across anxiety, depression, anger, and other emotional difficulties rather than targeting just one diagnosis.
 
 Each entry captures the trigger, the emotion and its intensity, physical sensations, the urge to act, and what you actually did — giving you a complete picture of the emotional episode rather than an isolated snapshot.
 
