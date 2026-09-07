@@ -6,12 +6,12 @@ description: >
 image: /images/transdiagnostic-emotion-regulation-worksheet.png
 imageAlt: Transdiagnostic Emotion Regulation Worksheet
 tier: free
-category: cbt
+category: emotions
 age:
   - adults
 fileUrl: /worksheets/transdiagnostic-emotion-regulation-worksheets.docx.pdf
 order: 0
-draft: true
+draft: false
 ---
 Understanding your emotions starts with tracking them accurately — not just naming what you feel, but noticing what triggers it, how intense it is, and how you respond. This transdiagnostic emotion log is built on principles used across modern CBT and emotion-focused treatment approaches, designed to work across anxiety, depression, anger, and other emotional difficulties rather than targeting just one diagnosis.
 
