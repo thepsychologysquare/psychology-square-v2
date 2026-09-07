@@ -1,5 +1,5 @@
 ---
-title: Transdiagnostic Emotion Regulation - Worksheets
+title: Transdiagnostic Emotion Regulation - Worksheet
 description: >
   Free emotion regulation worksheet to track triggers, intensity, and responses.
   Based on transdiagnostic CBT principles. Build emotional awareness today.
