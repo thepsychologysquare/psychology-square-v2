@@ -1,17 +1,19 @@
 ---
-title: "How Depression Disrupts Adult Hippocampal Neurogenesis"
-description: "Explore the connection between major depression and adult neurogenesis in the hippocampus, and how disrupted neuron growth impacts neuroplasticity."
-image: "/images/a-person-in-a-beanie-and-sweater-sitting-on-a-rock-by-the-water-qT83W9ZiAsM.jpg"
-imageAlt: "A person in a beanie and sweater sitting on a rock by the water"
-imageCredit: "Jarle Johansen"
-imageCreditUrl: "https://unsplash.com/@jarlewathne?utm_source=the_psychology_square&utm_medium=referral"
-imageSourceUrl: "https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral"
+title: How Depression Disrupts Adult Hippocampal Neurogenesis
+description: Explore the connection between major depression and adult
+  neurogenesis in the hippocampus, and how disrupted neuron growth impacts
+  neuroplasticity.
+image: /images/a-person-in-a-beanie-and-sweater-sitting-on-a-rock-by-the-water-qT83W9ZiAsM.jpg
+imageAlt: A person in a beanie and sweater sitting on a rock by the water
 category: depression
-tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
+draft: false
+imageCredit: Jarle Johansen
+tags: []
+imageSourceUrl: https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral
+imageCreditUrl: https://unsplash.com/@jarlewathne?utm_source=the_psychology_square&utm_medium=referral
 publishDate: 2026-09-08T06:45:27.740Z
-draft: true
 ---
 <script type="application/ld+json">
 {
