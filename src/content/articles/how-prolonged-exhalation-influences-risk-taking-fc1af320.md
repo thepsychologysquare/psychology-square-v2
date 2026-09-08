@@ -1,17 +1,19 @@
 ---
-title: "How Prolonged Exhalation Influences Risk Taking"
-description: "Discover how prolonged exhalation influences decision making and risk taking by altering autonomic nervous system activity and neural cognitive processing."
-image: "/images/a-person-sitting-on-top-of-a-cliff-next-to-a-forest-KkZHLyPpfa8.jpg"
-imageAlt: "a person sitting on top of a cliff next to a forest"
-imageCredit: "Steven Cordes"
-imageCreditUrl: "https://unsplash.com/@steven3466?utm_source=the_psychology_square&utm_medium=referral"
-imageSourceUrl: "https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral"
+title: How Prolonged Exhalation Influences Risk Taking
+description: Discover how prolonged exhalation influences decision making and
+  risk taking by altering autonomic nervous system activity and neural cognitive
+  processing.
+image: /images/a-person-sitting-on-top-of-a-cliff-next-to-a-forest-KkZHLyPpfa8.jpg
+imageAlt: a person sitting on top of a cliff next to a forest
 category: neuroscience
-tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
+draft: false
+imageCredit: Steven Cordes
+tags: []
+imageSourceUrl: https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral
+imageCreditUrl: https://unsplash.com/@steven3466?utm_source=the_psychology_square&utm_medium=referral
 publishDate: 2026-09-08T06:45:27.567Z
-draft: true
 ---
 <script type="application/ld+json">
 {
