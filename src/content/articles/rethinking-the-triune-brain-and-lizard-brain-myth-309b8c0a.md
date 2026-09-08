@@ -1,23 +1,25 @@
 ---
-title: "Rethinking the Triune Brain and Lizard Brain Myth"
-description: "Examine why modern evolutionary neuroscience disproves the 70-year-old lizard brain myth and offers a new view of integrated neural circuits."
-image: "/images/a-close-up-of-a-human-brain-on-a-white-background-iW_n3MqVVtU.jpg"
-imageAlt: "a close up of a human brain on a white background"
-imageCredit: "BUDDHI Kumar SHRESTHA"
-imageCreditUrl: "https://unsplash.com/@aresbuddhi?utm_source=the_psychology_square&utm_medium=referral"
-imageSourceUrl: "https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral"
+title: Why Your Lizard Brain is a Myth and How Your Brain Actually Works
+description: Examine why modern evolutionary neuroscience disproves the
+  70-year-old lizard brain myth and offers a new view of integrated neural
+  circuits.
+image: /images/a-close-up-of-a-human-brain-on-a-white-background-iW_n3MqVVtU.jpg
+imageAlt: a close up of a human brain on a white background
 category: neuroscience
-tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
+draft: false
+imageCredit: BUDDHI Kumar SHRESTHA
+tags: []
+imageSourceUrl: https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral
+imageCreditUrl: https://unsplash.com/@aresbuddhi?utm_source=the_psychology_square&utm_medium=referral
 publishDate: 2026-09-08T06:45:27.744Z
-draft: true
 ---
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "Article",
-  "headline": "Rethinking the Triune Brain and Lizard Brain Myth",
+  "headline": "Why Your Lizard Brain is a Myth and How Your Brain Actually Works",
   "description": "Examine why modern evolutionary neuroscience disproves the 70-year-old lizard brain myth and offers a new view of integrated neural circuits.",
   "image": "/images/a-close-up-of-a-human-brain-on-a-white-background-iW_n3MqVVtU.jpg",
   "datePublished": "2026-09-08T06:45:27.744Z",
