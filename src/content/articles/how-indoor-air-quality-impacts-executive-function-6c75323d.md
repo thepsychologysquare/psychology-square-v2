@@ -1,23 +1,25 @@
 ---
-title: "How Indoor Air Quality Impacts Executive Function"
-description: "Discover how improving indoor air quality with HEPA filtration enhances executive function and processing speed by reducing neuroinflammation."
-image: "/images/a-woman-reading-a-book-on-a-couch-p7yuMnmSoFM.jpg"
-imageAlt: "A woman reading a book on a couch"
-imageCredit: "Kailun Zhang"
-imageCreditUrl: "https://unsplash.com/@kailun2019?utm_source=the_psychology_square&utm_medium=referral"
-imageSourceUrl: "https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral"
+title: Your Indoor Air Quality Can Affect Your Executive Function
+description: Discover how improving indoor air quality with HEPA filtration
+  enhances executive function and processing speed by reducing
+  neuroinflammation.
+image: /images/a-woman-reading-a-book-on-a-couch-p7yuMnmSoFM.jpg
+imageAlt: A woman reading a book on a couch
 category: neuroscience
-tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
+draft: false
+imageCredit: Kailun Zhang
+tags: []
+imageSourceUrl: https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral
+imageCreditUrl: https://unsplash.com/@kailun2019?utm_source=the_psychology_square&utm_medium=referral
 publishDate: 2026-09-08T06:45:27.742Z
-draft: true
 ---
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "Article",
-  "headline": "How Indoor Air Quality Impacts Executive Function",
+  "headline": "Your Indoor Air Quality Can Affect Your Executive Function",
   "description": "Discover how improving indoor air quality with HEPA filtration enhances executive function and processing speed by reducing neuroinflammation.",
   "image": "/images/a-woman-reading-a-book-on-a-couch-p7yuMnmSoFM.jpg",
   "datePublished": "2026-09-08T06:45:27.742Z",
