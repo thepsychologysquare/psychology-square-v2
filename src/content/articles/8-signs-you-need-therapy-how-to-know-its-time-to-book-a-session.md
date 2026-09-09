@@ -17,7 +17,6 @@ draft: false
  "@type": "Article",
  "headline": "8 Signs You Need Therapy: How to Know It's Time to Book a Session",
  "description": "Seeking therapy does not indicate weakness. Here are the 8 signs that point to therapy, and how to take the next steps.",
- "image": "REPLACE-WITH-IMAGE-PATH",
  "datePublished": "2026-09-09T11:20:00",
  "dateModified": "2026-09-09T11:20:00",
  "author": {
