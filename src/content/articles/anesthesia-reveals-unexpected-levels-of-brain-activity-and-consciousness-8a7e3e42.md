@@ -1,6 +1,8 @@
 ---
 title: Anesthesia Reveals Unexpected Levels of Brain Activity and Consciousness
-description: "Study finds significant brain activity persists under general anesthesia, challenging assumptions about unconsciousness and informing medical practice."
+description: Study finds significant brain activity persists under general
+  anesthesia, challenging assumptions about unconsciousness and informing
+  medical practice.
 image: /images/patient-undergoing-surgery-under-anesthesia.jpg
 imageAlt: ""
 category: neuroscience
@@ -10,8 +12,8 @@ draft: false
 imageCredit: ""
 imageSourceUrl: ""
 imageCreditUrl: ""
+seoTitle: Anesthesia Reveals Unexpected Brain Activity
 publishDate: 2026-08-19T06:05:17.981Z
-seoTitle: "Anesthesia Reveals Unexpected Brain Activity"
 ---
 <script type="application/ld+json">
 {
@@ -20,8 +22,8 @@ seoTitle: "Anesthesia Reveals Unexpected Brain Activity"
   "headline": "Anesthesia Reveals Unexpected Levels of Brain Activity and Consciousness",
   "description": "Study finds significant brain activity persists under general anesthesia, challenging assumptions about unconsciousness and informing medical practice.",
   "image": "",
-  "datePublished": "2026-08-19T06:05:17.981Z",
-  "dateModified": "2026-08-19T06:05:17.981Z",
+  "datePublished": "2026-09-09T09:45:00.000Z",
+  "dateModified": "2026-09-09T09:45:00.000Z",
   "author": {
     "@type": "Person",
     "name": "Muhammad Sohail"
