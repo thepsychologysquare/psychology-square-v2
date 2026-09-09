@@ -7,8 +7,8 @@ imageAlt: person taking online therapy
 category: therapy
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
-publishDate: 2026-09-09T11:15:00.000+05:00
-lastUpdated: ""
+publishDate: 2026-09-09T11:20:00.000+05:00
+lastUpdated: 2026-09-09T11:20:00.000+05:00
 draft: false
 ---
 <script type="application/ld+json">
@@ -18,8 +18,8 @@ draft: false
  "headline": "8 Signs You Need Therapy: How to Know It's Time to Book a Session",
  "description": "Seeking therapy does not indicate weakness. Here are the 8 signs that point to therapy, and how to take the next steps.",
  "image": "REPLACE-WITH-IMAGE-PATH",
- "datePublished": "2026-09-09T11:15:00",
- "dateModified": "2026-09-09T11:15:00",
+ "datePublished": "2026-09-09T11:20:00",
+ "dateModified": "2026-09-09T11:20:00",
  "author": {
  "@type": "Person",
  "name": "Muhammad Sohail"
@@ -37,9 +37,6 @@ draft: false
  "articleSection": "therapy"
 }
 </script>
-
-
-*Meta description: Wondering if what you're feeling calls for professional support? Here are the signs that point to therapy, and how to take the next step in Lahore.*
 
 Most people who eventually book a first session spent months, sometimes years, asking themselves whether their situation was "bad enough" to justify it. There is no single symptom checklist that settles the question, and that uncertainty is itself one of the reasons people delay getting help. This article works through the signs that typically prompt someone to seek therapy, why the threshold is lower than most people assume, and what an initial session in Lahore actually involves.
 
