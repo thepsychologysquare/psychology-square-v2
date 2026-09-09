@@ -1,0 +1,42 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+<Layout
+  title="Page Not Found"
+  fullTitle="Page Not Found — The Psychology Square"
+  description="The page you're looking for doesn't exist or may have moved."
+  noindex={true}
+>
+  <section class="hero error-hero">
+    <div class="wrap">
+      <p class="eyebrow">404</p>
+      <h1 class="hero-title" style="font-size: clamp(30px, 3.6vw, 44px); margin-bottom: 10px;">
+        We couldn't find that page
+      </h1>
+      <p class="hero-sub">
+        The link may be broken, or the page may have been moved or removed.
+        Here are a few places that might help instead.
+      </p>
+      <div class="error-actions">
+        <a href="/" class="btn btn--primary">Go to Homepage</a>
+        <a href="/resources/worksheets" class="btn btn--text-onlight">Browse Worksheets</a>
+        <a href="/articles" class="btn btn--text-onlight">Browse Articles</a>
+        <a href="/contact" class="btn btn--text-onlight">Contact Us</a>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .error-hero {
+    min-height: 60vh;
+    display: flex;
+    align-items: center;
+  }
+  .error-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 28px;
+  }
+</style>

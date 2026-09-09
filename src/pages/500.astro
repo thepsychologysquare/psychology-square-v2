@@ -1,0 +1,40 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+<Layout
+  title="Something Went Wrong"
+  fullTitle="Something Went Wrong — The Psychology Square"
+  description="We're experiencing a temporary issue. Please try again shortly."
+  noindex={true}
+>
+  <section class="hero error-hero">
+    <div class="wrap">
+      <p class="eyebrow">500</p>
+      <h1 class="hero-title" style="font-size: clamp(30px, 3.6vw, 44px); margin-bottom: 10px;">
+        Something went wrong on our end
+      </h1>
+      <p class="hero-sub">
+        This isn't you — it's us. Please try refreshing the page in a moment.
+        If it keeps happening, let us know and we'll take a look.
+      </p>
+      <div class="error-actions">
+        <a href="/" class="btn btn--primary">Go to Homepage</a>
+        <a href="/contact" class="btn btn--text-onlight">Contact Us</a>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .error-hero {
+    min-height: 60vh;
+    display: flex;
+    align-items: center;
+  }
+  .error-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 28px;
+  }
+</style>
