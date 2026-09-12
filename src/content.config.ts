@@ -60,6 +60,38 @@ const worksheets = defineCollection({
     imageAlt: z.string().optional(),
   }),
 });
+// Books & booklets: PDF downloads/uploads, structured the same way as
+// worksheets (Topic + Age filters, Free/Paid tier) but with book-specific
+// fields instead of the worksheet "request" mechanism. Free books link
+// straight to fileUrl; paid books show `price` and link out to
+// `checkoutUrl` (falls back to /contact on the page itself if left blank)
+// rather than opening the worksheets' "request this worksheet" modal.
+const books = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/books' }),
+  schema: z.object({
+    title: z.string(),
+    description: z.string(),
+    tier: z.enum(['free', 'paid']),
+    category: z.string().default('general'),
+    age: z.array(z.enum(['children', 'adults'])).default(['adults']),
+    // Book-specific, optional so existing-style minimal entries still work.
+    author: z.string().optional(),
+    // Free tier: the uploaded PDF itself.
+    fileUrl: z.string().optional(),
+    // Paid tier: display price (any currency/format, e.g. "$12" or "PKR 1500")
+    // and where the "Get this book" button should send people — a payment
+    // link, a product page, or left blank to fall back to /contact.
+    price: z.string().optional(),
+    checkoutUrl: z.string().optional(),
+    order: z.number().default(0),
+    draft: z.boolean().default(false),
+    // See the matching field on the articles collection above.
+    seoTitle: z.string().optional(),
+    // Safe, non-destructive optional fields for Decap CMS uploads:
+    image: z.string().optional(),
+    imageAlt: z.string().optional(),
+  }),
+});
 const assessments = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/assessments' }),
   schema: z.object({
@@ -146,4 +178,4 @@ const courseModules = defineCollection({
   }),
 });
 
-export const collections = { articles, worksheets, assessments, courses, courseModules, categories };
+export const collections = { articles, worksheets, books, assessments, courses, courseModules, categories };

@@ -106,6 +106,48 @@ collections:
       - {label: "Draft", name: "draft", widget: "boolean", default: false, hint: "Turn ON to hide this worksheet from the live site until it's ready."}
       - {label: "Body", name: "body", widget: "markdown", required: false, hint: "Shown on the worksheet's own page — what it's for, who it helps, how to use it. A paragraph or two is plenty."}
 
+  - name: "books"
+    label: "Books & Booklets"
+    folder: "src/content/books"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - {label: "Title", name: "title", widget: "string"}
+      - {label: "Description", name: "description", widget: "text", hint: "One or two sentences shown on the card."}
+      - {label: "Author", name: "author", widget: "string", required: false}
+      - {label: "Featured Image", name: "image", widget: "image", required: false, hint: "Optional cover image for the book card."}
+      - {label: "Image Alt Text", name: "imageAlt", widget: "string", required: false, hint: "Brief description of the image for accessibility/SEO."}
+      - label: "Tier"
+        name: "tier"
+        widget: "select"
+        options:
+          - {label: "Free", value: "free"}
+          - {label: "Paid", value: "paid"}
+      - label: "Topic"
+        name: "category"
+        widget: "relation"
+        collection: "categories"
+        search_fields: ["name"]
+        display_fields: ["name"]
+        value_field: "{{slug}}"
+        default: "general"
+        hint: "Search for an existing category. Don't see it? Go to the Categories tab, add it there, then come back here."
+      - label: "Age"
+        name: "age"
+        widget: "select"
+        multiple: true
+        default: ["adults"]
+        options:
+          - {label: "Children", value: "children"}
+          - {label: "Adults", value: "adults"}
+        hint: "Select both if the book suits either age group."
+      - {label: "PDF File", name: "fileUrl", widget: "file", required: false, media_folder: "/public/books", public_folder: "/books", hint: "Only needed for Free books — this is the PDF visitors download directly. Leave blank for Paid books."}
+      - {label: "Price", name: "price", widget: "string", required: false, hint: "Only needed for Paid books — shown next to the button, e.g. \"PKR 1500\" or \"$12\". Leave blank for Free books."}
+      - {label: "Checkout / Buy Link", name: "checkoutUrl", widget: "string", required: false, hint: "Only needed for Paid books — where the \"Get this book\" button sends people (a payment link, product page, etc). Leave blank to send them to the Contact page instead."}
+      - {label: "Order", name: "order", widget: "number", default: 0, required: false, hint: "Lower numbers show first. Leave as 0 if you don't care about order."}
+      - {label: "Draft", name: "draft", widget: "boolean", default: false, hint: "Turn ON to hide this book from the live site until it's ready."}
+      - {label: "Body", name: "body", widget: "markdown", required: false, hint: "Shown on the book's own page — what it covers, who it's for, why it's worth reading. A paragraph or two is plenty."}
+
   # The "courses" collection used to live here. Course creation and
   # editing (title, slug, description, pricing, quiz, modules, lessons --
   # everything) now happens entirely in /dashboard/courses, backed by D1.

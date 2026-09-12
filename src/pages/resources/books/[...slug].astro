@@ -1,0 +1,305 @@
+---
+import { getCollection, render } from 'astro:content';
+import Layout from '../../../layouts/Layout.astro';
+
+const categoryMeta: Record<string, string> = {
+  'general': 'General',
+  'anxiety': 'Anxiety',
+  'depression': 'Depression',
+  'adhd': 'ADHD',
+  'addiction-recovery': 'Addiction & Recovery',
+  'trauma': 'Trauma',
+  'relationships': 'Relationships',
+  'stress-burnout': 'Stress & Burnout',
+};
+const ageMeta: Record<string, string> = { 'children': 'Children', 'adults': 'Adults' };
+function categoryLabel(slug: string) {
+  return categoryMeta[slug] || slug.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+}
+
+export async function getStaticPaths() {
+  const books = await getCollection('books', ({ data }) => !data.draft);
+  return books.map((book) => ({
+    params: { slug: book.id },
+    props: { book, allBooks: books },
+  }));
+}
+
+const { book, allBooks } = Astro.props;
+const { Content } = await render(book);
+
+const related = allBooks
+  .filter((b) => b.id !== book.id && b.data.category === book.data.category)
+  .slice(0, 3);
+
+const siteOrigin = 'https://thepsychologysquare.com';
+const canonicalPath = `/resources/books/${book.id}`;
+const imgSrc = typeof book.data.image === 'string' ? book.data.image : book.data.image?.src;
+const imgAbsolute = imgSrc
+  ? (imgSrc.startsWith('http') ? imgSrc : `${siteOrigin}${imgSrc}`)
+  : undefined;
+
+// Where the paid "Get this book" button should point: an explicit
+// checkout/payment link if one was set in the CMS, otherwise the contact
+// page so a visitor can always reach someone about buying it.
+const paidLinkHref = book.data.tier === 'paid' ? (book.data.checkoutUrl || '/contact') : undefined;
+
+const bookJson = {
+  "@context": "https://schema.org",
+  "@type": "Book",
+  "name": book.data.title,
+  "description": book.data.description,
+  "url": `${siteOrigin}${canonicalPath}`,
+  ...(book.data.author ? { "author": { "@type": "Person", "name": book.data.author } } : {}),
+  "isAccessibleForFree": book.data.tier === 'free',
+  ...(book.data.tier === 'free' && book.data.fileUrl
+    ? { "associatedMedia": { "@type": "MediaObject", "contentUrl": new URL(book.data.fileUrl, siteOrigin).toString() } }
+    : {}),
+  ...(book.data.tier === 'paid' && book.data.price
+    ? { "offers": { "@type": "Offer", "price": book.data.price, "priceCurrency": "PKR", "url": paidLinkHref?.startsWith('http') ? paidLinkHref : `${siteOrigin}${paidLinkHref}` } }
+    : {}),
+  "publisher": {
+    "@type": "Organization",
+    "name": "The Psychology Square",
+    "url": siteOrigin,
+  },
+};
+const breadcrumbJson = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home", "item": `${siteOrigin}/` },
+    { "@type": "ListItem", "position": 2, "name": "Resources", "item": `${siteOrigin}/resources` },
+    { "@type": "ListItem", "position": 3, "name": "Books & Booklets", "item": `${siteOrigin}/resources/books` },
+    { "@type": "ListItem", "position": 4, "name": book.data.title, "item": `${siteOrigin}${canonicalPath}` },
+  ],
+};
+---
+
+<Layout
+  title={book.data.title}
+  description={book.data.description}
+  fullTitle={book.data.seoTitle ?? `${book.data.title} — The Psychology Square`}
+  image={imgSrc}
+>
+  <script type="application/ld+json" set:html={JSON.stringify(bookJson)} />
+  <script type="application/ld+json" set:html={JSON.stringify(breadcrumbJson)} />
+
+  <article class="book-page">
+    <div class="wrap">
+      <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <a href="/">Home</a>
+        <span class="crumb-sep">/</span>
+        <a href="/resources">Resources</a>
+        <span class="crumb-sep">/</span>
+        <a href="/resources/books">Books & Booklets</a>
+        <span class="crumb-sep">/</span>
+        <span class="crumb-current">{book.data.title}</span>
+      </nav>
+
+      <span class="article-meta" style="display:block; margin-bottom: 14px;">
+        {book.data.tier === 'free' ? 'Free' : 'Paid'} · {categoryLabel(book.data.category)} · {book.data.age.map((a: string) => ageMeta[a]).join(' & ')}
+      </span>
+      <h1 class="book-title">{book.data.title}</h1>
+      {book.data.author && <p class="book-author">by {book.data.author}</p>}
+      <p class="book-lede">{book.data.description}</p>
+
+      {imgSrc && (
+        <figure class="book-hero-image">
+          <img src={imgSrc} alt={book.data.imageAlt || book.data.title} loading="eager" />
+        </figure>
+      )}
+
+      <div class="prose">
+        <Content />
+      </div>
+
+      <div class="book-cta">
+        {book.data.tier === 'free' ? (
+          <a
+            class="book-btn book-btn--download"
+            href={book.data.fileUrl}
+            target="_blank"
+            rel="noopener"
+            aria-label={`Download ${book.data.title} PDF`}
+          >
+            Download PDF →
+          </a>
+        ) : (
+          <div class="book-cta-paid">
+            {book.data.price && <span class="book-price">{book.data.price}</span>}
+            <a
+              class="book-btn book-btn--buy"
+              href={paidLinkHref}
+              target={paidLinkHref?.startsWith('http') ? '_blank' : undefined}
+              rel={paidLinkHref?.startsWith('http') ? 'noopener' : undefined}
+              aria-label={`Get ${book.data.title}`}
+            >
+              Get this book →
+            </a>
+          </div>
+        )}
+      </div>
+    </div>
+  </article>
+
+  {related.length > 0 && (
+    <section class="section section--alt">
+      <div class="wrap">
+        <div class="section-head">
+          <h2 class="section-title">More {categoryLabel(book.data.category)} books</h2>
+        </div>
+        <div class="card-grid">
+          {related.map((b) => {
+            const relImgSrc = typeof b.data.image === 'string' ? b.data.image : b.data.image?.src;
+            return (
+              <a class="article-card" href={`/resources/books/${b.id}`}>
+                {relImgSrc && (
+                  <div class="card-image-wrap">
+                    <img src={relImgSrc} alt={b.data.imageAlt || b.data.title} loading="lazy" />
+                  </div>
+                )}
+                <div class="card-body">
+                  <span class="article-meta">{b.data.tier === 'free' ? 'Free' : 'Paid'} · {categoryLabel(b.data.category)}</span>
+                  <h3>{b.data.title}</h3>
+                  <p>{b.data.description}</p>
+                </div>
+              </a>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  )}
+</Layout>
+
+<style>
+  .book-page{ padding: 56px 0 80px; max-width: 100%; }
+  .book-page .wrap{ max-width: 760px; }
+
+  .breadcrumbs{
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.02em;
+    color: var(--ink-600);
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    align-items:center;
+    margin-top: 65px;
+    margin-bottom: 10px;
+  }
+  .breadcrumbs a:hover{ color: var(--gold-500); }
+  .crumb-sep{ color: var(--line); }
+  .crumb-current{ color: var(--ink-900); }
+
+  @media (max-width: 768px) {
+    .breadcrumbs { margin-top: 50px; }
+  }
+
+  .book-title{
+    font-size: clamp(30px, 4vw, 44px);
+    line-height: 1.15;
+    margin-bottom: 6px;
+  }
+  .book-author{
+    font-size: 15px;
+    font-style: italic;
+    color: var(--ink-600);
+    margin-bottom: 14px;
+  }
+  .book-lede{
+    font-size: 17px;
+    color: var(--ink-600);
+    line-height: 1.6;
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .book-hero-image{
+    margin: 0 0 40px 0;
+    width: 100%;
+    border-radius: 4px;
+    overflow: hidden;
+    background-color: var(--paper-50);
+  }
+  .book-hero-image img{
+    width: 100%;
+    max-height: 420px;
+    object-fit: cover;
+    display: block;
+  }
+
+  .prose{
+    font-size: 17px;
+    line-height: 1.75;
+    color: var(--ink-900);
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+  .prose :global(h2){ font-size: 24px; margin: 40px 0 16px; overflow-wrap: anywhere; }
+  .prose :global(p){ margin-bottom: 18px; }
+  .prose :global(ul), .prose :global(ol){ margin: 0 0 18px; padding-left: 22px; }
+  .prose :global(li){ margin-bottom: 8px; }
+  .prose :global(img){ max-width: 100%; height: auto; display: block; margin: 24px auto; border-radius: 4px; }
+  .prose :global(pre){ max-width: 100%; overflow-x: auto; }
+  .prose :global(table){ display: block; max-width: 100%; overflow-x: auto; }
+  .prose :global(a){ overflow-wrap: anywhere; word-break: break-word; }
+
+  .book-cta{
+    margin-top: 40px;
+    padding-top: 28px;
+    border-top: 1px solid var(--line);
+  }
+  .book-btn{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-size:14px;
+    font-weight:600;
+    padding:10px 18px;
+    border-radius:3px;
+    align-self:flex-start;
+    transition: all .2s var(--ease);
+  }
+  .book-btn--download{ background: var(--gold-500); color: var(--navy-950); }
+  .book-btn--download:hover{ background: var(--gold-300); }
+  .book-btn--buy{ background: var(--gold-500); color: var(--navy-950); }
+  .book-btn--buy:hover{ background: var(--gold-300); }
+  .book-cta-paid{ display:flex; align-items:center; gap:18px; flex-wrap:wrap; }
+  .book-price{
+    font-family: var(--font-mono);
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--ink-900);
+  }
+
+  .article-card {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .card-image-wrap {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    background-color: var(--paper-50);
+    border-bottom: 1px solid var(--line);
+  }
+  .card-image-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s var(--ease);
+  }
+  .article-card:hover .card-image-wrap img {
+    transform: scale(1.03);
+  }
+  .card-body {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+  }
+</style>

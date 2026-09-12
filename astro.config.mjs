@@ -35,8 +35,10 @@ export default defineConfig({
     '/terms-of-service': '/terms',
     '/worksheets/goal-achievement-framework-worksheet': '/resources/worksheets',
     '/worksheets/locus-of-control-worksheet': '/resources/worksheets',
+    // Now has a real equivalent — the new Books & Booklets section.
+    '/psychology-books': '/resources/books',
     // No current equivalent for these — left as a clean 404 on purpose:
-    // /about-us, /psychology-books, /addiction-and-trauma
+    // /about-us, /addiction-and-trauma
   },
   integrations: [
     sitemap({

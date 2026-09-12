@@ -464,6 +464,14 @@ const navAllArticleCategories = navCategorySlugsInUse
                   </div>
                   <span class="course-card-name">Scales & Assessment Tools</span>
                 </a>
+                <a href="/resources/books" class="course-panel-card">
+                  <div class={`course-card-graphic ${getResourceImage('books') ? '' : 'bg-placeholder-9'}`}>
+                    {getResourceImage('books') ? (
+                      <Image src={getResourceImage('books')!} alt="Books & Booklets" width={360} format="webp" quality={60} loading="lazy" style="width:100%; height:100%; object-fit:cover;" />
+                    ) : null}
+                  </div>
+                  <span class="course-card-name">Books & Booklets</span>
+                </a>
               </div>
               <div class="mega-row-footer">
                 <a href="/resources" class="mega-view-all-pill">View All Resources</a>
@@ -664,6 +672,16 @@ const navAllArticleCategories = navCategorySlugsInUse
               </div>
               <div class="mobile-stack-meta">
                 <span class="mobile-stack-title">Scales & Assessments</span>
+              </div>
+            </a>
+            <a href="/resources/books" class="mobile-stack-card">
+              <div class={`mobile-stack-thumb ${getResourceImage('books') ? '' : 'bg-placeholder-9'}`} style="overflow:hidden;">
+                {getResourceImage('books') ? (
+                  <Image src={getResourceImage('books')!} alt="Books & Booklets" width={120} format="webp" quality={60} loading="lazy" style="width:100%; height:100%; object-fit:cover;" />
+                ) : null}
+              </div>
+              <div class="mobile-stack-meta">
+                <span class="mobile-stack-title">Books & Booklets</span>
               </div>
             </a>
             <div class="mega-row-footer" style="padding-top: 12px;">

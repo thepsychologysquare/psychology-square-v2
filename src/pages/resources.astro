@@ -8,6 +8,7 @@ const itemListJson = {
   "itemListElement": [
     { "@type": "ListItem", "position": 1, "name": "Printable Worksheets", "url": `${siteOrigin}/resources/worksheets` },
     { "@type": "ListItem", "position": 2, "name": "Scales & Assessment Tools", "url": `${siteOrigin}/resources/assessments` },
+    { "@type": "ListItem", "position": 3, "name": "Books & Booklets", "url": `${siteOrigin}/resources/books` },
   ],
 };
 const breadcrumbJson = {
@@ -53,6 +54,11 @@ const breadcrumbJson = {
           <h3>Scales &amp; Assessment Tools</h3>
           <p>Publicly available psychological scales, with scoring guidance and source notes.</p>
         </a>
+        <a class="article-card" href="/resources/books">
+          <span class="article-meta">Books</span>
+          <h3>Books &amp; Booklets</h3>
+          <p>Longer-form reading — some free downloads, some paid titles. Filterable by category and age group.</p>
+        </a>
       </div>
 
       <h2 style="font-size: 22px; margin: 64px 0 16px;">What's covered</h2>
@@ -78,6 +84,11 @@ const breadcrumbJson = {
         </div>
         <div class="approach-item">
           <span class="approach-num">03</span>
+          <h3>Books & booklets</h3>
+          <p>Longer-form reading for going deeper than a worksheet — some free to download, others paid titles with pricing shown on the book's page.</p>
+        </div>
+        <div class="approach-item">
+          <span class="approach-num">04</span>
           <h3>A starting point, not a diagnosis</h3>
           <p>These resources are educational. If something here resonates, a session is the next step to talk it through properly.</p>
         </div>
@@ -117,7 +128,7 @@ const breadcrumbJson = {
 
   .approach-grid{
     display:grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 32px;
   }
   .approach-item{ display:flex; flex-direction:column; gap:10px; }

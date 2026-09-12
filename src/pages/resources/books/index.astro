@@ -1,0 +1,475 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../../../layouts/Layout.astro';
+// No dedicated cover image yet — drop a books.jpg into
+// src/assets/resources/ and reintroduce an import + `image={booksCover.src}`
+// below (and in [...slug].astro) once one exists; Layout falls back to the
+// site's default OG image until then, same as any other page without one.
+
+const allBooks = await getCollection('books', ({ data }) => !data.draft);
+const sorted = allBooks.sort((a, b) => a.data.order - b.data.order);
+
+const categoryMeta: Record<string, string> = {
+  'general': 'General',
+  'anxiety': 'Anxiety',
+  'depression': 'Depression',
+  'adhd': 'ADHD',
+  'addiction-recovery': 'Addiction & Recovery',
+  'trauma': 'Trauma',
+  'relationships': 'Relationships',
+  'stress-burnout': 'Stress & Burnout',
+};
+const ageMeta: Record<string, string> = { 'children': 'Children', 'adults': 'Adults' };
+
+const categoriesPresent = [...new Set(sorted.map((b) => b.data.category))].sort();
+
+const siteOrigin = 'https://thepsychologysquare.com';
+const itemListJson = {
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  "name": "Books & Booklets",
+  "description": "Free and paid psychology books and booklets covering anxiety, depression, ADHD, trauma, relationships, and stress.",
+  "url": `${siteOrigin}/resources/books`,
+  "mainEntity": {
+    "@type": "ItemList",
+    "itemListElement": sorted.map((b, i) => ({
+      "@type": "ListItem",
+      "position": i + 1,
+      "item": {
+        "@type": "Book",
+        "name": b.data.title,
+        "description": b.data.description,
+        ...(b.data.author ? { "author": { "@type": "Person", "name": b.data.author } } : {}),
+        "url": `${siteOrigin}/resources/books/${b.id}`,
+        "isAccessibleForFree": b.data.tier === 'free',
+      },
+    })),
+  },
+};
+const breadcrumbJson = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home", "item": `${siteOrigin}/` },
+    { "@type": "ListItem", "position": 2, "name": "Resources", "item": `${siteOrigin}/resources` },
+    { "@type": "ListItem", "position": 3, "name": "Books & Booklets", "item": `${siteOrigin}/resources/books` },
+  ],
+};
+---
+
+<Layout
+  title="Books & Booklets"
+  fullTitle="Free & Paid Psychology Books and Booklets | The Psychology Square"
+  description="Download free psychology books and booklets, or get paid titles on CBT, anxiety, depression, ADHD, PTSD, relationships, and much more."
+>
+  <script type="application/ld+json" set:html={JSON.stringify(itemListJson)} />
+  <script type="application/ld+json" set:html={JSON.stringify(breadcrumbJson)} />
+
+  <section class="hero">
+    <div class="wrap">
+      <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <a href="/">Home</a>
+        <span class="crumb-sep">/</span>
+        <a href="/resources">Resources</a>
+        <span class="crumb-sep">/</span>
+        <span class="crumb-current">Books & Booklets</span>
+      </nav>
+      <p class="eyebrow">Resources</p>
+      <h1 class="hero-title" style="font-size: clamp(32px, 4vw, 48px); margin-bottom: 16px;">Books & Booklets</h1>
+      <p class="hero-sub">Longer-form reading to go deeper than a single worksheet. Some titles are free downloads, others are paid — pricing and access are shown on each book's own page.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <div class="toolbar">
+        <input type="text" id="search-input" class="search-input" placeholder="Search books…" autocomplete="off" />
+
+        <details class="filter-dropdown" id="filter-dropdown">
+          <summary class="filter-toggle">
+            Filters <span class="filter-badge" id="filter-badge" hidden>0</span>
+          </summary>
+          <div class="filter-panel">
+            <div class="filter-group">
+              <h3 class="filter-heading">Tier</h3>
+              <div class="checkbox-list" id="tier-filters">
+                <label class="checkbox-row">
+                  <input type="checkbox" value="free" class="tier-checkbox" data-label="Free" />
+                  <span>Free</span>
+                </label>
+                <label class="checkbox-row">
+                  <input type="checkbox" value="paid" class="tier-checkbox" data-label="Paid" />
+                  <span>Paid</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="filter-group">
+              <h3 class="filter-heading">Topics</h3>
+              <div class="checkbox-list" id="category-filters">
+                {categoriesPresent.map((cat) => (
+                  <label class="checkbox-row">
+                    <input type="checkbox" value={cat} class="category-checkbox" data-label={categoryMeta[cat] || cat} />
+                    <span>{categoryMeta[cat] || cat}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div class="filter-group">
+              <h3 class="filter-heading">Age</h3>
+              <div class="checkbox-list" id="age-filters">
+                <label class="checkbox-row">
+                  <input type="checkbox" value="children" class="age-checkbox" data-label="Children" />
+                  <span>Children</span>
+                </label>
+                <label class="checkbox-row">
+                  <input type="checkbox" value="adults" class="age-checkbox" data-label="Adults" />
+                  <span>Adults</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="filter-panel-actions">
+              <button type="button" id="clear-filters" class="clear-filters-btn">Clear all</button>
+              <button type="button" class="btn btn--primary filter-done-btn" id="filter-done">Show results</button>
+            </div>
+          </div>
+        </details>
+      </div>
+
+      <div class="active-chips" id="active-chips"></div>
+
+      <p class="results-count" id="results-count"></p>
+
+      <div class="card-grid book-grid" id="book-grid">
+        {sorted.map((b) => {
+          const imgSrc = typeof b.data.image === 'string' ? b.data.image : b.data.image?.src;
+          return (
+          <a
+            class="article-card book-card"
+            href={`/resources/books/${b.id}`}
+            data-tier={b.data.tier}
+            data-category={b.data.category}
+            data-age={b.data.age.join(',')}
+            data-title={b.data.title.toLowerCase()}
+            data-description={b.data.description.toLowerCase()}
+          >
+            {imgSrc && (
+              <div class="card-image-wrap">
+                <img src={imgSrc} alt={b.data.imageAlt || b.data.title} loading="lazy" />
+              </div>
+            )}
+            <div class="card-body">
+              <span class="article-meta">
+                {b.data.tier === 'free' ? 'Free' : 'Paid'} · {categoryMeta[b.data.category]} · {b.data.age.map((a) => ageMeta[a]).join(' & ')}
+              </span>
+              <h3>{b.data.title}</h3>
+              {b.data.author && <p class="book-card-author">by {b.data.author}</p>}
+              <p>{b.data.description}</p>
+              <span class="book-card-link">{b.data.tier === 'free' ? 'View book →' : 'View details →'}</span>
+            </div>
+          </a>
+          );
+        })}
+      </div>
+
+      <p class="no-results" id="no-results" hidden>No books match your filters. Try clearing some, or search a different term.</p>
+      <div class="pager" id="pager"></div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .breadcrumbs{
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: rgba(248,249,246,0.6);
+    margin-bottom: 20px;
+    display:flex; flex-wrap:wrap; gap:6px; align-items:center;
+  }
+  .breadcrumbs a:hover{ color: var(--gold-300); }
+  .crumb-sep{ color: rgba(248,249,246,0.3); }
+  .crumb-current{ color: rgba(248,249,246,0.85); }
+
+  .toolbar{ display:flex; gap:12px; position: relative; z-index: 20; }
+  .search-input{
+    flex: 1;
+    font-family: var(--font-body);
+    font-size: 14.5px;
+    padding: 12px 16px;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    background: var(--paper-0);
+    color: var(--ink-900);
+  }
+  .search-input:focus{ outline: 2px solid var(--gold-500); outline-offset: 1px; }
+
+  .filter-dropdown{ position: relative; }
+  .filter-toggle{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--navy-950);
+    background: var(--paper-0);
+    border: 1px solid var(--line);
+    padding: 12px 20px;
+    border-radius: 3px;
+    cursor: pointer;
+    white-space: nowrap;
+    list-style: none;
+    user-select: none;
+  }
+  .filter-toggle::-webkit-details-marker{ display:none; }
+  .filter-toggle:hover{ border-color: var(--gold-500); }
+  .filter-dropdown[open] .filter-toggle{ border-color: var(--navy-950); background: var(--navy-950); color: var(--paper-0); }
+
+  .filter-badge{
+    background: var(--gold-500);
+    color: var(--navy-950);
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 999px;
+    padding: 1px 7px;
+    min-width: 18px;
+    text-align: center;
+  }
+
+  .filter-panel{
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: min(360px, calc(100vw - 64px));
+    max-height: 60vh;
+    overflow-y: auto;
+    background: var(--paper-0);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    box-shadow: 0 12px 32px rgba(19,26,34,0.14);
+    padding: 22px;
+    display:flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+
+  .filter-group{ display:flex; flex-direction:column; gap:10px; }
+  .filter-heading{
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-600);
+  }
+  .checkbox-list{ display:flex; flex-direction:column; gap:10px; }
+  .checkbox-row{
+    display:flex;
+    align-items:center;
+    gap:9px;
+    font-size: 14px;
+    color: var(--ink-900);
+    cursor: pointer;
+  }
+  .checkbox-row input{ accent-color: var(--gold-500); width:15px; height:15px; flex:none; }
+
+  .filter-panel-actions{
+    display:flex;
+    justify-content: space-between;
+    align-items:center;
+    padding-top: 6px;
+    border-top: 1px solid var(--line);
+  }
+  .clear-filters-btn{
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--ink-600);
+    background: none;
+    border: none;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+    padding: 0;
+  }
+  .clear-filters-btn:hover{ color: var(--gold-500); }
+  .filter-done-btn{ font-size: 13px; padding: 10px 20px; }
+
+  .active-chips{ display:flex; flex-wrap:wrap; gap:8px; margin-top: 18px; }
+  .active-chips:empty{ margin-top: 0; }
+  .active-chip{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.02em;
+    color: var(--navy-950);
+    background: var(--paper-50);
+    border: 1px solid var(--line);
+    padding: 6px 10px 6px 14px;
+    border-radius: 999px;
+  }
+  .active-chip button{
+    background: none; border: none; color: var(--ink-600);
+    cursor: pointer; font-size: 14px; line-height: 1; padding: 2px;
+  }
+  .active-chip button:hover{ color: var(--gold-500); }
+
+  .results-count{
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    color: var(--ink-600);
+    margin: 24px 0;
+  }
+  .no-results{ color: var(--ink-600); padding: 40px 0; }
+
+  .book-card{ justify-content: flex-start; display: flex; flex-direction: column; overflow: hidden; }
+  .card-image-wrap{ width: 100%; aspect-ratio: 16 / 9; overflow: hidden; background-color: var(--paper-50); border-bottom: 1px solid var(--line); }
+  .card-image-wrap img{ width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s var(--ease); }
+  .book-card:hover .card-image-wrap img{ transform: scale(1.03); }
+  .book-card .card-body{ display: flex; flex-direction: column; flex-grow: 1; }
+  .book-card-author{
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-style: italic;
+    color: var(--ink-600);
+    margin: -6px 0 8px;
+  }
+  .book-card-link{
+    margin-top: auto;
+    padding-top: 12px;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    letter-spacing: 0.02em;
+    color: var(--gold-500);
+  }
+  .book-card.is-hidden{ display: none; }
+  .book-card.is-paged-out{ display: none; }
+  .pager{ display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-top:40px; }
+  .pager-btn{
+    font-family:var(--font-mono); font-size:13px; padding:8px 14px;
+    border:1px solid var(--line); border-radius:2px; background:var(--paper-0); cursor:pointer;
+  }
+  .pager-btn:hover:not(:disabled){ border-color:var(--gold-500); }
+  .pager-btn.is-current{ background:var(--gold-500); border-color:var(--gold-500); color:var(--navy-950); font-weight:600; }
+  .pager-btn:disabled{ opacity:0.4; cursor:not-allowed; }
+
+  @media (max-width: 600px){
+    .toolbar{ flex-direction: column; }
+    .filter-panel{ right: 0; left: 0; width: auto; }
+  }
+</style>
+
+<script>
+  import { createPaginator } from '../../../lib/pagination';
+
+  type FilterEntry = { type: 'tier' | 'category' | 'age'; value: string; label: string };
+
+  const paginator = createPaginator({ pagerEl: document.getElementById('pager')! });
+
+  const searchInput = document.getElementById('search-input') as HTMLInputElement;
+  const filterDropdown = document.getElementById('filter-dropdown') as HTMLDetailsElement;
+  const filterBadge = document.getElementById('filter-badge') as HTMLElement;
+  const tierCheckboxes = document.querySelectorAll<HTMLInputElement>('.tier-checkbox');
+  const categoryCheckboxes = document.querySelectorAll<HTMLInputElement>('.category-checkbox');
+  const ageCheckboxes = document.querySelectorAll<HTMLInputElement>('.age-checkbox');
+  const clearBtn = document.getElementById('clear-filters');
+  const doneBtn = document.getElementById('filter-done');
+  const cards = document.querySelectorAll<HTMLElement>('#book-grid .book-card');
+  const resultsCount = document.getElementById('results-count');
+  const noResults = document.getElementById('no-results');
+  const activeChipsContainer = document.getElementById('active-chips');
+
+  function getActiveFilters(): FilterEntry[] {
+    const tiers = [...tierCheckboxes].filter((c) => c.checked).map((c) => ({ type: 'tier' as const, value: c.value, label: c.dataset.label || c.value }));
+    const cats = [...categoryCheckboxes].filter((c) => c.checked).map((c) => ({ type: 'category' as const, value: c.value, label: c.dataset.label || c.value }));
+    const ages = [...ageCheckboxes].filter((c) => c.checked).map((c) => ({ type: 'age' as const, value: c.value, label: c.dataset.label || c.value }));
+    return [...tiers, ...cats, ...ages];
+  }
+
+  function renderChips() {
+    if (!activeChipsContainer) return;
+    const active = getActiveFilters();
+    activeChipsContainer.innerHTML = '';
+    active.forEach((f) => {
+      const chip = document.createElement('span');
+      chip.className = 'active-chip';
+      chip.innerHTML = `${f.label} <button type="button" aria-label="Remove filter">✕</button>`;
+      chip.querySelector('button')?.addEventListener('click', () => {
+        const source = f.type === 'tier' ? tierCheckboxes : f.type === 'category' ? categoryCheckboxes : ageCheckboxes;
+        source.forEach((c) => { if (c.value === f.value) c.checked = false; });
+        applyFilters();
+      });
+      activeChipsContainer.appendChild(chip);
+    });
+    if (filterBadge) {
+      filterBadge.hidden = active.length === 0;
+      filterBadge.textContent = String(active.length);
+    }
+  }
+
+  function applyFilters() {
+    const query = searchInput.value.trim().toLowerCase();
+    const activeTiers = [...tierCheckboxes].filter((c) => c.checked).map((c) => c.value);
+    const activeCategories = [...categoryCheckboxes].filter((c) => c.checked).map((c) => c.value);
+    const activeAges = [...ageCheckboxes].filter((c) => c.checked).map((c) => c.value);
+
+    let visibleCount = 0;
+
+    cards.forEach((card) => {
+      const title = card.dataset.title || '';
+      const description = card.dataset.description || '';
+      const tier = card.dataset.tier || '';
+      const category = card.dataset.category || '';
+      const ages = (card.dataset.age || '').split(',').filter(Boolean);
+
+      const matchesSearch = !query || title.includes(query) || description.includes(query);
+      const matchesTier = activeTiers.length === 0 || activeTiers.includes(tier);
+      const matchesCategory = activeCategories.length === 0 || activeCategories.includes(category);
+      const matchesAge = activeAges.length === 0 || activeAges.some((a) => ages.includes(a));
+
+      const show = matchesSearch && matchesTier && matchesCategory && matchesAge;
+      card.classList.toggle('is-hidden', !show);
+      if (show) visibleCount++;
+    });
+
+    if (resultsCount) {
+      resultsCount.textContent = `Showing ${visibleCount} of ${cards.length} book${cards.length === 1 ? '' : 's'}`;
+    }
+    if (noResults) noResults.hidden = visibleCount !== 0;
+
+    const eligible = [...cards].filter((c) => !c.classList.contains('is-hidden'));
+    paginator.refresh(eligible);
+
+    renderChips();
+  }
+
+  searchInput.addEventListener('input', applyFilters);
+  tierCheckboxes.forEach((cb) => cb.addEventListener('change', applyFilters));
+  categoryCheckboxes.forEach((cb) => cb.addEventListener('change', applyFilters));
+  ageCheckboxes.forEach((cb) => cb.addEventListener('change', applyFilters));
+
+  clearBtn?.addEventListener('click', () => {
+    searchInput.value = '';
+    tierCheckboxes.forEach((cb) => (cb.checked = false));
+    categoryCheckboxes.forEach((cb) => (cb.checked = false));
+    ageCheckboxes.forEach((cb) => (cb.checked = false));
+    applyFilters();
+  });
+
+  doneBtn?.addEventListener('click', () => { filterDropdown.open = false; });
+  document.addEventListener('click', (e) => {
+    if (filterDropdown.open && !filterDropdown.contains(e.target as Node)) filterDropdown.open = false;
+  });
+
+  const urlFilter = new URLSearchParams(window.location.search).get('filter');
+  if (urlFilter === 'free' || urlFilter === 'paid') {
+    const match = [...tierCheckboxes].find((c) => c.value === urlFilter);
+    if (match) match.checked = true;
+  }
+  applyFilters();
+</script>
