@@ -12,7 +12,7 @@ tier: free
 category: general
 age:
   - adults
-fileUrl: /books/psych-interview-guide.pdf
+fileUrl: /books/psychology-lecturer-crash-course.pdf
 order: 0
 draft: false
 ---
