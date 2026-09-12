@@ -1,10 +1,17 @@
 ---
 import { getCollection } from 'astro:content';
 import Layout from '../../../layouts/Layout.astro';
-// No dedicated cover image yet — drop a books.jpg into
-// src/assets/resources/ and reintroduce an import + `image={booksCover.src}`
-// below (and in [...slug].astro) once one exists; Layout falls back to the
-// site's default OG image until then, same as any other page without one.
+
+// Same cover used for the "Books & Booklets" nav preview thumbnail (see
+// getResourceImage('books') in Layout.astro) — reused here as the link
+// preview / OG image for the books index page itself. Drop the file in as
+// src/assets/resources/books.{jpg,jpeg,png,webp} and it's picked up
+// automatically; falls back to the site's default OG image until then.
+const booksCoverImages = import.meta.glob<{ default: ImageMetadata }>(
+  '/src/assets/resources/books.{jpg,jpeg,png,webp}',
+  { eager: true }
+);
+const booksCover = Object.values(booksCoverImages)[0]?.default;
 
 const allBooks = await getCollection('books', ({ data }) => !data.draft);
 const sorted = allBooks.sort((a, b) => a.data.order - b.data.order);
@@ -39,7 +46,9 @@ const itemListJson = {
         "@type": "Book",
         "name": b.data.title,
         "description": b.data.description,
-        ...(b.data.author ? { "author": { "@type": "Person", "name": b.data.author } } : {}),
+        "author": b.data.coAuthor
+          ? [{ "@type": "Person", "name": b.data.author }, { "@type": "Person", "name": b.data.coAuthor }]
+          : { "@type": "Person", "name": b.data.author },
         "url": `${siteOrigin}/resources/books/${b.id}`,
         "isAccessibleForFree": b.data.tier === 'free',
       },
@@ -61,6 +70,7 @@ const breadcrumbJson = {
   title="Books & Booklets"
   fullTitle="Free & Paid Psychology Books and Booklets | The Psychology Square"
   description="Download free psychology books and booklets, or get paid titles on CBT, anxiety, depression, ADHD, PTSD, relationships, and much more."
+  image={booksCover?.src}
 >
   <script type="application/ld+json" set:html={JSON.stringify(itemListJson)} />
   <script type="application/ld+json" set:html={JSON.stringify(breadcrumbJson)} />
@@ -76,7 +86,7 @@ const breadcrumbJson = {
       </nav>
       <p class="eyebrow">Resources</p>
       <h1 class="hero-title" style="font-size: clamp(32px, 4vw, 48px); margin-bottom: 16px;">Books & Booklets</h1>
-      <p class="hero-sub">Longer-form reading to go deeper than a single worksheet. Some titles are free downloads, others are paid — pricing and access are shown on each book's own page.</p>
+      <p class="hero-sub">Explore comprehensive books and booklets designed for psychology students, researchers, and mental health professionals. Moving beyond single worksheets, these titles offer deep dives into clinical theory, psychological assessments, and practical interventions.</p>
     </div>
   </section>
 
@@ -165,7 +175,7 @@ const breadcrumbJson = {
                 {b.data.tier === 'free' ? 'Free' : 'Paid'} · {categoryMeta[b.data.category]} · {b.data.age.map((a) => ageMeta[a]).join(' & ')}
               </span>
               <h3>{b.data.title}</h3>
-              {b.data.author && <p class="book-card-author">by {b.data.author}</p>}
+              <p class="book-card-author">by {b.data.author}{b.data.coAuthor ? ` & ${b.data.coAuthor}` : ''}</p>
               <p>{b.data.description}</p>
               <span class="book-card-link">{b.data.tier === 'free' ? 'View book →' : 'View details →'}</span>
             </div>
@@ -328,8 +338,11 @@ const breadcrumbJson = {
   .no-results{ color: var(--ink-600); padding: 40px 0; }
 
   .book-card{ justify-content: flex-start; display: flex; flex-direction: column; overflow: hidden; }
-  .card-image-wrap{ width: 100%; aspect-ratio: 16 / 9; overflow: hidden; background-color: var(--paper-50); border-bottom: 1px solid var(--line); }
-  .card-image-wrap img{ width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s var(--ease); }
+  /* Fixed portrait ratio (2:3), like a book catalogue — the cover is
+     never cropped. object-fit: contain letterboxes instead of cutting off
+     any part of the image, whatever the source image's own proportions. */
+  .card-image-wrap{ width: 100%; aspect-ratio: 2 / 3; overflow: hidden; background-color: var(--paper-50); border-bottom: 1px solid var(--line); }
+  .card-image-wrap img{ width: 100%; height: 100%; object-fit: contain; transition: transform 0.3s var(--ease); }
   .book-card:hover .card-image-wrap img{ transform: scale(1.03); }
   .book-card .card-body{ display: flex; flex-direction: column; flex-grow: 1; }
   .book-card-author{

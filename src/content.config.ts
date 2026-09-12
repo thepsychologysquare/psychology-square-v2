@@ -60,12 +60,10 @@ const worksheets = defineCollection({
     imageAlt: z.string().optional(),
   }),
 });
-// Books & booklets: PDF downloads/uploads, structured the same way as
-// worksheets (Topic + Age filters, Free/Paid tier) but with book-specific
-// fields instead of the worksheet "request" mechanism. Free books link
-// straight to fileUrl; paid books show `price` and link out to
-// `checkoutUrl` (falls back to /contact on the page itself if left blank)
-// rather than opening the worksheets' "request this worksheet" modal.
+// Books & booklets: PDF uploads, structured the same way as worksheets
+// (Topic + Age filters, Free/Paid tier, PDF uploaded directly in Decap —
+// no external/checkout link). Every book always links straight to its own
+// `fileUrl`; `price` is purely informational display for Paid titles.
 const books = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/books' }),
   schema: z.object({
@@ -74,15 +72,15 @@ const books = defineCollection({
     tier: z.enum(['free', 'paid']),
     category: z.string().default('general'),
     age: z.array(z.enum(['children', 'adults'])).default(['adults']),
-    // Book-specific, optional so existing-style minimal entries still work.
-    author: z.string().optional(),
-    // Free tier: the uploaded PDF itself.
-    fileUrl: z.string().optional(),
+    // Book-specific. Author/co-author are always one of the two clinicians.
+    author: z.enum(['Muhammad Sohail', 'Sehar Waheed']),
+    coAuthor: z.enum(['Muhammad Sohail', 'Sehar Waheed']).optional(),
+    // The uploaded PDF itself — required for every book, same as worksheets.
+    fileUrl: z.string(),
     // Paid tier: display price (any currency/format, e.g. "$12" or "PKR 1500")
-    // and where the "Get this book" button should send people — a payment
-    // link, a product page, or left blank to fall back to /contact.
+    // shown alongside the download button. Informational only — the button
+    // always links to fileUrl, there is no separate checkout link.
     price: z.string().optional(),
-    checkoutUrl: z.string().optional(),
     order: z.number().default(0),
     draft: z.boolean().default(false),
     // See the matching field on the articles collection above.

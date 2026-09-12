@@ -114,8 +114,21 @@ collections:
     fields:
       - {label: "Title", name: "title", widget: "string"}
       - {label: "Description", name: "description", widget: "text", hint: "One or two sentences shown on the card."}
-      - {label: "Author", name: "author", widget: "string", required: false}
-      - {label: "Featured Image", name: "image", widget: "image", required: false, hint: "Optional cover image for the book card."}
+      - label: "Author"
+        name: "author"
+        widget: "select"
+        options:
+          - {label: "Muhammad Sohail", value: "Muhammad Sohail"}
+          - {label: "Sehar Waheed", value: "Sehar Waheed"}
+      - label: "Co-Author"
+        name: "coAuthor"
+        widget: "select"
+        required: false
+        options:
+          - {label: "Muhammad Sohail", value: "Muhammad Sohail"}
+          - {label: "Sehar Waheed", value: "Sehar Waheed"}
+        hint: "Leave blank if this book has a single author."
+      - {label: "Featured Image", name: "image", widget: "image", required: false, hint: "Cover image for the book — shown on the book card, the book's own page, and link previews when shared."}
       - {label: "Image Alt Text", name: "imageAlt", widget: "string", required: false, hint: "Brief description of the image for accessibility/SEO."}
       - label: "Tier"
         name: "tier"
@@ -141,9 +154,8 @@ collections:
           - {label: "Children", value: "children"}
           - {label: "Adults", value: "adults"}
         hint: "Select both if the book suits either age group."
-      - {label: "PDF File", name: "fileUrl", widget: "file", required: false, media_folder: "/public/books", public_folder: "/books", hint: "Only needed for Free books — this is the PDF visitors download directly. Leave blank for Paid books."}
-      - {label: "Price", name: "price", widget: "string", required: false, hint: "Only needed for Paid books — shown next to the button, e.g. \"PKR 1500\" or \"$12\". Leave blank for Free books."}
-      - {label: "Checkout / Buy Link", name: "checkoutUrl", widget: "string", required: false, hint: "Only needed for Paid books — where the \"Get this book\" button sends people (a payment link, product page, etc). Leave blank to send them to the Contact page instead."}
+      - {label: "PDF File", name: "fileUrl", widget: "file", media_folder: "/public/books", public_folder: "/books", hint: "Upload the book's PDF — same as a worksheet. Required for every book, Free or Paid."}
+      - {label: "Price", name: "price", widget: "string", required: false, hint: "Only needed for Paid books — shown next to the download button, e.g. \"PKR 1500\" or \"$12\". Leave blank for Free books."}
       - {label: "Order", name: "order", widget: "number", default: 0, required: false, hint: "Lower numbers show first. Leave as 0 if you don't care about order."}
       - {label: "Draft", name: "draft", widget: "boolean", default: false, hint: "Turn ON to hide this book from the live site until it's ready."}
       - {label: "Body", name: "body", widget: "markdown", required: false, hint: "Shown on the book's own page — what it covers, who it's for, why it's worth reading. A paragraph or two is plenty."}

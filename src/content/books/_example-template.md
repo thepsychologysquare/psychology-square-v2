@@ -6,7 +6,7 @@ tier: free
 category: general
 age:
   - adults
-author: Author Name
+author: Muhammad Sohail
 fileUrl: /books/example-book.pdf
 order: 0
 draft: true

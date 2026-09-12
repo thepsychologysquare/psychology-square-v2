@@ -39,10 +39,9 @@ const imgAbsolute = imgSrc
   ? (imgSrc.startsWith('http') ? imgSrc : `${siteOrigin}${imgSrc}`)
   : undefined;
 
-// Where the paid "Get this book" button should point: an explicit
-// checkout/payment link if one was set in the CMS, otherwise the contact
-// page so a visitor can always reach someone about buying it.
-const paidLinkHref = book.data.tier === 'paid' ? (book.data.checkoutUrl || '/contact') : undefined;
+const bookAuthors = book.data.coAuthor
+  ? [{ "@type": "Person", "name": book.data.author }, { "@type": "Person", "name": book.data.coAuthor }]
+  : { "@type": "Person", "name": book.data.author };
 
 const bookJson = {
   "@context": "https://schema.org",
@@ -50,13 +49,11 @@ const bookJson = {
   "name": book.data.title,
   "description": book.data.description,
   "url": `${siteOrigin}${canonicalPath}`,
-  ...(book.data.author ? { "author": { "@type": "Person", "name": book.data.author } } : {}),
+  "author": bookAuthors,
   "isAccessibleForFree": book.data.tier === 'free',
-  ...(book.data.tier === 'free' && book.data.fileUrl
-    ? { "associatedMedia": { "@type": "MediaObject", "contentUrl": new URL(book.data.fileUrl, siteOrigin).toString() } }
-    : {}),
+  "associatedMedia": { "@type": "MediaObject", "contentUrl": new URL(book.data.fileUrl, siteOrigin).toString() },
   ...(book.data.tier === 'paid' && book.data.price
-    ? { "offers": { "@type": "Offer", "price": book.data.price, "priceCurrency": "PKR", "url": paidLinkHref?.startsWith('http') ? paidLinkHref : `${siteOrigin}${paidLinkHref}` } }
+    ? { "offers": { "@type": "Offer", "price": book.data.price, "priceCurrency": "PKR", "availability": "https://schema.org/InStock" } }
     : {}),
   "publisher": {
     "@type": "Organization",
@@ -101,7 +98,7 @@ const breadcrumbJson = {
         {book.data.tier === 'free' ? 'Free' : 'Paid'} · {categoryLabel(book.data.category)} · {book.data.age.map((a: string) => ageMeta[a]).join(' & ')}
       </span>
       <h1 class="book-title">{book.data.title}</h1>
-      {book.data.author && <p class="book-author">by {book.data.author}</p>}
+      <p class="book-author">by {book.data.author}{book.data.coAuthor ? ` & ${book.data.coAuthor}` : ''}</p>
       <p class="book-lede">{book.data.description}</p>
 
       {imgSrc && (
@@ -130,12 +127,12 @@ const breadcrumbJson = {
             {book.data.price && <span class="book-price">{book.data.price}</span>}
             <a
               class="book-btn book-btn--buy"
-              href={paidLinkHref}
-              target={paidLinkHref?.startsWith('http') ? '_blank' : undefined}
-              rel={paidLinkHref?.startsWith('http') ? 'noopener' : undefined}
-              aria-label={`Get ${book.data.title}`}
+              href={book.data.fileUrl}
+              target="_blank"
+              rel="noopener"
+              aria-label={`Download ${book.data.title} PDF`}
             >
-              Get this book →
+              Download PDF →
             </a>
           </div>
         )}
@@ -220,14 +217,17 @@ const breadcrumbJson = {
   .book-hero-image{
     margin: 0 0 40px 0;
     width: 100%;
+    max-width: 320px;
+    aspect-ratio: 2 / 3;
     border-radius: 4px;
     overflow: hidden;
     background-color: var(--paper-50);
+    border: 1px solid var(--line);
   }
   .book-hero-image img{
     width: 100%;
-    max-height: 420px;
-    object-fit: cover;
+    height: 100%;
+    object-fit: contain;
     display: block;
   }
 
@@ -283,7 +283,7 @@ const breadcrumbJson = {
   }
   .card-image-wrap {
     width: 100%;
-    aspect-ratio: 16 / 9;
+    aspect-ratio: 2 / 3;
     overflow: hidden;
     background-color: var(--paper-50);
     border-bottom: 1px solid var(--line);
@@ -291,7 +291,7 @@ const breadcrumbJson = {
   .card-image-wrap img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
     transition: transform 0.3s var(--ease);
   }
   .article-card:hover .card-image-wrap img {
