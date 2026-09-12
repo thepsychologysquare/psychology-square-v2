@@ -3,7 +3,7 @@ title: "Psychology Lecturer Crash Course: A Complete Preparation Guide"
 description: Master the art of psychology education, research methodology, and
   academic hiring with Psychology Lecturer Interview & Master Reference, the
   definitive, all-in-one guide for aspiring educators, graduate teaching
-  assistants, and university faculty.
+  assistants, & university faculty.
 author: Muhammad Sohail
 coAuthor: Sehar Waheed
 image: /images/1.jpg
