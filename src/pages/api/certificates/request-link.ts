@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
 import { createMagicLinkToken } from '../../../lib/magicLink';
-import { sendMagicLinkEmail } from '../../../lib/email';
+import { sendMagicLinkEmail } from '../../../lib/email-brevo';
 
 export const prerender = false;
 

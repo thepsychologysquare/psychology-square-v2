@@ -2,7 +2,7 @@ import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
 import { getCourseBySlug } from '../../../lib/courses';
 import { makeCertificateId } from '../../../lib/certificate';
-import { sendCertificateEmail } from '../../../lib/email';
+import { sendCertificateEmail } from '../../../lib/email-brevo';
 import { generateCertificatePdfBase64 } from '../../../lib/certificatePdf';
 
 export const prerender = false;

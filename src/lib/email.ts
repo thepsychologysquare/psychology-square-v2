@@ -1,6 +1,11 @@
 // Transactional email via Resend (https://resend.com). Workers can't send
-// email natively, and Resend's free tier (3,000/mo, 100/day) is plenty for
-// certificate + magic-link volume here.
+// email natively. This module is used ONLY for therapy booking emails and
+// workshop payment/enrollment emails — low, predictable volume that
+// comfortably fits Resend's free tier. Magic-link, certificate, and paid
+// course payment/enrollment emails were moved to Brevo (see
+// src/lib/email-brevo.ts) to stay within Resend's cap as course volume
+// grows; this file is intentionally self-contained and shares no sending
+// logic with that module.
 //
 // Requires two things set on the Worker:
 //   - RESEND_API_KEY   (secret)   — from the Resend dashboard
@@ -62,70 +67,6 @@ function emailShell(bodyHtml: string): string {
       The Psychology Square — Johar Town, Lahore, Pakistan
     </div>
   </div>`;
-}
-
-export async function sendMagicLinkEmail(
-  env: { RESEND_API_KEY?: string; EMAIL_FROM?: string },
-  args: { toEmail: string; link: string; purpose?: 'enroll' | 'view-certificates' | 'sign-in'; courseTitle?: string }
-): Promise<{ ok: boolean; error?: string }> {
-  if (!env.RESEND_API_KEY || !env.EMAIL_FROM) {
-    return { ok: false, error: 'Email is not configured yet (missing RESEND_API_KEY or EMAIL_FROM).' };
-  }
-
-  const isEnroll = args.purpose === 'enroll';
-  const isSignIn = args.purpose === 'sign-in';
-  const heading = isEnroll ? 'Confirm your enrollment' : isSignIn ? 'Sign in to your account' : 'View your certificates';
-  const body = isEnroll
-    ? `Click the button below to confirm your email and finish enrolling${args.courseTitle ? ` in <strong>${args.courseTitle}</strong>` : ''}. This link works once and expires in 15 minutes.`
-    : isSignIn
-    ? `Click the button below to sign in to your account. This link works once and expires in 15 minutes.`
-    : `Click the button below to see every certificate you've earned with us. This link works once and expires in 15 minutes.`;
-  const buttonText = isEnroll ? 'Confirm enrollment' : isSignIn ? 'Sign in' : 'View my certificates';
-  const subject = isEnroll ? 'Confirm your course enrollment — The Psychology Square' : isSignIn ? 'Your sign-in link — The Psychology Square' : 'Your certificates link — The Psychology Square';
-
-  const html = emailShell(`
-    <h1 style="font-size:22px;margin:0 0 16px;">${heading}</h1>
-    <p style="font-size:15px;line-height:1.6;">${body}</p>
-    <p style="margin:28px 0;">
-      <a href="${args.link}" style="background:#C7A44A;color:#131A22;text-decoration:none;padding:12px 24px;border-radius:2px;font-weight:600;display:inline-block;">${buttonText}</a>
-    </p>
-    <p style="font-size:13px;color:#4B5760;">If you didn't request this, you can safely ignore this email.</p>
-  `);
-  return sendEmail({
-    apiKey: env.RESEND_API_KEY,
-    from: env.EMAIL_FROM,
-    to: args.toEmail,
-    subject,
-    html,
-  });
-}
-
-export async function sendCertificateEmail(
-  env: { RESEND_API_KEY?: string; EMAIL_FROM?: string },
-  args: {
-    toEmail: string; toName: string; courseTitle: string; certUrl: string; certificateId: string;
-    pdfBase64?: string; // optional — attaches the certificate as a downloadable PDF
-  }
-): Promise<{ ok: boolean; error?: string }> {
-  if (!env.RESEND_API_KEY || !env.EMAIL_FROM) {
-    return { ok: false, error: 'Email is not configured yet (missing RESEND_API_KEY or EMAIL_FROM).' };
-  }
-  const html = emailShell(`
-    <h1 style="font-size:22px;margin:0 0 16px;">Congratulations, ${escapeHtml(args.toName)}!</h1>
-    <p style="font-size:15px;line-height:1.6;">You've completed <strong>${escapeHtml(args.courseTitle)}</strong> and earned your certificate.${args.pdfBase64 ? ' The PDF is attached to this email.' : ''}</p>
-    <p style="margin:28px 0;">
-      <a href="${args.certUrl}" style="background:#C7A44A;color:#131A22;text-decoration:none;padding:12px 24px;border-radius:2px;font-weight:600;display:inline-block;">View your certificate</a>
-    </p>
-    <p style="font-size:13px;color:#4B5760;">Certificate ID: ${escapeHtml(args.certificateId)}<br/>This link is permanent and publicly verifiable — anyone with it can confirm the certificate is genuine.</p>
-  `);
-  return sendEmail({
-    apiKey: env.RESEND_API_KEY,
-    from: env.EMAIL_FROM,
-    to: args.toEmail,
-    subject: `Your certificate for ${args.courseTitle}`,
-    html,
-    attachments: args.pdfBase64 ? [{ filename: `${args.certificateId}.pdf`, content: args.pdfBase64 }] : undefined,
-  });
 }
 
 const CLINICIAN_NAMES: Record<string, string> = { sohail: 'Muhammad Sohail', sehar: 'Sehar Waheed' };
@@ -219,96 +160,9 @@ export async function sendNewBookingAdminEmail(
   });
 }
 
-// ---------- Paid courses: payment proof -> admin review -> unlock ----------
-// Mirrors the booking payment emails above, just for course access instead
-// of a therapy session.
-
-export async function sendCoursePaymentReceivedEmail(
-  env: { RESEND_API_KEY?: string; EMAIL_FROM?: string },
-  args: { toEmail: string; toName: string; courseTitle: string }
-): Promise<{ ok: boolean; error?: string }> {
-  if (!env.RESEND_API_KEY || !env.EMAIL_FROM) {
-    return { ok: false, error: 'Email is not configured yet.' };
-  }
-  if (!EMAIL_RE.test(args.toEmail)) {
-    return { ok: false, error: 'Contact on file is not an email address.' };
-  }
-  const html = emailShell(`
-    <h1 style="font-size:22px;margin:0 0 16px;">We received your payment</h1>
-    <p style="font-size:15px;line-height:1.6;">Hi ${escapeHtml(args.toName)},</p>
-    <p style="font-size:15px;line-height:1.6;">
-      Thank you for enrolling in <strong>${escapeHtml(args.courseTitle)}</strong>. We've received your payment
-      submission and we'll confirm your enrollment within 24 hours — you'll get another email the moment
-      your lessons unlock.
-    </p>
-  `);
-  return sendEmail({
-    apiKey: env.RESEND_API_KEY,
-    from: env.EMAIL_FROM,
-    to: args.toEmail,
-    subject: `We've received your payment — ${args.courseTitle}`,
-    html,
-  });
-}
-
-export async function sendNewCoursePaymentAdminEmail(
-  env: { RESEND_API_KEY?: string; EMAIL_FROM?: string; ADMIN_EMAIL?: string },
-  args: { learnerName: string; learnerEmail: string; courseTitle: string; amountPkr: number; paymentMethod: string }
-): Promise<{ ok: boolean; error?: string }> {
-  if (!env.RESEND_API_KEY || !env.EMAIL_FROM) {
-    return { ok: false, error: 'Email is not configured yet.' };
-  }
-  const adminAddress = env.ADMIN_EMAIL || env.EMAIL_FROM;
-  const html = emailShell(`
-    <h1 style="font-size:20px;margin:0 0 16px;">New Course Payment Submission</h1>
-    <p style="font-size:14px;line-height:1.5;">A new paid-course enrollment is waiting for review:</p>
-    <ul style="font-size:14px;line-height:1.6;padding-left:20px;">
-      <li><strong>Course:</strong> ${escapeHtml(args.courseTitle)}</li>
-      <li><strong>Learner:</strong> ${escapeHtml(args.learnerName)} (${escapeHtml(args.learnerEmail)})</li>
-      <li><strong>Amount:</strong> PKR ${args.amountPkr} via ${escapeHtml(args.paymentMethod)}</li>
-    </ul>
-    <p style="font-size:13px;color:#4B5760;">Review it in the "Course Enrollment Requests" tab on the dashboard.</p>
-  `);
-  return sendEmail({
-    apiKey: env.RESEND_API_KEY,
-    from: env.EMAIL_FROM,
-    to: adminAddress,
-    subject: `[New Course Payment] ${args.courseTitle} - ${args.learnerName}`,
-    html,
-  });
-}
-
-export async function sendCourseEnrollmentStatusEmail(
-  env: { RESEND_API_KEY?: string; EMAIL_FROM?: string },
-  args: { toEmail: string; toName: string; courseTitle: string; status: 'active' | 'declined'; courseUrl?: string }
-): Promise<{ ok: boolean; error?: string }> {
-  if (!env.RESEND_API_KEY || !env.EMAIL_FROM) {
-    return { ok: false, error: 'Email is not configured yet.' };
-  }
-  if (!EMAIL_RE.test(args.toEmail)) {
-    return { ok: false, error: 'Contact on file is not an email address.' };
-  }
-  const isConfirmed = args.status === 'active';
-  const heading = isConfirmed ? 'Your enrollment is confirmed' : 'About your course payment';
-  const body = isConfirmed
-    ? `Your payment for <strong>${escapeHtml(args.courseTitle)}</strong> has been confirmed and your lessons are unlocked. Head back in to get started.`
-    : `We couldn't confirm your payment for <strong>${escapeHtml(args.courseTitle)}</strong> — usually this means the screenshot was unclear. Please resubmit with a clearer screenshot, or get in touch with us directly.`;
-  const html = emailShell(`
-    <h1 style="font-size:22px;margin:0 0 16px;">${heading}</h1>
-    <p style="font-size:15px;line-height:1.6;">Hi ${escapeHtml(args.toName)},</p>
-    <p style="font-size:15px;line-height:1.6;">${body}</p>
-    ${isConfirmed && args.courseUrl ? `<p style="margin:28px 0;"><a href="${args.courseUrl}" style="background:#C7A44A;color:#131A22;text-decoration:none;padding:12px 24px;border-radius:2px;font-weight:600;display:inline-block;">Start the course</a></p>` : ''}
-  `);
-  return sendEmail({
-    apiKey: env.RESEND_API_KEY,
-    from: env.EMAIL_FROM,
-    to: args.toEmail,
-    subject: isConfirmed ? `You're enrolled — ${args.courseTitle}` : `About your payment — ${args.courseTitle}`,
-    html,
-  });
-}
-
 // ---------- Workshops: payment proof -> admin review -> group confirms ----------
+// Kept on Resend alongside bookings (low volume — workshops stay paid/manual,
+// so there's no need to route them through the higher-cap Brevo flow).
 // Same shape as the booking/course-payment emails above, plus one new one
 // (sendWorkshopConfirmedEmail) that fires once for every approved
 // enrollee the moment an admin locks in the date + Meet link.

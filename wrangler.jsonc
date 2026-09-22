@@ -41,6 +41,7 @@
 	"vars": {
     "BOOKING_ADMIN_EMAIL": "info@thepsychologysquare.com",
     "EMAIL_FROM": "The Psychology Square <info@thepsychologysquare.com>",
+    "BREVO_EMAIL_FROM": "TPS Team <info@thepsychologysquare.com>",
     "PUBLIC_GTM_ID": "GTM-MNHRZP77"
 }
 }

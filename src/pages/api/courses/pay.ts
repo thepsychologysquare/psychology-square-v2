@@ -2,7 +2,7 @@ import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
 import { getCourseBySlug } from '../../../lib/courses';
 import { getClientSession } from '../../../lib/clientAuth';
-import { sendCoursePaymentReceivedEmail, sendNewCoursePaymentAdminEmail } from '../../../lib/email';
+import { sendCoursePaymentReceivedEmail, sendNewCoursePaymentAdminEmail } from '../../../lib/email-brevo';
 
 export const prerender = false;
 
