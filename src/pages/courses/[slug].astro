@@ -557,7 +557,7 @@ const moduleQuestionsForClient = renderedModules.map((m) =>
           resultEl.innerHTML = `
             <div class="result result--pass">
               <h3>You passed — ${data.scorePercent}%</h3>
-              <p>Your certificate has been generated${data.emailSent ? ' and emailed to you' : ''}.</p>
+              <p>Your certificate has been generated.</p>
               <a href="/certificates/${data.certificateId}" class="btn btn--primary">View your certificate</a>
             </div>`;
         } else {

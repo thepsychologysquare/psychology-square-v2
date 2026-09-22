@@ -1,10 +1,15 @@
 // Transactional email via Brevo (https://www.brevo.com) — Transactional Email API.
-// Used ONLY for: magic-link sign-in/enroll/view-certificates links, certificate
-// delivery, and paid-course payment/enrollment notifications. Therapy booking
-// emails and workshop emails stay on Resend (see src/lib/email.ts) — this file
-// is intentionally self-contained and does not import or share any sending
+// Used ONLY for: magic-link sign-in/enroll/view-certificates links, and
+// paid-course payment/enrollment notifications. Therapy booking emails and
+// workshop emails stay on Resend (see src/lib/email.ts) — this file is
+// intentionally self-contained and does not import or share any sending
 // logic with email.ts, so the two providers can be reasoned about, debugged,
 // and swapped out independently.
+//
+// NOTE: course-completion certificate emails were intentionally removed
+// (there's no sendCertificateEmail here) — the certificate page is shown
+// immediately in the UI with its own PDF download, so a follow-up email
+// would just be a redundant Brevo send.
 //
 // Brevo's free tier caps at 300 transactional emails/day (resets daily, no
 // rollover). If that limit is ever hit, Brevo queues the overflow to send
@@ -134,36 +139,6 @@ export async function sendMagicLinkEmail(
     toEmail: args.toEmail,
     subject,
     html,
-  });
-}
-
-export async function sendCertificateEmail(
-  env: { BREVO_API_KEY?: string; BREVO_EMAIL_FROM?: string },
-  args: {
-    toEmail: string; toName: string; courseTitle: string; certUrl: string; certificateId: string;
-    pdfBase64?: string; // optional — attaches the certificate as a downloadable PDF
-  }
-): Promise<{ ok: boolean; error?: string }> {
-  if (!env.BREVO_API_KEY || !env.BREVO_EMAIL_FROM) {
-    console.error('[email-brevo] sendCertificateEmail: missing BREVO_API_KEY or BREVO_EMAIL_FROM');
-    return { ok: false, error: 'Email is not configured yet (missing BREVO_API_KEY or BREVO_EMAIL_FROM).' };
-  }
-  const html = emailShell(`
-    <h1 style="font-size:22px;margin:0 0 16px;">Congratulations, ${escapeHtml(args.toName)}!</h1>
-    <p style="font-size:15px;line-height:1.6;">You've completed <strong>${escapeHtml(args.courseTitle)}</strong> and earned your certificate.${args.pdfBase64 ? ' The PDF is attached to this email.' : ''}</p>
-    <p style="margin:28px 0;">
-      <a href="${args.certUrl}" style="background:#C7A44A;color:#131A22;text-decoration:none;padding:12px 24px;border-radius:2px;font-weight:600;display:inline-block;">View your certificate</a>
-    </p>
-    <p style="font-size:13px;color:#4B5760;">Certificate ID: ${escapeHtml(args.certificateId)}<br/>This link is permanent and publicly verifiable — anyone with it can confirm the certificate is genuine.</p>
-  `);
-  return sendEmail({
-    apiKey: env.BREVO_API_KEY,
-    fromHeader: env.BREVO_EMAIL_FROM,
-    toEmail: args.toEmail,
-    toName: args.toName,
-    subject: `Your certificate for ${args.courseTitle}`,
-    html,
-    attachments: args.pdfBase64 ? [{ filename: `${args.certificateId}.pdf`, content: args.pdfBase64 }] : undefined,
   });
 }
 

@@ -2,8 +2,6 @@ import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
 import { getCourseBySlug } from '../../../lib/courses';
 import { makeCertificateId } from '../../../lib/certificate';
-import { sendCertificateEmail } from '../../../lib/email-brevo';
-import { generateCertificatePdfBase64 } from '../../../lib/certificatePdf';
 
 export const prerender = false;
 
@@ -83,39 +81,17 @@ export const POST: APIRoute = async ({ request }) => {
 
   const certUrl = new URL(`/certificates/${certificateId}`, request.url).toString();
 
-  // Best-effort: a PDF generation hiccup should never block certificate
-  // issuance itself, which is already saved — the learner can still always
-  // download the PDF from the certificate page.
-  let pdfBase64: string | undefined;
-  try {
-    pdfBase64 = generateCertificatePdfBase64({
-      name,
-      courseTitle: course.data.title,
-      ceHours: course.data.estimatedHours,
-      scorePercent,
-      date: new Date(now).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
-      certId: certificateId,
-    });
-  } catch {
-    pdfBase64 = undefined;
-  }
-
-  const emailResult = await sendCertificateEmail(env, {
-    toEmail: email,
-    toName: name,
-    courseTitle: course.data.title,
-    certUrl,
-    certificateId,
-    pdfBase64,
-  });
-
+  // No certificate email is sent — the certificate is already saved and the
+  // learner is taken straight to /certificates/[id] below, which has its
+  // own "Download PDF" button (client-side, via jsPDF). Sending an email
+  // here as well would just be a second, redundant notification for
+  // something the learner already sees immediately, and it burns Brevo
+  // quota for no benefit.
   return new Response(JSON.stringify({
     passed: true,
     scorePercent,
     certificateId,
     certUrl,
-    emailSent: emailResult.ok,
-    emailError: emailResult.ok ? undefined : emailResult.error,
   }), {
     status: 201,
     headers: { 'content-type': 'application/json' },
