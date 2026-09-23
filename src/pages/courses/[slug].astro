@@ -755,9 +755,12 @@ const moduleQuestionsForClient = renderedModules.map((m) =>
   .quiz-result{ margin-top:8px; }
 
   .modal-overlay{
-    position:fixed; inset:0; background:rgba(19,26,34,0.55); z-index:1000;
-    display:flex; align-items:center; justify-content:center; padding:20px; box-sizing:border-box;
-  }
+  position:fixed; inset:0; background:rgba(19,26,34,0.55); z-index:1000;
+  display:none; align-items:center; justify-content:center; padding:20px; box-sizing:border-box;
+}
+.modal-overlay:not([hidden]){
+  display:flex;
+}
   .modal{
     background:var(--paper-0); border-radius:4px; max-width:480px; width:100%;
     padding:32px; box-sizing:border-box; max-height:90vh; overflow-y:auto;
