@@ -15,6 +15,14 @@ const session = env?.CLIENT_SESSION_SECRET
   ? await getClientSession(Astro.request.headers.get('cookie'), env.CLIENT_SESSION_SECRET)
   : null;
 
+let enrolledSlugs = new Set<string>();
+if (session && env?.DB) {
+  const { results } = await env.DB.prepare(
+    `SELECT course_slug AS courseSlug FROM enrollments WHERE email = ? AND status = 'active'`
+  ).bind(session.email).all<{ courseSlug: string }>();
+  enrolledSlugs = new Set((results || []).map((r) => r.courseSlug));
+}
+
 const categoriesInUse = [...new Set(sorted.map((c) => c.data.category))];
 
 // Stable, non-random gradient placeholder for cards without a cover image —
@@ -220,6 +228,14 @@ const coursesFaqJson = {
               <button type="button" class="filter-chip" data-category={cat}>{categoryMeta[cat] ?? cat}</button>
             ))}
           </div>
+          {enrolledSlugs.size > 0 && (
+            <>
+              <span class="filter-divider" aria-hidden="true"></span>
+              <div class="filter-group" id="enrollmentFilters">
+                <button type="button" class="filter-chip" data-enrollment="enrolled">My enrolled courses</button>
+              </div>
+            </>
+          )}
         </div>
       )}
 
@@ -230,6 +246,7 @@ const coursesFaqJson = {
             class="course-card"
             data-tier={course.data.isPaid ? 'paid' : 'free'}
             data-category={course.data.category}
+            data-enrolled={enrolledSlugs.has(course.id) ? 'true' : 'false'}
           >
             <div class={`course-card__media ${course.data.image ? '' : placeholderFor(course.id)}`}>
               {course.data.image ? (
@@ -245,6 +262,9 @@ const coursesFaqJson = {
                 <span class="course-card__media-fallback" aria-hidden="true">
                   {(categoryMeta[course.data.category] ?? course.data.category).charAt(0)}
                 </span>
+              )}
+              {enrolledSlugs.has(course.id) && (
+                <span class="enrolled-badge">Enrolled</span>
               )}
               <span class={`tier-badge ${course.data.isPaid ? 'tier-badge--paid' : 'tier-badge--free'}`}>
                 {course.data.isPaid ? `Rs. ${course.data.pricePkr?.toLocaleString('en-US') ?? '—'}` : 'Free'}
@@ -299,17 +319,20 @@ const coursesFaqJson = {
   const cards = grid ? Array.from(grid.querySelectorAll<HTMLAnchorElement>('.course-card')) : [];
   const tierFilters = document.getElementById('tierFilters');
   const categoryFilters = document.getElementById('categoryFilters');
+  const enrollmentFilters = document.getElementById('enrollmentFilters');
   const emptyMsg = document.getElementById('filterEmptyMsg');
 
   let activeTier = 'all';
   let activeCategory = 'all';
+  let enrolledOnly = false;
 
   function applyFilters() {
     let visibleCount = 0;
     for (const card of cards) {
       const matchesTier = activeTier === 'all' || card.dataset.tier === activeTier;
       const matchesCategory = activeCategory === 'all' || card.dataset.category === activeCategory;
-      const visible = matchesTier && matchesCategory;
+      const matchesEnrollment = !enrolledOnly || card.dataset.enrolled === 'true';
+      const visible = matchesTier && matchesCategory && matchesEnrollment;
       card.style.display = visible ? '' : 'none';
       if (visible) visibleCount++;
     }
@@ -331,6 +354,14 @@ const coursesFaqJson = {
     categoryFilters.querySelectorAll('.filter-chip').forEach((b) => b.classList.remove('is-active'));
     btn.classList.add('is-active');
     activeCategory = btn.dataset.category;
+    applyFilters();
+  });
+
+  enrollmentFilters?.addEventListener('click', (e) => {
+    const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('.filter-chip');
+    if (!btn || !btn.dataset.enrollment) return;
+    enrolledOnly = !btn.classList.contains('is-active');
+    btn.classList.toggle('is-active', enrolledOnly);
     applyFilters();
   });
 </script>
@@ -470,6 +501,12 @@ const coursesFaqJson = {
   }
   .course-card__media .tier-badge{
     position:absolute; top:12px; right:12px;
+  }
+  .enrolled-badge{
+    position:absolute; top:12px; left:12px;
+    font-family:var(--font-mono); font-size:11px; letter-spacing:0.04em; font-weight:600;
+    padding:4px 11px; border-radius:20px; white-space:nowrap; box-shadow:0 2px 8px rgba(19,26,34,0.12);
+    background:var(--navy-950); color:var(--gold-300, #d9bd76);
   }
 
   .course-card__body{ display:flex; flex-direction:column; gap:8px; padding:22px 24px 26px; flex-grow:1; }

@@ -5,6 +5,7 @@ import { env } from 'cloudflare:workers';
 import Layout from '../../layouts/Layout.astro';
 import { getClientSession } from '../../lib/clientAuth';
 import { getCourseBySlug } from '../../lib/courses';
+import { FREE_COURSE_CAP } from '../../lib/enrollmentCap';
 
 const { slug } = Astro.params;
 const course = await getCourseBySlug(env, slug!);
@@ -23,6 +24,19 @@ if (session && env?.DB) {
 const isEnrolled = !!enrollment && enrollment.status === 'active';
 const isPendingPayment = !!enrollment && enrollment.status === 'pending';
 const isDeclinedPayment = !!enrollment && enrollment.status === 'declined';
+
+// Set by /api/auth/google/callback when this page load is the redirect-back
+// from a "sign in with Google and enroll" round trip -- lets us show the
+// enroll-confirmation modal (or the cap-reached notice) without another
+// round trip.
+const justEnrolled = Astro.url.searchParams.get('justEnrolled') === '1';
+const enrollCapReached = Astro.url.searchParams.get('enrollCap') === '1';
+
+// Not signed in yet: this link signs them in with Google and, in the same
+// round-trip, enrolls them in this course if it's free (see
+// /api/auth/google/callback). Paid courses just sign them in -- the
+// payment form below only appears once there's a session.
+const googleEnrollUrl = `/api/auth/google/start?redirect=${encodeURIComponent(Astro.url.pathname)}&enroll=${encodeURIComponent(course.id)}`;
 
 let hasNewModules = false;
 if (isEnrolled && env?.DB) {
@@ -90,27 +104,27 @@ const moduleQuestionsForClient = renderedModules.map((m) =>
           ) : (
             <>
               <h2>Enroll to access this course</h2>
-              <p class="enroll-copy">Enrolling is free and takes a few seconds — you'll get a sign-in link by email, no password needed. The lessons and quiz unlock right after.</p>
+              <p class="enroll-copy">Enrolling is free and takes a few seconds — sign in with Google and you're in. The lessons and quiz unlock right after.</p>
             </>
           )}
 
+          {enrollCapReached && (
+            <p class="notice-declined">
+              You're signed in, but you couldn't be enrolled here automatically — you already have {FREE_COURSE_CAP} free courses in progress.
+              Finish or drop one from <a href="/my-certificates">My certificates</a>, then come back and hit enroll again.
+            </p>
+          )}
+
           {!session ? (
-            <form id="enrollForm" class="enroll-form">
-              <div class="field-row">
-                <div class="field">
-                  <label for="enrollName">Full name</label>
-                  <input type="text" id="enrollName" required autocomplete="name" placeholder="As it should appear on your certificate" />
-                </div>
-                <div class="field">
-                  <label for="enrollEmail">Email</label>
-                  <input type="email" id="enrollEmail" required autocomplete="email" placeholder="you@example.com" />
-                </div>
-              </div>
-              <button type="submit" class="btn btn--primary" id="enrollBtn">
-                {course.data.isPaid ? 'Sign in to pay & enroll' : 'Enroll & email me a link'}
-              </button>
-              <p class="enroll-error" id="enrollError" role="alert" hidden></p>
-            </form>
+            <a href={googleEnrollUrl} class="btn btn--google">
+              <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+                <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.9c1.7-1.57 2.68-3.88 2.68-6.62Z"/>
+                <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.9-2.26c-.8.54-1.84.86-3.06.86-2.35 0-4.34-1.59-5.05-3.72H.95v2.33A9 9 0 0 0 9 18Z"/>
+                <path fill="#FBBC05" d="M3.95 10.7A5.4 5.4 0 0 1 3.66 9c0-.59.1-1.17.29-1.7V4.97H.95A9 9 0 0 0 0 9c0 1.45.35 2.83.95 4.03l3-2.33Z"/>
+                <path fill="#EA4335" d="M9 3.58c1.32 0 2.51.46 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A9 9 0 0 0 .95 4.97l3 2.33C4.66 5.17 6.65 3.58 9 3.58Z"/>
+              </svg>
+              {course.data.isPaid ? 'Continue with Google to pay & enroll' : 'Continue with Google to enroll'}
+            </a>
           ) : isPendingPayment ? (
             <div class="pending-review-panel">
               <p class="signed-in-as">Signed in as <strong>{session.email}</strong></p>
@@ -164,11 +178,6 @@ const moduleQuestionsForClient = renderedModules.map((m) =>
               <p class="enroll-error" id="enrollNowError" role="alert" hidden></p>
             </div>
           )}
-
-          <div id="enrollSent" class="enroll-sent" hidden>
-            <h3>Check your email</h3>
-            <p>Click the link we just sent to finish signing in — it expires in 15 minutes.</p>
-          </div>
         </section>
       ) : (
         <Fragment>
@@ -176,7 +185,7 @@ const moduleQuestionsForClient = renderedModules.map((m) =>
           {hasNewModules ? (
             <div class="new-course-cta">
               <h2>Continue your course</h2>
-              <p>You're enrolled — head into the step-by-step lessons below, then come back here for the final exam.</p>
+              <p>You're enrolled — work through the lessons below. Once every lesson is marked complete, the quiz unlocks automatically on this page so you can finish and get your certificate.</p>
               <a href={`/courses/${course.id}/learn`} class="btn btn--primary">Continue course &rarr;</a>
             </div>
           ) : hasModules ? (
@@ -256,59 +265,103 @@ const moduleQuestionsForClient = renderedModules.map((m) =>
       )}
     </div>
   </article>
+
+  <div class="modal-overlay" id="enrollModal" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="enrollModalTitle">
+      <h2 id="enrollModalTitle">Before you enroll</h2>
+      <p class="modal-intro">Here's what to expect from {course.data.title}:</p>
+      <ul class="modal-points">
+        <li>Work through the lessons at your own pace, then take a short quiz.</li>
+        <li>Score {course.data.passScorePercent}% or higher to pass — you can retake it as many times as you need.</li>
+        <li>Your certificate is issued <strong>instantly</strong> the moment you pass — no waiting, no extra step.</li>
+        <li>Download it as a PDF or share it straight to LinkedIn from your certificate page.</li>
+        <li>Log in anytime to see every certificate you've earned and pick up any course from your dashboard.</li>
+      </ul>
+      <label class="modal-agree">
+        <input type="checkbox" id="enrollAgreeCheckbox" />
+        <span>I understand and agree</span>
+      </label>
+      <div class="modal-actions">
+        <button type="button" class="btn btn--text" id="enrollModalCancel">Cancel</button>
+        <button type="button" class="btn btn--primary" id="enrollModalConfirm" disabled>Confirm enrollment</button>
+      </div>
+      <p class="enroll-error" id="enrollModalError" role="alert" hidden></p>
+    </div>
+  </div>
 </Layout>
 
 <script type="application/json" id="quizData" set:html={JSON.stringify(clientQuiz)}></script>
 <script type="application/json" id="moduleQuestionsData" set:html={JSON.stringify(moduleQuestionsForClient)}></script>
-<script define:vars={{ courseSlug: course.id, currentUrl: Astro.url.pathname, isEnrolled, hasModules, totalModules: renderedModules.length, learnerEmail: session?.email || '', isPaidCourse: course.data.isPaid }}>
-  const enrollForm = document.getElementById('enrollForm');
-  if (enrollForm) {
-    const btn = document.getElementById('enrollBtn');
-    const errorEl = document.getElementById('enrollError');
-    const sentEl = document.getElementById('enrollSent');
-    const idleText = isPaidCourse ? 'Sign in to pay & enroll' : 'Enroll & email me a link';
+<script define:vars={{ courseSlug: course.id, isEnrolled, hasModules, totalModules: renderedModules.length, learnerEmail: session?.email || '', justEnrolled }}>
+  const enrollModal = document.getElementById('enrollModal');
+  const enrollAgreeCheckbox = document.getElementById('enrollAgreeCheckbox');
+  const enrollModalConfirm = document.getElementById('enrollModalConfirm');
+  const enrollModalCancel = document.getElementById('enrollModalCancel');
+  const enrollModalError = document.getElementById('enrollModalError');
 
-    enrollForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      errorEl.hidden = true;
-      btn.disabled = true;
-      btn.textContent = 'Sending…';
+  // 'pending' mode gates an actual /api/courses/enroll call behind the
+  // checkbox (the "Enroll now" button flow). 'confirm' mode is shown after
+  // a Google-signin-and-enroll round trip, where enrollment already
+  // happened server-side -- the checkbox here just gates dismissing the
+  // modal, for the same explain-before-you-start purpose.
+  let modalMode = 'pending';
 
-      const name = document.getElementById('enrollName').value.trim();
-      const email = document.getElementById('enrollEmail').value.trim();
+  function openEnrollModal(mode) {
+    if (!enrollModal) return;
+    modalMode = mode;
+    enrollAgreeCheckbox.checked = false;
+    enrollModalConfirm.disabled = true;
+    enrollModalConfirm.textContent = mode === 'confirm' ? 'Got it, let\u2019s go' : 'Confirm enrollment';
+    if (enrollModalError) enrollModalError.hidden = true;
+    enrollModal.hidden = false;
+    document.body.style.overflow = 'hidden';
+  }
 
-      try {
-        const res = await fetch('/api/certificates/request-link', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ email, redirect: currentUrl, enrollCourseSlug: courseSlug, enrollName: name }),
-        });
-        const data = await res.json();
-        if (!res.ok) {
-          errorEl.textContent = data.error || 'Something went wrong. Please try again.';
-          errorEl.hidden = false;
-          btn.disabled = false;
-          btn.textContent = idleText;
-          return;
-        }
-        enrollForm.hidden = true;
-        sentEl.hidden = false;
-      } catch {
-        errorEl.textContent = 'Could not reach the server. Please check your connection and try again.';
-        errorEl.hidden = false;
-        btn.disabled = false;
-        btn.textContent = idleText;
-      }
+  function closeEnrollModal() {
+    if (!enrollModal) return;
+    enrollModal.hidden = true;
+    document.body.style.overflow = '';
+  }
+
+  if (enrollAgreeCheckbox && enrollModalConfirm) {
+    enrollAgreeCheckbox.addEventListener('change', () => {
+      enrollModalConfirm.disabled = !enrollAgreeCheckbox.checked;
+    });
+  }
+
+  if (enrollModalCancel) {
+    enrollModalCancel.addEventListener('click', () => {
+      // In 'confirm' mode there's nothing to cancel -- enrollment already
+      // happened -- so Cancel behaves the same as Confirm there: just close.
+      closeEnrollModal();
     });
   }
 
   const enrollNowBtn = document.getElementById('enrollNowBtn');
   if (enrollNowBtn) {
-    enrollNowBtn.addEventListener('click', async () => {
+    enrollNowBtn.addEventListener('click', () => {
+      openEnrollModal('pending');
+    });
+  }
+
+  if (enrollModalConfirm) {
+    enrollModalConfirm.addEventListener('click', async () => {
+      if (!enrollAgreeCheckbox.checked) return;
+
+      if (modalMode === 'confirm') {
+        closeEnrollModal();
+        return;
+      }
+
       const errorEl = document.getElementById('enrollNowError');
-      errorEl.hidden = true;
-      enrollNowBtn.disabled = true;
-      enrollNowBtn.textContent = 'Enrolling…';
+      if (errorEl) errorEl.hidden = true;
+      if (enrollModalError) enrollModalError.hidden = true;
+      enrollModalConfirm.disabled = true;
+      enrollModalConfirm.textContent = 'Enrolling…';
+      if (enrollNowBtn) {
+        enrollNowBtn.disabled = true;
+        enrollNowBtn.textContent = 'Enrolling…';
+      }
       try {
         const res = await fetch('/api/courses/enroll', {
           method: 'POST',
@@ -317,20 +370,40 @@ const moduleQuestionsForClient = renderedModules.map((m) =>
         });
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
-          errorEl.textContent = data.error || 'Something went wrong. Please try again.';
-          errorEl.hidden = false;
-          enrollNowBtn.disabled = false;
-          enrollNowBtn.textContent = 'Enroll now';
+          const message = data.error || 'Something went wrong. Please try again.';
+          if (enrollModalError) {
+            enrollModalError.textContent = message;
+            enrollModalError.hidden = false;
+          }
+          enrollModalConfirm.disabled = false;
+          enrollModalConfirm.textContent = 'Confirm enrollment';
+          if (enrollNowBtn) {
+            enrollNowBtn.disabled = false;
+            enrollNowBtn.textContent = 'Enroll now';
+          }
           return;
         }
         window.location.reload();
       } catch {
-        errorEl.textContent = 'Could not reach the server. Please check your connection and try again.';
-        errorEl.hidden = false;
-        enrollNowBtn.disabled = false;
-        enrollNowBtn.textContent = 'Enroll now';
+        if (enrollModalError) {
+          enrollModalError.textContent = 'Could not reach the server. Please check your connection and try again.';
+          enrollModalError.hidden = false;
+        }
+        enrollModalConfirm.disabled = false;
+        enrollModalConfirm.textContent = 'Confirm enrollment';
+        if (enrollNowBtn) {
+          enrollNowBtn.disabled = false;
+          enrollNowBtn.textContent = 'Enroll now';
+        }
       }
     });
+  }
+
+  // Just landed back from a Google-signin-and-enroll round trip that
+  // succeeded -- explain what happens next, same content as the pre-enroll
+  // modal, just non-blocking since enrollment is already done.
+  if (justEnrolled && isEnrolled) {
+    openEnrollModal('confirm');
   }
 
   const paymentForm = document.getElementById('paymentForm');
@@ -597,8 +670,13 @@ const moduleQuestionsForClient = renderedModules.map((m) =>
   .enroll-copy{ color:var(--ink-600); margin-bottom:24px; }
   .signed-in-as{ font-size:14px; margin-bottom:16px; }
   .enroll-error{ color:#B4432E; font-size:14px; margin-top:12px; }
-  .enroll-sent h3{ font-family:var(--font-display); font-size:20px; margin-bottom:8px; }
-  .enroll-sent p{ color:var(--ink-600); }
+  .btn--google{
+    display:inline-flex; align-items:center; gap:10px;
+    background:#fff; color:#131A22; border:1px solid var(--line);
+    padding:12px 20px; border-radius:2px; font-size:15px; font-weight:500;
+    max-width:fit-content; transition:border-color .15s ease, box-shadow .15s ease;
+  }
+  .btn--google:hover{ border-color:var(--gold-500); box-shadow:0 1px 4px rgba(0,0,0,0.08); }
 
   .pending-review-panel{ font-size:14.5px; color:var(--ink-600); }
   .pending-review-panel p:last-child{ margin-top:4px; }
@@ -675,6 +753,28 @@ const moduleQuestionsForClient = renderedModules.map((m) =>
   .quiz-error{ color:#B4432E; font-size:14px; margin-top:12px; }
 
   .quiz-result{ margin-top:8px; }
+
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(19,26,34,0.55); z-index:1000;
+    display:flex; align-items:center; justify-content:center; padding:20px; box-sizing:border-box;
+  }
+  .modal{
+    background:var(--paper-0); border-radius:4px; max-width:480px; width:100%;
+    padding:32px; box-sizing:border-box; max-height:90vh; overflow-y:auto;
+    box-shadow:0 20px 60px rgba(0,0,0,0.3);
+  }
+  .modal h2{ font-family:var(--font-display); font-size:22px; margin:0 0 8px; }
+  .modal-intro{ color:var(--ink-600); font-size:14.5px; margin-bottom:14px; }
+  .modal-points{ margin:0 0 22px 20px; padding:0; display:flex; flex-direction:column; gap:9px; }
+  .modal-points li{ font-size:14.5px; line-height:1.5; color:var(--ink-900); }
+  .modal-agree{
+    display:flex; align-items:flex-start; gap:10px; font-size:14px; cursor:pointer;
+    padding:14px 16px; border:1px solid var(--line); border-radius:2px; background:var(--paper-50); margin-bottom:20px;
+  }
+  .modal-agree input{ margin-top:2px; accent-color:var(--gold-500); flex-shrink:0; }
+  .modal-actions{ display:flex; justify-content:flex-end; gap:14px; align-items:center; flex-wrap:wrap; }
+  .modal-actions .btn--primary{ margin-top:0; }
+  .modal-actions .btn--primary:disabled{ opacity:0.5; }
 </style>
 
 <style is:global>

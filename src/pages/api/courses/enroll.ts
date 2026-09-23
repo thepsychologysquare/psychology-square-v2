@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
 import { getCourseBySlug } from '../../../lib/courses';
 import { getClientSession } from '../../../lib/clientAuth';
+import { isAtFreeCourseCap, freeCourseCapMessage } from '../../../lib/enrollmentCap';
 
 export const prerender = false;
 
@@ -27,6 +28,10 @@ export const POST: APIRoute = async ({ request }) => {
   }
   if (course.data.isPaid) {
     return new Response(JSON.stringify({ error: 'This course requires payment first — use the payment form on the course page.' }), { status: 400 });
+  }
+
+  if (await isAtFreeCourseCap(env, session.email)) {
+    return new Response(JSON.stringify({ error: freeCourseCapMessage() }), { status: 400 });
   }
 
   // Re-use the name from a prior enrollment if there is one, so we're not

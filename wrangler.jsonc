@@ -42,6 +42,7 @@
     "BOOKING_ADMIN_EMAIL": "info@thepsychologysquare.com",
     "EMAIL_FROM": "The Psychology Square <info@thepsychologysquare.com>",
     "BREVO_EMAIL_FROM": "TPS Team <info@thepsychologysquare.com>",
-    "PUBLIC_GTM_ID": "GTM-MNHRZP77"
+    "PUBLIC_GTM_ID": "GTM-MNHRZP77",
+	"GOOGLE_CLIENT_ID": "127699092539-3gajb5ibmn8u1g3m049ud54ku5l3c0b2.apps.googleusercontent.com"
 }
 }

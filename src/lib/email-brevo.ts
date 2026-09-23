@@ -1,10 +1,13 @@
 // Transactional email via Brevo (https://www.brevo.com) — Transactional Email API.
-// Used ONLY for: magic-link sign-in/enroll/view-certificates links, and
-// paid-course payment/enrollment notifications. Therapy booking emails and
-// workshop emails stay on Resend (see src/lib/email.ts) — this file is
-// intentionally self-contained and does not import or share any sending
-// logic with email.ts, so the two providers can be reasoned about, debugged,
-// and swapped out independently.
+// Used ONLY for paid-course payment/enrollment notifications. Therapy
+// booking emails and workshop emails stay on Resend (see src/lib/email.ts)
+// — this file is intentionally self-contained and does not import or share
+// any sending logic with email.ts, so the two providers can be reasoned
+// about, debugged, and swapped out independently.
+//
+// NOTE: sign-in no longer sends email at all -- learners sign in with
+// Google (see src/lib/googleAuth.ts), so the old sendMagicLinkEmail
+// function was removed along with the magic-link flow itself.
 //
 // NOTE: course-completion certificate emails were intentionally removed
 // (there's no sendCertificateEmail here) — the certificate page is shown
@@ -104,43 +107,6 @@ function emailShell(bodyHtml: string): string {
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-export async function sendMagicLinkEmail(
-  env: { BREVO_API_KEY?: string; BREVO_EMAIL_FROM?: string },
-  args: { toEmail: string; link: string; purpose?: 'enroll' | 'view-certificates' | 'sign-in'; courseTitle?: string }
-): Promise<{ ok: boolean; error?: string }> {
-  if (!env.BREVO_API_KEY || !env.BREVO_EMAIL_FROM) {
-    console.error('[email-brevo] sendMagicLinkEmail: missing BREVO_API_KEY or BREVO_EMAIL_FROM');
-    return { ok: false, error: 'Email is not configured yet (missing BREVO_API_KEY or BREVO_EMAIL_FROM).' };
-  }
-
-  const isEnroll = args.purpose === 'enroll';
-  const isSignIn = args.purpose === 'sign-in';
-  const heading = isEnroll ? 'Confirm your enrollment' : isSignIn ? 'Sign in to your account' : 'View your certificates';
-  const body = isEnroll
-    ? `Click the button below to confirm your email and finish enrolling${args.courseTitle ? ` in <strong>${args.courseTitle}</strong>` : ''}. This link works once and expires in 15 minutes.`
-    : isSignIn
-    ? `Click the button below to sign in to your account. This link works once and expires in 15 minutes.`
-    : `Click the button below to see every certificate you've earned with us. This link works once and expires in 15 minutes.`;
-  const buttonText = isEnroll ? 'Confirm enrollment' : isSignIn ? 'Sign in' : 'View my certificates';
-  const subject = isEnroll ? 'Confirm your course enrollment — The Psychology Square' : isSignIn ? 'Your sign-in link — The Psychology Square' : 'Your certificates link — The Psychology Square';
-
-  const html = emailShell(`
-    <h1 style="font-size:22px;margin:0 0 16px;">${heading}</h1>
-    <p style="font-size:15px;line-height:1.6;">${body}</p>
-    <p style="margin:28px 0;">
-      <a href="${args.link}" style="background:#C7A44A;color:#131A22;text-decoration:none;padding:12px 24px;border-radius:2px;font-weight:600;display:inline-block;">${buttonText}</a>
-    </p>
-    <p style="font-size:13px;color:#4B5760;">If you didn't request this, you can safely ignore this email.</p>
-  `);
-  return sendEmail({
-    apiKey: env.BREVO_API_KEY,
-    fromHeader: env.BREVO_EMAIL_FROM,
-    toEmail: args.toEmail,
-    subject,
-    html,
-  });
-}
 
 // ---------- Paid courses: payment proof -> admin review -> unlock ----------
 

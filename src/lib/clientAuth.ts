@@ -25,7 +25,7 @@ function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
 }
 
-export async function createClientSessionCookie(secret: string, email: string): Promise<string> {
+export async function createClientSessionCookie(secret: string, email: string, secure: boolean = true): Promise<string> {
   const normalized = normalizeEmail(email);
   const expires = Date.now() + SESSION_LENGTH_MS;
   // Base64 the email so it can't smuggle a '.' and confuse the payload split.
@@ -33,11 +33,17 @@ export async function createClientSessionCookie(secret: string, email: string): 
   const payload = `${expires}.${encodedEmail}`;
   const signature = await hmac(secret, payload);
   const value = `${payload}.${signature}`;
-  return `${COOKIE_NAME}=${value}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=${SESSION_LENGTH_MS / 1000}`;
+  // `Secure` is only added when the request is actually HTTPS (i.e. never
+  // on local http://localhost dev) -- browsers silently drop `Secure`
+  // cookies over plain HTTP, which would otherwise make sign-in look
+  // "successful" but never actually stick when testing locally.
+  const secureAttr = secure ? ' Secure;' : '';
+  return `${COOKIE_NAME}=${value}; Path=/; HttpOnly;${secureAttr} SameSite=Lax; Max-Age=${SESSION_LENGTH_MS / 1000}`;
 }
 
-export function clearClientSessionCookie(): string {
-  return `${COOKIE_NAME}=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0`;
+export function clearClientSessionCookie(secure: boolean = true): string {
+  const secureAttr = secure ? ' Secure;' : '';
+  return `${COOKIE_NAME}=; Path=/; HttpOnly;${secureAttr} SameSite=Lax; Max-Age=0`;
 }
 
 export async function getClientSession(cookieHeader: string | null, secret: string): Promise<{ email: string } | null> {
