@@ -72,3 +72,41 @@ export async function getClientSession(cookieHeader: string | null, secret: stri
 
   return { email };
 }
+
+// ---------------------------------------------------------------------------
+// Display name, set at Google sign-in. Kept in its OWN cookie (rather than
+// widening the session cookie above) so the session format that every page
+// already parses is untouched -- existing logged-in learners stay logged in.
+// It's signed and bound to the email, so it can't be reused on another
+// account. It exists so "Enroll now" can be a single click: the name that
+// goes on the certificate is already known.
+// ---------------------------------------------------------------------------
+const NAME_COOKIE_NAME = 'tps_client_name';
+
+export async function createClientNameCookie(secret: string, email: string, name: string, secure: boolean = true): Promise<string> {
+  const encodedName = btoa(unescape(encodeURIComponent(name.trim().slice(0, 200))));
+  const signature = await hmac(secret, `name:${normalizeEmail(email)}:${encodedName}`);
+  const secureAttr = secure ? ' Secure;' : '';
+  return `${NAME_COOKIE_NAME}=${encodedName}.${signature}; Path=/; HttpOnly;${secureAttr} SameSite=Lax; Max-Age=${SESSION_LENGTH_MS / 1000}`;
+}
+
+export function clearClientNameCookie(secure: boolean = true): string {
+  const secureAttr = secure ? ' Secure;' : '';
+  return `${NAME_COOKIE_NAME}=; Path=/; HttpOnly;${secureAttr} SameSite=Lax; Max-Age=0`;
+}
+
+export async function getClientName(cookieHeader: string | null, secret: string, email: string): Promise<string | null> {
+  if (!cookieHeader) return null;
+  const match = cookieHeader.match(new RegExp(`(?:^|;\\s*)${NAME_COOKIE_NAME}=([^;]+)`));
+  if (!match) return null;
+  const [encodedName, signature] = match[1].split('.');
+  if (!encodedName || !signature) return null;
+  const expected = await hmac(secret, `name:${normalizeEmail(email)}:${encodedName}`);
+  if (expected !== signature) return null;
+  try {
+    const name = decodeURIComponent(escape(atob(encodedName))).trim();
+    return name || null;
+  } catch {
+    return null;
+  }
+}

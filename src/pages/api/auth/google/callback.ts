@@ -1,8 +1,9 @@
 import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
 import { verifyOAuthState, exchangeCodeForProfile } from '../../../../lib/googleAuth';
-import { createClientSessionCookie } from '../../../../lib/clientAuth';
-import { isAtFreeCourseCap } from '../../../../lib/enrollmentCap';
+import { createClientSessionCookie, createClientNameCookie } from '../../../../lib/clientAuth';
+import { enrollInFreeCourse } from '../../../../lib/enrollment';
+import { safeRedirectPath } from '../../../../lib/safeRedirect';
 
 export const prerender = false;
 
@@ -43,46 +44,40 @@ export const GET: APIRoute = async ({ url, request }) => {
     return loginRedirect(request, 'error=1');
   }
 
-  // If this sign-in was to enroll in a course, create the enrollment now --
-  // Google has just proven they own this email address. Paid courses are
-  // the exception: enrollment there is created by the payment-proof
-  // submission (/api/courses/pay) instead, starting out 'pending' until
-  // reviewed -- signing in alone should never unlock a paid course's lessons.
-  let justEnrolled = false;
-  let enrollCapReached = false;
+  // Signing in and enrolling are separate concerns. The person is signed in
+  // no matter what happens below -- if enrolling hits a problem, they still
+  // land on the course page, signed in, and the "Enroll now" button there
+  // (same shared code path) is one click away. Previously an exception here
+  // meant a 500 and no session at all.
+  //
+  // Paid courses are never enrolled here: enrollInFreeCourse() reports 'paid'
+  // and enrollment is created by the payment-proof submission instead.
+  let enrollError: string | null = null;
   if (state.enrollCourseSlug) {
-    const { getCourseBySlug } = await import('../../../../lib/courses');
-    const course = await getCourseBySlug(env, state.enrollCourseSlug);
-    if (course && !course.data.isPaid) {
-      if (await isAtFreeCourseCap(env, profile.email)) {
-        enrollCapReached = true;
-      } else {
-        await env.DB.prepare(
-          `INSERT INTO enrollments (course_slug, course_title, name, email, enrolled_at, status)
-           VALUES (?, ?, ?, ?, ?, 'active')
-           ON CONFLICT(course_slug, email) DO NOTHING`
-        ).bind(
-          state.enrollCourseSlug,
-          course.data.title,
-          profile.name,
-          profile.email,
-          new Date().toISOString()
-        ).run();
-        justEnrolled = true;
-      }
+    try {
+      const result = await enrollInFreeCourse(env, {
+        courseSlug: state.enrollCourseSlug,
+        email: profile.email,
+        name: profile.name,
+      });
+      if (result.outcome === 'cap') enrollError = 'cap';
+    } catch (err) {
+      console.error('[google callback] enrollment failed; signing in anyway', err);
     }
   }
 
-  const cookie = await createClientSessionCookie(env.CLIENT_SESSION_SECRET, profile.email, new URL(request.url).protocol === 'https:');
-  const redirectUrl = new URL(state.redirectPath || '/my-certificates', request.url);
-  // Tell the destination page whether an enrollment just happened as part
-  // of this sign-in round trip, so it can show the enroll-confirmation
-  // modal (or the cap-reached message) without another round trip.
-  if (justEnrolled) redirectUrl.searchParams.set('justEnrolled', '1');
-  if (enrollCapReached) redirectUrl.searchParams.set('enrollCap', '1');
+  const secure = new URL(request.url).protocol === 'https:';
+  const redirectUrl = new URL(safeRedirectPath(state.redirectPath), request.url);
+  if (enrollError) redirectUrl.searchParams.set('enrollError', enrollError);
 
-  return new Response(null, {
-    status: 302,
-    headers: { location: redirectUrl.toString(), 'set-cookie': cookie },
-  });
+  const headers = new Headers({ location: redirectUrl.toString() });
+  headers.append('set-cookie', await createClientSessionCookie(env.CLIENT_SESSION_SECRET, profile.email, secure));
+  // Remember the Google display name so a later one-click "Enroll now" (e.g.
+  // after a plain /login) already knows what to print on the certificate.
+  // Skipped when Google gave us nothing better than the email address.
+  if (profile.name && profile.name.toLowerCase() !== profile.email) {
+    headers.append('set-cookie', await createClientNameCookie(env.CLIENT_SESSION_SECRET, profile.email, profile.name, secure));
+  }
+
+  return new Response(null, { status: 302, headers });
 };

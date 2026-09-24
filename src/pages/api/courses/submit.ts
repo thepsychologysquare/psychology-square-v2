@@ -37,6 +37,14 @@ export const POST: APIRoute = async ({ request }) => {
   ).bind(courseSlug, email).first();
   if (!enrollment) return jsonError('Please enroll in this course before submitting the quiz.', 403);
 
+  // Once a certificate exists for this course + email, the course is done.
+  // No redo, no retake -- the server refuses regardless of what the page's
+  // client-side JS did or didn't show.
+  const alreadyCompleted = await env.DB.prepare(
+    `SELECT 1 FROM certificates WHERE course_slug = ? AND email = ?`
+  ).bind(courseSlug, email).first();
+  if (alreadyCompleted) return jsonError('You\u2019ve already completed this course.', 409);
+
   const course = await getCourseBySlug(env, courseSlug);
   if (!course || course.data.draft) {
     return jsonError('That course could not be found.', 404);

@@ -5,6 +5,7 @@ import { env } from 'cloudflare:workers';
 import { getClientSession } from '../../../../lib/clientAuth';
 import { getCourseOutline, getCompletedStepIds, textToHtml } from '../../../../lib/courseBuilder';
 import { getCourseBySlug } from '../../../../lib/courses';
+import UnenrollButton from '../../../../components/UnenrollButton.astro';
 
 const { slug, stepId } = Astro.params;
 const course = await getCourseBySlug(env, slug!);
@@ -19,6 +20,13 @@ const enrollment = await env.DB.prepare(
   `SELECT name FROM enrollments WHERE course_slug = ? AND email = ? AND status = 'active'`
 ).bind(course.id, session.email).first<{ name: string }>();
 if (!enrollment) return Astro.redirect(`/courses/${slug}`, 302);
+
+// Same eligibility rule as the course page: no unenroll button for paid
+// courses or ones the learner has already completed (certificate exists).
+const completedCertificate = await env.DB.prepare(
+  `SELECT id FROM certificates WHERE course_slug = ? AND email = ?`
+).bind(course.id, session.email).first<{ id: string }>();
+const canUnenroll = !completedCertificate && !course.data.isPaid;
 
 const outline = await getCourseOutline(env.DB, course.id);
 const flatSteps = outline.flatMap((m) => m.steps.map((s) => ({ ...s, moduleTitle: m.title })));
@@ -52,6 +60,7 @@ const showLockedWarning = Astro.url.searchParams.get('locked') === 'true';
     <div class="learn-course-banner">
       <h2 class="learn-course-banner__title">{course.data.title}</h2>
       <span class="learn-course-banner__tag">Course</span>
+      {canUnenroll && <UnenrollButton courseSlug={course.id} compact />}
     </div>
 
     <aside class="learn-sidebar">
@@ -107,29 +116,68 @@ const showLockedWarning = Astro.url.searchParams.get('locked') === 'true';
         <h1>{step.title}</h1>
       </header>
 
-      <div class="lesson-card-wrapper">
-        <div class="lesson-card">
-          {step.content_type === 'video' && step.video_url && (
-            <div class="module-video"><iframe src={step.video_url} title={step.title} allowfullscreen loading="lazy"></iframe></div>
-          )}
+      {step.content_type !== 'pdf' && (
+        <div class="lesson-card-wrapper">
+          <div class="lesson-card">
+            {step.content_type === 'video' && step.video_url && (
+              <div class="module-video"><iframe src={step.video_url} title={step.title} allowfullscreen loading="lazy"></iframe></div>
+            )}
 
-          {step.content_body && <div class="course-content" set:html={textToHtml(step.content_body)} />}
+            {step.content_body && <div class="course-content" set:html={textToHtml(step.content_body)} />}
 
-          {step.question && (
-            <div class="module-checkin">
-              <h3>Quick check-in</h3>
-              <p class="module-checkin__hint">Just for your own review — this doesn't affect your certificate.</p>
-              <p class="module-checkin__question">{step.question}</p>
-              <div class="checkin-options">
-                {options.map((opt, i) => (
-                  <button type="button" class="checkin-opt" data-correct={i === step.question_correct_index}>{opt}</button>
-                ))}
+            {step.question && (
+              <div class="module-checkin">
+                <h3>Quick check-in</h3>
+                <p class="module-checkin__hint">Just for your own review — this doesn't affect your certificate.</p>
+                <p class="module-checkin__question">{step.question}</p>
+                <div class="checkin-options">
+                  {options.map((opt, i) => (
+                    <button type="button" class="checkin-opt" data-correct={i === step.question_correct_index}>{opt}</button>
+                  ))}
+                </div>
+                <p class="checkin-feedback" id="checkinFeedback" hidden></p>
               </div>
-              <p class="checkin-feedback" id="checkinFeedback" hidden></p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {step.content_type === 'pdf' && (
+        <>
+          {step.content_body && (
+            <div class="lesson-card-wrapper">
+              <div class="lesson-card lesson-card--instructions">
+                <div class="course-content" set:html={textToHtml(step.content_body)} />
+              </div>
             </div>
           )}
-        </div>
-      </div>
+
+          {step.pdf_url && (
+            <div class="pdf-embed" style="margin:24px 0 28px;min-width:0;">
+              <iframe class="pdf-embed__frame" style="display:block;width:100%;max-width:100%;height:85vh;min-height:480px;border:0;background:#fff;" src={step.pdf_url.includes('#') ? step.pdf_url : `${step.pdf_url}#view=FitH`} title={`${step.title} — PDF`} loading="lazy"></iframe>
+              <a href={step.pdf_url} target="_blank" rel="noopener" class="pdf-embed__link" style="display:inline-block;margin-top:14px;font-size:13.5px;font-weight:600;">Open PDF in a new tab &nearr;</a>
+            </div>
+          )}
+
+          {step.question && (
+            <div class="lesson-card-wrapper">
+              <div class="lesson-card lesson-card--instructions">
+                <div class="module-checkin">
+                  <h3>Quick check-in</h3>
+                  <p class="module-checkin__hint">Just for your own review — this doesn't affect your certificate.</p>
+                  <p class="module-checkin__question">{step.question}</p>
+                  <div class="checkin-options">
+                    {options.map((opt, i) => (
+                      <button type="button" class="checkin-opt" data-correct={i === step.question_correct_index}>{opt}</button>
+                    ))}
+                  </div>
+                  <p class="checkin-feedback" id="checkinFeedback" hidden></p>
+                </div>
+              </div>
+            </div>
+          )}
+        </>
+      )}
 
       <div class="learn-nav">
         {prevStep ? <a href={`/courses/${course.id}/learn/${prevStep.id}`} class="btn btn--text">&larr; Previous</a> : <span />}
@@ -339,6 +387,7 @@ const showLockedWarning = Astro.url.searchParams.get('locked') === 'true';
     margin-top: 8px;
   }
 
+  .learn-main { min-width: 0; }
   .lesson-card-wrapper { width: 100%; }
 
   .lesson-card {
@@ -358,6 +407,20 @@ const showLockedWarning = Astro.url.searchParams.get('locked') === 'true';
 
   .module-video { margin-bottom: 28px; }
   .module-video iframe { width: 100%; aspect-ratio: 16/9; border: none; border-radius: 2px; }
+
+  .lesson-card--instructions { max-height: none; overflow: visible; padding: 28px 32px; }
+
+  /* PDF viewer sits directly on the page: no wrapper box. */
+  .pdf-embed { margin: 24px 0 28px; min-width: 0; }
+  .pdf-embed__frame { display: block; width: 100%; max-width: 100%; height: 85vh; min-height: 480px; border: none; background: #fff; }
+  .pdf-embed__link {
+    display: inline-block; margin-top: 14px; font-size: 13.5px; font-weight: 600; color: var(--ink-900);
+  }
+  .pdf-embed__link:hover { text-decoration: underline; }
+  @media (max-width: 640px) {
+    .lesson-card--instructions { padding: 22px 20px; }
+    .pdf-embed__frame { height: 80vh; }
+  }
 
   .course-content {
     font-size: 17px;

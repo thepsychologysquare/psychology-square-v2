@@ -116,15 +116,16 @@ export async function importCourse(env: any, payload: CourseImportPayload): Prom
       statements.push(
         env.DB.prepare(
           `INSERT INTO course_steps
-            (id, module_id, title, content_type, content_body, video_url, sequence_order, question, question_options, question_correct_index, created_at, updated_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+            (id, module_id, title, content_type, content_body, video_url, pdf_url, sequence_order, question, question_options, question_correct_index, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
         ).bind(
           crypto.randomUUID(),
           moduleId,
           step.title,
-          step.type === 'video' ? 'video' : 'text',
+          step.type === 'video' ? 'video' : step.type === 'pdf' ? 'pdf' : 'text',
           step.content || null,
           step.videoUrl || null,
+          step.pdfUrl || null,
           stepIndex,
           step.question || null,
           step.question ? JSON.stringify(step.questionOptions || []) : null,

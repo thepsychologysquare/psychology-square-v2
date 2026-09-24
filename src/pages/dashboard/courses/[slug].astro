@@ -461,6 +461,7 @@ const courseCategories = await listCourseCategories(env);
         <div class="lesson-type-tabs">
           <button type="button" class="type-tab ${step.content_type === 'text' ? 'is-active' : ''}" data-type="text">Text</button>
           <button type="button" class="type-tab ${step.content_type === 'video' ? 'is-active' : ''}" data-type="video">Video</button>
+          <button type="button" class="type-tab ${step.content_type === 'pdf' ? 'is-active' : ''}" data-type="pdf">PDF</button>
         </div>
 
         <div class="field" id="videoUrlField" ${step.content_type === 'video' ? '' : 'hidden'}>
@@ -468,9 +469,22 @@ const courseCategories = await listCourseCategories(env);
           <input type="text" data-field="videoUrl" value="${escapeAttr(step.video_url || '')}" placeholder="https://www.youtube.com/embed/..." />
         </div>
 
+        <div class="field" id="pdfField" ${step.content_type === 'pdf' ? '' : 'hidden'}>
+          <label>PDF <span class="field-optional">(upload a file, or paste a link to one)</span></label>
+          <div class="pdf-input-row">
+            <input type="text" data-field="pdfUrl" id="pdfUrlInput" value="${escapeAttr(step.pdf_url || '')}" placeholder="https://example.com/paper.pdf" />
+            <label class="pdf-upload-btn">
+              Upload PDF
+              <input type="file" accept="application/pdf" id="pdfFileInput" hidden />
+            </label>
+          </div>
+          <p class="field-hint" id="pdfUploadStatus"></p>
+          ${step.pdf_url ? `<a href="${escapeAttr(step.pdf_url)}" target="_blank" rel="noopener" class="pdf-current-link" id="pdfCurrentLink">Current PDF &nearr;</a>` : `<a href="#" target="_blank" rel="noopener" class="pdf-current-link" id="pdfCurrentLink" hidden>Current PDF &nearr;</a>`}
+        </div>
+
         <div class="field">
-          <label>Lesson content</label>
-          <textarea class="lesson-body" data-field="contentBody" rows="16" placeholder="Write the lesson here. Blank lines separate paragraphs.">${escapeHtml(step.content_body || '')}</textarea>
+          <label id="contentBodyLabel">${step.content_type === 'pdf' ? 'Instructions for the reader' : 'Lesson content'}</label>
+          <textarea class="lesson-body" data-field="contentBody" rows="16" placeholder="${step.content_type === 'pdf' ? "Tell learners what to do with this PDF \u2014 e.g. \u201cRead pages 1\u20134, then note down two examples that apply to you.\u201d" : 'Write the lesson here. Blank lines separate paragraphs.'}">${escapeHtml(step.content_body || '')}</textarea>
         </div>
 
         <details class="checkin-details" ${step.question ? 'open' : ''}>
@@ -490,6 +504,7 @@ const courseCategories = await listCourseCategories(env);
     canvasEl.querySelectorAll('[data-field]').forEach((el) => {
       el.addEventListener('input', () => {
         patch[el.dataset.field] = el.value;
+        if (el.dataset.field === 'pdfUrl') refreshPdfCurrentLink(el.value);
         debounceSave(async () => {
           await api('/api/admin/course-content', 'PATCH', { kind: 'step', id: stepId, ...patch });
           const found = findStep(stepId);
@@ -497,6 +512,7 @@ const courseCategories = await listCourseCategories(env);
             title: patch.title ?? found.step.title,
             content_body: patch.contentBody ?? found.step.content_body,
             video_url: patch.videoUrl ?? found.step.video_url,
+            pdf_url: patch.pdfUrl ?? found.step.pdf_url,
             question: patch.question ?? found.step.question,
           });
           if (patch.title !== undefined) renderTree();
@@ -504,11 +520,37 @@ const courseCategories = await listCourseCategories(env);
       });
     });
 
+    function refreshPdfCurrentLink(url) {
+      const link = document.getElementById('pdfCurrentLink');
+      if (!link) return;
+      if (url) {
+        link.href = url;
+        link.hidden = false;
+      } else {
+        link.hidden = true;
+      }
+    }
+
+    const contentBodyLabel = document.getElementById('contentBodyLabel');
+    const contentBodyTextarea = canvasEl.querySelector('textarea[data-field="contentBody"]');
+    function setContentBodyCopyForType(type) {
+      if (!contentBodyLabel || !contentBodyTextarea) return;
+      if (type === 'pdf') {
+        contentBodyLabel.textContent = 'Instructions for the reader';
+        contentBodyTextarea.placeholder = 'Tell learners what to do with this PDF — e.g. “Read pages 1–4, then note down two examples that apply to you.”';
+      } else {
+        contentBodyLabel.textContent = 'Lesson content';
+        contentBodyTextarea.placeholder = 'Write the lesson here. Blank lines separate paragraphs.';
+      }
+    }
+
     canvasEl.querySelectorAll('.type-tab').forEach((btn) => {
       btn.addEventListener('click', async () => {
         const type = btn.dataset.type;
         canvasEl.querySelectorAll('.type-tab').forEach((b) => b.classList.toggle('is-active', b === btn));
         document.getElementById('videoUrlField').hidden = type !== 'video';
+        document.getElementById('pdfField').hidden = type !== 'pdf';
+        setContentBodyCopyForType(type);
         debounceSave(async () => {
           await api('/api/admin/course-content', 'PATCH', { kind: 'step', id: stepId, contentType: type });
           const found = findStep(stepId);
@@ -516,6 +558,35 @@ const courseCategories = await listCourseCategories(env);
           renderTree();
         });
       });
+    });
+
+    const pdfFileInput = document.getElementById('pdfFileInput');
+    const pdfUrlInput = document.getElementById('pdfUrlInput');
+    const pdfUploadStatus = document.getElementById('pdfUploadStatus');
+    pdfFileInput?.addEventListener('change', async () => {
+      const file = pdfFileInput.files && pdfFileInput.files[0];
+      if (!file) return;
+      pdfUploadStatus.textContent = 'Uploading…';
+      const body = new FormData();
+      body.append('pdf', file);
+      try {
+        const res = await fetch('/api/admin/course-pdf', { method: 'POST', body });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          pdfUploadStatus.textContent = data.error || 'Upload failed. Please try again.';
+          return;
+        }
+        pdfUrlInput.value = data.url;
+        refreshPdfCurrentLink(data.url);
+        pdfUploadStatus.textContent = 'Uploaded.';
+        await api('/api/admin/course-content', 'PATCH', { kind: 'step', id: stepId, pdfUrl: data.url });
+        const found = findStep(stepId);
+        if (found) found.step.pdf_url = data.url;
+      } catch {
+        pdfUploadStatus.textContent = 'Could not reach the server. Please try again.';
+      } finally {
+        pdfFileInput.value = '';
+      }
     });
   }
 
@@ -813,6 +884,16 @@ const courseCategories = await listCourseCategories(env);
   .lesson-type-tabs { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; width: fit-content; }
   .type-tab { padding: 8px 18px; border: none; background: #fff; font: inherit; font-size: 13.5px; font-weight: 600; color: var(--ink-600); cursor: pointer; }
   .type-tab.is-active { background: var(--navy-950); color: #fff; }
+
+  .pdf-input-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .pdf-input-row input[type="text"] { flex: 1; min-width: 200px; }
+  .pdf-upload-btn {
+    flex-shrink: 0; padding: 12px 16px; border-radius: 8px; border: 1px solid var(--navy-950);
+    background: var(--navy-950); color: #fff; font-size: 13.5px; font-weight: 600; cursor: pointer;
+  }
+  .pdf-upload-btn:hover { background: var(--navy-700, #1c2733); }
+  .pdf-current-link { font-size: 12.5px; font-weight: 600; color: var(--navy-700, var(--navy-950)); text-decoration: none; }
+  .pdf-current-link:hover { text-decoration: underline; }
 
   .checkin-details summary { cursor: pointer; font-size: 13.5px; font-weight: 600; color: var(--navy-950); margin-bottom: 8px; }
   .checkin-details[open] summary { margin-bottom: 12px; }

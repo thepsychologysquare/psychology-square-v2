@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
 import { createOAuthState, googleAuthorizationUrl } from '../../../../lib/googleAuth';
+import { safeRedirectPath } from '../../../../lib/safeRedirect';
 
 export const prerender = false;
 
@@ -13,7 +14,7 @@ export const GET: APIRoute = async ({ url, request }) => {
   }
 
   const redirectParam = url.searchParams.get('redirect');
-  const redirectPath = redirectParam && redirectParam.startsWith('/') ? redirectParam : undefined;
+  const redirectPath = redirectParam ? safeRedirectPath(redirectParam, '') || undefined : undefined;
   const enrollCourseSlug = url.searchParams.get('enroll') || undefined;
 
   const state = await createOAuthState(env.CLIENT_SESSION_SECRET, { redirectPath, enrollCourseSlug });

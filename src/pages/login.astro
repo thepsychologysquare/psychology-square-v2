@@ -7,13 +7,14 @@ export const prerender = false;
 import { env } from 'cloudflare:workers';
 import Layout from '../layouts/Layout.astro';
 import { getClientSession } from '../lib/clientAuth';
+import { safeRedirectPath } from '../lib/safeRedirect';
 
 const cookieHeader = Astro.request.headers.get('cookie');
 const session = env?.CLIENT_SESSION_SECRET
   ? await getClientSession(cookieHeader, env.CLIENT_SESSION_SECRET)
   : null;
 
-const redirect = Astro.url.searchParams.get('redirect') || '/my-certificates';
+const redirect = safeRedirectPath(Astro.url.searchParams.get('redirect'));
 
 // Already signed in? Don't show a login form — just send them on.
 if (session) {

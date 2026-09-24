@@ -1,0 +1,170 @@
+---
+// Shared "Unenroll from this course" control: a real styled button plus
+// our own confirm dialog (no browser confirm()). Used on the course page
+// (full size) and pinned to the top banner of the /learn step page
+// (compact, via the `compact` prop). Caller is responsible for only
+// rendering this when the enrollment is eligible (active, free, not
+// completed) -- this component doesn't re-check that.
+interface Props {
+  courseSlug: string;
+  compact?: boolean;
+}
+const { courseSlug, compact = false } = Astro.props;
+---
+
+<div class:list={['unenroll-widget', { 'unenroll-widget--compact': compact }]} data-unenroll-widget>
+  <form method="post" action="/api/courses/unenroll" data-unenroll-form>
+    <input type="hidden" name="courseSlug" value={courseSlug} />
+    <button type="button" class:list={['unenroll-trigger', { 'unenroll-trigger--compact': compact }]} data-unenroll-trigger>
+      Unenroll
+    </button>
+  </form>
+
+  <dialog class="unenroll-dialog" data-unenroll-dialog>
+    <p class="unenroll-dialog__title">Are you sure you want to unenroll from this course?</p>
+    <div class="unenroll-dialog__actions">
+      <button type="button" class="unenroll-dialog__cancel" data-unenroll-cancel>Cancel</button>
+      <button type="button" class="unenroll-dialog__confirm" data-unenroll-confirm>Yes</button>
+    </div>
+  </dialog>
+</div>
+
+<style>
+  .unenroll-widget:not(.unenroll-widget--compact) {
+    margin: 4px 0 24px;
+  }
+  .unenroll-widget--compact {
+    margin-left: auto;
+  }
+
+  .unenroll-trigger {
+    display: inline-flex;
+    align-items: center;
+    font-family: var(--font-body);
+    font-size: 13.5px;
+    font-weight: 500;
+    line-height: 1.2;
+    color: #B4432E;
+    background: transparent;
+    border: 1px solid rgba(180, 67, 46, 0.35);
+    padding: 9px 16px;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+  }
+  .unenroll-trigger:hover {
+    background: rgba(180, 67, 46, 0.08);
+    border-color: #B4432E;
+  }
+  .unenroll-trigger:active {
+    background: rgba(180, 67, 46, 0.14);
+  }
+  .unenroll-trigger:focus-visible {
+    outline: 2px solid #B4432E;
+    outline-offset: 2px;
+  }
+  .unenroll-trigger--compact {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  /* Custom confirm dialog, replacing the browser's confirm() popup */
+  .unenroll-dialog {
+    border: none;
+    border-radius: 4px;
+    padding: 26px 26px 22px;
+    max-width: 420px;
+    width: calc(100% - 40px);
+    background: var(--paper-0);
+    color: var(--ink-900);
+    box-shadow: 0 12px 40px rgba(11, 20, 31, 0.2);
+  }
+  .unenroll-dialog::backdrop {
+    background: rgba(11, 20, 31, 0.45);
+  }
+  .unenroll-dialog__title {
+    font-size: 15.5px;
+    font-weight: 600;
+    line-height: 1.5;
+    color: var(--ink-900);
+    margin: 0 0 22px;
+  }
+  .unenroll-dialog__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+  .unenroll-dialog__cancel,
+  .unenroll-dialog__confirm {
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 500;
+    padding: 10px 18px;
+    border-radius: 2px;
+    cursor: pointer;
+  }
+  .unenroll-dialog__cancel {
+    background: transparent;
+    color: var(--ink-900);
+    border: 1px solid var(--line);
+  }
+  .unenroll-dialog__cancel:hover {
+    background: rgba(19, 26, 34, 0.05);
+    border-color: var(--ink-900);
+  }
+  .unenroll-dialog__cancel:focus-visible {
+    outline: 2px solid var(--gold-500);
+    outline-offset: 2px;
+  }
+  .unenroll-dialog__confirm {
+    background: #B4432E;
+    color: #fff;
+    border: 1px solid #B4432E;
+  }
+  .unenroll-dialog__confirm:hover {
+    background: #9C3A26;
+    border-color: #9C3A26;
+  }
+  .unenroll-dialog__confirm:active {
+    background: #872F1E;
+  }
+  .unenroll-dialog__confirm:focus-visible {
+    outline: 2px solid #B4432E;
+    outline-offset: 2px;
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-unenroll-widget]').forEach((widget) => {
+    const trigger = widget.querySelector<HTMLButtonElement>('[data-unenroll-trigger]');
+    const dialog = widget.querySelector<HTMLDialogElement>('[data-unenroll-dialog]');
+    const cancelBtn = widget.querySelector<HTMLButtonElement>('[data-unenroll-cancel]');
+    const confirmBtn = widget.querySelector<HTMLButtonElement>('[data-unenroll-confirm]');
+    const form = widget.querySelector<HTMLFormElement>('[data-unenroll-form]');
+    if (!trigger || !form) return;
+
+    trigger.addEventListener('click', () => {
+      if (dialog && typeof dialog.showModal === 'function') {
+        dialog.showModal();
+      } else if (window.confirm('Are you sure you want to unenroll from this course?')) {
+        form.requestSubmit();
+      }
+    });
+
+    if (!dialog) return;
+
+    cancelBtn?.addEventListener('click', () => dialog.close());
+    confirmBtn?.addEventListener('click', () => {
+      dialog.close();
+      form.requestSubmit();
+    });
+    // Click on the backdrop (the <dialog> element itself, outside its
+    // content box) closes it, same as clicking outside a native confirm.
+    dialog.addEventListener('click', (e) => {
+      const rect = dialog.getBoundingClientRect();
+      const inside =
+        e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom;
+      if (!inside) dialog.close();
+    });
+  });
+</script>

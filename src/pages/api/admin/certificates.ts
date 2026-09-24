@@ -23,7 +23,7 @@ export const GET: APIRoute = async ({ request }) => {
     `SELECT
        e.course_slug,
        e.course_title,
-       COUNT(DISTINCT e.email) as enrolled_count,
+       COUNT(DISTINCT CASE WHEN e.status != 'unenrolled' THEN e.email END) as enrolled_count,
        (SELECT COUNT(*) FROM course_attempts a WHERE a.course_slug = e.course_slug) as attempt_count,
        (SELECT COUNT(*) FROM course_attempts a WHERE a.course_slug = e.course_slug AND a.passed = 1) as passed_attempt_count,
        (SELECT COUNT(*) FROM certificates c WHERE c.course_slug = e.course_slug) as certificate_count,

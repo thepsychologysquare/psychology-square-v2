@@ -56,6 +56,7 @@ export async function buildCourseExport(env: any, slug: string): Promise<Record<
         type: s.content_type,
         content: s.content_body,
         videoUrl: s.video_url,
+        pdfUrl: s.pdf_url,
         order: s.sequence_order,
         question: s.question
           ? {

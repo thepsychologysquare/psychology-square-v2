@@ -16,11 +16,17 @@ const session = env?.CLIENT_SESSION_SECRET
   : null;
 
 let enrolledSlugs = new Set<string>();
+let completedSlugs = new Set<string>();
 if (session && env?.DB) {
   const { results } = await env.DB.prepare(
     `SELECT course_slug AS courseSlug FROM enrollments WHERE email = ? AND status = 'active'`
   ).bind(session.email).all<{ courseSlug: string }>();
   enrolledSlugs = new Set((results || []).map((r) => r.courseSlug));
+
+  const { results: certResults } = await env.DB.prepare(
+    `SELECT course_slug AS courseSlug FROM certificates WHERE email = ?`
+  ).bind(session.email).all<{ courseSlug: string }>();
+  completedSlugs = new Set((certResults || []).map((r) => r.courseSlug));
 }
 
 const categoriesInUse = [...new Set(sorted.map((c) => c.data.category))];
@@ -263,7 +269,9 @@ const coursesFaqJson = {
                   {(categoryMeta[course.data.category] ?? course.data.category).charAt(0)}
                 </span>
               )}
-              {enrolledSlugs.has(course.id) && (
+              {completedSlugs.has(course.id) ? (
+                <span class="enrolled-badge">Completed</span>
+              ) : enrolledSlugs.has(course.id) && (
                 <span class="enrolled-badge">Enrolled</span>
               )}
               <span class={`tier-badge ${course.data.isPaid ? 'tier-badge--paid' : 'tier-badge--free'}`}>

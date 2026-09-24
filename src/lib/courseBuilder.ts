@@ -5,9 +5,10 @@ export interface CourseStepRow {
   id: string;
   module_id: string;
   title: string;
-  content_type: 'text' | 'video';
-  content_body: string | null;
+  content_type: 'text' | 'video' | 'pdf';
+  content_body: string | null; // lesson text, video notes, or PDF instructions
   video_url: string | null;
+  pdf_url: string | null; // uploaded (R2) or linked PDF URL, only for 'pdf'
   sequence_order: number;
   question: string | null;
   question_options: string | null; // JSON string

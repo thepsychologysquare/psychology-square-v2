@@ -36,19 +36,20 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   if (body.kind === 'step') {
-    const { moduleId, title, contentType, contentBody, videoUrl, question, questionOptions, questionCorrectIndex } = body;
+    const { moduleId, title, contentType, contentBody, videoUrl, pdfUrl, question, questionOptions, questionCorrectIndex } = body;
     if (!moduleId || !title) return new Response(JSON.stringify({ error: 'moduleId and title are required' }), { status: 400 });
     const max = await env.DB.prepare(
       `SELECT COALESCE(MAX(sequence_order), -1) AS m FROM course_steps WHERE module_id = ?`
     ).bind(moduleId).first<{ m: number }>();
     const id = crypto.randomUUID();
+    const normalizedType = contentType === 'video' ? 'video' : contentType === 'pdf' ? 'pdf' : 'text';
     await env.DB.prepare(
       `INSERT INTO course_steps
-        (id, module_id, title, content_type, content_body, video_url, sequence_order, question, question_options, question_correct_index, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        (id, module_id, title, content_type, content_body, video_url, pdf_url, sequence_order, question, question_options, question_correct_index, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     ).bind(
-      id, moduleId, title, contentType === 'video' ? 'video' : 'text',
-      contentBody || null, videoUrl || null, (max?.m ?? -1) + 1,
+      id, moduleId, title, normalizedType,
+      contentBody || null, videoUrl || null, pdfUrl || null, (max?.m ?? -1) + 1,
       question || null, question ? JSON.stringify(questionOptions || []) : null,
       question ? (questionCorrectIndex ?? 0) : null, now, now
     ).run();
@@ -104,9 +105,12 @@ export const PATCH: APIRoute = async ({ request }) => {
   } else {
     const fields: Record<string, any> = {};
     if (typeof body.title === 'string') fields.title = body.title;
-    if (typeof body.contentType === 'string') fields.content_type = body.contentType === 'video' ? 'video' : 'text';
+    if (typeof body.contentType === 'string') {
+      fields.content_type = body.contentType === 'video' ? 'video' : body.contentType === 'pdf' ? 'pdf' : 'text';
+    }
     if (typeof body.contentBody === 'string') fields.content_body = body.contentBody;
     if (typeof body.videoUrl === 'string') fields.video_url = body.videoUrl;
+    if (typeof body.pdfUrl === 'string') fields.pdf_url = body.pdfUrl;
     if ('question' in body) fields.question = body.question || null;
     if ('questionOptions' in body) fields.question_options = body.question ? JSON.stringify(body.questionOptions || []) : null;
     if ('questionCorrectIndex' in body) fields.question_correct_index = body.question ? (body.questionCorrectIndex ?? 0) : null;

@@ -232,6 +232,7 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
                 <th>Course</th>
                 <th>Enrolled</th>
                 <th>Completed</th>
+                <th>Unenrolled</th>
                 <th class="col-actions">Actions</th>
               </tr>
             </thead>
@@ -438,6 +439,7 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
   .bookings-table tbody tr.row-pending:hover{ background:rgba(199,164,74,0.14); }
   .bookings-table tbody tr.row-pending td{ border-left:3px solid var(--gold-500); }
   .bookings-table tbody tr.row-pending td:first-child{ border-left:none; }
+  .bookings-table tbody tr.is-unenrolled{ opacity:0.55; }
   .col-check{ width:36px; }
   .col-actions{ width:150px; }
   .cell-ref{ font-family:var(--font-mono); color:var(--gold-500); }
@@ -689,13 +691,14 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
     enrollEmptyMsg.hidden = items.length > 0;
     enrollTable.hidden = items.length === 0;
     enrollBody.innerHTML = items.map((e) => `
-      <tr>
+      <tr${e.status === 'unenrolled' ? ' class="is-unenrolled"' : ''}>
         <td class="col-check"><input type="checkbox" class="enroll-row-check" data-selid="${e.id}" /></td>
         <td>${escapeHtml(e.name)}</td>
         <td>${escapeHtml(e.email)}</td>
         <td>${escapeHtml(e.course_title)}</td>
         <td>${formatDate(e.enrolled_at)}</td>
         <td>${e.completed > 0 ? '✓ Completed' : '—'}</td>
+        <td>${e.unenrolled_at ? formatDate(e.unenrolled_at) : '—'}</td>
         <td class="col-actions"><button class="icon-btn delete" data-enrollid="${e.id}" title="Delete">🗑</button></td>
       </tr>
     `).join('');
@@ -730,8 +733,8 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
   });
 
   enrollExportBtn.addEventListener('click', () => {
-    const header = ['Name', 'Email', 'Course', 'Enrolled At', 'Completed'];
-    const rows = allEnrollments.map((e) => [e.name, e.email, e.course_title, e.enrolled_at, e.completed > 0 ? 'Yes' : 'No']
+    const header = ['Name', 'Email', 'Course', 'Enrolled At', 'Completed', 'Unenrolled At'];
+    const rows = allEnrollments.map((e) => [e.name, e.email, e.course_title, e.enrolled_at, e.completed > 0 ? 'Yes' : 'No', e.unenrolled_at || '']
       .map((v) => `"${String(v ?? '').replace(/"/g, '""')}"`).join(','));
     const csv = [header.join(','), ...rows].join('\r\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
