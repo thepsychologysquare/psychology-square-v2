@@ -370,13 +370,28 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
   }
   .new-booking-banner button{ background:none; border:none; color:var(--ink-600); cursor:pointer; font-size:13px; }
 
-  .dash-tabs{ display:flex; gap:6px; margin-bottom:28px; border-bottom:1px solid var(--line); }
+  .dash-tabs{
+    display:flex; gap:6px; margin-bottom:28px; border-bottom:1px solid var(--line);
+    overflow-x:auto; overflow-y:hidden; -webkit-overflow-scrolling:touch; scrollbar-width:thin;
+  }
   .tab-btn{
     font-family:var(--font-mono); font-size:12.5px; letter-spacing:0.06em; text-transform:uppercase;
     padding:10px 4px; margin-right:22px; border:none; border-bottom:2px solid transparent;
     background:transparent; cursor:pointer; color:var(--ink-600);
+    flex:none; white-space:nowrap;
   }
   .tab-btn.is-active{ color:var(--ink-900); border-bottom-color:var(--gold-500); }
+
+  /* Mobile: the tab row can now scroll sideways instead of being clipped by
+     the page's overflow-x:hidden safety net. Bleed it to the screen edges
+     and fade the edges a touch so it reads as "more here", not just cut off. */
+  @media (max-width:900px){
+    .dash-tabs{
+      margin-left:-20px; margin-right:-20px; padding-left:20px; padding-right:20px;
+      -webkit-mask-image:linear-gradient(to right, transparent 0, #000 14px, #000 calc(100% - 14px), transparent 100%);
+      mask-image:linear-gradient(to right, transparent 0, #000 14px, #000 calc(100% - 14px), transparent 100%);
+    }
+  }
 
   /* Ghost buttons: visible dark text + border, for use on light backgrounds
      (the .btn--text variant is near-white and meant for dark hero/nav only) */
@@ -424,8 +439,25 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
   .course-stat-row{ display:flex; justify-content:space-between; font-size:13px; padding:3px 0; color:var(--ink-600); }
   .course-stat-row strong{ color:var(--ink-900); }
 
-  .table-scroll{ overflow-x:auto; border:1px solid var(--line); border-radius:2px; max-height:640px; overflow-y:auto; }
+  .table-scroll{
+    overflow-x:auto; border:1px solid var(--line); border-radius:2px; max-height:640px; overflow-y:auto;
+    -webkit-overflow-scrolling:touch; overscroll-behavior:contain; cursor:grab;
+  }
+  .table-scroll.is-panning{ cursor:grabbing; user-select:none; }
   .bookings-table{ width:100%; border-collapse:collapse; font-size:13.5px; white-space:nowrap; }
+
+  /* Freeze the checkbox + name/reference column so you always know which
+     row you're looking at while panning right on a wide table. */
+  .bookings-table td.col-check, .bookings-table th.col-check,
+  .bookings-table td:nth-child(2), .bookings-table th:nth-child(2){
+    position:sticky; left:var(--col1-w, 36px); background:var(--paper-0); z-index:2;
+  }
+  .bookings-table td.col-check, .bookings-table th.col-check{ left:0; }
+  .bookings-table td:nth-child(2), .bookings-table th:nth-child(2){ box-shadow:1px 0 0 var(--line); }
+  .bookings-table thead th.col-check, .bookings-table thead th:nth-child(2){ z-index:3; }
+  .bookings-table tbody tr:hover td.col-check, .bookings-table tbody tr:hover td:nth-child(2){ background:#F6F5ED; }
+  .bookings-table tbody tr.row-pending td.col-check, .bookings-table tbody tr.row-pending td:nth-child(2){ background:#F4F1E7; }
+  .bookings-table tbody tr.row-pending:hover td.col-check, .bookings-table tbody tr.row-pending:hover td:nth-child(2){ background:#F1EDDE; }
   .bookings-table thead th{
     position:sticky; top:0; background:var(--paper-0); text-align:left; font-family:var(--font-mono);
     font-size:11px; letter-spacing:0.05em; text-transform:uppercase; color:var(--ink-600);
@@ -464,6 +496,26 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
 
 
   .pagination{ display:flex; align-items:center; justify-content:center; gap:16px; margin-top:18px; font-size:13.5px; color:var(--ink-600); }
+
+  /* Floating horizontal scrollbar: pinned to the bottom of the screen
+     (not the bottom of the table) whenever a wide table that needs it is
+     in view, so you never have to scroll down to find it. */
+  .floating-hscroll{
+    position:fixed; left:0; right:0; bottom:max(6px, env(safe-area-inset-bottom));
+    height:20px; padding:0 12px; box-sizing:border-box; z-index:40;
+    opacity:0; pointer-events:none; transition:opacity .15s ease;
+  }
+  .floating-hscroll.is-visible{ opacity:1; pointer-events:auto; }
+  .floating-hscroll::before{
+    content:''; position:absolute; left:12px; right:12px; top:50%; transform:translateY(-50%);
+    height:4px; border-radius:2px; background:rgba(19,26,34,0.10);
+  }
+  .floating-hscroll-thumb{
+    position:absolute; top:50%; left:12px; transform:translateY(-50%);
+    height:6px; min-width:40px; border-radius:3px; background:var(--gold-500);
+    cursor:grab; touch-action:none; box-shadow:0 1px 3px rgba(19,26,34,0.3);
+  }
+  .floating-hscroll-thumb:active{ cursor:grabbing; }
 
   .field{ display:flex; flex-direction:column; gap:6px; }
   label{ font-size:14px; font-weight:500; }
@@ -570,9 +622,6 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
   .qa-card__actions{ display:flex; gap:8px; flex-wrap:wrap; }
   .qa-card__answer{ font-size:14px; color:var(--ink-900); background:var(--paper-50); padding:10px 12px; border-radius:2px; margin-bottom:10px; }
 
-  @media (max-width:840px){
-    .col-check, .col-actions{ position:static; }
-  }
   @media (max-width:560px){
     .dash-header{ flex-direction:column; gap:12px; }
   }
@@ -602,6 +651,7 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
   const tabWorkshopEnroll = document.getElementById('tabWorkshopEnroll');
   const tabQa = document.getElementById('tabQa');
   const tabCertificates = document.getElementById('tabCertificates');
+  let scheduleTableUXRefresh = () => {};
 
   function activateTab(tab) {
     tabs.querySelectorAll('.tab-btn').forEach((b) => b.classList.toggle('is-active', b.dataset.tab === tab));
@@ -619,15 +669,159 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
     if (tab === 'qa') loadQuestions();
     if (tab === 'certificates') loadCertificates();
     history.replaceState(null, '', `#${tab}`);
+    if (typeof scheduleTableUXRefresh === 'function') scheduleTableUXRefresh();
   }
   tabs.addEventListener('click', (e) => {
     const btn = e.target.closest('.tab-btn');
     if (!btn) return;
     activateTab(btn.dataset.tab);
+    // Bring the tapped tab fully into view on the scrollable mobile tab bar.
+    btn.scrollIntoView({ behavior: 'smooth', inline: 'nearest', block: 'nearest' });
   });
   const initialTab = ['availability', 'coursePayments', 'enrollments', 'workshopEnroll', 'qa', 'certificates'].includes(location.hash.slice(1))
     ? location.hash.slice(1) : 'bookings';
   activateTab(initialTab);
+
+  // ===== Wide table UX: click/drag-to-pan, frozen first columns, and a
+  // floating bottom scrollbar so you never have to hunt for one. Applies
+  // to every .table-scroll on the page (desktop and mobile alike). =====
+  (function setupTableScrollUX() {
+    const scrollers = Array.from(document.querySelectorAll('.table-scroll'));
+    if (!scrollers.length) return;
+
+    const bar = document.createElement('div');
+    bar.className = 'floating-hscroll';
+    bar.innerHTML = '<div class="floating-hscroll-thumb"></div>';
+    document.body.appendChild(bar);
+    const thumb = bar.querySelector('.floating-hscroll-thumb');
+    const TRACK_PAD = 12;
+
+    let activeScroller = null;
+
+    function isShown(el) {
+      return !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length);
+    }
+    function needsScroll(el) {
+      return el.scrollWidth > el.clientWidth + 2;
+    }
+    function inViewport(el) {
+      const r = el.getBoundingClientRect();
+      return r.bottom > 0 && r.top < window.innerHeight && r.width > 0;
+    }
+    function pickVisibleScroller() {
+      for (const el of scrollers) {
+        if (isShown(el) && needsScroll(el) && inViewport(el)) return el;
+      }
+      return null;
+    }
+
+    function alignFrozenColumns() {
+      scrollers.forEach((el) => {
+        const table = el.querySelector('.bookings-table');
+        const firstTh = table && table.querySelector('thead th.col-check');
+        if (!firstTh) return;
+        table.style.setProperty('--col1-w', firstTh.getBoundingClientRect().width + 'px');
+      });
+    }
+
+    function syncBar() {
+      const el = pickVisibleScroller();
+      activeScroller = el;
+      if (!el) { bar.classList.remove('is-visible'); return; }
+      bar.classList.add('is-visible');
+      const trackWidth = Math.max(1, bar.clientWidth - TRACK_PAD * 2);
+      const thumbWidth = Math.min(trackWidth, Math.max(40, (el.clientWidth / el.scrollWidth) * trackWidth));
+      const maxThumbLeft = trackWidth - thumbWidth;
+      const maxScroll = el.scrollWidth - el.clientWidth || 1;
+      const ratio = el.scrollLeft / maxScroll;
+      thumb.style.width = thumbWidth + 'px';
+      thumb.style.transform = `translateY(-50%) translateX(${ratio * maxThumbLeft}px)`;
+    }
+
+    let rafPending = false;
+    function refresh() {
+      if (rafPending) return;
+      rafPending = true;
+      requestAnimationFrame(() => { rafPending = false; alignFrozenColumns(); syncBar(); });
+    }
+    scheduleTableUXRefresh = refresh;
+
+    document.addEventListener('scroll', syncBar, { passive: true, capture: true });
+    window.addEventListener('resize', refresh);
+    scrollers.forEach((el) => el.addEventListener('scroll', syncBar, { passive: true }));
+
+    // Table bodies get re-rendered async after data loads; catch that too.
+    const dashSection = document.querySelector('.dash-section');
+    if (dashSection) {
+      new MutationObserver(refresh).observe(dashSection, {
+        childList: true, subtree: true, attributes: true, attributeFilter: ['hidden'],
+      });
+    }
+
+    // Dragging the floating thumb scrolls the active table.
+    let draggingThumb = false, dragStartX = 0, dragStartScroll = 0;
+    thumb.addEventListener('pointerdown', (e) => {
+      if (!activeScroller) return;
+      draggingThumb = true;
+      dragStartX = e.clientX;
+      dragStartScroll = activeScroller.scrollLeft;
+      thumb.setPointerCapture(e.pointerId);
+      e.preventDefault();
+    });
+    thumb.addEventListener('pointermove', (e) => {
+      if (!draggingThumb || !activeScroller) return;
+      const trackWidth = Math.max(1, bar.clientWidth - TRACK_PAD * 2);
+      const thumbWidth = thumb.offsetWidth;
+      const maxThumbLeft = Math.max(1, trackWidth - thumbWidth);
+      const maxScroll = activeScroller.scrollWidth - activeScroller.clientWidth;
+      const dx = e.clientX - dragStartX;
+      activeScroller.scrollLeft = dragStartScroll + (dx / maxThumbLeft) * maxScroll;
+      syncBar();
+    });
+    ['pointerup', 'pointercancel'].forEach((evt) => thumb.addEventListener(evt, () => { draggingThumb = false; }));
+
+    // Clicking the track (not the thumb) jumps the scroll to that spot.
+    bar.addEventListener('pointerdown', (e) => {
+      if (e.target === thumb || !activeScroller) return;
+      const rect = bar.getBoundingClientRect();
+      const trackWidth = Math.max(1, bar.clientWidth - TRACK_PAD * 2);
+      const thumbWidth = thumb.offsetWidth;
+      const maxThumbLeft = Math.max(1, trackWidth - thumbWidth);
+      const maxScroll = activeScroller.scrollWidth - activeScroller.clientWidth;
+      const clickX = e.clientX - rect.left - TRACK_PAD - thumbWidth / 2;
+      const targetLeft = Math.min(Math.max(clickX, 0), maxThumbLeft);
+      activeScroller.scrollLeft = (targetLeft / maxThumbLeft) * maxScroll;
+      syncBar();
+    });
+
+    // Click-and-drag to pan each table (mouse/pen). Touch keeps native
+    // momentum scrolling. Sort clicks and row action buttons are excluded
+    // so panning never hijacks a real click.
+    scrollers.forEach((el) => {
+      let panning = false, moved = false, startX = 0, startScroll = 0;
+      el.addEventListener('pointerdown', (e) => {
+        if (e.pointerType === 'touch') return;
+        if (e.target.closest('button, a, input, th, textarea, select')) return;
+        panning = true; moved = false;
+        startX = e.clientX; startScroll = el.scrollLeft;
+        el.classList.add('is-panning');
+      });
+      el.addEventListener('pointermove', (e) => {
+        if (!panning) return;
+        const dx = e.clientX - startX;
+        if (Math.abs(dx) > 3) moved = true;
+        el.scrollLeft = startScroll - dx;
+      });
+      function endPan() { panning = false; el.classList.remove('is-panning'); }
+      el.addEventListener('pointerup', endPan);
+      el.addEventListener('pointerleave', endPan);
+      el.addEventListener('click', (e) => {
+        if (moved) { e.stopPropagation(); e.preventDefault(); moved = false; }
+      }, true);
+    });
+
+    refresh();
+  })();
 
   // ===== Generic bulk-select helper (checkboxes + bulk delete bar) =====
   function makeBulkSelector({ selectAllEl, bulkBarEl, bulkCountEl, bulkDeleteBtn, rowCheckSelector, containerEl, getItems, setItems, idOf, deleteUrl, confirmMsg, render }) {

@@ -40,6 +40,28 @@ export const PATCH: APIRoute = async ({ request }) => {
     return new Response(JSON.stringify({ error: 'Invalid request.' }), { status: 400 });
   }
 
+  // Don't let a completed enrollment get declined out from under its
+  // certificate -- the learner already has a certificate for this course
+  // and the course page treats a certificate as the source of truth for
+  // "completed", so declining the row afterward just produces a confusing
+  // half-state (certificate exists, but the enroll gate shows up again).
+  if (status === 'declined') {
+    const row = await env.DB.prepare(
+      `SELECT course_slug AS courseSlug, email FROM enrollments WHERE id = ?`
+    ).bind(id).first<{ courseSlug: string; email: string }>();
+    if (row) {
+      const cert = await env.DB.prepare(
+        `SELECT 1 FROM certificates WHERE course_slug = ? AND email = ?`
+      ).bind(row.courseSlug, row.email).first();
+      if (cert) {
+        return new Response(
+          JSON.stringify({ error: 'This learner already has a certificate for this course, so the enrollment can\u2019t be declined.' }),
+          { status: 400 }
+        );
+      }
+    }
+  }
+
   const updated = await env.DB.prepare(
     `UPDATE enrollments SET status = ?, reviewed_at = ? WHERE id = ? AND amount_pkr IS NOT NULL
      RETURNING id, course_slug, course_title, name, email, status`

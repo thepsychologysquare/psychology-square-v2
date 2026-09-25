@@ -122,12 +122,12 @@ export async function sendCoursePaymentReceivedEmail(
     return { ok: false, error: 'Contact on file is not an email address.' };
   }
   const html = emailShell(`
-    <h1 style="font-size:22px;margin:0 0 16px;">We received your payment</h1>
+    <h1 style="font-size:22px;margin:0 0 16px;">We've received your enrollment request</h1>
     <p style="font-size:15px;line-height:1.6;">Hi ${escapeHtml(args.toName)},</p>
     <p style="font-size:15px;line-height:1.6;">
-      Thank you for enrolling in <strong>${escapeHtml(args.courseTitle)}</strong>. We've received your payment
-      submission and we'll confirm your enrollment within 24 hours — you'll get another email the moment
-      your lessons unlock.
+      Thanks for requesting to enroll in <strong>${escapeHtml(args.courseTitle)}</strong>. We've received the
+      screenshot you attached and we'll review it shortly — you'll get another email confirming your enrollment
+      once we've checked it, usually within 24 hours.
     </p>
   `);
   return sendEmail({
@@ -135,7 +135,7 @@ export async function sendCoursePaymentReceivedEmail(
     fromHeader: env.BREVO_EMAIL_FROM,
     toEmail: args.toEmail,
     toName: args.toName,
-    subject: `We've received your payment — ${args.courseTitle}`,
+    subject: `We've received your request — ${args.courseTitle}`,
     html,
   });
 }
@@ -196,6 +196,43 @@ export async function sendCourseEnrollmentStatusEmail(
     toEmail: args.toEmail,
     toName: args.toName,
     subject: isConfirmed ? `You're enrolled — ${args.courseTitle}` : `About your payment — ${args.courseTitle}`,
+    html,
+  });
+}
+
+// ---------- Paid courses: completion (certificate earned) ----------
+// Fires once, right after a learner passes a PAID course's quiz and its
+// certificate is saved (see src/pages/api/courses/submit.ts). Free courses
+// never call this -- the certificate page itself, with its own PDF download,
+// is enough there. For a paid course this doubles as a "you got what you
+// paid for" receipt, so it's worth the extra send.
+export async function sendCourseCompletedEmail(
+  env: { BREVO_API_KEY?: string; BREVO_EMAIL_FROM?: string },
+  args: { toEmail: string; toName: string; courseTitle: string; scorePercent: number; ceHours: number; certificateUrl: string }
+): Promise<{ ok: boolean; error?: string }> {
+  if (!env.BREVO_API_KEY || !env.BREVO_EMAIL_FROM) {
+    console.error('[email-brevo] sendCourseCompletedEmail: missing BREVO_API_KEY or BREVO_EMAIL_FROM');
+    return { ok: false, error: 'Email is not configured yet.' };
+  }
+  if (!EMAIL_RE.test(args.toEmail)) {
+    return { ok: false, error: 'Contact on file is not an email address.' };
+  }
+  const html = emailShell(`
+    <h1 style="font-size:22px;margin:0 0 16px;">You've completed the course</h1>
+    <p style="font-size:15px;line-height:1.6;">Hi ${escapeHtml(args.toName)},</p>
+    <p style="font-size:15px;line-height:1.6;">
+      Congratulations — you've completed <strong>${escapeHtml(args.courseTitle)}</strong> with a score of
+      ${args.scorePercent}%. Your certificate is ready to view and download.
+    </p>
+    <p style="margin:28px 0;"><a href="${args.certificateUrl}" style="background:#C7A44A;color:#131A22;text-decoration:none;padding:12px 24px;border-radius:2px;font-weight:600;display:inline-block;">View your certificate</a></p>
+    <p style="font-size:15px;line-height:1.6;">Thank you for taking this course with us.</p>
+  `);
+  return sendEmail({
+    apiKey: env.BREVO_API_KEY,
+    fromHeader: env.BREVO_EMAIL_FROM,
+    toEmail: args.toEmail,
+    toName: args.toName,
+    subject: `You've completed ${args.courseTitle}`,
     html,
   });
 }

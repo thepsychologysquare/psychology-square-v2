@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
 import { getClientSession } from '../../../lib/clientAuth';
+import { getCourseBySlug } from '../../../lib/courses';
 
 export const prerender = false;
 
@@ -59,13 +60,20 @@ export const POST: APIRoute = async ({ request }) => {
   const email = session.email.trim().toLowerCase();
 
   const enrollment = await env.DB.prepare(
-    `SELECT status, amount_pkr FROM enrollments WHERE course_slug = ? AND email = ?`
-  ).bind(courseSlug, email).first<{ status: string; amount_pkr: number | null }>();
+    `SELECT status FROM enrollments WHERE course_slug = ? AND email = ?`
+  ).bind(courseSlug, email).first<{ status: string }>();
 
   if (!enrollment || enrollment.status !== 'active') {
     return fail(courseSlug, 'not_active', 'You\u2019re not currently enrolled in this course.', 409);
   }
-  if (enrollment.amount_pkr !== null) {
+
+  // Gate on the course's CURRENT isPaid setting, not whatever was true when
+  // this person enrolled. If an admin later switches a paid course to free,
+  // everyone already enrolled in it should be able to unenroll like any
+  // free-course learner -- the amount they paid in the past is a historical
+  // fact on the enrollment row, not a reason to keep blocking them today.
+  const course = await getCourseBySlug(env, courseSlug);
+  if (course?.data.isPaid) {
     return fail(courseSlug, 'paid', 'Paid courses can\u2019t be unenrolled from here \u2014 contact us if you need help.', 400);
   }
 

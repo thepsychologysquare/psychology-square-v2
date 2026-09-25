@@ -68,12 +68,18 @@ export async function enrollInFreeCourse(
   if (existing) {
     if (existing.status === 'active') return { outcome: 'already', courseTitle: course.data.title };
 
-    if (existing.status === 'unenrolled') {
-      // Re-enrolling in a course the learner previously dropped: reactivate
-      // the same row (lesson progress and past quiz attempts are still
-      // there) instead of inserting a duplicate. A completed course can
-      // never legitimately reach 'unenrolled' -- /api/courses/unenroll
-      // blocks that -- but this guard stays defensive.
+    // 'unenrolled', OR a leftover 'pending'/'declined' row from when this
+    // course used to be paid (we already know it's free at this point --
+    // paid courses returned above). Either way there's nothing legitimately
+    // "in review" anymore, so treat it exactly like re-enrolling after
+    // dropping a free course: reactivate the same row (lesson progress and
+    // past quiz attempts are still there) instead of inserting a duplicate
+    // or refusing.
+    if (existing.status === 'unenrolled' || existing.status === 'pending' || existing.status === 'declined') {
+      // A completed course can never legitimately reach 'unenrolled' --
+      // /api/courses/unenroll blocks that -- but a 'declined'/'pending' row
+      // CAN coexist with a certificate (e.g. this exact scenario: paid,
+      // completed, later declined). Still block a redo of a finished course.
       const cert = await env.DB.prepare(
         `SELECT 1 FROM certificates WHERE course_slug = ? AND email = ?`
       ).bind(course.id, email).first();

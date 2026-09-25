@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
 import { getCourseBySlug } from '../../../lib/courses';
 import { makeCertificateId } from '../../../lib/certificate';
+import { sendCourseCompletedEmail } from '../../../lib/email-brevo';
 
 export const prerender = false;
 
@@ -89,7 +90,21 @@ export const POST: APIRoute = async ({ request }) => {
 
   const certUrl = new URL(`/certificates/${certificateId}`, request.url).toString();
 
-  // No certificate email is sent — the certificate is already saved and the
+  // Completion email: PAID courses only. Free courses don't get one -- the
+  // certificate page itself, with its own PDF download, is enough there.
+  // Best-effort -- a failed notification email should never block the
+  // response, which already has the certificate the learner needs.
+  if (course.data.isPaid) {
+    await sendCourseCompletedEmail(env, {
+      toEmail: email,
+      toName: name,
+      courseTitle: course.data.title,
+      scorePercent,
+      certificateUrl: certUrl,
+    }).catch(() => {});
+  }
+
+  // No certificate email is sent for free courses — the certificate is already saved and the
   // learner is taken straight to /certificates/[id] below, which has its
   // own "Download PDF" button (client-side, via jsPDF). Sending an email
   // here as well would just be a second, redundant notification for

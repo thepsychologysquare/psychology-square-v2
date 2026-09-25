@@ -29,6 +29,39 @@ if (session && env?.DB) {
   completedSlugs = new Set((certResults || []).map((r) => r.courseSlug));
 }
 
+// Courses built on the newer step/module tables send learners to a
+// dedicated /learn/[stepId] route; older courses render their modules
+// directly on the /courses/[slug] page. The card link needs to know which
+// so an already-enrolled learner lands straight on their lessons instead
+// of on an "enroll gate" page that just re-links to /learn.
+let newSystemSlugs = new Set<string>();
+if (env?.DB) {
+  const { results } = await env.DB.prepare(
+    `SELECT DISTINCT course_slug AS courseSlug FROM course_modules`
+  ).all<{ courseSlug: string }>();
+  newSystemSlugs = new Set((results || []).map((r) => r.courseSlug));
+}
+
+function cardHrefAndLabel(courseId: string): { href: string; label: string } {
+  if (completedSlugs.has(courseId)) {
+    return {
+      // Old-engine courses render their content inline on /courses/{slug}
+      // already (no separate page exists for them). New-engine courses
+      // only have their lesson content on /learn -- send those straight
+      // there too, instead of via the course page's "completed" panel.
+      href: newSystemSlugs.has(courseId) ? `/courses/${courseId}/learn` : `/courses/${courseId}`,
+      label: 'Review',
+    };
+  }
+  if (enrolledSlugs.has(courseId)) {
+    return {
+      href: newSystemSlugs.has(courseId) ? `/courses/${courseId}/learn` : `/courses/${courseId}`,
+      label: 'Continue',
+    };
+  }
+  return { href: `/courses/${courseId}`, label: 'Enroll' };
+}
+
 const categoriesInUse = [...new Set(sorted.map((c) => c.data.category))];
 
 // Stable, non-random gradient placeholder for cards without a cover image —
@@ -246,9 +279,11 @@ const coursesFaqJson = {
       )}
 
       <div class="courses-grid" id="coursesGrid">
-        {sorted.map((course) => (
+        {sorted.map((course) => {
+          const { href: cardHref, label: cardLabel } = cardHrefAndLabel(course.id);
+          return (
           <a
-            href={`/courses/${course.id}`}
+            href={cardHref}
             class="course-card"
             data-tier={course.data.isPaid ? 'paid' : 'free'}
             data-category={course.data.category}
@@ -283,11 +318,12 @@ const coursesFaqJson = {
               <h2>{course.data.title}</h2>
               <p>{course.data.description}</p>
               <div class="course-card__footer">
-                <span class="btn btn--primary course-enroll-btn">Enroll</span>
+                <span class="btn btn--primary course-enroll-btn">{cardLabel}</span>
               </div>
             </div>
           </a>
-        ))}
+          );
+        })}
       </div>
       <p class="filter-empty" id="filterEmptyMsg" hidden>No courses match those filters.</p>
     </div>

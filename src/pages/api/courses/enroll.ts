@@ -88,6 +88,8 @@ export const POST: APIRoute = async ({ request }) => {
       return fail(courseSlug, 'paid', 400);
     case 'not_active':
       return fail(courseSlug, 'not_active', 409);
+    case 'completed':
+      return fail(courseSlug, 'completed', 409);
     default:
       return fail(courseSlug, 'not_found', 404);
   }

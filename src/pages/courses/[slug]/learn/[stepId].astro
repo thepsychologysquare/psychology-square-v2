@@ -17,15 +17,21 @@ const session = env?.CLIENT_SESSION_SECRET
 if (!session) return Astro.redirect(`/courses/${slug}`, 302);
 
 const enrollment = await env.DB.prepare(
-  `SELECT name FROM enrollments WHERE course_slug = ? AND email = ? AND status = 'active'`
-).bind(course.id, session.email).first<{ name: string }>();
-if (!enrollment) return Astro.redirect(`/courses/${slug}`, 302);
+  `SELECT name, status FROM enrollments WHERE course_slug = ? AND email = ?`
+).bind(course.id, session.email).first<{ name: string; status: string }>();
 
-// Same eligibility rule as the course page: no unenroll button for paid
-// courses or ones the learner has already completed (certificate exists).
+// Same eligibility rule as the course page: an active enrollment row grants
+// access, but so does an existing certificate on its own -- the enrollment
+// row's status can end up 'declined'/'unenrolled' after completion (see
+// notes on /courses/[slug].astro) without that meaning access should be
+// revoked from someone who already finished the course.
 const completedCertificate = await env.DB.prepare(
   `SELECT id FROM certificates WHERE course_slug = ? AND email = ?`
 ).bind(course.id, session.email).first<{ id: string }>();
+
+const hasAccess = (!!enrollment && enrollment.status === 'active') || !!completedCertificate;
+if (!hasAccess) return Astro.redirect(`/courses/${slug}`, 302);
+
 const canUnenroll = !completedCertificate && !course.data.isPaid;
 
 const outline = await getCourseOutline(env.DB, course.id);
@@ -50,6 +56,7 @@ const step = flatSteps[stepIndex];
 const prevStep = flatSteps[stepIndex - 1];
 const nextStep = flatSteps[stepIndex + 1];
 const isLastStep = stepIndex === flatSteps.length - 1;
+const isStepCompleted = completed.has(step.id);
 
 const options: string[] = step.question_options ? JSON.parse(step.question_options) : [];
 const showLockedWarning = Astro.url.searchParams.get('locked') === 'true';
@@ -181,7 +188,14 @@ const showLockedWarning = Astro.url.searchParams.get('locked') === 'true';
 
       <div class="learn-nav">
         {prevStep ? <a href={`/courses/${course.id}/learn/${prevStep.id}`} class="btn btn--text">&larr; Previous</a> : <span />}
-        {isLastStep ? (
+        {isStepCompleted ? (
+          <a
+            href={isLastStep ? `/courses/${course.id}#quizSection` : `/courses/${course.id}/learn/${nextStep!.id}`}
+            class="btn btn--primary"
+          >
+            {isLastStep ? (completedCertificate ? 'Back to course' : 'Go to quiz \u2192') : 'Next \u2192'}
+          </a>
+        ) : isLastStep ? (
           <button type="button" id="completeBtn" class="btn btn--primary">Mark complete &amp; go to quiz</button>
         ) : (
           <button type="button" id="completeBtn" class="btn btn--primary">Mark complete &amp; continue</button>
@@ -546,7 +560,7 @@ const showLockedWarning = Astro.url.searchParams.get('locked') === 'true';
   }
 </style>
 
-<script define:vars={{ courseSlug: course.id, stepId: step.id, stepTitle: step.title, learnerName: enrollment.name, nextStepUrl: nextStep ? `/courses/${course.id}/learn/${nextStep.id}` : null, quizUrl: `/courses/${course.id}#quizSection` }}>
+<script define:vars={{ courseSlug: course.id, stepId: step.id, stepTitle: step.title, learnerName: enrollment?.name || '', nextStepUrl: nextStep ? `/courses/${course.id}/learn/${nextStep.id}` : null, quizUrl: `/courses/${course.id}#quizSection` }}>
   window.addEventListener('DOMContentLoaded', () => {
     const activeLink = document.querySelector('.learn-sidebar a.is-active');
     if (activeLink) {
