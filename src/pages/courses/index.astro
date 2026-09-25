@@ -29,11 +29,6 @@ if (session && env?.DB) {
   completedSlugs = new Set((certResults || []).map((r) => r.courseSlug));
 }
 
-// Courses built on the newer step/module tables send learners to a
-// dedicated /learn/[stepId] route; older courses render their modules
-// directly on the /courses/[slug] page. The card link needs to know which
-// so an already-enrolled learner lands straight on their lessons instead
-// of on an "enroll gate" page that just re-links to /learn.
 let newSystemSlugs = new Set<string>();
 if (env?.DB) {
   const { results } = await env.DB.prepare(
@@ -45,10 +40,6 @@ if (env?.DB) {
 function cardHrefAndLabel(courseId: string): { href: string; label: string } {
   if (completedSlugs.has(courseId)) {
     return {
-      // Old-engine courses render their content inline on /courses/{slug}
-      // already (no separate page exists for them). New-engine courses
-      // only have their lesson content on /learn -- send those straight
-      // there too, instead of via the course page's "completed" panel.
       href: newSystemSlugs.has(courseId) ? `/courses/${courseId}/learn` : `/courses/${courseId}`,
       label: 'Review',
     };
@@ -64,8 +55,6 @@ function cardHrefAndLabel(courseId: string): { href: string; label: string } {
 
 const categoriesInUse = [...new Set(sorted.map((c) => c.data.category))];
 
-// Stable, non-random gradient placeholder for cards without a cover image —
-// same course always gets the same one, no layout shift between reloads.
 const placeholderClasses = [
   'bg-placeholder-1', 'bg-placeholder-2', 'bg-placeholder-3', 'bg-placeholder-4',
   'bg-placeholder-5', 'bg-placeholder-6', 'bg-placeholder-7', 'bg-placeholder-8', 'bg-placeholder-9',
@@ -78,9 +67,6 @@ function placeholderFor(id: string) {
 
 const siteOrigin = 'https://thepsychologysquare.com';
 
-// Course schema per listed course, plus a CollectionPage/ItemList wrapper —
-// gives search engines rich, structured course data (provider, price,
-// format) straight from the listing page, not just the individual pages.
 const coursesJson = {
   '@context': 'https://schema.org',
   '@type': 'ItemList',
@@ -176,25 +162,10 @@ const coursesFaqJson = {
         <span class="crumb-sep">/</span>
         <span class="crumb-current">Courses</span>
       </nav>
-      <span class="eyebrow">Self-Paced &amp; Free To Try</span>
-      <div class="hero-top">
-        <h1>Courses</h1>
-        {session ? (
-          <div class="session-status">
-            <span class="session-status__dot" aria-hidden="true"></span>
-            <span>Signed in as <strong>{session.email}</strong></span>
-            <a href="/my-certificates">My certificates</a>
-            <button type="button" id="logoutBtn" class="btn btn--text">Log out</button>
-          </div>
-        ) : (
-          <a href="/login?redirect=/courses" class="icon-login-btn" aria-label="Log In">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
-              <polyline points="10 17 15 12 10 7" />
-              <line x1="15" y1="12" x2="3" y2="12" />
-            </svg>
-          </a>
-        )}
+
+      <div class="hero-title-area">
+        <span class="eyebrow">Self-Paced &amp; Free To Try</span>
+        <h1>Pakistan's First Psychology Courses with Verifiable Certificates</h1>
       </div>
 
       <p class="lede">Self-paced online psychology courses covering anxiety, CBT, ADHD, trauma, and more — written by clinical psychologists. Pass the short quiz at the end and get your certificate by email, free or paid.</p>
@@ -252,6 +223,36 @@ const coursesFaqJson = {
       {sorted.length === 0 && (
         <p class="empty-state">No courses are available yet — check back soon.</p>
       )}
+
+      {/* Full Width Session Panel Card placed directly above filters */}
+      <div class="hero-auth-area">
+        {session ? (
+          <div class="session-card">
+            <div class="session-card__user">
+              <span class="session-status__dot" aria-hidden="true"></span>
+              <span class="session-email" title={session.email}>{session.email}</span>
+            </div>
+            <div class="session-card__actions">
+              <a href="/my-certificates" class="session-link">My certificates</a>
+              <span class="sep" aria-hidden="true">·</span>
+              <button type="button" id="logoutBtn" class="btn-logout-text">Log out</button>
+            </div>
+          </div>
+        ) : (
+          <div class="session-card session-card--guest">
+            <div class="session-card__user">
+              <span class="session-status__dot session-status__dot--guest" aria-hidden="true"></span>
+              <span class="session-email">Not signed in</span>
+            </div>
+            <div class="session-card__actions">
+              <a href="/login?redirect=/courses" class="session-link session-login-btn" aria-label="Log in">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="login-icon"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+                <span>Log in</span>
+              </a>
+            </div>
+          </div>
+        )}
+      </div>
 
       {sorted.length > 0 && (
         <div class="filter-bar" id="filterBar">
@@ -411,8 +412,6 @@ const coursesFaqJson = {
 </script>
 
 <style>
-  /* Hero now matches the site's standard dark hero (see .hero in global.css)
-     instead of a bespoke light-bg treatment. */
   .courses-hero{
     background: var(--navy-950);
     color: var(--paper-0);
@@ -423,63 +422,119 @@ const coursesFaqJson = {
   }
   .breadcrumbs{
     font-family:var(--font-mono); font-size:12px; color:rgba(248,249,246,0.6);
-    margin-bottom:18px; margin-top: 50px; display:flex; flex-wrap:wrap; gap:6px; align-items:center;
+    margin-bottom:14px; margin-top: 50px; display:flex; flex-wrap:wrap; gap:6px; align-items:center;
   }
   .breadcrumbs a:hover{ color:var(--gold-300); }
   .crumb-sep{ color:rgba(248,249,246,0.3); }
   .crumb-current{ color:rgba(248,249,246,0.85); }
-  .hero-top{ display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-top:14px; }
-  .hero-top h1{ margin:0; color:var(--paper-0); }
-  .session-status{ display:flex; align-items:center; gap:10px; font-size:13.5px; color:rgba(248,249,246,0.72); flex-wrap:wrap; }
-  .session-status__dot{ width:8px; height:8px; border-radius:50%; background:#4CAF7D; flex-shrink:0; }
-  .session-status strong{ color:var(--paper-0); }
-  .session-status a{ color:var(--gold-300); text-decoration:none; }
-  .session-status a:hover{ text-decoration:underline; }
-  .session-status .btn--text{ font-size:13.5px; color:rgba(248,249,246,0.85); text-decoration:underline; padding:0; background:transparent; border:none; appearance:none; }
 
-  .icon-login-btn {
+  /* Full Width Session Panel Card */
+  .hero-auth-area {
+    margin-bottom: 24px;
+    width: 100%;
+  }
+  .session-card {
+    background: var(--paper-0);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    width: 100%;
+    box-shadow: 0 2px 8px rgba(19, 26, 34, 0.04);
+  }
+  .session-card__user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13.5px;
+    color: var(--ink-900);
+    min-width: 0;
+  }
+  .session-status__dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #4CAF7D;
+    flex-shrink: 0;
+    box-shadow: 0 0 8px rgba(76, 175, 125, 0.5);
+  }
+  .session-status__dot--guest {
+    background: var(--ink-450, #8c959f);
+    box-shadow: none;
+  }
+  .session-email {
+    font-weight: 500;
+    color: var(--ink-900);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .session-card__actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+  .session-link {
+    color: var(--gold-600, #967426);
+    text-decoration: none;
+    font-weight: 500;
+  }
+  .session-link:hover {
+    text-decoration: underline;
+  }
+  .session-login-btn {
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    width: 48px;
-    height: 48px;
-
-    background: var(--gold-500);
-    color: var(--navy-950);
-    border: 1px solid transparent;
-    border-radius: 999px;
+    gap: 6px;
+  }
+  .login-icon {
+    width: 15px;
+    height: 15px;
+    display: inline-block;
+    vertical-align: middle;
+  }
+  .sep {
+    color: var(--line);
+  }
+  .btn-logout-text {
+    background: transparent;
+    border: none;
+    padding: 0;
+    color: var(--ink-600);
+    font-size: 13px;
     cursor: pointer;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    font-family: inherit;
+    transition: color 0.15s ease;
+  }
+  .btn-logout-text:hover {
+    color: var(--ink-900);
+    text-decoration: underline;
+  }
 
-    transition: all 0.25s var(--ease);
-  }
-  .icon-login-btn svg {
-    display: block;
-    width: 20px;
-    height: 20px;
-    transition: transform 0.2s var(--ease);
-  }
-  .icon-login-btn:hover {
-    background: var(--gold-300);
-  }
-  .icon-login-btn:hover svg {
-    transform: translateX(2px);
-  }
-  .icon-login-btn:active {
-    transform: scale(0.95);
-  }
-  .icon-login-btn:focus-visible {
-    outline: 3px solid var(--gold-300);
-    outline-offset: 2px;
+  @media (max-width: 640px) {
+    .session-card {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 14px 16px;
+    }
+    .session-card__actions {
+      width: 100%;
+      padding-top: 8px;
+      border-top: 1px solid var(--line);
+      justify-content: space-between;
+    }
   }
 
   .courses-hero h1{ font-family:var(--font-display); font-size:clamp(32px,4vw,44px); margin:6px 0 14px; }
   .courses-hero .lede{ max-width:560px; color:rgba(248,249,246,0.72); font-size:17px; line-height:1.6; margin-bottom:10px; }
-  .verify-note{ max-width:560px; font-size:13.5px; color:rgba(248,249,246,0.6); margin-bottom:26px; }
-  .verify-note a{ color:var(--gold-300); text-decoration:underline; text-underline-offset:2px; }
-  .verify-note a:hover{ color:var(--gold-500); }
   .course-count{ font-family:var(--font-mono); font-size:12.5px; color:rgba(248,249,246,0.55); margin-bottom:26px; }
-  .eyebrow{ font-family:var(--font-mono); font-size:12px; letter-spacing:0.08em; text-transform:uppercase; color:var(--gold-500); }
+  .eyebrow{ font-family:var(--font-mono); font-size:12px; letter-spacing:0.08em; text-transform:uppercase; color:var(--gold-500); display: block; margin-bottom: 4px; }
 
   .trust-bar{
     list-style:none; margin:0; padding:0;
@@ -504,9 +559,6 @@ const coursesFaqJson = {
   .empty-state{ color:var(--ink-600); }
 
   .courses-faq-section{ padding:16px 0 88px; }
-  /* Same left edge as every other section on the page (.wrap), instead of a
-     narrower block re-centered on the full viewport — that mismatch was what
-     made the FAQ read as shifted right relative to the hero/grid above it. */
   .faq-inner{ max-width:760px; }
   .courses-faq-section h2{ font-family:var(--font-display); font-size:clamp(24px,3vw,30px); margin:8px 0 24px; }
   .faq-columns--single{ columns:1; }
