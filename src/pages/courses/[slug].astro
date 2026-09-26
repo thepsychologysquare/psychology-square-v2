@@ -7,6 +7,8 @@ import { getClientSession } from '../../lib/clientAuth';
 import { getCourseBySlug } from '../../lib/courses';
 import { resolveLearnerName, isEnrollErrorCode, ENROLL_ERROR_MESSAGES } from '../../lib/enrollment';
 import UnenrollButton from '../../components/UnenrollButton.astro';
+import WatermarkOverlay from '../../components/WatermarkOverlay.astro';
+import ContentProtectionScript from '../../components/ContentProtectionScript.astro';
 
 const { slug } = Astro.params;
 const course = await getCourseBySlug(env, slug!);
@@ -125,12 +127,13 @@ const moduleQuestionsForClient = renderedModules.map((m) =>
 >
   <article class="course-article">
     <div class="wrap wrap--narrow">
-      <span class="eyebrow">Course &middot; {course.data.estimatedHours} {course.data.estimatedHours === 1 ? 'hour' : 'hours'}</span>
-      <h1>{course.data.title}</h1>
-      <p class="lede">{course.data.description}</p>
-
       {!hasAccess ? (
-        <section class="enroll-gate" id="enrollGate">
+        <Fragment>
+          <span class="eyebrow">Course &middot; {course.data.estimatedHours} {course.data.estimatedHours === 1 ? 'hour' : 'hours'}</span>
+          <h1>{course.data.title}</h1>
+          <p class="lede">{course.data.description}</p>
+
+          <section class="enroll-gate" id="enrollGate">
           {course.data.isPaid ? (
             <>
               <h2>Enroll in this course</h2>
@@ -229,8 +232,14 @@ const moduleQuestionsForClient = renderedModules.map((m) =>
             </div>
           )}
         </section>
+        </Fragment>
       ) : (
-        <Fragment>
+        <div class="no-copy watermark-host no-print">
+          <WatermarkOverlay email={session?.email} />
+
+          <span class="eyebrow">Course &middot; {course.data.estimatedHours} {course.data.estimatedHours === 1 ? 'hour' : 'hours'}</span>
+          <h1>{course.data.title}</h1>
+          <p class="lede">{course.data.description}</p>
 
           {unenrollErrorMessage && (
             <p class="notice-declined" role="alert">{unenrollErrorMessage}</p>
@@ -339,11 +348,15 @@ const moduleQuestionsForClient = renderedModules.map((m) =>
               </>
             )}
           </section>
-        </Fragment>
+        </div>
+      )}
+      {hasAccess && (
+        <p class="print-blocked-notice">Printing is disabled for this content — © The Psychology Square.</p>
       )}
     </div>
   </article>
 
+  {hasAccess && <ContentProtectionScript />}
 </Layout>
 
 <script type="application/json" id="quizData" set:html={JSON.stringify(clientQuiz)}></script>

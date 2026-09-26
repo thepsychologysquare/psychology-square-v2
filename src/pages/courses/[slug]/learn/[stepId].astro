@@ -6,6 +6,8 @@ import { getClientSession } from '../../../../lib/clientAuth';
 import { getCourseOutline, getCompletedStepIds, textToHtml } from '../../../../lib/courseBuilder';
 import { getCourseBySlug } from '../../../../lib/courses';
 import UnenrollButton from '../../../../components/UnenrollButton.astro';
+import WatermarkOverlay from '../../../../components/WatermarkOverlay.astro';
+import ContentProtectionScript from '../../../../components/ContentProtectionScript.astro';
 
 const { slug, stepId } = Astro.params;
 const course = await getCourseBySlug(env, slug!);
@@ -62,7 +64,8 @@ const options: string[] = step.question_options ? JSON.parse(step.question_optio
 const showLockedWarning = Astro.url.searchParams.get('locked') === 'true';
 ---
 <Layout title={`${step.title} — ${course.data.title}`} description={course.data.description}>
-  <div class="learn-layout wrap">
+  <div class="learn-layout wrap no-copy watermark-host no-print">
+    <WatermarkOverlay email={session.email} />
     <!-- Dynamic Course Title Header with inline tag at the end -->
     <div class="learn-course-banner">
       <h2 class="learn-course-banner__title">{course.data.title}</h2>
@@ -217,6 +220,9 @@ const showLockedWarning = Astro.url.searchParams.get('locked') === 'true';
       </section>
     </main>
   </div>
+
+  <p class="print-blocked-notice">Printing is disabled for this content — © The Psychology Square.</p>
+  <ContentProtectionScript />
 </Layout>
 
 <style>

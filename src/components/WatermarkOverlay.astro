@@ -1,0 +1,53 @@
+---
+// Renders a faint, tiled watermark over whichever ancestor has
+// class="watermark-host" (see .watermark-host / .watermark-overlay in
+// global.css). Drop this as a child of that ancestor.
+export interface Props {
+  email?: string | null;
+}
+const { email } = Astro.props;
+
+const line1 = email ? `Enrolled Student: ${email}` : `© The Psychology Square`;
+const line2 = email ? `© The Psychology Square` : null;
+
+function escapeXml(input: string): string {
+  return input
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+}
+
+const safeLine1 = escapeXml(line1);
+const safeLine2 = line2 ? escapeXml(line2) : null;
+
+// Adjusted tile dimensions to provide plenty of breathing room for long emails
+// without forcing unnatural letter compression.
+const tileWidth = 460;
+const tileHeight = 240;
+const fontSize = 16;
+const lineGap = 22;
+const fillColor = 'rgba(15, 15, 15, 0.12)';
+
+// Center the rotation nicely inside the defined tile space
+const centerX = tileWidth / 2;
+const centerY = tileHeight / 2;
+
+const lines = safeLine2
+  ? `<text x="0" y="-8" font-family="Arial, Helvetica, sans-serif" font-size="${fontSize}" font-weight="600" letter-spacing="0.5" fill="${fillColor}">${safeLine1}</text>
+     <text x="0" y="${-8 + lineGap}" font-family="Arial, Helvetica, sans-serif" font-size="${fontSize}" font-weight="600" letter-spacing="0.5" fill="${fillColor}">${safeLine2}</text>`
+  : `<text x="0" y="0" font-family="Arial, Helvetica, sans-serif" font-size="${fontSize}" font-weight="600" letter-spacing="0.5" fill="${fillColor}">${safeLine1}</text>`;
+
+const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${tileWidth}" height="${tileHeight}">
+  <g transform="rotate(-25 ${centerX} ${centerY})" text-anchor="middle">
+    <g transform="translate(${centerX}, ${centerY})">
+      ${lines}
+    </g>
+  </g>
+</svg>`;
+
+const dataUri = `data:image/svg+xml,${encodeURIComponent(svg)}`;
+const backgroundStyle = `background-image:url("${dataUri}");background-size:${tileWidth}px ${tileHeight}px;`;
+---
+<div class="watermark-overlay" aria-hidden="true" style={backgroundStyle}></div>

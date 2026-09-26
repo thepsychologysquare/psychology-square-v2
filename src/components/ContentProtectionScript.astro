@@ -1,0 +1,66 @@
+---
+// Include once per page that has .no-copy content on it. Pairs with the
+// .no-copy / .no-print / .print-blocked-notice rules in global.css.
+//
+// This is a deterrent, not a guarantee -- someone with dev tools open, a
+// disabled-JS browser, or a camera can still get the content out. What this
+// does stop is the casual path: selecting text, right-click > copy/save,
+// dragging an image out, or hitting Ctrl/Cmd+P and getting a clean printable
+// page. The @media print rule in global.css is the backstop for printing
+// specifically, since it hides the content regardless of how printing was
+// triggered (this script's keydown check is just there to explain *why*
+// nothing printed, via the toast, instead of leaving the person confused by
+// a blank page).
+---
+<script>
+  function initContentProtection() {
+    if ((window as any).__psqContentProtectionInit) return;
+    (window as any).__psqContentProtectionInit = true;
+
+    // Form fields (typing a name, pasting into a payment field, writing a
+    // Q&A question) need to keep working normally -- right-click paste
+    // included -- even inside a .no-copy region, so they're excluded here.
+    function isFormField(target: EventTarget | null): boolean {
+      const el = target as HTMLElement | null;
+      if (!el || !el.tagName) return false;
+      const tag = el.tagName.toLowerCase();
+      return tag === 'input' || tag === 'textarea' || tag === 'select' || !!el.isContentEditable;
+    }
+
+    document.querySelectorAll('.no-copy').forEach((el) => {
+      el.addEventListener('contextmenu', (e) => { if (!isFormField(e.target)) e.preventDefault(); });
+      el.addEventListener('copy', (e) => { if (!isFormField(e.target)) e.preventDefault(); });
+      el.addEventListener('cut', (e) => { if (!isFormField(e.target)) e.preventDefault(); });
+      el.addEventListener('dragstart', (e) => { if (!isFormField(e.target)) e.preventDefault(); });
+    });
+
+    let toastTimer: ReturnType<typeof setTimeout>;
+    function showToast(message: string) {
+      let toast = document.getElementById('protectionToast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'protectionToast';
+        toast.className = 'protection-toast';
+        document.body.appendChild(toast);
+      }
+      toast.textContent = message;
+      toast.classList.add('is-visible');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast?.classList.remove('is-visible'), 2800);
+    }
+
+    document.addEventListener('keydown', (e) => {
+      const key = e.key ? e.key.toLowerCase() : '';
+      if ((e.ctrlKey || e.metaKey) && key === 'p') {
+        e.preventDefault();
+        showToast('Printing is disabled for this content.');
+      }
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initContentProtection);
+  } else {
+    initContentProtection();
+  }
+</script>
