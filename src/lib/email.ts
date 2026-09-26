@@ -181,10 +181,9 @@ export async function sendWorkshopEnrollmentReceivedEmail(
     <h1 style="font-size:22px;margin:0 0 16px;">We received your workshop signup</h1>
     <p style="font-size:15px;line-height:1.6;">Hi ${escapeHtml(args.toName)},</p>
     <p style="font-size:15px;line-height:1.6;">
-      Thank you for signing up for <strong>${escapeHtml(args.workshopTitle)}</strong>. We've received your payment
-      submission and we'll confirm your seat within 24 hours. The workshop itself will run once enough people
-      have joined -- we'll email you the date, time, and Google Meet link the moment it's locked in.
-    </p>
+    Thank you for signing up for <strong>${escapeHtml(args.workshopTitle)}</strong>. We've received your screenshot
+    submission. Our team is reveiwing it at the moment. We'll confirm your seat, typically within a few hours. The workshop will be conducted within one week of your submission -- we'll email you the date, time, and Google Meet link the moment it's locked in. If you have any questions in the meantime, feel free to reach out to us at <a href="mailto:info@thepsychologysquare.com" style="color: #0066cc; text-decoration: underline;">info@thepsychologysquare.com</a>.
+</p>
     <p style="font-size:13px;color:#4B5760;margin-top:24px;">Reference: ${escapeHtml(args.reference)}</p>
   `);
   return sendEmail({
@@ -244,7 +243,7 @@ export async function sendWorkshopEnrollmentStatusEmail(
   const heading = isConfirmed ? 'Your seat is confirmed' : 'About your workshop payment';
   const body = isConfirmed
     ? `Your payment for <strong>${escapeHtml(args.workshopTitle)}</strong> has been confirmed and your seat is reserved. We'll email you the date, time, and Google Meet link once enough people have joined and the workshop is locked in.`
-    : `We couldn't confirm your payment for <strong>${escapeHtml(args.workshopTitle)}</strong> — usually this means the screenshot was unclear. Please resubmit with a clearer screenshot, or get in touch with us directly.`;
+    : `We couldn't confirm your payment for <strong>${escapeHtml(args.workshopTitle)}</strong> — usually this means the either the screenshot was not genuine, vauge, or unclear. Please resubmit with a clearer screenshot, or get in touch with us directly at <a href="mailto:info@thepsychologysquare.com" style="color: #0066cc; text-decoration: underline;">info@thepsychologysquare.com</a>`;
   const html = emailShell(`
     <h1 style="font-size:22px;margin:0 0 16px;">${heading}</h1>
     <p style="font-size:15px;line-height:1.6;">Hi ${escapeHtml(args.toName)},</p>
