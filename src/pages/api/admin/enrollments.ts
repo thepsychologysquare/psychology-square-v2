@@ -10,6 +10,7 @@ export const GET: APIRoute = async ({ request }) => {
 
   const { results } = await env.DB.prepare(
     `SELECT e.id, e.course_slug, e.course_title, e.name, e.email, e.enrolled_at, e.status, e.unenrolled_at,
+            e.amount_pkr, e.payment_method, e.payment_submitted_at, e.reviewed_at,
             (SELECT COUNT(*) FROM certificates c WHERE c.course_slug = e.course_slug AND c.email = e.email) as completed
      FROM enrollments e ORDER BY e.enrolled_at DESC LIMIT 1000`
   ).all();

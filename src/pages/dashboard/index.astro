@@ -214,6 +214,11 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
       <div id="tabEnrollments" class="tab-panel" hidden>
         <div class="dash-toolbar">
           <input type="text" id="enrollSearchBox" placeholder="Search by name, email, or course" />
+          <div class="dash-filters" id="enrollTypeFilters">
+            <button class="filter-btn is-active" data-type="all">All</button>
+            <button class="filter-btn" data-type="free">Free</button>
+            <button class="filter-btn" data-type="paid">Paid</button>
+          </div>
           <button id="enrollExportBtn" class="btn btn--ghost export-btn">Download as Excel (.csv)</button>
         </div>
         <div id="enrollBulkBar" class="bulk-bar" hidden>
@@ -230,6 +235,8 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
                 <th>Name</th>
                 <th>Email</th>
                 <th>Course</th>
+                <th>Type</th>
+                <th>Amount</th>
                 <th>Enrolled</th>
                 <th>Completed</th>
                 <th>Unenrolled</th>
@@ -301,7 +308,92 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
       </div>
 
       <div id="tabCertificates" class="tab-panel" hidden>
-        <div class="course-stats" id="courseStats"></div>
+        <div class="perf-section">
+          <h2 class="perf-heading">Course Performance</h2>
+          <div class="course-kpis" id="perfKpis"></div>
+
+          <div class="perf-toolbar">
+            <input type="text" id="perfSearchBox" placeholder="Search courses by name" />
+            <select id="perfCategoryFilter"><option value="all">All categories</option></select>
+            <div class="dash-filters" id="perfTypeFilters">
+              <button class="filter-btn is-active" data-type="all">All</button>
+              <button class="filter-btn" data-type="free">Free</button>
+              <button class="filter-btn" data-type="paid">Paid</button>
+            </div>
+          </div>
+
+          <div class="perf-hist-wrap">
+            <div class="perf-hist-head">
+              <h3>Pass Rate Distribution</h3>
+              <span class="perf-hist-hint"><i class="perf-dot perf-dot--free"></i>Free&nbsp;&nbsp;<i class="perf-dot perf-dot--paid"></i>Paid&nbsp;&nbsp;· bar height = number of courses</span>
+            </div>
+            <div id="perfHistogram" class="perf-histogram"></div>
+          </div>
+
+          <div class="perf-layout">
+            <div class="table-scroll perf-table-scroll" id="perfTableScroll">
+              <table class="perf-table" id="perfTable">
+                <thead>
+                  <tr>
+                    <th data-psort="course_title">Course</th>
+                    <th data-psort="category_label">Category</th>
+                    <th data-psort="type">Type</th>
+                    <th data-psort="enrolled_count">Enrolled</th>
+                    <th data-psort="started_quiz_count">Started quiz</th>
+                    <th data-psort="passed_count">Passed</th>
+                    <th data-psort="pass_rate">Pass rate</th>
+                    <th data-psort="avg_score_percent">Avg score</th>
+                    <th data-psort="certificate_count">Certificates</th>
+                    <th data-psort="dropped_count">Dropped</th>
+                    <th data-psort="revenue_pkr">Revenue</th>
+                    <th data-psort="avg_satisfaction">Satisfaction</th>
+                  </tr>
+                </thead>
+                <tbody id="perfBody"></tbody>
+              </table>
+            </div>
+
+            <div class="perf-leaderboard-wrap">
+              <div class="perf-leaderboard-head">
+                <div class="dash-filters" id="perfBoardType">
+                  <button class="filter-btn is-active" data-board="free">Top 50 Free</button>
+                  <button class="filter-btn" data-board="paid">Top 50 Paid</button>
+                </div>
+                <select id="perfBoardMetric">
+                  <option value="enrolled_count">By enrolled</option>
+                  <option value="pass_rate">By pass rate</option>
+                  <option value="certificate_count">By certificates</option>
+                  <option value="revenue_pkr">By revenue</option>
+                </select>
+              </div>
+              <div class="table-scroll perf-leaderboard-scroll" id="perfLeaderboardScroll">
+                <div id="perfLeaderboard" class="perf-leaderboard"></div>
+              </div>
+            </div>
+          </div>
+          <p id="perfEmptyMsg" class="dash-empty" hidden>No courses match.</p>
+
+          <div class="perf-trends-wrap">
+            <div class="perf-trends-head">
+              <h3>Trends Over Time</h3>
+              <div class="perf-trends-controls">
+                <select id="trendCourseFilter"><option value="all">All courses (combined)</option></select>
+                <div class="dash-filters" id="trendMetricFilters">
+                  <button class="filter-btn is-active" data-metric="enrollments">Enrollments</button>
+                  <button class="filter-btn" data-metric="certificates">Certificates</button>
+                  <button class="filter-btn" data-metric="revenue">Revenue</button>
+                </div>
+                <div class="dash-filters" id="trendGranFilters">
+                  <button class="filter-btn" data-gran="day">Day</button>
+                  <button class="filter-btn is-active" data-gran="month">Month</button>
+                  <button class="filter-btn" data-gran="year">Year</button>
+                </div>
+              </div>
+            </div>
+            <div id="trendChart" class="perf-trend-chart"></div>
+            <p id="trendEmptyMsg" class="dash-empty" hidden>No data yet for this selection.</p>
+          </div>
+        </div>
 
         <div class="dash-toolbar">
           <input type="text" id="certSearchBox" placeholder="Search by name, email, course, or certificate ID" />
@@ -322,6 +414,8 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
                 <th>Name</th>
                 <th>Email</th>
                 <th>Course</th>
+                <th>Type</th>
+                <th>Amount</th>
                 <th>Score</th>
                 <th>Hours</th>
                 <th>Issued</th>
@@ -433,11 +527,126 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
   .skeleton-row{ height:52px; border-radius:2px; background:linear-gradient(90deg, var(--paper-50) 25%, rgba(19,26,34,0.06) 37%, var(--paper-50) 63%); background-size:400% 100%; animation:shimmer 1.4s ease infinite; }
   @keyframes shimmer{ 0%{background-position:100% 0;} 100%{background-position:0 0;} }
 
-  .course-stats{ display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:14px; margin-bottom:24px; }
-  .course-stat-card{ border:1px solid var(--line); border-radius:2px; padding:16px 18px; background:var(--paper-50); }
-  .course-stat-card h3{ font-family:var(--font-display); font-size:15px; margin-bottom:10px; }
-  .course-stat-row{ display:flex; justify-content:space-between; font-size:13px; padding:3px 0; color:var(--ink-600); }
-  .course-stat-row strong{ color:var(--ink-900); }
+  /* ===== Course Performance (Certificates tab) ===== */
+  .perf-section{ margin-bottom:36px; padding-bottom:28px; border-bottom:1px solid var(--line); }
+  .perf-heading{ font-family:var(--font-display); font-size:19px; margin:0 0 14px; }
+
+  .course-kpis{ display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:12px; margin-bottom:18px; }
+  .course-kpi-card{ border:1px solid var(--line); border-radius:2px; padding:14px 16px; background:var(--paper-50); }
+  .course-kpi-card .kpi-value{ font-family:var(--font-display); font-size:24px; color:var(--ink-900); line-height:1.15; }
+  .course-kpi-card .kpi-label{ font-family:var(--font-mono); font-size:11px; letter-spacing:0.05em; text-transform:uppercase; color:var(--ink-600); margin-top:4px; display:block; }
+
+  .perf-toolbar{ display:flex; gap:12px; flex-wrap:wrap; align-items:center; margin-bottom:16px; }
+  #perfSearchBox{
+    flex:1; min-width:200px; font-family:var(--font-body); font-size:14.5px;
+    padding:10px 14px; border:1px solid var(--line); border-radius:2px; color:var(--ink-900); background:#fff;
+  }
+  #perfSearchBox:focus-visible{ outline:2px solid var(--gold-500); }
+  #perfCategoryFilter{
+    font-family:var(--font-body); font-size:13.5px; padding:9px 12px; border:1px solid var(--line);
+    border-radius:2px; background:#fff; color:var(--ink-900);
+  }
+
+  /* Histogram: fixed number of buckets no matter how many courses exist —
+     only bar HEIGHT changes as the catalog grows, so it stays readable at
+     any scale. A sqrt scale keeps smaller buckets visibly present even when
+     one bucket dominates, and the exact count is always printed above the
+     bar so nothing is lost to the visual compression. */
+  .perf-hist-wrap{ border:1px solid var(--line); border-radius:2px; padding:18px 20px 14px; background:var(--paper-50); margin-bottom:22px; }
+  .perf-hist-head{ display:flex; align-items:baseline; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:14px; }
+  .perf-hist-head h3{ font-family:var(--font-display); font-size:15.5px; margin:0; }
+  .perf-hist-hint{ font-size:11.5px; color:var(--ink-600); }
+  .perf-histogram{ display:flex; align-items:flex-end; gap:10px; height:260px; padding:0 4px; }
+  .perf-hist-col{ flex:1; min-width:0; display:flex; flex-direction:column; align-items:center; height:100%; }
+  .perf-hist-count{ font-family:var(--font-mono); font-size:11px; color:var(--ink-600); margin-bottom:4px; white-space:nowrap; }
+  .perf-hist-track{ flex:1; width:100%; display:flex; align-items:flex-end; }
+  .perf-hist-bar{ width:100%; min-height:0; display:flex; flex-direction:column-reverse; border-radius:2px 2px 0 0; overflow:hidden; }
+  .perf-hist-seg--free{ background:var(--navy-700, #1C314C); }
+  .perf-hist-seg--paid{ background:var(--gold-500); }
+  .perf-hist-label{ font-family:var(--font-mono); font-size:10px; color:var(--ink-600); margin-top:8px; text-align:center; white-space:nowrap; }
+
+  .perf-layout{ display:grid; grid-template-columns:minmax(0, 1.5fr) minmax(0, 1fr); gap:20px; align-items:start; }
+  @media (max-width:980px){ .perf-layout{ grid-template-columns:1fr; } }
+
+  .perf-table-scroll{ max-height:420px; }
+  .perf-table{ width:100%; border-collapse:collapse; font-size:13px; white-space:nowrap; }
+  .perf-table thead th{
+    position:sticky; top:0; background:var(--paper-0); text-align:left; font-family:var(--font-mono);
+    font-size:10.5px; letter-spacing:0.05em; text-transform:uppercase; color:var(--ink-600);
+    padding:10px 12px; border-bottom:1px solid var(--line); cursor:pointer; user-select:none; z-index:1;
+  }
+  .perf-table thead th:hover{ color:var(--ink-900); }
+  .perf-table thead th.sorted::after{ content:attr(data-dir); margin-left:4px; color:var(--gold-500); }
+  .perf-table td{ padding:10px 12px; border-bottom:1px solid var(--line); vertical-align:top; }
+  .perf-table tbody tr:hover{ background:rgba(199,164,74,0.05); }
+  .perf-table tbody tr.is-flash{ background:rgba(199,164,74,0.22); }
+  .perf-table td:first-child, .perf-table th:first-child{
+    position:sticky; left:0; background:var(--paper-0); z-index:2; box-shadow:1px 0 0 var(--line);
+  }
+  .perf-table tbody tr:hover td:first-child{ background:#F6F5ED; }
+  .perf-table tbody tr.is-flash td:first-child{ background:rgba(199,164,74,0.22); }
+
+  .type-badge{
+    font-family:var(--font-mono); font-size:10.5px; letter-spacing:0.05em; text-transform:uppercase;
+    padding:3px 8px; border-radius:20px; white-space:nowrap;
+  }
+  .type-badge--free{ background:rgba(19,26,34,0.07); color:var(--ink-600); }
+  .type-badge--paid{ background:rgba(199,164,74,0.15); color:#8a6d1f; }
+  .draft-badge{
+    font-family:var(--font-mono); font-size:10px; letter-spacing:0.05em; text-transform:uppercase;
+    color:var(--ink-600); border:1px solid var(--line); border-radius:2px; padding:1px 6px; margin-left:6px;
+  }
+  .perf-rate{ font-weight:600; }
+  .perf-rate--low{ color:#B4432E; }
+  .perf-rate--mid{ color:#8a6d1f; }
+  .perf-rate--high{ color:#3f5c47; }
+
+  .perf-dot{ display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:4px; vertical-align:middle; }
+  .perf-dot--free{ background:var(--navy-700, #1C314C); }
+  .perf-dot--paid{ background:var(--gold-500); }
+
+  /* Leaderboard: fixed row height per course, capped at 50 rows and scrolled
+     rather than compressed — so it's exactly as readable with 1000 courses
+     in the catalog as it is with 10. */
+  .perf-leaderboard-wrap{ border:1px solid var(--line); border-radius:2px; padding:14px 16px; background:var(--paper-50); }
+  .perf-leaderboard-head{ display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:12px; }
+  #perfBoardMetric{
+    font-family:var(--font-body); font-size:12.5px; padding:7px 10px; border:1px solid var(--line);
+    border-radius:2px; background:#fff; color:var(--ink-900);
+  }
+  .perf-leaderboard-scroll{ max-height:420px; border:none; cursor:default; }
+  .perf-leaderboard{ display:flex; flex-direction:column; }
+  .perf-lb-row{ display:flex; align-items:center; gap:10px; padding:6px 2px; border-bottom:1px solid rgba(19,26,34,0.06); cursor:pointer; }
+  .perf-lb-row:hover{ background:rgba(199,164,74,0.06); }
+  .perf-lb-row:hover .perf-lb-name{ color:var(--ink-900); }
+  .perf-lb-rank{ font-family:var(--font-mono); font-size:11px; color:var(--ink-600); width:20px; flex:none; text-align:right; }
+  .perf-lb-name{ font-size:12.5px; color:var(--ink-700, var(--ink-600)); width:34%; flex:none; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .perf-lb-bar-track{ flex:1; background:rgba(19,26,34,0.06); border-radius:2px; height:8px; overflow:hidden; }
+  .perf-lb-bar{ height:100%; border-radius:2px; }
+  .perf-lb-bar--free{ background:var(--navy-700, #1C314C); }
+  .perf-lb-bar--paid{ background:var(--gold-500); }
+  .perf-lb-value{ font-family:var(--font-mono); font-size:11.5px; color:var(--ink-600); width:64px; flex:none; text-align:right; }
+
+  /* Trends: a continuous time axis, so 2 weeks or 3 years of history draw
+     at the same width — only point density changes, never readability. */
+  .perf-trends-wrap{ border:1px solid var(--line); border-radius:2px; padding:16px 18px; background:var(--paper-50); margin-top:22px; }
+  .perf-trends-head{ display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:12px; }
+  .perf-trends-head h3{ font-family:var(--font-display); font-size:15.5px; margin:0; }
+  .perf-trends-controls{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+  #trendCourseFilter{
+    font-family:var(--font-body); font-size:12.5px; padding:7px 10px; border:1px solid var(--line);
+    border-radius:2px; background:#fff; color:var(--ink-900); max-width:220px;
+  }
+  .perf-trend-chart{ width:100%; }
+  .perf-trend-chart svg{ width:100%; height:auto; display:block; overflow:visible; }
+
+  .perf-tooltip{
+    position:fixed; z-index:60; pointer-events:none; background:var(--navy-950, #0B141F); color:#fff;
+    font-size:12.5px; line-height:1.5; padding:8px 11px; border-radius:2px; max-width:220px;
+    box-shadow:0 4px 14px rgba(11,20,31,0.3); opacity:0; transition:opacity .1s ease;
+  }
+  .perf-tooltip.is-visible{ opacity:1; }
+  .perf-tooltip strong{ display:block; margin-bottom:2px; }
 
   .table-scroll{
     overflow-x:auto; border:1px solid var(--line); border-radius:2px; max-height:640px; overflow-y:auto;
@@ -633,6 +842,12 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
     return String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   }
   function clinicianName(c) { return c === 'sohail' ? 'Muhammad Sohail' : c === 'sehar' ? 'Sehar Waheed' : 'No preference'; }
+  function formatPkr(n) { return 'Rs. ' + Math.round(n || 0).toLocaleString(); }
+  function formatPkrShort(n) {
+    if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+    if (n >= 1000) return Math.round(n / 1000) + 'k';
+    return String(Math.round(n));
+  }
   function formatDate(iso) {
     const d = new Date(iso);
     return d.toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
@@ -865,6 +1080,15 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
   const enrollEmptyMsg = document.getElementById('enrollEmptyMsg');
   const enrollSearchBox = document.getElementById('enrollSearchBox');
   const enrollExportBtn = document.getElementById('enrollExportBtn');
+  const enrollTypeFiltersEl = document.getElementById('enrollTypeFilters');
+  let enrollTypeFilter = 'all';
+  enrollTypeFiltersEl.addEventListener('click', (e) => {
+    const btn = e.target.closest('.filter-btn');
+    if (!btn) return;
+    enrollTypeFiltersEl.querySelectorAll('.filter-btn').forEach((b) => b.classList.toggle('is-active', b === btn));
+    enrollTypeFilter = btn.dataset.type;
+    renderEnrollments();
+  });
 
   async function loadEnrollments() {
     enrollLoadingMsg.hidden = false;
@@ -879,23 +1103,31 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
 
   function renderEnrollments() {
     const term = (enrollSearchBox.value || '').toLowerCase();
-    const items = allEnrollments.filter((e) =>
-      !term || e.name.toLowerCase().includes(term) || e.email.toLowerCase().includes(term) || e.course_title.toLowerCase().includes(term)
-    );
+    const items = allEnrollments.filter((e) => {
+      if (!(!term || e.name.toLowerCase().includes(term) || e.email.toLowerCase().includes(term) || e.course_title.toLowerCase().includes(term))) return false;
+      const type = e.amount_pkr != null ? 'paid' : 'free';
+      if (enrollTypeFilter !== 'all' && type !== enrollTypeFilter) return false;
+      return true;
+    });
     enrollEmptyMsg.hidden = items.length > 0;
     enrollTable.hidden = items.length === 0;
-    enrollBody.innerHTML = items.map((e) => `
+    enrollBody.innerHTML = items.map((e) => {
+      const isPaid = e.amount_pkr != null;
+      return `
       <tr${e.status === 'unenrolled' ? ' class="is-unenrolled"' : ''}>
         <td class="col-check"><input type="checkbox" class="enroll-row-check" data-selid="${e.id}" /></td>
         <td>${escapeHtml(e.name)}</td>
         <td>${escapeHtml(e.email)}</td>
         <td>${escapeHtml(e.course_title)}</td>
+        <td><span class="type-badge type-badge--${isPaid ? 'paid' : 'free'}">${isPaid ? 'Paid' : 'Free'}</span></td>
+        <td>${isPaid ? formatPkr(e.amount_pkr) : '—'}</td>
         <td>${formatDate(e.enrolled_at)}</td>
         <td>${e.completed > 0 ? '✓ Completed' : '—'}</td>
         <td>${e.unenrolled_at ? formatDate(e.unenrolled_at) : '—'}</td>
         <td class="col-actions"><button class="icon-btn delete" data-enrollid="${e.id}" title="Delete">🗑</button></td>
       </tr>
-    `).join('');
+    `;
+    }).join('');
     enrollBulk.sync();
   }
   enrollSearchBox.addEventListener('input', renderEnrollments);
@@ -927,8 +1159,8 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
   });
 
   enrollExportBtn.addEventListener('click', () => {
-    const header = ['Name', 'Email', 'Course', 'Enrolled At', 'Completed', 'Unenrolled At'];
-    const rows = allEnrollments.map((e) => [e.name, e.email, e.course_title, e.enrolled_at, e.completed > 0 ? 'Yes' : 'No', e.unenrolled_at || '']
+    const header = ['Name', 'Email', 'Course', 'Type', 'Amount (PKR)', 'Enrolled At', 'Completed', 'Unenrolled At'];
+    const rows = allEnrollments.map((e) => [e.name, e.email, e.course_title, e.amount_pkr != null ? 'Paid' : 'Free', e.amount_pkr ?? '', e.enrolled_at, e.completed > 0 ? 'Yes' : 'No', e.unenrolled_at || '']
       .map((v) => `"${String(v ?? '').replace(/"/g, '""')}"`).join(','));
     const csv = [header.join(','), ...rows].join('\r\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -1329,35 +1561,473 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
   const certEmptyMsg = document.getElementById('certEmptyMsg');
   const certSearchBox = document.getElementById('certSearchBox');
   const certExportBtn = document.getElementById('certExportBtn');
-  const courseStatsEl = document.getElementById('courseStats');
+
+  // ---- Course Performance (table + chart above the certificates list) ----
+  let allCourseStats = [];
+  const perfState = { search: '', category: 'all', type: 'all', sortKey: 'enrolled_count', sortDir: 'desc' };
+  const perfKpisEl = document.getElementById('perfKpis');
+  const perfSearchBox = document.getElementById('perfSearchBox');
+  const perfCategoryFilter = document.getElementById('perfCategoryFilter');
+  const perfTypeFilters = document.getElementById('perfTypeFilters');
+  const perfTable = document.getElementById('perfTable');
+  const perfBody = document.getElementById('perfBody');
+  const perfEmptyMsg = document.getElementById('perfEmptyMsg');
+  const perfHistogramEl = document.getElementById('perfHistogram');
+  const perfBoardTypeEl = document.getElementById('perfBoardType');
+  const perfBoardMetricEl = document.getElementById('perfBoardMetric');
+  const perfLeaderboardEl = document.getElementById('perfLeaderboard');
+  let perfBoardType = 'free';
+  let perfTooltipEl = null;
+
+  // ---- Trends (Enrollments/Certificates/Revenue over time) ----
+  const trendState = { metric: 'enrollments', granularity: 'month' };
+  const trendCourseFilter = document.getElementById('trendCourseFilter');
+  const trendMetricFilters = document.getElementById('trendMetricFilters');
+  const trendGranFilters = document.getElementById('trendGranFilters');
+  const trendChartEl = document.getElementById('trendChart');
+  const trendEmptyMsg = document.getElementById('trendEmptyMsg');
 
   async function loadCertificates() {
     certLoadingMsg.hidden = false;
     certTable.hidden = true;
-    const res = await fetch('/api/admin/certificates');
-    if (res.status === 401) { window.location.href = '/dashboard/login'; return; }
-    const data = await res.json();
+    // Enrollments are fetched alongside certificates (not just when the
+    // Enrollments tab is visited) because the Trends chart below needs raw
+    // enrolled_at/amount_pkr rows to plot time series, regardless of which
+    // tab the admin opened first.
+    const [certRes, enrollRes] = await Promise.all([
+      fetch('/api/admin/certificates'),
+      fetch('/api/admin/enrollments'),
+    ]);
+    if (certRes.status === 401 || enrollRes.status === 401) { window.location.href = '/dashboard/login'; return; }
+    const data = await certRes.json();
+    const enrollData = await enrollRes.json();
     allCertificates = data.certificates || [];
+    allCourseStats = data.courseStats || [];
+    allEnrollments = enrollData.enrollments || [];
     certLoadingMsg.hidden = true;
-    renderCourseStats(data.courseStats || []);
+    populatePerfCategoryFilter();
+    populateTrendCourseFilter();
+    renderCoursePerf();
     renderCertificates();
   }
 
-  function renderCourseStats(stats) {
-    if (stats.length === 0) { courseStatsEl.innerHTML = ''; return; }
-    courseStatsEl.innerHTML = stats.map((s) => {
-      const passRate = s.attempt_count > 0 ? Math.round((s.passed_attempt_count / s.attempt_count) * 100) : 0;
+  function populateTrendCourseFilter() {
+    const current = trendCourseFilter.value || 'all';
+    const options = [...allCourseStats]
+      .filter((s) => !s.draft)
+      .sort((a, b) => a.course_title.localeCompare(b.course_title))
+      .map((s) => `<option value="${escapeHtml(s.course_slug)}">${escapeHtml(s.course_title)}</option>`).join('');
+    trendCourseFilter.innerHTML = '<option value="all">All courses (combined)</option>' + options;
+    trendCourseFilter.value = [...trendCourseFilter.options].some((o) => o.value === current) ? current : 'all';
+  }
+
+  function populatePerfCategoryFilter() {
+    const cats = Array.from(new Set(allCourseStats.map((s) => s.category_label || s.category).filter(Boolean))).sort();
+    const current = perfCategoryFilter.value || 'all';
+    perfCategoryFilter.innerHTML = '<option value="all">All categories</option>' +
+      cats.map((c) => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+    perfCategoryFilter.value = cats.includes(current) ? current : 'all';
+    perfState.category = perfCategoryFilter.value;
+  }
+
+  function perfSortValue(s, key) {
+    if (key === 'type') return s.is_paid ? 'paid' : 'free';
+    if (key === 'pass_rate') return s.started_quiz_count > 0 ? s.passed_count / s.started_quiz_count : -1;
+    if (key === 'course_title' || key === 'category_label') return (s[key] || '').toLowerCase();
+    return s[key] ?? 0;
+  }
+
+  // Base filters (draft excluded, category + search) shared by the table,
+  // histogram, and leaderboard. Type ("Free"/"Paid") is layered on top
+  // differently by each: the table/histogram use the main toolbar's Type
+  // filter, while the leaderboard has its own independent Free/Paid toggle.
+  function getBaseFilteredCourses() {
+    const term = (perfSearchBox.value || '').toLowerCase().trim();
+    return allCourseStats.filter((s) => {
+      if (s.draft) return false;
+      if (perfState.category !== 'all' && (s.category_label || s.category) !== perfState.category) return false;
+      if (term && !s.course_title.toLowerCase().includes(term)) return false;
+      return true;
+    });
+  }
+
+  function getFilteredCourses() {
+    return getBaseFilteredCourses().filter((s) => {
+      if (perfState.type === 'all') return true;
+      return (s.is_paid ? 'paid' : 'free') === perfState.type;
+    });
+  }
+
+  function sortCourseRows(rows) {
+    const key = perfState.sortKey;
+    const dir = perfState.sortDir === 'asc' ? 1 : -1;
+    return [...rows].sort((a, b) => {
+      const av = perfSortValue(a, key);
+      const bv = perfSortValue(b, key);
+      if (typeof av === 'string') return av.localeCompare(bv) * dir;
+      return ((av ?? -Infinity) - (bv ?? -Infinity)) * dir;
+    });
+  }
+
+  function kpiCard(label, value) {
+    return `<div class="course-kpi-card"><div class="kpi-value">${value}</div><span class="kpi-label">${escapeHtml(label)}</span></div>`;
+  }
+
+  function renderPerfKpis(rows) {
+    const totalEnrolled = rows.reduce((sum, s) => sum + s.enrolled_count, 0);
+    const totalStarted = rows.reduce((sum, s) => sum + s.started_quiz_count, 0);
+    const totalPassed = rows.reduce((sum, s) => sum + s.passed_count, 0);
+    const overallPassRate = totalStarted > 0 ? Math.round((totalPassed / totalStarted) * 100) : null;
+    const totalCerts = rows.reduce((sum, s) => sum + s.certificate_count, 0);
+    const totalRevenue = rows.reduce((sum, s) => sum + (s.revenue_pkr || 0), 0);
+    perfKpisEl.innerHTML = [
+      kpiCard('Courses', rows.length),
+      kpiCard('Enrolled', totalEnrolled),
+      kpiCard('Pass rate', overallPassRate == null ? '—' : overallPassRate + '%'),
+      kpiCard('Certificates', totalCerts),
+      kpiCard('Revenue', formatPkr(totalRevenue)),
+    ].join('');
+  }
+
+  function perfRowHtml(s) {
+    const type = s.is_paid ? 'paid' : 'free';
+    const passRate = s.started_quiz_count > 0 ? Math.round((s.passed_count / s.started_quiz_count) * 100) : null;
+    const rateClass = passRate == null ? '' : passRate >= 80 ? 'perf-rate--high' : passRate >= 50 ? 'perf-rate--mid' : 'perf-rate--low';
+    return `
+      <tr data-course-slug="${escapeHtml(s.course_slug)}">
+        <td>${escapeHtml(s.course_title)}${s.draft ? '<span class="draft-badge">Draft</span>' : ''}</td>
+        <td>${escapeHtml(s.category_label || s.category || '—')}</td>
+        <td><span class="type-badge type-badge--${type}">${type === 'paid' ? 'Paid' : 'Free'}</span></td>
+        <td>${s.enrolled_count}</td>
+        <td>${s.started_quiz_count}</td>
+        <td>${s.passed_count}</td>
+        <td>${passRate == null ? '—' : `<span class="perf-rate ${rateClass}">${passRate}%</span>`}</td>
+        <td>${s.avg_score_percent != null ? s.avg_score_percent + '%' : '—'}</td>
+        <td>${s.certificate_count}</td>
+        <td>${s.dropped_count}</td>
+        <td>${s.is_paid ? formatPkr(s.revenue_pkr) : '—'}</td>
+        <td>${s.avg_satisfaction != null ? `${s.avg_satisfaction} / 5 <span style="color:var(--ink-600);">(${s.feedback_count})</span>` : '—'}</td>
+      </tr>`;
+  }
+
+  function getPerfTooltip() {
+    if (!perfTooltipEl) {
+      perfTooltipEl = document.createElement('div');
+      perfTooltipEl.className = 'perf-tooltip';
+      document.body.appendChild(perfTooltipEl);
+    }
+    return perfTooltipEl;
+  }
+  function movePerfTooltip(e) {
+    const el = getPerfTooltip();
+    el.style.left = (e.clientX + 14) + 'px';
+    el.style.top = (e.clientY + 14) + 'px';
+  }
+  function showPerfTooltip(e, r) {
+    const rate = r.started_quiz_count > 0 ? Math.round((r.passed_count / r.started_quiz_count) * 100) : null;
+    const el = getPerfTooltip();
+    el.innerHTML = `<strong>${escapeHtml(r.course_title)}</strong>${r.enrolled_count} enrolled · ${rate == null ? '—' : rate + '%'} pass rate<br>${r.certificate_count} certificate(s)${r.is_paid ? ' · ' + formatPkr(r.revenue_pkr) : ''}`;
+    el.classList.add('is-visible');
+    movePerfTooltip(e);
+  }
+  function hidePerfTooltip() { if (perfTooltipEl) perfTooltipEl.classList.remove('is-visible'); }
+
+  function highlightPerfRow(slug) {
+    const row = perfBody.querySelector(`tr[data-course-slug="${CSS.escape(slug)}"]`);
+    if (!row) return;
+    row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    row.classList.add('is-flash');
+    setTimeout(() => row.classList.remove('is-flash'), 1200);
+  }
+
+  // ---- Histogram: fixed 11 buckets (no data + ten 10%-wide pass-rate
+  // bands) no matter how many courses exist — only bar height changes as
+  // the catalog grows. Height uses a sqrt scale so one dominant bucket
+  // can't visually erase the smaller ones, and the exact count is always
+  // printed above the bar regardless of how the height is compressed. ----
+  function renderPerfHistogram(rows) {
+    const buckets = [{ label: 'No attempts', free: 0, paid: 0 }];
+    for (let i = 0; i < 10; i++) {
+      buckets.push({ label: i === 9 ? '90–100%' : `${i * 10}–${i * 10 + 9}%`, free: 0, paid: 0 });
+    }
+    rows.forEach((s) => {
+      const key = s.is_paid ? 'paid' : 'free';
+      if (s.started_quiz_count === 0) { buckets[0][key]++; return; }
+      const rate = Math.round((s.passed_count / s.started_quiz_count) * 100);
+      const idx = Math.min(9, Math.floor(rate / 10));
+      buckets[idx + 1][key]++;
+    });
+    const maxCount = Math.max(1, ...buckets.map((b) => b.free + b.paid));
+    perfHistogramEl.innerHTML = buckets.map((b) => {
+      const total = b.free + b.paid;
+      const heightPct = total > 0 ? Math.max(3, Math.round((Math.sqrt(total) / Math.sqrt(maxCount)) * 100)) : 0;
+      const freeShare = total > 0 ? (b.free / total) * 100 : 0;
+      const paidShare = total > 0 ? (b.paid / total) * 100 : 0;
       return `
-        <div class="course-stat-card">
-          <h3>${escapeHtml(s.course_title)}</h3>
-          <div class="course-stat-row"><span>Enrolled</span><strong>${s.enrolled_count}</strong></div>
-          <div class="course-stat-row"><span>Quiz attempts</span><strong>${s.attempt_count}</strong></div>
-          <div class="course-stat-row"><span>Pass rate</span><strong>${passRate}%</strong></div>
-          <div class="course-stat-row"><span>Avg score</span><strong>${s.avg_score_percent ?? '—'}${s.avg_score_percent != null ? '%' : ''}</strong></div>
-          <div class="course-stat-row"><span>Certificates issued</span><strong>${s.certificate_count}</strong></div>
+        <div class="perf-hist-col">
+          <div class="perf-hist-count">${total || ''}</div>
+          <div class="perf-hist-track">
+            <div class="perf-hist-bar" style="height:${heightPct}%">
+              ${b.paid > 0 ? `<div class="perf-hist-seg--paid" style="height:${paidShare}%"></div>` : ''}
+              ${b.free > 0 ? `<div class="perf-hist-seg--free" style="height:${freeShare}%"></div>` : ''}
+            </div>
+          </div>
+          <div class="perf-hist-label">${b.label}</div>
         </div>`;
     }).join('');
   }
+
+  // ---- Leaderboard: always capped at 50 rows and scrolled, so it never
+  // gets more cramped no matter how many courses exist. ----
+  function getLeaderboardRows() {
+    const base = getBaseFilteredCourses().filter((s) => (s.is_paid ? 'paid' : 'free') === perfBoardType);
+    const metric = perfBoardMetricEl.value;
+    const ranked = metric === 'pass_rate' ? base.filter((s) => s.started_quiz_count > 0) : base;
+    const valueOf = (s) => metric === 'pass_rate' ? (s.passed_count / s.started_quiz_count) * 100 : (s[metric] || 0);
+    return [...ranked].sort((a, b) => valueOf(b) - valueOf(a)).slice(0, 50).map((s) => ({ course: s, value: valueOf(s) }));
+  }
+
+  function formatBoardValue(metric, value) {
+    if (metric === 'pass_rate') return Math.round(value) + '%';
+    if (metric === 'revenue_pkr') return formatPkr(value);
+    return Math.round(value).toLocaleString();
+  }
+
+  function renderPerfLeaderboard() {
+    const metric = perfBoardMetricEl.value;
+    const entries = getLeaderboardRows();
+    if (entries.length === 0) {
+      perfLeaderboardEl.innerHTML = `<p class="dash-empty" style="padding:20px 0;">No ${perfBoardType} courses match.</p>`;
+      return;
+    }
+    const maxValue = Math.max(1, ...entries.map((e) => e.value));
+    perfLeaderboardEl.innerHTML = entries.map((e, i) => {
+      const s = e.course;
+      const widthPct = Math.max(2, Math.round((e.value / maxValue) * 100));
+      return `
+        <div class="perf-lb-row" data-course-slug="${escapeHtml(s.course_slug)}">
+          <div class="perf-lb-rank">${i + 1}</div>
+          <div class="perf-lb-name" title="${escapeHtml(s.course_title)}">${escapeHtml(s.course_title)}</div>
+          <div class="perf-lb-bar-track"><div class="perf-lb-bar perf-lb-bar--${perfBoardType}" style="width:${widthPct}%"></div></div>
+          <div class="perf-lb-value">${formatBoardValue(metric, e.value)}</div>
+        </div>`;
+    }).join('');
+    perfLeaderboardEl.querySelectorAll('.perf-lb-row').forEach((row) => {
+      row.addEventListener('mouseenter', (e) => {
+        const s = allCourseStats.find((c) => c.course_slug === row.dataset.courseSlug);
+        if (s) showPerfTooltip(e, s);
+      });
+      row.addEventListener('mousemove', movePerfTooltip);
+      row.addEventListener('mouseleave', hidePerfTooltip);
+      row.addEventListener('click', () => highlightPerfRow(row.dataset.courseSlug));
+    });
+  }
+
+  function updateBoardMetricOptions() {
+    const revenueOpt = perfBoardMetricEl.querySelector('option[value="revenue_pkr"]');
+    if (perfBoardType === 'free') {
+      if (revenueOpt) revenueOpt.disabled = true;
+      if (perfBoardMetricEl.value === 'revenue_pkr') perfBoardMetricEl.value = 'enrolled_count';
+    } else if (revenueOpt) {
+      revenueOpt.disabled = false;
+    }
+  }
+
+  // ---- Trends: continuous time axis (equal spacing per bucket, gaps
+  // filled with zero) so the line stays accurate and readable whether it
+  // spans two weeks or several years — only point density changes. ----
+  function trendBucketKey(dateStr, gran) {
+    const d = (dateStr || '').slice(0, 10);
+    if (gran === 'day') return d;
+    if (gran === 'year') return d.slice(0, 4);
+    return d.slice(0, 7);
+  }
+  function trendBucketLabel(key, gran) {
+    if (gran === 'year') return key;
+    if (gran === 'month') {
+      const [y, m] = key.split('-');
+      const names = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      return `${names[Number(m) - 1]} ${y}`;
+    }
+    const dt = new Date(key + 'T00:00:00Z');
+    return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit', timeZone: 'UTC' });
+  }
+  function nextTrendKey(key, gran) {
+    if (gran === 'year') return String(Number(key) + 1);
+    if (gran === 'month') {
+      const [y, m] = key.split('-').map(Number);
+      const d = new Date(Date.UTC(y, m - 1 + 1, 1));
+      return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
+    }
+    const d = new Date(key + 'T00:00:00Z');
+    d.setUTCDate(d.getUTCDate() + 1);
+    return d.toISOString().slice(0, 10);
+  }
+
+  function getTrendScopeSlugs() {
+    const inScope = new Set(getFilteredCourses().map((s) => s.course_slug));
+    const picked = trendCourseFilter.value;
+    return picked !== 'all' ? new Set([picked]) : inScope;
+  }
+
+  function buildTrendSeries() {
+    const scope = getTrendScopeSlugs();
+    const gran = trendState.granularity;
+    const buckets = new Map();
+    if (trendState.metric === 'enrollments') {
+      allEnrollments.forEach((e) => {
+        if (!scope.has(e.course_slug) || !e.enrolled_at) return;
+        const key = trendBucketKey(e.enrolled_at, gran);
+        buckets.set(key, (buckets.get(key) || 0) + 1);
+      });
+    } else if (trendState.metric === 'certificates') {
+      allCertificates.forEach((c) => {
+        if (!scope.has(c.course_slug) || !c.issued_at) return;
+        const key = trendBucketKey(c.issued_at, gran);
+        buckets.set(key, (buckets.get(key) || 0) + 1);
+      });
+    } else {
+      allEnrollments.forEach((e) => {
+        if (!scope.has(e.course_slug) || e.amount_pkr == null || e.status !== 'active') return;
+        const dateSrc = e.reviewed_at || e.enrolled_at;
+        if (!dateSrc) return;
+        const key = trendBucketKey(dateSrc, gran);
+        buckets.set(key, (buckets.get(key) || 0) + e.amount_pkr);
+      });
+    }
+    const keys = [...buckets.keys()].sort();
+    if (keys.length === 0) return [];
+    const filled = [];
+    let cursor = keys[0];
+    const end = keys[keys.length - 1];
+    let guard = 0;
+    while (cursor <= end && guard < 20000) {
+      filled.push({ key: cursor, label: trendBucketLabel(cursor, gran), value: buckets.get(cursor) || 0 });
+      cursor = nextTrendKey(cursor, gran);
+      guard++;
+    }
+    return filled;
+  }
+
+  function renderTrendChart() {
+    const points = buildTrendSeries();
+    trendEmptyMsg.hidden = points.length > 0;
+    if (points.length === 0) { trendChartEl.innerHTML = ''; return; }
+
+    const W = 900, H = 260, ML = 52, MR = 16, MT = 16, MB = 34;
+    const PW = W - ML - MR, PH = H - MT - MB;
+    const maxVal = Math.max(1, ...points.map((p) => p.value));
+    const n = points.length;
+    const xPos = (i) => (n === 1 ? ML + PW / 2 : ML + (i / (n - 1)) * PW);
+    const yPos = (v) => MT + (1 - v / maxVal) * PH;
+    const color = trendState.metric === 'revenue' ? '#C7A44A' : trendState.metric === 'certificates' ? '#3f5c47' : '#1C314C';
+
+    let svg = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Trend over time">`;
+    const yTickCount = 4;
+    for (let t = 0; t <= yTickCount; t++) {
+      const val = (maxVal / yTickCount) * t;
+      const y = yPos(val);
+      svg += `<line x1="${ML}" y1="${y.toFixed(1)}" x2="${W - MR}" y2="${y.toFixed(1)}" stroke="rgba(19,26,34,0.08)" stroke-width="1" />`;
+      const label = trendState.metric === 'revenue' ? formatPkrShort(val) : Math.round(val);
+      svg += `<text x="${ML - 8}" y="${(y + 3).toFixed(1)}" text-anchor="end" font-size="9.5" fill="#5d6b78" font-family="var(--font-mono)">${label}</text>`;
+    }
+    const labelCount = Math.min(6, n);
+    for (let i = 0; i < labelCount; i++) {
+      const idx = Math.round((i / Math.max(1, labelCount - 1)) * (n - 1));
+      const x = xPos(idx);
+      svg += `<text x="${x.toFixed(1)}" y="${H - MB + 16}" text-anchor="middle" font-size="9.5" fill="#5d6b78" font-family="var(--font-mono)">${escapeHtml(points[idx].label)}</text>`;
+    }
+    const pathD = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${xPos(i).toFixed(1)} ${yPos(p.value).toFixed(1)}`).join(' ');
+    const areaD = `${pathD} L ${xPos(n - 1).toFixed(1)} ${(MT + PH).toFixed(1)} L ${xPos(0).toFixed(1)} ${(MT + PH).toFixed(1)} Z`;
+    svg += `<path d="${areaD}" fill="${color}" fill-opacity="0.08" stroke="none" />`;
+    svg += `<path d="${pathD}" fill="none" stroke="${color}" stroke-width="2" />`;
+    svg += `<circle id="trendHoverDot" cx="-10" cy="-10" r="4" fill="${color}" stroke="#fff" stroke-width="1.5" style="display:none" />`;
+    svg += `<rect x="${ML}" y="${MT}" width="${PW}" height="${PH}" fill="transparent" id="trendHoverRect" style="cursor:crosshair" />`;
+    svg += `</svg>`;
+    trendChartEl.innerHTML = svg;
+
+    const svgEl = trendChartEl.querySelector('svg');
+    const hoverRect = trendChartEl.querySelector('#trendHoverRect');
+    const hoverDot = trendChartEl.querySelector('#trendHoverDot');
+    hoverRect.addEventListener('mousemove', (e) => {
+      const rect = svgEl.getBoundingClientRect();
+      const localX = (e.clientX - rect.left) * (W / rect.width);
+      const idx = Math.max(0, Math.min(n - 1, Math.round(((localX - ML) / PW) * (n - 1))));
+      const p = points[idx];
+      hoverDot.setAttribute('cx', xPos(idx).toFixed(1));
+      hoverDot.setAttribute('cy', yPos(p.value).toFixed(1));
+      hoverDot.style.display = '';
+      const el = getPerfTooltip();
+      const valueLabel = trendState.metric === 'revenue' ? formatPkr(p.value) : `${p.value} ${trendState.metric === 'certificates' ? 'certificate(s)' : 'enrollment(s)'}`;
+      el.innerHTML = `<strong>${escapeHtml(p.label)}</strong>${valueLabel}`;
+      el.classList.add('is-visible');
+      movePerfTooltip(e);
+    });
+    hoverRect.addEventListener('mouseleave', () => { hoverDot.style.display = 'none'; hidePerfTooltip(); });
+  }
+
+  trendCourseFilter.addEventListener('change', renderTrendChart);
+  trendMetricFilters.addEventListener('click', (e) => {
+    const btn = e.target.closest('.filter-btn');
+    if (!btn) return;
+    trendMetricFilters.querySelectorAll('.filter-btn').forEach((b) => b.classList.toggle('is-active', b === btn));
+    trendState.metric = btn.dataset.metric;
+    renderTrendChart();
+  });
+  trendGranFilters.addEventListener('click', (e) => {
+    const btn = e.target.closest('.filter-btn');
+    if (!btn) return;
+    trendGranFilters.querySelectorAll('.filter-btn').forEach((b) => b.classList.toggle('is-active', b === btn));
+    trendState.granularity = btn.dataset.gran;
+    renderTrendChart();
+  });
+
+  function renderCoursePerf() {
+    const filtered = sortCourseRows(getFilteredCourses());
+    perfEmptyMsg.hidden = filtered.length > 0;
+    perfBody.innerHTML = filtered.map(perfRowHtml).join('');
+    renderPerfKpis(filtered);
+    renderPerfHistogram(filtered);
+    renderPerfLeaderboard();
+    renderTrendChart();
+    if (typeof scheduleTableUXRefresh === 'function') scheduleTableUXRefresh();
+  }
+
+  perfBoardTypeEl.addEventListener('click', (e) => {
+    const btn = e.target.closest('.filter-btn');
+    if (!btn) return;
+    perfBoardTypeEl.querySelectorAll('.filter-btn').forEach((b) => b.classList.toggle('is-active', b === btn));
+    perfBoardType = btn.dataset.board;
+    updateBoardMetricOptions();
+    renderPerfLeaderboard();
+  });
+  perfBoardMetricEl.addEventListener('change', renderPerfLeaderboard);
+  updateBoardMetricOptions();
+
+  perfSearchBox.addEventListener('input', renderCoursePerf);
+  perfCategoryFilter.addEventListener('change', () => { perfState.category = perfCategoryFilter.value; renderCoursePerf(); });
+  perfTypeFilters.addEventListener('click', (e) => {
+    const btn = e.target.closest('.filter-btn');
+    if (!btn) return;
+    perfTypeFilters.querySelectorAll('.filter-btn').forEach((b) => b.classList.toggle('is-active', b === btn));
+    perfState.type = btn.dataset.type;
+    renderCoursePerf();
+  });
+  perfTable.querySelector('thead').addEventListener('click', (e) => {
+    const th = e.target.closest('th[data-psort]');
+    if (!th) return;
+    const key = th.dataset.psort;
+    if (perfState.sortKey === key) {
+      perfState.sortDir = perfState.sortDir === 'asc' ? 'desc' : 'asc';
+    } else {
+      perfState.sortKey = key;
+      perfState.sortDir = (key === 'course_title' || key === 'category_label' || key === 'type') ? 'asc' : 'desc';
+    }
+    perfTable.querySelectorAll('th[data-psort]').forEach((h) => { h.classList.remove('sorted'); h.removeAttribute('data-dir'); });
+    th.classList.add('sorted');
+    th.setAttribute('data-dir', perfState.sortDir === 'asc' ? '▲' : '▼');
+    renderCoursePerf();
+  });
 
   function renderCertificates() {
     const term = (certSearchBox.value || '').toLowerCase();
@@ -1367,20 +2037,25 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
     );
     certEmptyMsg.hidden = items.length > 0;
     certTable.hidden = items.length === 0;
-    certBody.innerHTML = items.map((c) => `
+    certBody.innerHTML = items.map((c) => {
+      const isPaid = c.amount_pkr != null;
+      return `
       <tr>
         <td class="col-check"><input type="checkbox" class="cert-row-check" data-selid="${escapeHtml(c.id)}" /></td>
         <td><code>${escapeHtml(c.id)}</code></td>
         <td>${escapeHtml(c.name)}</td>
         <td>${escapeHtml(c.email)}</td>
         <td>${escapeHtml(c.course_title)}</td>
+        <td><span class="type-badge type-badge--${isPaid ? 'paid' : 'free'}">${isPaid ? 'Paid' : 'Free'}</span></td>
+        <td>${isPaid ? formatPkr(c.amount_pkr) : '—'}</td>
         <td>${c.score_percent}%</td>
         <td>${c.ce_hours}</td>
         <td>${formatDate(c.issued_at)}</td>
         <td><a href="/certificates/${encodeURIComponent(c.id)}" target="_blank" rel="noopener">View →</a></td>
         <td class="col-actions"><button class="icon-btn delete" data-certdelete="${escapeHtml(c.id)}" title="Delete">🗑</button></td>
       </tr>
-    `).join('');
+    `;
+    }).join('');
     certBulk.sync();
   }
   certSearchBox.addEventListener('input', renderCertificates);
@@ -1412,8 +2087,8 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
   });
 
   certExportBtn.addEventListener('click', () => {
-    const header = ['Certificate ID', 'Name', 'Email', 'Course', 'Score %', 'Hours', 'Issued At'];
-    const rows = allCertificates.map((c) => [c.id, c.name, c.email, c.course_title, c.score_percent, c.ce_hours, c.issued_at]
+    const header = ['Certificate ID', 'Name', 'Email', 'Course', 'Type', 'Amount (PKR)', 'Score %', 'Hours', 'Issued At'];
+    const rows = allCertificates.map((c) => [c.id, c.name, c.email, c.course_title, c.amount_pkr != null ? 'Paid' : 'Free', c.amount_pkr ?? '', c.score_percent, c.ce_hours, c.issued_at]
       .map((v) => `"${String(v ?? '').replace(/"/g, '""')}"`).join(','));
     const csv = [header.join(','), ...rows].join('\r\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
