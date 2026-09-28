@@ -106,6 +106,19 @@ function emailShell(bodyHtml: string): string {
   </div>`;
 }
 
+// Shared by the admin "new payment" notification emails: a gold "Review &
+// approve" button (opens the review page -- see src/lib/paymentReview.ts) and
+// a plain link to the payment screenshot. Both are signed links that work
+// without a dashboard login. If the links couldn't be built (no signing
+// secret configured), this returns '' and the email looks exactly as before.
+function reviewActionsHtml(reviewUrl?: string, screenshotUrl?: string): string {
+  if (!reviewUrl && !screenshotUrl) return '';
+  return `
+    ${reviewUrl ? `<p style="margin:24px 0 12px;"><a href="${escapeHtml(reviewUrl)}" style="background:#C7A44A;color:#131A22;text-decoration:none;padding:12px 24px;border-radius:2px;font-weight:600;display:inline-block;">Review &amp; approve payment</a></p>` : ''}
+    ${screenshotUrl ? `<p style="font-size:14px;line-height:1.6;margin:0 0 12px;"><a href="${escapeHtml(screenshotUrl)}" style="color:#0066cc;text-decoration:underline;">View payment screenshot</a></p>` : ''}
+    <p style="font-size:13px;line-height:1.5;color:#4B5760;">You can also approve from the dashboard. Whichever you do first counts, and the other will show it as already approved.</p>`;
+}
+
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // ---------- Paid courses: payment proof -> admin review -> unlock ----------
@@ -142,7 +155,7 @@ export async function sendCoursePaymentReceivedEmail(
 
 export async function sendNewCoursePaymentAdminEmail(
   env: { BREVO_API_KEY?: string; BREVO_EMAIL_FROM?: string; BREVO_ADMIN_EMAIL?: string },
-  args: { learnerName: string; learnerEmail: string; courseTitle: string; amountPkr: number; paymentMethod: string }
+  args: { learnerName: string; learnerEmail: string; courseTitle: string; amountPkr: number; paymentMethod: string; reviewUrl?: string; screenshotUrl?: string }
 ): Promise<{ ok: boolean; error?: string }> {
   if (!env.BREVO_API_KEY || !env.BREVO_EMAIL_FROM) {
     console.error('[email-brevo] sendNewCoursePaymentAdminEmail: missing BREVO_API_KEY or BREVO_EMAIL_FROM');
@@ -156,7 +169,7 @@ export async function sendNewCoursePaymentAdminEmail(
       <li><strong>Course:</strong> ${escapeHtml(args.courseTitle)}</li>
       <li><strong>Learner:</strong> ${escapeHtml(args.learnerName)} (${escapeHtml(args.learnerEmail)})</li>
       <li><strong>Amount:</strong> PKR ${args.amountPkr} via ${escapeHtml(args.paymentMethod)}</li>
-    </ul>
+    </ul>${reviewActionsHtml(args.reviewUrl, args.screenshotUrl)}
     <p style="font-size:13px;color:#4B5760;">Review it in the "Course Enrollment Requests" tab on the dashboard.</p>
   `);
   return sendEmail({

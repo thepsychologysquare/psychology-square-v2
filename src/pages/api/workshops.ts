@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
 import { getWorkshopBySlug, countActiveEnrollments } from '../../lib/workshops';
 import { sendNewWorkshopEnrollmentAdminEmail, sendWorkshopEnrollmentReceivedEmail } from '../../lib/email';
+import { makeReviewLinks } from '../../lib/paymentReview';
 
 export const prerender = false;
 
@@ -139,9 +140,11 @@ export const POST: APIRoute = async ({ request }) => {
     toEmail: email, toName: name, workshopTitle: workshop.title, reference,
   }).catch(() => {});
 
+  const links = await makeReviewLinks(new URL(request.url).origin, env.ADMIN_SESSION_SECRET, 'workshop', reference).catch(() => null);
   await sendNewWorkshopEnrollmentAdminEmail(env, {
     reference, name, email, phone, workshopTitle: workshop.title,
     amountPkr: workshop.price_pkr, paymentMethod, notes: notes || undefined,
+    reviewUrl: links?.reviewUrl, screenshotUrl: links?.screenshotUrl,
   }).catch(() => {});
 
   return new Response(JSON.stringify({ reference }), {

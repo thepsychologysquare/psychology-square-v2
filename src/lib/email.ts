@@ -69,6 +69,19 @@ function emailShell(bodyHtml: string): string {
   </div>`;
 }
 
+// Shared by the admin "new payment" notification emails: a gold "Review &
+// approve" button (opens the review page -- see src/lib/paymentReview.ts) and
+// a plain link to the payment screenshot. Both are signed links that work
+// without a dashboard login. If the links couldn't be built (no signing
+// secret configured), this returns '' and the email looks exactly as before.
+function reviewActionsHtml(reviewUrl?: string, screenshotUrl?: string): string {
+  if (!reviewUrl && !screenshotUrl) return '';
+  return `
+    ${reviewUrl ? `<p style="margin:24px 0 12px;"><a href="${escapeHtml(reviewUrl)}" style="background:#C7A44A;color:#131A22;text-decoration:none;padding:12px 24px;border-radius:2px;font-weight:600;display:inline-block;">Review &amp; approve payment</a></p>` : ''}
+    ${screenshotUrl ? `<p style="font-size:14px;line-height:1.6;margin:0 0 12px;"><a href="${escapeHtml(screenshotUrl)}" style="color:#0066cc;text-decoration:underline;">View payment screenshot</a></p>` : ''}
+    <p style="font-size:13px;line-height:1.5;color:#4B5760;">You can also approve from the dashboard. Whichever you do first counts, and the other will show it as already approved.</p>`;
+}
+
 const CLINICIAN_NAMES: Record<string, string> = { sohail: 'Muhammad Sohail', sehar: 'Sehar Waheed' };
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -127,6 +140,8 @@ export async function sendNewBookingAdminEmail(
     amountPkr: number;
     paymentMethod: string;
     notes?: string;
+    reviewUrl?: string;
+    screenshotUrl?: string;
   }
 ): Promise<{ ok: boolean; error?: string }> {
   if (!env.RESEND_API_KEY || !env.EMAIL_FROM) {
@@ -148,7 +163,7 @@ export async function sendNewBookingAdminEmail(
       <li><strong>Time:</strong> ${escapeHtml(args.preferredTime)}</li>
       <li><strong>Amount:</strong> PKR ${args.amountPkr} via ${escapeHtml(args.paymentMethod)}</li>
       ${args.notes ? `<li><strong>Notes:</strong> ${escapeHtml(args.notes)}</li>` : ''}
-    </ul>
+    </ul>${reviewActionsHtml(args.reviewUrl, args.screenshotUrl)}
   `);
 
   return sendEmail({
@@ -200,6 +215,7 @@ export async function sendNewWorkshopEnrollmentAdminEmail(
   args: {
     reference: string; name: string; email: string; phone: string; workshopTitle: string;
     amountPkr: number; paymentMethod: string; notes?: string;
+    reviewUrl?: string; screenshotUrl?: string;
   }
 ): Promise<{ ok: boolean; error?: string }> {
   if (!env.RESEND_API_KEY || !env.EMAIL_FROM) {
@@ -217,7 +233,7 @@ export async function sendNewWorkshopEnrollmentAdminEmail(
       <li><strong>Phone:</strong> ${escapeHtml(args.phone)}</li>
       <li><strong>Amount:</strong> PKR ${args.amountPkr} via ${escapeHtml(args.paymentMethod)}</li>
       ${args.notes ? `<li><strong>Notes:</strong> ${escapeHtml(args.notes)}</li>` : ''}
-    </ul>
+    </ul>${reviewActionsHtml(args.reviewUrl, args.screenshotUrl)}
     <p style="font-size:13px;color:#4B5760;">Review it from the workshop's page in the dashboard.</p>
   `);
   return sendEmail({
@@ -242,7 +258,7 @@ export async function sendWorkshopEnrollmentStatusEmail(
   const isConfirmed = args.status === 'active';
   const heading = isConfirmed ? 'Your seat is confirmed' : 'About your workshop payment';
   const body = isConfirmed
-    ? `Your payment for <strong>${escapeHtml(args.workshopTitle)}</strong> has been confirmed and your seat is reserved. We'll email you the date, time, and Google Meet link once enough people have joined and the workshop is locked in.`
+    ? `Your payment for <strong>${escapeHtml(args.workshopTitle)}</strong> has been confirmed and your seat is reserved. We'll email you the date, time, and Google Meet link within one week of your submission.`
     : `We couldn't confirm your payment for <strong>${escapeHtml(args.workshopTitle)}</strong> — usually this means the either the screenshot was not genuine, vauge, or unclear. Please resubmit with a clearer screenshot, or get in touch with us directly at <a href="mailto:info@thepsychologysquare.com" style="color: #0066cc; text-decoration: underline;">info@thepsychologysquare.com</a>`;
   const html = emailShell(`
     <h1 style="font-size:22px;margin:0 0 16px;">${heading}</h1>

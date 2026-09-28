@@ -3,6 +3,7 @@ import { env } from 'cloudflare:workers';
 import { getCourseBySlug } from '../../../lib/courses';
 import { getClientSession } from '../../../lib/clientAuth';
 import { sendCoursePaymentReceivedEmail, sendNewCoursePaymentAdminEmail } from '../../../lib/email-brevo';
+import { makeReviewLinks } from '../../../lib/paymentReview';
 
 export const prerender = false;
 
@@ -112,12 +113,23 @@ export const POST: APIRoute = async ({ request }) => {
     courseTitle: course.data.title,
   }).catch(() => {});
 
+  // The upsert above may have updated an existing row (a resubmission), so
+  // look the row id up rather than trusting last_row_id.
+  const enrollmentRow = await env.DB.prepare(
+    `SELECT id FROM enrollments WHERE course_slug = ? AND email = ?`
+  ).bind(courseSlug, session.email).first<{ id: number }>().catch(() => null);
+  const links = enrollmentRow
+    ? await makeReviewLinks(new URL(request.url).origin, env.ADMIN_SESSION_SECRET, 'course', enrollmentRow.id).catch(() => null)
+    : null;
+
   await sendNewCoursePaymentAdminEmail(env, {
     learnerName: name,
     learnerEmail: session.email,
     courseTitle: course.data.title,
     amountPkr,
     paymentMethod,
+    reviewUrl: links?.reviewUrl,
+    screenshotUrl: links?.screenshotUrl,
   }).catch(() => {});
 
   return new Response(JSON.stringify({ ok: true }), {

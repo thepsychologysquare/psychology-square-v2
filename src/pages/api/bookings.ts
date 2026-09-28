@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
 import { sendNewBookingAdminEmail, sendBookingReceivedClientEmail } from '../../lib/email';
+import { makeReviewLinks } from '../../lib/paymentReview';
 
 export const prerender = false;
 
@@ -135,6 +136,7 @@ export const POST: APIRoute = async ({ request }) => {
 
   // Best-effort — a failed notification email should never block the booking itself.
   // The booking is already saved and visible on the dashboard regardless.
+  const links = await makeReviewLinks(new URL(request.url).origin, env.ADMIN_SESSION_SECRET, 'booking', reference).catch(() => null);
   await sendNewBookingAdminEmail(env, {
     reference,
     clientName,
@@ -147,6 +149,8 @@ export const POST: APIRoute = async ({ request }) => {
     amountPkr: SERVICES[service],
     paymentMethod,
     notes: notes || undefined,
+    reviewUrl: links?.reviewUrl,
+    screenshotUrl: links?.screenshotUrl,
   }).catch(() => {});
   
   await sendBookingReceivedClientEmail(env, {
