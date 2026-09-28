@@ -18,7 +18,7 @@ export const GET: APIRoute = async ({ request }) => {
   const { results: certificates } = await env.DB.prepare(
     `SELECT
        cert.id, cert.course_slug, cert.course_title, cert.ce_hours, cert.name, cert.email,
-       cert.score_percent, cert.issued_at,
+       cert.score_percent, cert.issued_at, cert.kind,
        e.amount_pkr as amount_pkr, e.payment_method as payment_method
      FROM certificates cert
      LEFT JOIN enrollments e ON e.course_slug = cert.course_slug AND e.email = cert.email
@@ -49,7 +49,7 @@ export const GET: APIRoute = async ({ request }) => {
        (SELECT COUNT(DISTINCT a.email) FROM course_attempts a WHERE a.course_slug = c.slug) as started_quiz_count,
        (SELECT COUNT(DISTINCT a.email) FROM course_attempts a WHERE a.course_slug = c.slug AND a.passed = 1) as passed_count,
        (SELECT ROUND(AVG(a.score_percent)) FROM course_attempts a WHERE a.course_slug = c.slug) as avg_score_percent,
-       (SELECT COUNT(*) FROM certificates cert WHERE cert.course_slug = c.slug) as certificate_count,
+       (SELECT COUNT(*) FROM certificates cert WHERE cert.course_slug = c.slug AND cert.kind = 'course') as certificate_count,
        (SELECT COALESCE(SUM(e.amount_pkr), 0) FROM enrollments e WHERE e.course_slug = c.slug AND e.status = 'active' AND e.amount_pkr IS NOT NULL) as revenue_pkr,
        (SELECT COUNT(*) FROM course_feedback f WHERE f.course_slug = c.slug) as feedback_count,
        (SELECT ROUND(AVG((f.clarity_rating + f.usefulness_rating + f.recommend_rating) / 3.0), 1)

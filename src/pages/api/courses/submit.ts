@@ -80,10 +80,15 @@ export const POST: APIRoute = async ({ request }) => {
 
   const certificateId = makeCertificateId();
   try {
+    // is_paid is recorded here, at issuance, rather than looked up again
+    // later from the course -- see migrations-2026-09-certificate-paid-
+    // template.sql for why. This is the ONLY thing that changes which
+    // certificate design gets used; free-course issuance below is otherwise
+    // identical to before.
     await env.DB.prepare(
-      `INSERT INTO certificates (id, course_slug, course_title, ce_hours, name, email, score_percent, issued_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
-    ).bind(certificateId, courseSlug, course.data.title, course.data.estimatedHours, name, email, scorePercent, now).run();
+      `INSERT INTO certificates (id, course_slug, course_title, ce_hours, name, email, score_percent, issued_at, is_paid)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    ).bind(certificateId, courseSlug, course.data.title, course.data.estimatedHours, name, email, scorePercent, now, course.data.isPaid ? 1 : 0).run();
   } catch {
     return jsonError('You passed, but the certificate could not be saved. Please try submitting again.', 500);
   }

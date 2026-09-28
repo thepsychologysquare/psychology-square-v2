@@ -7,18 +7,30 @@ const { id } = Astro.params;
 
 let certificate: {
   id: string; course_title: string; ce_hours: number; name: string;
-  email: string; score_percent: number; issued_at: string;
+  email: string; score_percent: number; issued_at: string; is_paid: number; kind: string;
 } | null = null;
 
 if (env?.DB && id) {
   certificate = await env.DB.prepare(
-    `SELECT id, course_title, ce_hours, name, email, score_percent, issued_at FROM certificates WHERE id = ?`
+    `SELECT id, course_title, ce_hours, name, email, score_percent, issued_at, is_paid, kind FROM certificates WHERE id = ?`
   ).bind(id).first();
 }
 
 const formattedDate = certificate
   ? new Date(certificate.issued_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
   : '';
+
+// Only paid-course certificates get the navy/gold design below; free-course
+// certificates keep rendering the original design further down, completely
+// unchanged. is_paid is recorded on the certificate row at issuance time
+// (see src/pages/api/courses/submit.ts), not looked up live from the
+// course, so this never changes for a certificate that's already been
+// issued even if the course's price changes later.
+const isPaidCert = !!certificate?.is_paid;
+// 'workshop' certificates (issued from Dashboard > Workshop Signups) use the
+// paid design with "workshop" wording; everything else says "course".
+const kindWord = certificate?.kind === 'workshop' ? 'workshop' : 'course';
+const kindWordCap = kindWord === 'workshop' ? 'Workshop' : 'Course';
 ---
 <Layout
   title={certificate ? `Certificate — ${certificate.course_title}` : 'Certificate not found'}
@@ -37,45 +49,129 @@ const formattedDate = certificate
         <>
           <div class="verified-badge">✓ Verified certificate — publicly viewable by anyone with this link</div>
 
-          <div class="certificate" id="certificateCard">
-            <span class="certificate__corner certificate__corner--tl" aria-hidden="true"><span class="mini-mark"><i></i><i></i></span></span>
-            <span class="certificate__corner certificate__corner--tr" aria-hidden="true"><span class="mini-mark"><i></i><i></i></span></span>
-            <span class="certificate__corner certificate__corner--bl" aria-hidden="true"><span class="mini-mark"><i></i><i></i></span></span>
-            <span class="certificate__corner certificate__corner--br" aria-hidden="true"><span class="mini-mark"><i></i><i></i></span></span>
+          {!isPaidCert && (
+            <div class="certificate" id="certificateCard">
+              <span class="certificate__corner certificate__corner--tl" aria-hidden="true"><span class="mini-mark"><i></i><i></i></span></span>
+              <span class="certificate__corner certificate__corner--tr" aria-hidden="true"><span class="mini-mark"><i></i><i></i></span></span>
+              <span class="certificate__corner certificate__corner--bl" aria-hidden="true"><span class="mini-mark"><i></i><i></i></span></span>
+              <span class="certificate__corner certificate__corner--br" aria-hidden="true"><span class="mini-mark"><i></i><i></i></span></span>
 
-            <div class="certificate__inner">
-              <div class="certificate__mark" aria-hidden="true"><i></i><i></i></div>
-              <div class="certificate__eyebrow">The Psychology Square</div>
-              <div class="certificate__title">Certificate of Completion</div>
-              <div class="certificate__rule" aria-hidden="true"></div>
+              <div class="certificate__inner">
+                <div class="certificate__mark" aria-hidden="true"><i></i><i></i></div>
+                <div class="certificate__eyebrow">The Psychology Square</div>
+                <div class="certificate__title">Certificate of Completion</div>
+                <div class="certificate__rule" aria-hidden="true"></div>
 
-              <p class="certificate__line">This certifies that</p>
-              <div class="certificate__name">{certificate.name}</div>
-              <p class="certificate__line">has successfully completed</p>
-              <div class="certificate__course">{certificate.course_title}</div>
-              <div class="certificate__date">Issued {formattedDate}</div>
+                <p class="certificate__line">This certifies that</p>
+                <div class="certificate__name">{certificate.name}</div>
+                <p class="certificate__line">has successfully completed</p>
+                <div class="certificate__course">{certificate.course_title}</div>
+                <div class="certificate__date">Issued {formattedDate}</div>
 
-              <div class="certificate__signatures">
-                <div class="certificate__sig-col">
-                  <img class="certificate__sig-img" src="/images/certificates/sig-sohail.png" alt="Signature of Muhammad Sohail" width="480" height="279" />
-                  <div class="certificate__sig-line"></div>
-                  <div class="certificate__sig-name">Muhammad Sohail</div>
-                  <div class="certificate__sig-role">CEO</div>
+                <div class="certificate__signatures">
+                  <div class="certificate__sig-col">
+                    <img class="certificate__sig-img" src="/images/certificates/sig-sohail.png" alt="Signature of Muhammad Sohail" width="480" height="279" />
+                    <div class="certificate__sig-line"></div>
+                    <div class="certificate__sig-name">Muhammad Sohail</div>
+                    <div class="certificate__sig-role">CEO</div>
+                  </div>
+                  <div class="certificate__sig-col">
+                    <img class="certificate__sig-img" src="/images/certificates/sig-sehar.png" alt="Signature of Sehar Waheed" width="480" height="190" />
+                    <div class="certificate__sig-line"></div>
+                    <div class="certificate__sig-name">Sehar Waheed</div>
+                    <div class="certificate__sig-role">Co-CEO</div>
+                  </div>
                 </div>
-                <div class="certificate__sig-col">
-                  <img class="certificate__sig-img" src="/images/certificates/sig-sehar.png" alt="Signature of Sehar Waheed" width="480" height="190" />
-                  <div class="certificate__sig-line"></div>
-                  <div class="certificate__sig-name">Sehar Waheed</div>
-                  <div class="certificate__sig-role">Co-CEO</div>
+              </div>
+
+              <div class="certificate__footer">
+                <span>Certificate ID: {certificate.id}</span>
+                <span>thepsychologysquare.com/certificates/{certificate.id}</span>
+              </div>
+            </div>
+          )}
+
+          {isPaidCert && (
+            <div class="certificate-paid" id="certificateCard">
+              <div class="cp-left">
+                <div class="cp-top">
+                  <div class="cp-logo">
+                    <svg class="cp-logo-mark" viewBox="0 0 22 22" aria-hidden="true">
+                      <rect x="1" y="1" width="13" height="13"></rect>
+                      <rect x="8" y="8" width="13" height="13"></rect>
+                    </svg>
+                    <span class="cp-wordmark">The Psychology Square</span>
+                  </div>
+                  <div class="cp-headline">Certificate</div>
+                  <div class="cp-subhead">Of Completion</div>
+                </div>
+
+                <div class="cp-mid">
+                  <p class="cp-presented">Presented to</p>
+                  <div class="cp-recipient">{certificate.name}</div>
+                  <p class="cp-desc">For successfully completing an online {kindWord}</p>
+                  <div class="cp-course">{certificate.course_title}</div>
+                  <div class="cp-date">{kindWordCap} completed on {formattedDate}</div>
+                </div>
+
+                <div class="cp-sigs">
+                  <div class="cp-sig-col">
+                    <img class="cp-sig-img" src="/images/certificates/sig-sohail.png" alt="Signature of Muhammad Sohail" width="480" height="279" />
+                    <div class="cp-sig-name">Mr. Muhammad Sohail</div>
+                    <div class="cp-sig-role">Founder and CEO</div>
+                  </div>
+                  <div class="cp-sig-col">
+                    <img class="cp-sig-img" src="/images/certificates/sig-sehar.png" alt="Signature of Sehar Waheed" width="480" height="190" />
+                    <div class="cp-sig-name">Ms. Sehar Waheed</div>
+                    <div class="cp-sig-role">Co-CEO</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="cp-right">
+                <svg class="cp-seal" viewBox="0 0 100 100" aria-hidden="true">
+                  <circle cx="50" cy="50" r="47" fill="var(--gold-300)"></circle>
+                  <circle cx="50" cy="50" r="47" fill="none" stroke="var(--gold-500)" stroke-width="1.5"></circle>
+                  <circle cx="50" cy="50" r="33" fill="#FFFFFF"></circle>
+                  <path id="cpArcTop" d="M10,50 A40,40 0 0 1 90,50" fill="none"></path>
+                  <path id="cpArcBot" d="M10,50 A40,40 0 0 0 90,50" fill="none"></path>
+                  <text font-family="IBM Plex Mono" font-weight="700" font-size="8" letter-spacing="1.5" fill="var(--navy-950)" dominant-baseline="central">
+                    <textPath href="#cpArcTop" startOffset="50%" text-anchor="middle">VERIFIED</textPath>
+                  </text>
+                  <text font-family="IBM Plex Mono" font-weight="700" font-size="8" letter-spacing="1" fill="var(--navy-950)" dominant-baseline="central">
+                    <textPath href="#cpArcBot" startOffset="50%" text-anchor="middle">CERTIFICATE</textPath>
+                  </text>
+                  <text x="90" y="50" font-size="11" text-anchor="middle" dominant-baseline="central" fill="var(--navy-800)">&#9733;</text>
+                  <text x="10" y="50" font-size="11" text-anchor="middle" dominant-baseline="central" fill="var(--navy-800)">&#9733;</text>
+                  <text x="87.6" y="36.3" font-size="6.5" text-anchor="middle" dominant-baseline="central" fill="var(--navy-800)">&#9733;</text>
+                  <text x="12.4" y="36.3" font-size="6.5" text-anchor="middle" dominant-baseline="central" fill="var(--navy-800)">&#9733;</text>
+                  <text x="12.4" y="63.7" font-size="6.5" text-anchor="middle" dominant-baseline="central" fill="var(--navy-800)">&#9733;</text>
+                  <text x="87.6" y="63.7" font-size="6.5" text-anchor="middle" dominant-baseline="central" fill="var(--navy-800)">&#9733;</text>
+                  <g transform="translate(50,50)">
+                    <rect x="-10" y="-10" width="15" height="15" fill="none" stroke="var(--navy-800)" stroke-width="2.2"></rect>
+                    <rect x="-5" y="-5" width="15" height="15" fill="none" stroke="var(--gold-500)" stroke-width="2.2"></rect>
+                  </g>
+                </svg>
+                <div class="cp-bottom">
+                  <div class="cp-verifybox">
+                    <svg class="cp-qr" viewBox="0 0 8 8" shape-rendering="crispEdges" aria-hidden="true">
+                      <rect x="0" y="0" width="2" height="2"></rect><rect x="6" y="0" width="2" height="2"></rect><rect x="0" y="6" width="2" height="2"></rect>
+                      <rect x="3" y="0" width="1" height="1"></rect><rect x="4" y="1" width="1" height="1"></rect><rect x="2" y="2" width="1" height="1"></rect>
+                      <rect x="5" y="2" width="1" height="1"></rect><rect x="3" y="3" width="1" height="1"></rect><rect x="4" y="4" width="1" height="1"></rect>
+                      <rect x="6" y="3" width="1" height="1"></rect><rect x="1" y="4" width="1" height="1"></rect><rect x="5" y="5" width="1" height="1"></rect>
+                      <rect x="7" y="5" width="1" height="1"></rect><rect x="2" y="6" width="1" height="1"></rect><rect x="4" y="6" width="1" height="1"></rect>
+                      <rect x="6" y="6" width="1" height="1"></rect><rect x="3" y="7" width="1" height="1"></rect><rect x="5" y="7" width="1" height="1"></rect>
+                    </svg>
+                    <div class="cp-verifytext">VERIFY<br />AUTHENTICITY</div>
+                  </div>
+                  <div class="cp-meta">
+                    <div class="cp-certid">{certificate.id}</div>
+                    <a class="cp-verifylink" href={`https://thepsychologysquare.com/certificates/${certificate.id}`} target="_blank" rel="noopener">thepsychologysquare.com/certificates/{certificate.id}</a>
+                  </div>
                 </div>
               </div>
             </div>
-
-            <div class="certificate__footer">
-              <span>Certificate ID: {certificate.id}</span>
-              <span>thepsychologysquare.com/certificates/{certificate.id}</span>
-            </div>
-          </div>
+          )}
 
           <div class="cert-actions">
             <button
@@ -86,6 +182,8 @@ const formattedDate = certificate
               data-course-title={certificate.course_title}
               data-date={formattedDate}
               data-cert-id={certificate.id}
+              data-is-paid={isPaidCert ? '1' : '0'}
+              data-kind={kindWord}
             >Download PDF</button>
             <button type="button" class="btn btn--text" id="copyLinkBtn">Copy verification link</button>
             <a
@@ -133,21 +231,26 @@ const formattedDate = certificate
     // it can import our own local modules the same way (see below).
     const btn = document.getElementById('downloadPdfBtn');
     btn?.addEventListener('click', async () => {
-      const { name, courseTitle, date, certId } = btn.dataset;
+      const { name, courseTitle, date, certId, isPaid, kind } = btn.dataset;
       btn.disabled = true;
       btn.textContent = 'Preparing…';
 
       try {
         // Both loaded lazily so the (largish, signature-image-carrying)
         // layout module never ships in the initial page bundle — only on
-        // click. This calls the exact same drawCertificate() the server
-        // uses for the emailed PDF, so the two are guaranteed to match.
-        const [{ jsPDF }, { drawCertificate }] = await Promise.all([
+        // click. isPaid picks which drawing function runs; free-course
+        // certificates still go through the exact same drawCertificate()
+        // as before, untouched.
+        const [{ jsPDF }, layoutModule] = await Promise.all([
           import('jspdf'),
-          import('../../lib/certificateLayout'),
+          isPaid === '1'
+            ? import('../../lib/certificateLayoutPaid')
+            : import('../../lib/certificateLayout'),
         ]);
+        const mod = layoutModule as any;
+        const draw = isPaid === '1' ? mod.drawCertificatePaid : mod.drawCertificate;
         const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
-        drawCertificate(doc, { name, courseTitle, date, certId });
+        draw(doc, { name, courseTitle, date, certId, kind });
         doc.save(`${certId}.pdf`);
       } catch (err) {
         console.error('Certificate PDF generation failed', err);
@@ -266,5 +369,109 @@ const formattedDate = certificate
     .certificate__inner{ padding:36px 22px; }
     .certificate__footer{ flex-direction:column; gap:4px; text-align:center; padding:10px 22px; }
     .certificate__signatures{ gap:32px; }
+  }
+
+  /* ================================================================
+     Paid-course certificate (navy/gold two-panel design).
+     ZOOM / RESIZE SAFETY: the certificate is its own size container
+     (container-type:inline-size) with a locked aspect ratio, and every
+     measurement inside it is in cqw (1cqw = 1% of the certificate's own
+     width) or a % of its parent. Nothing is a fixed px, so browser zoom,
+     window resize and odd screen sizes all scale the WHOLE certificate as
+     one piece instead of letting text and boxes drift apart.
+     Reference design width = 1080px, so 1 design-px = 0.0926cqw.
+     Phones (<=600px) reflow to one column instead, since scaling a landscape
+     certificate down to 320px would make the text unreadably small.
+     ================================================================ */
+  .certificate-paid{
+    /* Local tokens/reset so nothing from the site's global styles (body
+       line-height:1.6, --line at .12, antialiased smoothing) can leak in and
+       shift the design away from the approved replica. */
+    --line:rgba(19,26,34,0.14);
+    container-type:inline-size;
+    width:100%;
+    aspect-ratio:1.55/1;
+    position:relative;
+    overflow:hidden;
+    display:grid;
+    grid-template-columns:1fr 32%;
+    background:var(--paper-0);
+    box-shadow:0 20px 50px rgba(11,20,31,.18);
+    color:var(--ink-900);
+    text-align:left;
+    font-family:var(--font-body);
+    line-height:normal;
+    -webkit-font-smoothing:auto;
+  }
+  .cp-left{ display:flex; flex-direction:column; justify-content:space-between; padding:4.5% 8% 4%; min-width:0; height:100%; }
+  .cp-top{ flex:0 0 auto; }
+  .cp-mid{ flex:0 0 auto; margin:auto 0; max-width:100%; }
+  .cp-sigs{ flex:0 0 auto; }
+
+  .cp-logo{ display:flex; align-items:center; gap:1.111cqw; }
+  .cp-logo-mark{ width:3.148cqw; height:3.148cqw; flex:none; }
+  .cp-logo-mark rect{ fill:none; stroke-width:2; }
+  .cp-logo-mark rect:first-child{ stroke:var(--navy-800); }
+  .cp-logo-mark rect:last-child{ stroke:var(--gold-500); }
+  .cp-wordmark{ font-family:var(--font-mono); font-weight:600; font-size:1.482cqw; letter-spacing:.15em; text-transform:uppercase; color:var(--navy-800); }
+  .cp-headline{ font-family:var(--font-display); font-weight:600; font-size:4.815cqw; line-height:1; color:var(--navy-800); margin-top:1.482cqw; }
+  .cp-subhead{ font-size:1.204cqw; letter-spacing:.32em; text-transform:uppercase; color:var(--ink-600); margin-top:.833cqw; }
+
+  .cp-presented, .cp-desc{ font-size:1.389cqw; color:var(--ink-600); margin:0; }
+  .cp-recipient{ font-family:var(--font-display); font-size:3.148cqw; color:var(--gold-500); margin:.463cqw 0 1.482cqw; overflow-wrap:break-word; word-break:break-word; }
+  .cp-course{ font-family:var(--font-body); font-weight:700; font-size:1.759cqw; color:var(--ink-900); margin-top:.556cqw; overflow-wrap:break-word; word-break:break-word; }
+  .cp-date{ font-size:1.296cqw; color:var(--ink-600); margin-top:.556cqw; }
+
+  .cp-sigs{ display:flex; gap:5.185cqw; }
+  .cp-sig-col{ display:flex; flex-direction:column; min-width:0; }
+  /* Real signature images stand in for the replica's placeholder scribbles;
+     they sit in the same spot: directly above the name, left-aligned. */
+  .cp-sig-img{ height:3.6cqw; width:auto; max-width:14cqw; object-fit:contain; object-position:left bottom; display:block; margin-top:-1.007cqw; margin-bottom:.185cqw; } /* net layout height = replica's 28px slot; the larger real signature overflows upward */
+  /* Replica: name has NO rule above it; the rule sits between name and role. */
+  .cp-sig-name{ font-family:var(--font-display); font-size:1.759cqw; color:var(--ink-900); border-top:none; padding-top:0; }
+  .cp-sig-role{ font-family:var(--font-mono); font-size:1.065cqw; color:var(--ink-600); letter-spacing:.05em; text-transform:uppercase; margin-top:.463cqw; border-top:1px solid var(--line); padding-top:.556cqw; }
+
+  .cp-right{
+    position:relative; display:flex; flex-direction:column; align-items:center; justify-content:space-between;
+    padding:7% 6%; min-width:0;
+    background:linear-gradient(165deg,var(--navy-700) 0%,var(--navy-950) 55%,var(--navy-950) 100%);
+  }
+  .cp-right::after{ content:""; position:absolute; top:0; right:0; width:1.111cqw; height:100%; background:var(--gold-500); }
+  .cp-seal{ width:36%; height:auto; aspect-ratio:1; margin-top:6%; overflow:visible; }
+
+  .cp-bottom{ min-width:0; max-width:100%; }
+  .cp-verifybox{ background:#fff; border:1px solid var(--line); padding:1.111cqw 1.204cqw; display:flex; align-items:center; gap:1.019cqw; width:100%; }
+  .cp-qr{ width:4.259cqw; height:4.259cqw; flex:none; fill:var(--navy-950); shape-rendering:crispEdges; }
+  .cp-verifytext{ font-family:var(--font-mono); font-size:1.019cqw; font-weight:700; letter-spacing:.03em; line-height:1.4; color:var(--ink-900); }
+  .cp-meta{ font-family:var(--font-mono); color:var(--paper-50); margin-top:.926cqw; text-align:center; line-height:1.6; }
+  .cp-certid{ font-size:.972cqw; }
+  .cp-verifylink{ display:block; margin-top:.185cqw; font-size:.787cqw; letter-spacing:0; white-space:nowrap; color:inherit; text-decoration:underline; text-underline-offset:2px; }
+
+  @media (max-width: 600px) {
+    .certificate-paid{ aspect-ratio:auto; grid-template-columns:1fr; }
+    .cp-left{ padding:28px 22px; gap:24px; }
+    .cp-logo{ gap:10px; }
+    .cp-logo-mark{ width:28px; height:28px; }
+    .cp-wordmark{ font-size:13px; }
+    .cp-headline{ font-size:40px; margin-top:14px; }
+    .cp-subhead{ font-size:12px; margin-top:8px; }
+    .cp-presented, .cp-desc{ font-size:14px; }
+    .cp-recipient{ font-size:28px; margin:4px 0 12px; }
+    .cp-course{ font-size:17px; margin-top:6px; }
+    .cp-date{ font-size:13px; margin-top:6px; }
+    .cp-sigs{ gap:24px; flex-wrap:wrap; }
+    .cp-sig-img{ height:34px; max-width:130px; margin-top:0; margin-bottom:2px; }
+    .cp-sig-name{ font-size:15px; }
+    .cp-sig-role{ font-size:11px; margin-top:4px; padding-top:5px; }
+    .cp-right{ padding:28px 22px; gap:16px; }
+    .cp-right::after{ width:8px; }
+    .cp-seal{ width:84px; margin-top:0; }
+    .cp-bottom{ width:100%; }
+    .cp-verifybox{ padding:10px 12px; gap:10px; }
+    .cp-qr{ width:40px; height:40px; }
+    .cp-verifytext{ font-size:11px; }
+    .cp-meta{ margin-top:4px; }
+    .cp-certid{ font-size:12px; }
+    .cp-verifylink{ font-size:10px; white-space:normal; word-break:break-all; }
   }
 </style>

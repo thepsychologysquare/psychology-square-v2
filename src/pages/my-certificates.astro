@@ -17,12 +17,12 @@ if (!session) {
 }
 
 let certificates: Array<{
-  id: string; course_title: string; ce_hours: number; score_percent: number; issued_at: string;
+  id: string; course_title: string; ce_hours: number; score_percent: number; issued_at: string; kind: string;
 }> = [];
 
 if (env?.DB) {
   const result = await env.DB.prepare(
-    `SELECT id, course_title, ce_hours, score_percent, issued_at FROM certificates WHERE email = ? ORDER BY issued_at DESC`
+    `SELECT id, course_title, ce_hours, score_percent, issued_at, kind FROM certificates WHERE email = ? ORDER BY issued_at DESC`
   ).bind(session.email).all();
   certificates = (result.results ?? []) as typeof certificates;
 }
@@ -50,7 +50,9 @@ if (env?.DB) {
                 <div>
                   <h2>{c.course_title}</h2>
                   <span class="cert-row__meta">
-                    {c.ce_hours} {c.ce_hours === 1 ? 'hour' : 'hours'} &middot; Score {c.score_percent}% &middot;
+                    {c.kind === 'workshop'
+                      ? 'Workshop'
+                      : `${c.ce_hours} ${c.ce_hours === 1 ? 'hour' : 'hours'} · Score ${c.score_percent}%`} &middot;
                     {' '}{new Date(c.issued_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
                   </span>
                 </div>

@@ -262,6 +262,7 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
         </div>
         <div id="wkEnrollBulkBar" class="bulk-bar" hidden>
           <span id="wkEnrollBulkCount"></span>
+          <button id="wkEnrollBulkComplete" class="btn btn--ghost">🎓 Mark complete &amp; send certificates</button>
           <button id="wkEnrollBulkDelete" class="btn btn--ghost bulk-delete-btn">Delete selected</button>
         </div>
         <p id="wkEnrollLoadingMsg" class="dash-empty">Loading…</p>
@@ -691,6 +692,10 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
     font-size:14px; border:1px solid var(--line); border-radius:2px; background:var(--paper-0);
     cursor:pointer; padding:0; line-height:1;
   }
+  /* Text-label variant (View / Resend / Complete): grows to fit its label instead of being clipped to the 30px square. */
+  .icon-btn.icon-btn--text{ width:auto; min-width:30px; padding:0 10px; font-size:13px; white-space:nowrap; }
+  #wkEnrollTable .col-actions{ width:auto; min-width:215px; }
+  #wkEnrollTable .table-actions{ flex-wrap:wrap; }
   .icon-btn:hover{ background:rgba(199,164,74,0.08); }
   .icon-btn:disabled{ opacity:0.35; cursor:not-allowed; }
   .icon-btn.confirm{ border-color:#3f5c47; color:#3f5c47; }
@@ -1069,7 +1074,7 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
       selected.clear();
       render();
     });
-    return { resetSelection: () => { selected.clear(); sync(); }, sync };
+    return { resetSelection: () => { selected.clear(); sync(); }, sync, getSelected: () => [...selected] };
   }
 
   // ===== Course Enrollments =====
@@ -1211,13 +1216,14 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
         <td>PKR ${escapeHtml(String(e.amount_pkr))}</td>
         <td>${escapeHtml(e.payment_method)}</td>
         <td>${formatDate(e.created_at)}</td>
-        <td><span class="status-badge ${statusBadgeClass(e.status)}">${e.status === 'active' ? 'confirmed' : e.status}</span></td>
-        <td class="col-actions">
-          <button class="icon-btn" data-wkshot="${e.id}" title="View screenshot">View</button>
+        <td><span class="status-badge ${statusBadgeClass(e.status)}">${e.status === 'active' ? 'confirmed' : e.status}</span>${e.certificate_id ? `<br/><span class="row-note">Certificate issued · <a href="/certificates/${encodeURIComponent(e.certificate_id)}" target="_blank" rel="noopener">View →</a></span>` : ''}</td>
+        <td class="col-actions"><div class="table-actions">
+          <button class="icon-btn icon-btn--text" data-wkshot="${e.id}" title="View screenshot">View</button>
+          ${e.status === 'active' ? `<button class="icon-btn icon-btn--text" data-wkcomplete="${e.id}" title="${e.certificate_id ? 'Send the certificate email again' : 'Mark complete and email the certificate'}">${e.certificate_id ? 'Resend' : '🎓 Complete'}</button>` : ''}
           ${e.status !== 'active' ? `<button class="icon-btn confirm" data-wkid="${e.id}" data-wkstatus="active" title="Approve">✓</button>` : ''}
           ${e.status !== 'declined' ? `<button class="icon-btn decline" data-wkid="${e.id}" data-wkstatus="declined" title="Decline">✕</button>` : ''}
           <button class="icon-btn delete" data-wkdelete="${e.id}" title="Delete">🗑</button>
-        </td>
+        </div></td>
       </tr>
     `).join('');
     wkEnrollBulk.sync();
@@ -1268,6 +1274,25 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
       }
       return;
     }
+    const completeBtn = e.target.closest('[data-wkcomplete]');
+    if (completeBtn) {
+      const item = allWkEnrollments.find((x) => x.id === completeBtn.dataset.wkcomplete);
+      if (!item) return;
+      const resend = !!item.certificate_id;
+      const ok = await showConfirm(resend
+        ? `Send ${item.name} their certificate email again?`
+        : `Mark ${item.name} as having completed "${item.workshop_title}" and email them their certificate?`);
+      if (!ok) return;
+      completeBtn.disabled = true;
+      try {
+        const data = await completeWorkshopSignup(item.id);
+        if (!data.emailed) window.alert('The certificate was saved, but the email could not be sent. Use Resend to try again.');
+      } catch (err) {
+        window.alert(err.message || 'Could not issue the certificate.');
+      }
+      renderWkEnrollments();
+      return;
+    }
     const btn = e.target.closest('.icon-btn.confirm, .icon-btn.decline');
     if (!btn) {
       const delBtn = e.target.closest('[data-wkdelete]');
@@ -1294,11 +1319,64 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
     renderWkEnrollments();
   });
 
+  // Issues (or re-sends) one workshop certificate; the server refuses anything
+  // that isn't a confirmed signup and never creates a second certificate.
+  async function completeWorkshopSignup(id) {
+    const res = await fetch('/api/admin/workshop-enrollments', {
+      method: 'PATCH', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ id, action: 'complete' }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || `Server said ${res.status}`);
+    const item = allWkEnrollments.find((x) => x.id === id);
+    if (item) {
+      item.certificate_id = data.certificateId;
+      item.completed_at = item.completed_at || new Date().toISOString();
+    }
+    return data;
+  }
+
+  document.getElementById('wkEnrollBulkComplete').addEventListener('click', async () => {
+    const picked = wkEnrollBulk.getSelected()
+      .map((id) => allWkEnrollments.find((x) => x.id === id))
+      .filter(Boolean);
+    const todo = picked.filter((x) => x.status === 'active' && !x.certificate_id);
+    const skipped = picked.length - todo.length;
+    if (!todo.length) {
+      window.alert('Nothing to issue: only confirmed signups without a certificate yet are included.');
+      return;
+    }
+    const ok = await showConfirm(
+      `Issue certificates for ${todo.length} attendee(s) and email each one?` +
+      (skipped ? ` (${skipped} selected row(s) skipped: not confirmed, or already issued.)` : '')
+    );
+    if (!ok) return;
+    const btn = document.getElementById('wkEnrollBulkComplete');
+    btn.disabled = true;
+    const failed = [];
+    for (const item of todo) {
+      btn.textContent = `Sending ${todo.indexOf(item) + 1} of ${todo.length}…`;
+      try {
+        const data = await completeWorkshopSignup(item.id);
+        if (!data.emailed) failed.push(`${item.name} (saved, email not sent)`);
+      } catch (err) {
+        failed.push(`${item.name} (${err.message || 'failed'})`);
+      }
+      // One at a time with a short pause: the email provider rate-limits bursts.
+      await new Promise((r) => setTimeout(r, 600));
+    }
+    btn.disabled = false;
+    btn.innerHTML = '🎓 Mark complete &amp; send certificates';
+    wkEnrollBulk.resetSelection();
+    renderWkEnrollments();
+    if (failed.length) window.alert(`Done, but ${failed.length} need attention:\n\n${failed.join('\n')}\n\nUse Resend on those rows.`);
+  });
+
   wkEnrollExportBtn.addEventListener('click', () => {
-    const header = ['Name', 'Email', 'Phone', 'Workshop', 'Amount (PKR)', 'Method', 'Submitted', 'Status'];
+    const header = ['Name', 'Email', 'Phone', 'Workshop', 'Amount (PKR)', 'Method', 'Submitted', 'Status', 'Completed'];
     const rows = allWkEnrollments.map((e) => [
       e.name, e.email, e.phone, e.workshop_title, e.amount_pkr, e.payment_method, e.created_at,
-      e.status === 'active' ? 'confirmed' : e.status,
+      e.status === 'active' ? 'confirmed' : e.status, e.completed_at || '',
     ].map((v) => `"${String(v ?? '').replace(/"/g, '""')}"`).join(','));
     const csv = [header.join(','), ...rows].join('\r\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -2038,6 +2116,7 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
     certEmptyMsg.hidden = items.length > 0;
     certTable.hidden = items.length === 0;
     certBody.innerHTML = items.map((c) => {
+      const isWorkshop = c.kind === 'workshop';
       const isPaid = c.amount_pkr != null;
       return `
       <tr>
@@ -2046,10 +2125,10 @@ const roleLabel = role === 'admin' ? 'Admin' : role === 'sohail' ? 'Muhammad Soh
         <td>${escapeHtml(c.name)}</td>
         <td>${escapeHtml(c.email)}</td>
         <td>${escapeHtml(c.course_title)}</td>
-        <td><span class="type-badge type-badge--${isPaid ? 'paid' : 'free'}">${isPaid ? 'Paid' : 'Free'}</span></td>
+        <td><span class="type-badge type-badge--${isWorkshop || isPaid ? 'paid' : 'free'}">${isWorkshop ? 'Workshop' : isPaid ? 'Paid' : 'Free'}</span></td>
         <td>${isPaid ? formatPkr(c.amount_pkr) : '—'}</td>
-        <td>${c.score_percent}%</td>
-        <td>${c.ce_hours}</td>
+        <td>${isWorkshop ? '—' : c.score_percent + '%'}</td>
+        <td>${isWorkshop ? '—' : c.ce_hours}</td>
         <td>${formatDate(c.issued_at)}</td>
         <td><a href="/certificates/${encodeURIComponent(c.id)}" target="_blank" rel="noopener">View →</a></td>
         <td class="col-actions"><button class="icon-btn delete" data-certdelete="${escapeHtml(c.id)}" title="Delete">🗑</button></td>

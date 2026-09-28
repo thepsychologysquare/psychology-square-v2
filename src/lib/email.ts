@@ -289,6 +289,34 @@ export async function sendWorkshopConfirmedEmail(
   });
 }
 
+export async function sendWorkshopCertificateEmail(
+  env: { RESEND_API_KEY?: string; EMAIL_FROM?: string },
+  args: { toEmail: string; toName: string; workshopTitle: string; certificateUrl: string }
+): Promise<{ ok: boolean; error?: string }> {
+  if (!env.RESEND_API_KEY || !env.EMAIL_FROM) {
+    return { ok: false, error: 'Email is not configured yet.' };
+  }
+  if (!EMAIL_RE.test(args.toEmail)) {
+    return { ok: false, error: 'Contact on file is not a valid email address.' };
+  }
+  const html = emailShell(`
+    <h1 style="font-size:22px;margin:0 0 16px;">You've completed the workshop</h1>
+    <p style="font-size:15px;line-height:1.6;">Hi ${escapeHtml(args.toName)},</p>
+    <p style="font-size:15px;line-height:1.6;">
+      Thank you for joining <strong>${escapeHtml(args.workshopTitle)}</strong>. Your certificate of completion is ready to view and download.
+    </p>
+    <p style="margin:28px 0;"><a href="${args.certificateUrl}" style="background:#C7A44A;color:#131A22;text-decoration:none;padding:12px 24px;border-radius:2px;font-weight:600;display:inline-block;">View your certificate</a></p>
+    <p style="font-size:15px;line-height:1.6;">It has a public verification link you can share, and a Download PDF button on the page.</p>
+  `);
+  return sendEmail({
+    apiKey: env.RESEND_API_KEY,
+    from: env.EMAIL_FROM,
+    to: args.toEmail,
+    subject: `Your certificate — ${args.workshopTitle}`,
+    html,
+  });
+}
+
 export async function sendBookingReceivedClientEmail(
   env: { RESEND_API_KEY?: string; EMAIL_FROM?: string },
   args: { toEmail: string; toName: string; reference: string }

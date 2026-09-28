@@ -1,0 +1,15 @@
+-- Adds ONLY the piece needed to pick the right certificate design at render
+-- time. Safe to run on your existing database: doesn't touch anything else.
+--   npx wrangler d1 execute psychology-square-bookings --remote --file=./migrations-2026-09-certificate-paid-template.sql
+--
+-- Why a column on the certificate row, instead of joining back to the
+-- course's current is_paid flag at render time: a course's price can change
+-- after someone already earned a certificate for it (e.g. a course that
+-- later goes free, or vice versa). Recording is_paid at the moment the
+-- certificate was issued keeps that certificate's look tied to what the
+-- learner actually experienced, not whatever the course happens to be today.
+--
+-- Existing rows default to 0 (the classic gold/paper design they already
+-- render with today) -- this migration does not change what any
+-- already-issued certificate looks like.
+ALTER TABLE certificates ADD COLUMN is_paid INTEGER NOT NULL DEFAULT 0;
