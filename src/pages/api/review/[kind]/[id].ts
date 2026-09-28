@@ -13,11 +13,17 @@ export const prerender = false;
 //           mail scanners that open every link can't approve by accident.
 //   POST -> the Approve button. Same effect as approving on the dashboard.
 
+// NOTE on referrer-policy: it must NOT be 'no-referrer'. With that policy,
+// browsers send "Origin: null" on form POSTs, and Astro's built-in CSRF check
+// (which needs Origin to equal the site's own origin) then rejects the Approve
+// button with "Cross-site POST form submissions are forbidden". 'same-origin'
+// still keeps this page's token-carrying URL out of any Referer sent to other
+// sites, while letting the same-site POST carry a proper Origin header.
 const PAGE_HEADERS = {
   'content-type': 'text/html; charset=utf-8',
   'cache-control': 'no-store',
   'x-robots-tag': 'noindex, nofollow',
-  'referrer-policy': 'no-referrer',
+  'referrer-policy': 'same-origin',
   'content-security-policy': "default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; form-action 'self'; frame-ancestors 'none'",
 };
 
