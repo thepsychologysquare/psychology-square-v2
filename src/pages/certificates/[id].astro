@@ -58,6 +58,7 @@ const verifyUrl = certificate ? certificateVerifyUrl(certificate.id) : '';
           <div class="verified-badge">✓ Verified certificate — publicly viewable by anyone with this link</div>
 
           {!isPaidCert && (
+            <div class="cert-fit cert-fit--free" data-w="960">
             <div class="certificate" id="certificateCard">
               <span class="certificate__corner certificate__corner--tl" aria-hidden="true"><span class="mini-mark"><i></i><i></i></span></span>
               <span class="certificate__corner certificate__corner--tr" aria-hidden="true"><span class="mini-mark"><i></i><i></i></span></span>
@@ -97,9 +98,11 @@ const verifyUrl = certificate ? certificateVerifyUrl(certificate.id) : '';
                 <span>thepsychologysquare.com/certificates/{certificate.id}</span>
               </div>
             </div>
+            </div>
           )}
 
           {isPaidCert && (
+            <div class="cert-fit cert-fit--paid" data-w="1080">
             <div class="certificate-paid" id="certificateCard">
               <div class="cp-left">
                 <div class="cp-top">
@@ -172,7 +175,29 @@ const verifyUrl = certificate ? certificateVerifyUrl(certificate.id) : '';
                 </div>
               </div>
             </div>
+            </div>
           )}
+
+          <!-- Scales the certificate to the available width BEFORE first paint
+               (is:inline = not deferred like a bundled module script, so there is
+               no flash of an unscaled, clipped card). Pure CSS can't do this on
+               every browser yet: it needs unit division, calc(100cqw / 1080px). -->
+          <script is:inline>
+            (function () {
+              var fit = document.querySelector('.cert-fit');
+              if (!fit) return;
+              var card = fit.firstElementChild;
+              var W = parseFloat(fit.getAttribute('data-w'));
+              function apply() {
+                card.style.transform = 'scale(' + (fit.clientWidth / W) + ')';
+                fit.setAttribute('data-ready', '');
+              }
+              apply();
+              if ('ResizeObserver' in window) new ResizeObserver(apply).observe(fit);
+              else window.addEventListener('resize', apply);
+            })();
+          </script>
+          <noscript><style>.cert-fit{ overflow-x:auto; aspect-ratio:auto !important; } .cert-fit > *{ visibility:visible !important; transform:none !important; }</style></noscript>
 
           <div class="cert-actions">
             <button
@@ -268,6 +293,8 @@ const verifyUrl = certificate ? certificateVerifyUrl(certificate.id) : '';
   .cert-page{ padding:64px 0 96px; }
   .wrap--cert{ max-width:980px; margin:0 auto; padding:0 24px; }
 
+  @media (max-width: 600px){ .wrap--cert{ padding:0 10px; } .cert-page{ padding-bottom:64px; } }
+
   .not-found{ text-align:center; padding:80px 0; }
   .not-found h1{ font-family:var(--font-display); font-size:32px; margin-bottom:12px; }
   .not-found p{ color:var(--ink-600); }
@@ -278,12 +305,28 @@ const verifyUrl = certificate ? certificateVerifyUrl(certificate.id) : '';
     margin-bottom:24px; margin-top: 70px;
   }
 
+  /* ---- Scaling frame -------------------------------------------------------
+     A certificate is a fixed-size DESIGN (960px free / 1080px paid wide) that is
+     scaled as one piece to the available width by the inline script above. It
+     never reflows: a phone shows the same landscape certificate as a desktop,
+     just smaller. The frame's height comes from the design's aspect ratio, so
+     the page reserves the right space even before the script has run. */
+  .cert-fit{
+    position:relative; width:100%; overflow:hidden;
+    -webkit-text-size-adjust:100%; text-size-adjust:100%; /* stop phones inflating the text */
+  }
+  .cert-fit > *{ transform-origin:0 0; }
+  .cert-fit:not([data-ready]) > *{ visibility:hidden; }
+  .cert-fit--free{ aspect-ratio:1.4142/1; }
+  .cert-fit--paid{ aspect-ratio:1.55/1; box-shadow:0 20px 50px rgba(11,20,31,.18); }
+
   /* ---- Certificate card: A4-landscape proportioned, double frame + corner marks ---- */
   .certificate{
     position:relative;
     border:2px solid var(--gold-500);
     border-radius:2px;
     background:var(--paper-0);
+    width:960px; /* design width; scaled by .cert-fit */
     aspect-ratio:1.4142/1; /* A4 landscape, same shape as the downloaded PDF */
     display:flex;
     flex-direction:column;
@@ -319,7 +362,7 @@ const verifyUrl = certificate ? certificateVerifyUrl(certificate.id) : '';
   .certificate__mark i:last-child{ inset:9px 0 0 9px; border-color:var(--sage-500); }
 
   .certificate__eyebrow{ font-family:var(--font-mono); font-size:12px; letter-spacing:0.16em; text-transform:uppercase; color:var(--navy-700); margin-bottom:14px; }
-  .certificate__title{ font-family:var(--font-display); font-size:clamp(26px,4vw,32px); margin-bottom:18px; }
+  .certificate__title{ font-family:var(--font-display); font-size:32px; margin-bottom:18px; }
   .certificate__rule{ width:52px; height:1px; background:var(--gold-500); margin:0 auto 26px; }
 
   .certificate__line{ color:var(--ink-600); font-size:14px; margin:4px 0; }
@@ -327,13 +370,13 @@ const verifyUrl = certificate ? certificateVerifyUrl(certificate.id) : '';
   font-family: var(--font-display);
   font-style: normal;
   font-weight: 600;
-  font-size: clamp(22px, 4vw, 28px);
+  font-size: 28px;
   margin: 8px 0;
   overflow-wrap: break-word;
 }
   .certificate__course{
     font-family:var(--font-display); font-weight:600;
-    font-size:clamp(18px,3vw,22px); margin:8px 0 18px; overflow-wrap:break-word;
+    font-size:22px; margin:8px 0 18px; overflow-wrap:break-word;
   }
   .certificate__date{
     font-family:var(--font-mono); font-size:13px; color:var(--ink-600);
@@ -361,16 +404,6 @@ const verifyUrl = certificate ? certificateVerifyUrl(certificate.id) : '';
   .btn--primary:disabled{ opacity:0.6; cursor:default; }
   .btn--text{ background:none; color:var(--ink-900); text-decoration:underline; }
 
-  @media (max-width: 600px) {
-    /* A landscape A4 ratio is too cramped on a phone-width screen — let the
-       card grow to fit its content naturally instead, same as any other
-       responsive card; the fixed ratio is mainly for desktop viewing and
-       matching the shape of the downloaded PDF. */
-    .certificate{ aspect-ratio:auto; }
-    .certificate__inner{ padding:36px 22px; }
-    .certificate__footer{ flex-direction:column; gap:4px; text-align:center; padding:10px 22px; }
-    .certificate__signatures{ gap:32px; }
-  }
 
   /* ================================================================
      Paid-course certificate (navy/gold two-panel design).
@@ -381,8 +414,8 @@ const verifyUrl = certificate ? certificateVerifyUrl(certificate.id) : '';
      window resize and odd screen sizes all scale the WHOLE certificate as
      one piece instead of letting text and boxes drift apart.
      Reference design width = 1080px, so 1 design-px = 0.0926cqw.
-     Phones (<=600px) reflow to one column instead, since scaling a landscape
-     certificate down to 320px would make the text unreadably small.
+     Phones no longer reflow: the whole 1080px design is scaled down by .cert-fit
+     (transform), so it keeps exactly the same layout at every screen size.
      ================================================================ */
   .certificate-paid{
     /* Local tokens/reset so nothing from the site's global styles (body
@@ -390,14 +423,13 @@ const verifyUrl = certificate ? certificateVerifyUrl(certificate.id) : '';
        shift the design away from the approved replica. */
     --line:rgba(19,26,34,0.14);
     container-type:inline-size;
-    width:100%;
+    width:1080px; /* design width; scaled by .cert-fit. cqw units below resolve against THIS, so 1cqw is always 10.8px */
     aspect-ratio:1.55/1;
     position:relative;
     overflow:hidden;
     display:grid;
     grid-template-columns:1fr 32%;
     background:var(--paper-0);
-    box-shadow:0 20px 50px rgba(11,20,31,.18);
     color:var(--ink-900);
     text-align:left;
     font-family:var(--font-body);
@@ -448,31 +480,4 @@ const verifyUrl = certificate ? certificateVerifyUrl(certificate.id) : '';
   .cp-certid{ font-size:.972cqw; }
   .cp-verifylink{ display:block; margin-top:.185cqw; font-size:.787cqw; letter-spacing:0; white-space:nowrap; color:inherit; text-decoration:underline; text-underline-offset:2px; }
 
-  @media (max-width: 600px) {
-    .certificate-paid{ aspect-ratio:auto; grid-template-columns:1fr; }
-    .cp-left{ padding:28px 22px; gap:24px; }
-    .cp-logo{ gap:10px; }
-    .cp-logo-mark{ width:28px; height:28px; }
-    .cp-wordmark{ font-size:13px; }
-    .cp-headline{ font-size:40px; margin-top:14px; }
-    .cp-subhead{ font-size:12px; margin-top:8px; }
-    .cp-presented, .cp-desc{ font-size:14px; }
-    .cp-recipient{ font-size:28px; margin:4px 0 12px; }
-    .cp-course{ font-size:17px; margin-top:6px; }
-    .cp-date{ font-size:13px; margin-top:6px; }
-    .cp-sigs{ gap:24px; flex-wrap:wrap; }
-    .cp-sig-img{ height:34px; max-width:130px; margin-top:0; margin-bottom:2px; }
-    .cp-sig-name{ font-size:15px; }
-    .cp-sig-role{ font-size:11px; margin-top:4px; padding-top:5px; }
-    .cp-right{ padding:28px 22px; gap:16px; }
-    .cp-right::after{ width:8px; }
-    .cp-seal{ width:84px; margin-top:0; }
-    .cp-bottom{ width:100%; }
-    .cp-verifybox{ padding:10px 12px; gap:10px; }
-    .cp-verifybox :global(.cp-qr){ width:88px; height:88px; }
-    .cp-verifytext{ font-size:11px; }
-    .cp-meta{ margin-top:4px; }
-    .cp-certid{ font-size:12px; }
-    .cp-verifylink{ font-size:10px; white-space:normal; word-break:break-all; }
-  }
 </style>
