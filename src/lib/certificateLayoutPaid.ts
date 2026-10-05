@@ -21,6 +21,7 @@ import {
   FONT_SANS_BOLD_BASE64,
 } from './certificateAssets';
 import type { CertificatePdfArgs } from './certificateLayout';
+import { buildQrMatrix, qrRuns, certificateVerifyUrl } from './certificateQr';
 
 // `kind` is optional so existing callers keep working; 'workshop' only changes wording.
 export type PaidCertificatePdfArgs = CertificatePdfArgs & { kind?: string };
@@ -69,14 +70,6 @@ function ensureFontsRegistered(doc: PdfLike) {
 
   fontsRegisteredFor.add(doc);
 }
-
-// Same 16 pixels as the QR-style glyph on the web certificate (8x8 grid).
-const QR_CELLS: Array<[number, number, number]> = [
-  [0, 0, 2], [6, 0, 2], [0, 6, 2],
-  [3, 0, 1], [4, 1, 1], [2, 2, 1], [5, 2, 1], [3, 3, 1], [4, 4, 1],
-  [6, 3, 1], [1, 4, 1], [5, 5, 1], [7, 5, 1], [2, 6, 1], [4, 6, 1],
-  [6, 6, 1], [3, 7, 1], [5, 7, 1],
-];
 
 export function drawCertificatePaid(doc: PdfLike, args: PaidCertificatePdfArgs): void {
   ensureFontsRegistered(doc);
@@ -336,10 +329,17 @@ export function drawCertificatePaid(doc: PdfLike, args: PaidCertificatePdfArgs):
 
   // ---- bottom group: verify box + id + link, anchored to the bottom --------
   const linkStr = `thepsychologysquare.com/certificates/${args.certId}`;
+  const verifyUrl = certificateVerifyUrl(args.certId);
   const linkSize = 8.5;
   const linkW = width(linkStr, MONO, 'normal', linkSize);
-  const boxW = Math.min(Math.max(linkW, 178), rContentW);
-  const boxH = 46 + 12 * 2 + 2; // qr + padding + borders
+
+  // Real QR encoding the verification URL. 92 design px (~2.8px per module,
+  // ~0.6mm on A4) is large enough to scan reliably from a printed page; the
+  // white box supplies the >=4-module quiet zone the spec requires.
+  const qr = buildQrMatrix(verifyUrl);
+  const QR_SIZE = 92, QR_PAD = 12;
+  const boxW = Math.min(Math.max(linkW, 200), rContentW);
+  const boxH = QR_SIZE + QR_PAD * 2 + 2; // qr + padding + borders
   const metaH = 10 + 10.5 * 1.6 + 2 + linkSize * 1.6;
   const groupTop = H - rPadY - (boxH + metaH);
   const boxX = rcx - boxW / 2;
@@ -348,11 +348,20 @@ export function drawCertificatePaid(doc: PdfLike, args: PaidCertificatePdfArgs):
   stroke(LINE_ON_WHITE, 1);
   rect(boxX, groupTop, boxW, boxH, 'FD');
 
-  const qrX = boxX + 1 + 13, qrY = groupTop + 1 + 12, cell = 46 / 8;
+  const qrX = boxX + 1 + QR_PAD, qrY = groupTop + 1 + QR_PAD, cell = QR_SIZE / qr.size;
   fill(NAVY_950);
-  for (const [cx, cy, s] of QR_CELLS) rect(qrX + cx * cell, qrY + cy * cell, s * cell, s * cell, 'F');
+  // Dark modules are merged into horizontal runs and bled by a hair so PDF
+  // viewers' anti-aliasing can't leave light seams between adjacent rects.
+  const bleed = 0.12;
+  for (const [c, r, len] of qrRuns(qr)) {
+    rect(qrX + c * cell - bleed, qrY + r * cell - bleed, len * cell + bleed * 2, cell + bleed * 2, 'F');
+  }
+  // Clicking the QR in a PDF viewer opens the same page a scan would.
+  if (typeof doc.link === 'function') {
+    doc.link(qrX * k, qrY * k, QR_SIZE * k, QR_SIZE * k, { url: verifyUrl });
+  }
 
-  const vtX = qrX + 46 + 11;
+  const vtX = qrX + QR_SIZE + 12;
   const vtLH = 11 * 1.4;
   const vtTop = groupTop + boxH / 2 - vtLH;
   text('VERIFY', vtX, vtTop + (vtLH - 11 * 1.3) / 2 + 11 * 1.025, { font: MONO, style: 'bold', size: 11, color: INK_900, spacing: 11 * 0.03 });
@@ -368,6 +377,6 @@ export function drawCertificatePaid(doc: PdfLike, args: PaidCertificatePdfArgs):
   doc.line((rcx - linkW / 2) * k, (linkBase + 1.6) * k, (rcx + linkW / 2) * k, (linkBase + 1.6) * k);
   // clickable, like the web link
   if (typeof doc.link === 'function') {
-    doc.link((rcx - linkW / 2) * k, linkTop * k, linkW * k, linkSize * 1.6 * k, { url: `https://${linkStr}` });
+    doc.link((rcx - linkW / 2) * k, linkTop * k, linkW * k, linkSize * 1.6 * k, { url: verifyUrl });
   }
 }

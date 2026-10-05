@@ -2,6 +2,7 @@
 export const prerender = false;
 import { env } from 'cloudflare:workers';
 import Layout from '../../layouts/Layout.astro';
+import { certificateQrSvg, certificateVerifyUrl } from '../../lib/certificateQr';
 
 const { id } = Astro.params;
 
@@ -31,6 +32,13 @@ const isPaidCert = !!certificate?.is_paid;
 // paid design with "workshop" wording; everything else says "course".
 const kindWord = certificate?.kind === 'workshop' ? 'workshop' : 'course';
 const kindWordCap = kindWord === 'workshop' ? 'Workshop' : 'Course';
+
+// Real QR for the paid design's "Verify authenticity" box. It encodes this
+// certificate's own public URL, so scanning lands on the live D1-backed
+// record (same page you're looking at). Generated on the server per request
+// from the ID -- no stored image, nothing to go stale.
+const qrSvg = isPaidCert && certificate ? certificateQrSvg(certificate.id) : '';
+const verifyUrl = certificate ? certificateVerifyUrl(certificate.id) : '';
 ---
 <Layout
   title={certificate ? `Certificate — ${certificate.course_title}` : 'Certificate not found'}
@@ -154,19 +162,12 @@ const kindWordCap = kindWord === 'workshop' ? 'Workshop' : 'Course';
                 </svg>
                 <div class="cp-bottom">
                   <div class="cp-verifybox">
-                    <svg class="cp-qr" viewBox="0 0 8 8" shape-rendering="crispEdges" aria-hidden="true">
-                      <rect x="0" y="0" width="2" height="2"></rect><rect x="6" y="0" width="2" height="2"></rect><rect x="0" y="6" width="2" height="2"></rect>
-                      <rect x="3" y="0" width="1" height="1"></rect><rect x="4" y="1" width="1" height="1"></rect><rect x="2" y="2" width="1" height="1"></rect>
-                      <rect x="5" y="2" width="1" height="1"></rect><rect x="3" y="3" width="1" height="1"></rect><rect x="4" y="4" width="1" height="1"></rect>
-                      <rect x="6" y="3" width="1" height="1"></rect><rect x="1" y="4" width="1" height="1"></rect><rect x="5" y="5" width="1" height="1"></rect>
-                      <rect x="7" y="5" width="1" height="1"></rect><rect x="2" y="6" width="1" height="1"></rect><rect x="4" y="6" width="1" height="1"></rect>
-                      <rect x="6" y="6" width="1" height="1"></rect><rect x="3" y="7" width="1" height="1"></rect><rect x="5" y="7" width="1" height="1"></rect>
-                    </svg>
+                    <Fragment set:html={qrSvg} />
                     <div class="cp-verifytext">VERIFY<br />AUTHENTICITY</div>
                   </div>
                   <div class="cp-meta">
                     <div class="cp-certid">{certificate.id}</div>
-                    <a class="cp-verifylink" href={`https://thepsychologysquare.com/certificates/${certificate.id}`} target="_blank" rel="noopener">thepsychologysquare.com/certificates/{certificate.id}</a>
+                    <a class="cp-verifylink" href={verifyUrl} target="_blank" rel="noopener">thepsychologysquare.com/certificates/{certificate.id}</a>
                   </div>
                 </div>
               </div>
@@ -440,8 +441,8 @@ const kindWordCap = kindWord === 'workshop' ? 'Workshop' : 'Course';
   .cp-seal{ width:36%; height:auto; aspect-ratio:1; margin-top:6%; overflow:visible; }
 
   .cp-bottom{ min-width:0; max-width:100%; }
-  .cp-verifybox{ background:#fff; border:1px solid var(--line); padding:1.111cqw 1.204cqw; display:flex; align-items:center; gap:1.019cqw; width:100%; }
-  .cp-qr{ width:4.259cqw; height:4.259cqw; flex:none; fill:var(--navy-950); shape-rendering:crispEdges; }
+  .cp-verifybox{ background:#fff; border:1px solid var(--line); padding:1.111cqw; display:flex; align-items:center; gap:1.111cqw; width:100%; }
+  .cp-verifybox :global(.cp-qr){ width:8.519cqw; height:8.519cqw; flex:none; display:block; fill:var(--navy-950); shape-rendering:crispEdges; }
   .cp-verifytext{ font-family:var(--font-mono); font-size:1.019cqw; font-weight:700; letter-spacing:.03em; line-height:1.4; color:var(--ink-900); }
   .cp-meta{ font-family:var(--font-mono); color:var(--paper-50); margin-top:.926cqw; text-align:center; line-height:1.6; }
   .cp-certid{ font-size:.972cqw; }
@@ -468,7 +469,7 @@ const kindWordCap = kindWord === 'workshop' ? 'Workshop' : 'Course';
     .cp-seal{ width:84px; margin-top:0; }
     .cp-bottom{ width:100%; }
     .cp-verifybox{ padding:10px 12px; gap:10px; }
-    .cp-qr{ width:40px; height:40px; }
+    .cp-verifybox :global(.cp-qr){ width:88px; height:88px; }
     .cp-verifytext{ font-size:11px; }
     .cp-meta{ margin-top:4px; }
     .cp-certid{ font-size:12px; }

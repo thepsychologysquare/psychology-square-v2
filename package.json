@@ -11,13 +11,17 @@
     "preview": "npm run build && wrangler dev",
     "astro": "astro",
     "generate-types": "wrangler types",
-    "deploy": "npm run build && wrangler deploy"
+    "deploy": "npm run build && wrangler deploy",
+	"db:local": "node scripts/setup-local-db.mjs",
+	"db:local:reset": "node scripts/setup-local-db.mjs --reset"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.1.4",
     "@astrojs/sitemap": "^3.7.3",
+    "@types/qrcode": "^1.5.6",
     "astro": "^7.1.3",
-    "jspdf": "^4.2.1"
+    "jspdf": "^4.2.1",
+    "qrcode": "^1.5.4"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
