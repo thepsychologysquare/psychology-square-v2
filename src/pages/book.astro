@@ -3,8 +3,8 @@ export const prerender = false;
 import Layout from '../layouts/Layout.astro';
 ---
 <Layout title="Book a session" fullTitle="Book Online Therapy in Lahore | The Psychology Square" description="Book an individual or couples therapy session in Lahore, online or in-person — licensed clinical psychologists, evening & weekend slots available." image="/images/book-cover.jpg">
-  <section class="book-hero">
-    <div class="wrap">
+  <section class="hero">
+    <div class="wrap wrap-profile">
       <span class="eyebrow">Get in touch</span>
       <h1>Book a session.</h1>
       <p class="book-hero-sub">Pick an available time, send payment, and attach your receipt — we'll confirm your slot by email.</p>
@@ -169,7 +169,7 @@ import Layout from '../layouts/Layout.astro';
 </Layout>
 
 <style is:global>
-  .book-hero{ background:var(--navy-950); color:var(--paper-0); padding:64px 0 48px; }
+  .book-hero{ background:var(--navy-950); color:var(--paper-0); padding:120px 0 48px; }
   .book-hero h1{ font-size:clamp(32px,4vw,44px); color:var(--paper-0); margin-top:10px; }
   .book-hero-sub{ color:rgba(248,249,246,0.72); font-size:16px; max-width:520px; margin-top:14px; }
 
@@ -280,6 +280,9 @@ textarea {
   .book-confirmation{ position:sticky; top:100px; border:1px solid var(--line); border-radius:2px; padding:28px; background:var(--paper-50); }
   .book-confirmation h2{ font-size:24px; margin-top:8px; margin-bottom:16px; }
   .confirmation-ref{ font-family:var(--font-mono); font-size:20px; color:var(--gold-500); letter-spacing:0.04em; margin-bottom:16px; }
+  
+  @media (max-width: 480px){
+	.wrap-profile {margin-top: 85px;}
 </style>
 
 <script>
