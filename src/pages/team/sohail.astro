@@ -1,12 +1,19 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import TeamProfile from '../../components/TeamProfile.astro';
 
 const siteOrigin = 'https://thepsychologysquare.com';
-const specialties = ['CBT', 'Addiction Recovery', 'ADHD', 'Crisis Intervention', 'Psychometrics'];
+// Update this whenever the profile text is edited (shown on the page and in schema).
+const reviewed = 'October 2026';
+const reviewedISO = '2026-10-05';
+
+const specialties = ['Depression', 'Anxiety', 'Trauma', 'Substance Use', 'ADHD', 'Crisis Intervention', 'Psychometrics', 'Tutoring'];
+const rlkuPage = 'https://rlku.edu.pk/faculty-of-social-sciences/muhammad-sohail.php';
 
 const personJson = {
   "@context": "https://schema.org",
   "@type": "Person",
+  "@id": `${siteOrigin}/team/sohail#person`,
   "name": "Muhammad Sohail",
   "jobTitle": "Clinical Psychologist & Lecturer of Psychology",
   "description": "Founder of The Psychology Square, Clinical Psychologist, and Lecturer of Psychology at Rashid Latif Khan University, Lahore.",
@@ -20,6 +27,10 @@ const personJson = {
     { "@type": "CollegeOrUniversity", "name": "University of Central Punjab" },
     { "@type": "CollegeOrUniversity", "name": "University of Peshawar" },
   ],
+  "hasCredential": [
+    { "@type": "EducationalOccupationalCredential", "credentialCategory": "degree", "name": "M.S. Clinical Psychology", "recognizedBy": { "@type": "CollegeOrUniversity", "name": "University of Central Punjab" } },
+    { "@type": "EducationalOccupationalCredential", "credentialCategory": "degree", "name": "B.S. Psychology", "recognizedBy": { "@type": "CollegeOrUniversity", "name": "University of Peshawar" } },
+  ],
   "memberOf": { "@type": "Organization", "name": "American Psychological Association" },
   "knowsAbout": specialties,
   "sameAs": [
@@ -27,8 +38,15 @@ const personJson = {
     "https://www.tiktok.com/@sohailpsych",
     "https://www.youtube.com/@sohailpsych",
     "https://web.facebook.com/sohailpsychologist",
-    "https://rlku.edu.pk/faculty-of-social-sciences/muhammad-sohail.php",
+    rlkuPage,
   ],
+};
+const profilePageJson = {
+  "@context": "https://schema.org",
+  "@type": "ProfilePage",
+  "url": `${siteOrigin}/team/sohail`,
+  "dateModified": reviewedISO,
+  "mainEntity": { "@id": `${siteOrigin}/team/sohail#person` },
 };
 const breadcrumbJson = {
   "@context": "https://schema.org",
@@ -39,6 +57,47 @@ const breadcrumbJson = {
     { "@type": "ListItem", "position": 3, "name": "Muhammad Sohail", "item": `${siteOrigin}/team/sohail` },
   ],
 };
+
+const facts = [
+  { label: 'Education', value: 'M.S. Clinical Psychology', sub: 'University of Central Punjab, 2023' },
+  { label: 'Teaching', value: 'Lecturer of Psychology', sub: 'Rashid Latif Khan University', href: rlkuPage },
+  { label: 'Membership', value: 'APA Member', sub: 'American Psychological Association' },
+  { label: 'Practice', value: 'Founder, 2019', sub: 'The Psychology Square' },
+];
+
+const services = [
+  { label: 'Therapy', href: '/services/therapy' },
+  { label: 'Psychology tutoring', href: '/services/tutoring' },
+  { label: 'Corporate wellbeing', href: '/services/corporate' },
+  { label: 'Research analysis', href: '/services/research-analysis' },
+];
+
+const more = [
+  {
+    title: 'Clinical training',
+    items: [
+      'Services Hospital',
+      'Lahore Institute of Special Care and Attention (LISCA)',
+      'Ehsas Clinic — addiction and psychological treatment program',
+    ],
+  },
+  {
+    title: 'Education & teaching',
+    items: [
+      'B.S. Psychology — University of Peshawar (2021)',
+      'Visiting Lecturer — FAST National University of Computer and Emerging Sciences',
+    ],
+  },
+  {
+    title: 'Research & presentations',
+    items: [
+      'Tayyaba, M., Ayaz, A., &amp; Sohail, M. (2026). Emotional Intelligence as a Predictor of Career Decision Self-Efficacy among Pakistani University Students. <em>Social Science Review Archives</em>.',
+      'Sohail, M., Waheed, S., &amp; Farooqi, R. (2024). Understanding emotion regulation in Pakistani children with ADHD. International Conference on Mental Wellbeing.',
+      'Sohail, M. (2023). The Development and Validation of an Emotion Regulation Scale for Children with ADHD. University of Central Punjab.',
+      'Conference presentations on ADHD, autism, and addiction recovery, national and international.',
+    ],
+  },
+];
 ---
 <Layout
   title="Muhammad Sohail"
@@ -47,156 +106,28 @@ const breadcrumbJson = {
   image="/images/sohail.jpg"
 >
   <script type="application/ld+json" set:html={JSON.stringify(personJson)} />
+  <script type="application/ld+json" set:html={JSON.stringify(profilePageJson)} />
   <script type="application/ld+json" set:html={JSON.stringify(breadcrumbJson)} />
 
-  <section class="profile-hero">
-    <div class="wrap">
-      <nav class="breadcrumbs" aria-label="Breadcrumb">
-        <a href="/">Home</a>
-        <span class="crumb-sep">/</span>
-        <a href="/team">Team</a>
-        <span class="crumb-sep">/</span>
-        <span class="crumb-current">Muhammad Sohail</span>
-      </nav>
-      <div class="profile-hero-inner">
-        <div class="avatar">
-          <img src="/images/sohail.jpg" alt="Muhammad Sohail" loading="lazy" onerror="this.classList.add('img-error')">
-          <span class="avatar-fallback">MS</span>
-        </div>
-        <div>
-		<h1>Muhammad Sohail</h1>
-		<span class="role"><strong>Founder &amp CEO · Clinical Psychologist & Lecturer of Psychology</strong></span>
-		<br>
-		<span class="role">
-        <a href="mailto:sohail@thepsychologysquare.com">sohail@thepsychologysquare.com</a>
-		<br> <a href="mailto:muhammad.sohail@rlku.edu.pk">muhammad.sohail@rlku.edu.pk</a>
-		</span>
-		</div>
-        <div class="social-links" aria-label="Social media profiles">
-      <a href="https://www.instagram.com/sohailpsych" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
-      </a>
-      <a href="https://www.tiktok.com/@sohailpsych" target="_blank" rel="noopener noreferrer" aria-label="TikTok">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"></path></svg>
-      </a>
-      <a href="https://www.youtube.com/@sohailpsych" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"></path><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon></svg>
-      </a>
-      <a href="https://web.facebook.com/sohailpsychologist" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
-      </a>
-    </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="section profile-about">
-    <div class="wrap" style="max-width: 720px;">
-      <p class="profile-lede">
-        Muhammad Sohail believes therapy works best when it's collaborative — a space to think things through, not a lecture. That principle shapes how he works, whether he's in a session, in front of a classroom, or building The Psychology Square itself.
-      </p>
-      <p>
-        He holds an M.S. in Clinical Psychology from the University of Central Punjab and a B.S. in Psychology from the University of Peshawar, and currently works as a lecturer of psychology at <a href="https://rlku.edu.pk/faculty-of-social-sciences/muhammad-sohail.php" target="_blank" rel="noopener noreferrer"><strong>Rashid Latif Khan University (RLKU)</strong></a> in Lahore. His clinical training spans hospital, disability-care, and addiction-treatment settings — including Services Hospital, the Lahore Institute of Special Care and Attention, and Ehsas Clinic's addiction and psychological treatment program.
-      </p>
-      <p>
-        Alongside clinical work, Muhammad is an active researcher, with published work and conference presentations on ADHD, autism, emotion regulation, and substance use disorders. He founded The Psychology Square in 2019, and remains a Member of the American Psychological Association.
-      </p>
-    </div>
-  </section>
-
-  <section class="section section--alt">
-    <div class="wrap" style="max-width: 720px;">
-      <p class="eyebrow" style="margin-bottom: 14px;">Specializes In</p>
-      <div class="category-pills">
-        {specialties.map((s) => <span class="topic-pill">{s}</span>)}
-      </div>
-      <p style="color: var(--ink-700); font-size: 15px; line-height: 1.7; margin-top: 20px;">
-        Sohail sees clients directly through our <a href="/services/therapy">therapy</a> service, leads <a href="/services/tutoring">psychology tutoring</a> and <a href="/services/corporate">corporate wellbeing</a> sessions, and provides statistical support through <a href="/services/research-analysis">research analysis</a>.
-      </p>
-    </div>
-  </section>
-
-  <section class="section">
-    <div class="wrap profile-grid">
-      <div>
-        <h2 class="profile-h2">Credentials</h2>
-        <ul class="credential-list">
-          <li>M.S. Clinical Psychology — University of Central Punjab (2023)</li>
-          <li>B.S. Psychology — University of Peshawar (2021)</li>
-          <li>Lecturer of Psychology — Rashid Latif Khan University (RLKU)</li>
-          <li>Member, American Psychological Association (APA)</li>
-        </ul>
-      </div>
-      <div>
-        <h2 class="profile-h2">Experience Highlights</h2>
-        <ul class="credential-list">
-          <li>Founder &amp; Clinical Psychologist, The Psychology Square (2019–present)</li>
-          <li>Trainee Clinical Psychologist — Services Hospital, LISCA, and Ehsas Addiction Treatment Centre</li>
-          <li>Visiting Lecturer, FAST National University of Computer and Emerging Sciences</li>
-          <li>Conference presenter — ADHD, autism, and addiction recovery, national &amp; international</li>
-        </ul>
-      </div>
-    </div>
-  </section>
-
-  <section class="section section--alt">
-    <div class="wrap" style="max-width: 720px;">
-      <h2 class="profile-h2">Selected Publications &amp; Research</h2>
-      <ul class="credential-list">
-        <li>Tayyaba, M., Ayaz, A., &amp; Sohail, M. (2026). Emotional Intelligence as a Predictor of Career Decision Self-Efficacy among Pakistani University Students. <em>Social Science Review Archives</em>.</li>
-        <li>Sohail, M. (2023). The Development and Validation of an Emotion Regulation Scale for Children with ADHD. University of Central Punjab.</li>
-        <li>Sohail, M., Waheed, S., &amp; Farooqi, R. (2024). Understanding emotion regulation in Pakistani children with ADHD. International Conference on Mental Wellbeing.</li>
-      </ul>
-    </div>
-  </section>
-
-  <section class="section">
-    <div class="wrap">
-      <div class="request-cta-banner">
-        <p>Ready to talk to Sohail?</p>
-        <div style="display:flex; gap:10px; flex-wrap:wrap;">
-          <a href="/book" class="btn btn--primary">Book Now</a>
-          <a href="mailto:sohail@thepsychologysquare.com" class="btn btn--primary">Email</a>
-        </div>
-      </div>
-    </div>
-  </section>
-
+  <TeamProfile
+    name="Muhammad Sohail"
+    firstName="Sohail"
+    initials="MS"
+    image="/images/sohail.jpg"
+    role="Founder & CEO · Clinical Psychologist · Lecturer"
+    emails={['sohail@thepsychologysquare.com', 'muhammad.sohail@rlku.edu.pk']}
+    socials={[
+      { name: 'instagram', url: 'https://www.instagram.com/sohailpsych' },
+      { name: 'tiktok', url: 'https://www.tiktok.com/@sohailpsych' },
+      { name: 'youtube', url: 'https://www.youtube.com/@sohailpsych' },
+      { name: 'facebook', url: 'https://web.facebook.com/sohailpsychologist' },
+    ]}
+    facts={facts}
+    lede="Muhammad Sohail believes therapy works best when it's collaborative — a space to think things through, not a lecture."
+    about="His clinical training spans hospital, disability-care, and addiction-treatment settings, and he has published and presented research on ADHD, autism, emotion regulation, and substance use."
+    focus={specialties}
+    services={services}
+    more={more}
+    reviewed={reviewed}
+  />
 </Layout>
-
-<style>
-  .breadcrumbs{
-    font-family: var(--font-mono); font-size: 12px; color: rgba(248,249,246,0.6);
-    margin-bottom: 28px; display:flex; flex-wrap:wrap; gap:6px; align-items:center;
-  }
-  .breadcrumbs a:hover{ color: var(--gold-300); }
-  .crumb-sep{ color: rgba(248,249,246,0.3); }
-  .crumb-current{ color: rgba(248,249,246,0.85); }
-
-  .profile-lede{
-    font-family: var(--font-display);
-    font-size: 22px;
-    line-height: 1.5;
-    color: var(--ink-900);
-    margin-bottom: 24px;
-  }
-  .profile-about p{ font-size: 16px; line-height: 1.75; color: var(--ink-700); margin-bottom: 18px; }
-
-  .category-pills{ display:flex; flex-wrap:wrap; gap:10px; }
-  .topic-pill{
-    font-family: var(--font-mono); font-size: 12.5px; letter-spacing: 0.04em; text-transform: uppercase;
-    color: var(--navy-700); border: 1px solid var(--line); padding: 9px 16px; border-radius: 999px;
-    background: var(--paper-0);
-  }
-
-  .profile-h2{ font-size: 15px; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.08em; color: var(--sage-500); margin-bottom: 18px; }
-  .profile-grid{ display:grid; grid-template-columns: 1fr 1fr; gap: 48px; }
-  .credential-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:14px; }
-  .credential-list li{ font-size: 14.5px; color: var(--ink-700); line-height: 1.6; padding-top: 14px; border-top: 1px solid var(--line); }
-  .credential-list li:first-child{ border-top: none; padding-top: 0; }
-
-  @media (max-width: 700px){
-    .profile-grid{ grid-template-columns: 1fr; gap: 40px; }
-    .profile-lede{ font-size: 19px; }
-  }
-</style>

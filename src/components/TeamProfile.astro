@@ -1,0 +1,322 @@
+---
+// Shared layout for individual team profile pages (/team/sohail, /team/sehar).
+// Each page supplies its own data; this keeps both profiles visually identical
+// and means a new team member only needs a data file, not a new layout.
+
+interface Fact { label: string; value: string; sub: string; href?: string }
+interface Group { title: string; items: string[] }
+interface Social { name: 'instagram' | 'tiktok' | 'youtube' | 'facebook' | 'linkedin'; url: string }
+interface Service { label: string; href: string }
+
+interface Props {
+  name: string;
+  firstName: string;
+  initials: string;
+  image: string;
+  role: string;
+  emails: string[];
+  socials: Social[];
+  facts: Fact[];
+  lede: string;
+  about: string;
+  focus: string[];
+  services: Service[];
+  moreTitle?: string;
+  more: Group[];
+  reviewed: string; // e.g. "October 2026" — update whenever the profile is edited
+}
+
+const {
+  name, firstName, initials, image, role, emails, socials, facts,
+  lede, about, focus, services, moreTitle = 'Training, research & publications',
+  more, reviewed,
+} = Astro.props;
+
+const icons: Record<Social['name'], string> = {
+  instagram: '<rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>',
+  tiktok: '<path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"></path>',
+  youtube: '<path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"></path><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon>',
+  facebook: '<path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>',
+  linkedin: '<path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle>',
+};
+const socialLabel: Record<Social['name'], string> = {
+  instagram: 'Instagram', tiktok: 'TikTok', youtube: 'YouTube', facebook: 'Facebook', linkedin: 'LinkedIn',
+};
+---
+
+<section class="profile-hero tp-hero">
+  <div class="wrap">
+    <nav class="breadcrumbs" aria-label="Breadcrumb">
+      <a href="/">Home</a>
+      <span class="crumb-sep">/</span>
+      <a href="/team">Team</a>
+      <span class="crumb-sep">/</span>
+      <span class="crumb-current">{name}</span>
+    </nav>
+
+    <div class="tp-hero-inner">
+      <div class="tp-photo">
+        <div class="avatar">
+          <img src={image} alt={`${name}, ${role}`} width="132" height="132" loading="eager" onerror="this.classList.add('img-error')">
+          <span class="avatar-fallback">{initials}</span>
+        </div>
+      </div>
+
+      <div class="tp-id">
+        <h1>{name}</h1>
+        <p class="role">{role}</p>
+
+        <div class="tp-contact">
+          {emails.map((e) => (
+            <a class="tp-mail" href={`mailto:${e}`}>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="m22 7-10 6L2 7"></path></svg>
+              {e}
+            </a>
+          ))}
+        </div>
+
+        <div class="social-links" aria-label="Social media profiles">
+          {socials.map((s) => (
+            <a href={s.url} target="_blank" rel="noopener noreferrer" aria-label={socialLabel[s.name]}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={icons[s.name]} />
+            </a>
+          ))}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="tp-facts" aria-label="Credentials at a glance">
+  <div class="wrap">
+    <ul class="tp-facts-grid">
+      {facts.map((f) => (
+        <li class="tp-fact">
+          <span class="tp-fact-label">{f.label}</span>
+          <strong class="tp-fact-value">{f.value}</strong>
+          <span class="tp-fact-sub">
+            {f.href
+              ? <a href={f.href} target="_blank" rel="noopener noreferrer">{f.sub} <span aria-hidden="true">↗</span></a>
+              : f.sub}
+          </span>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<section class="section tp-about">
+  <div class="wrap tp-narrow">
+    <p class="tp-lede">{lede}</p>
+    <p class="tp-body">{about}</p>
+  </div>
+</section>
+
+<section class="section section--alt">
+  <div class="wrap tp-split">
+    <div>
+      <h2 class="tp-h2">Focus areas</h2>
+      <div class="tp-pills">
+        {focus.map((s) => <span class="topic-pill">{s}</span>)}
+      </div>
+    </div>
+    <div>
+      <h2 class="tp-h2">Sessions &amp; services</h2>
+      <div class="tp-links">
+        {services.map((s) => <a href={s.href} class="tp-link">{s.label} <span aria-hidden="true">→</span></a>)}
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap tp-narrow">
+    <details class="tp-more">
+      <summary>{moreTitle}</summary>
+      <div class="tp-more-body">
+        {more.map((g) => (
+          <div class="tp-group">
+            <h3 class="tp-h2">{g.title}</h3>
+            <ul class="tp-list">
+              {g.items.map((i) => <li set:html={i} />)}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </details>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap tp-narrow">
+    <aside class="tp-note" role="note" aria-label="Before you book">
+      <p class="tp-note-title">Before you book</p>
+      <p>
+        Sessions are scheduled, outpatient therapy and not an emergency service. If you're in crisis in Punjab,
+        call <strong>Rescue 1122</strong> or go to your nearest emergency department.
+        <br><a href="/disclaimer">Disclaimer</a>.
+      </p>
+    </aside>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <div class="request-cta-banner">
+      <p>Ready to talk to {firstName}?</p>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <a href="/book" class="btn btn--primary">Book Now</a>
+        <a href={`mailto:${emails[0]}`} class="btn btn--primary">Email</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* ---- Breadcrumbs ---- */
+  .breadcrumbs{
+    font-family: var(--font-mono); font-size: 12px; color: rgba(248,249,246,0.6);
+    margin-bottom: 28px; display:flex; flex-wrap:wrap; gap:6px; align-items:center;
+  }
+  .breadcrumbs a:hover{ color: var(--gold-300); }
+  .crumb-sep{ color: rgba(248,249,246,0.3); }
+  .crumb-current{ color: rgba(248,249,246,0.85); }
+
+  /* ---- Hero ---- */
+  .tp-hero{
+    padding-bottom: 92px;
+    background-image:
+      radial-gradient(circle at top right, rgba(199,164,74,0.18), transparent 55%),
+      radial-gradient(circle at bottom left, rgba(28,49,76,0.55), transparent 55%);
+  }
+  .tp-hero-inner{ display:flex; align-items:center; gap: 32px; }
+  .tp-photo .avatar{
+    width: 132px; height: 132px; margin: 0;
+    box-shadow: 0 0 0 3px var(--navy-950), 0 0 0 5px var(--gold-500), 0 18px 36px -12px rgba(0,0,0,0.5);
+  }
+  .tp-id h1{ font-size: clamp(30px, 4.4vw, 46px); line-height: 1.1; margin-bottom: 10px; }
+  .tp-id .role{ font-size: 14px; margin: 0 0 16px; }
+  .tp-contact{ display:flex; flex-wrap:wrap; gap: 6px 20px; margin-bottom: 4px; }
+  .tp-mail{
+    display:inline-flex; align-items:center; gap:8px;
+    font-size: 14px; color: rgba(248,249,246,0.8);
+  }
+  .tp-mail:hover{ color: var(--gold-300); }
+
+  /* ---- Credentials at a glance (overlaps hero) ---- */
+  .tp-facts{ position: relative; margin-top: -54px; }
+  .tp-facts-grid{
+    list-style:none; margin:0; padding:0;
+    display:grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+  }
+  .tp-fact{
+    display:flex; flex-direction:column; gap: 6px;
+    background: var(--paper-0);
+    border: 1px solid var(--line);
+    border-top: 3px solid var(--gold-500);
+    border-radius: 10px;
+    padding: 20px 20px 18px;
+    box-shadow: 0 16px 32px -18px rgba(11,20,31,0.35);
+  }
+  .tp-fact-label{
+    font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--sage-500);
+  }
+  .tp-fact-value{
+    font-family: var(--font-display); font-size: 18px; line-height: 1.25;
+    font-weight: 600; color: var(--ink-900);
+  }
+  .tp-fact-sub{ font-size: 13.5px; line-height: 1.45; color: var(--ink-600); }
+  .tp-fact-sub a{ border-bottom: 1px solid var(--gold-500); }
+  .tp-fact-sub a:hover{ color: var(--gold-500); }
+
+  /* ---- About ---- */
+  .tp-about{ padding-top: 44px; }
+  .tp-narrow{ max-width: 720px; }
+  .tp-lede{
+    font-family: var(--font-display); font-size: 24px; line-height: 1.45;
+    color: var(--ink-900); margin-bottom: 18px;
+  }
+  .tp-body{ font-size: 16px; line-height: 1.75; color: var(--ink-600); }
+
+  /* ---- Focus areas + services ---- */
+  .section--alt{ padding: 40px 0; }
+  .tp-split{ display:grid; grid-template-columns: 1fr 1fr; gap: 48px; }
+  .tp-h2{
+    font-family: var(--font-mono); font-size: 13px; font-weight: 500;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--sage-500); margin-bottom: 16px;
+  }
+  .tp-pills{ display:flex; flex-wrap:wrap; gap:10px; }
+  .topic-pill{
+    font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase;
+    color: var(--navy-700); border: 1px solid var(--line); padding: 8px 15px; border-radius: 999px;
+    background: var(--paper-0);
+  }
+  .tp-links{ display:flex; flex-direction:column; gap: 4px; }
+  .tp-link{
+    display:flex; justify-content:space-between; align-items:center;
+    padding: 11px 0; border-bottom: 1px solid var(--line);
+    font-size: 15px; font-weight: 500; color: var(--navy-700);
+    transition: color .2s var(--ease), padding-left .2s var(--ease);
+  }
+  .tp-link:hover{ color: var(--gold-500); padding-left: 6px; }
+
+  /* ---- Collapsible detail ---- */
+  .tp-more summary{
+    list-style:none; cursor:pointer;
+    display:flex; justify-content:space-between; align-items:center; gap: 16px;
+    padding: 18px 22px;
+    background: var(--paper-0); border: 1px solid var(--line); border-radius: 12px;
+    font-family: var(--font-display); font-size: 18px; font-weight: 600; color: var(--ink-900); margin-top: 25px;
+    transition: border-color .2s var(--ease);
+  }
+  .tp-more summary::-webkit-details-marker{ display:none; }
+  .tp-more summary::after{
+    content: '+'; font-family: var(--font-mono); font-size: 22px; line-height: 1; color: var(--gold-500);
+  }
+  .tp-more[open] summary::after{ content: '\2013'; }
+  .tp-more summary:hover{ border-color: var(--gold-500); }
+  .tp-more summary:focus-visible{ outline: 2px solid var(--gold-500); outline-offset: 3px; }
+  .tp-more-body{ padding: 26px 6px 4px; display:flex; flex-direction:column; gap: 28px; }
+  .tp-group .tp-h2{ margin-bottom: 12px; }
+  .tp-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap: 12px; }
+  .tp-list li{
+    font-size: 14.5px; line-height: 1.6; color: var(--ink-600);
+    padding-top: 12px; border-top: 1px solid var(--line);
+  }
+  .tp-list li:first-child{ border-top:none; padding-top:0; }
+  .tp-list :global(a){ color: var(--navy-700); border-bottom: 1px solid var(--gold-500); }
+
+  /* ---- Trust / safety note ---- */
+  .tp-note{
+    padding: 20px 22px;
+    border: 1px solid var(--line); border-left: 3px solid var(--sage-500);
+    border-radius: 4px; background: var(--paper-50);
+    font-size: 14.5px; line-height: 1.65; color: var(--ink-900);
+  }
+  .tp-note-title{
+    font-family: var(--font-mono); font-size: 12px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.06em; color: var(--sage-500); margin-bottom: 6px;
+  }
+  .tp-note a{ text-decoration: underline; text-underline-offset: 2px; }
+  .tp-note a:hover{ color: var(--gold-500); }
+  .tp-note-meta{ margin-top: 8px; font-size: 12.5px; color: var(--ink-600); }
+
+  /* ---- Responsive ---- */
+  @media (max-width: 960px){
+    .tp-facts-grid{ grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 700px){
+    .tp-hero{ padding: 40px 0 72px; }
+    .tp-hero-inner{ flex-direction: column; align-items: flex-start; gap: 22px; }
+    .tp-photo .avatar{ width: 112px; height: 112px; }
+    .tp-facts{ margin-top: -40px; }
+    .tp-split{ grid-template-columns: 1fr; gap: 32px; }
+    .tp-lede{ font-size: 20px; }
+  }
+  @media (max-width: 480px){
+    .tp-facts-grid{ grid-template-columns: 1fr; }
+	.wrap {margin-top: 85px;}
+  }
+</style>

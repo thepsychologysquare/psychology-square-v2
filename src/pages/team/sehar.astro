@@ -1,12 +1,19 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import TeamProfile from '../../components/TeamProfile.astro';
 
 const siteOrigin = 'https://thepsychologysquare.com';
-const specialties = ['Campus Counseling', 'Crisis Intervention', 'Group Therapy', 'Psychoeducation', 'Substance Use Disorders'];
+// Update this whenever the profile text is edited (shown on the page and in schema).
+const reviewed = 'October 2026';
+const reviewedISO = '2026-10-05';
+
+const specialties = ['Depression', 'Anxiety', 'Trauma', 'Counseling', 'Crisis Intervention', 'Couples Therapy', 'Psychoeducation',];
+const umtPage = 'https://spp.umt.edu.pk/happinesscenter/Meet-Our-Team.aspx';
 
 const personJson = {
   "@context": "https://schema.org",
   "@type": "Person",
+  "@id": `${siteOrigin}/team/sehar#person`,
   "name": "Sehar Waheed",
   "jobTitle": "Clinical Psychologist & Counselor",
   "description": "Co-CEO of The Psychology Square, Clinical Psychologist at the Happiness Center, University of Management and Technology (UMT), Lahore.",
@@ -20,6 +27,10 @@ const personJson = {
     { "@type": "CollegeOrUniversity", "name": "University of Central Punjab" },
     { "@type": "CollegeOrUniversity", "name": "COMSATS University" },
   ],
+  "hasCredential": [
+    { "@type": "EducationalOccupationalCredential", "credentialCategory": "degree", "name": "M.S. Clinical Psychology", "recognizedBy": { "@type": "CollegeOrUniversity", "name": "University of Central Punjab" } },
+    { "@type": "EducationalOccupationalCredential", "credentialCategory": "degree", "name": "B.S. Psychology (Gold Medalist)", "recognizedBy": { "@type": "CollegeOrUniversity", "name": "COMSATS University" } },
+  ],
   "memberOf": { "@type": "Organization", "name": "American Psychological Association" },
   "knowsAbout": specialties,
   "sameAs": [
@@ -27,8 +38,15 @@ const personJson = {
     "https://www.tiktok.com/@seharthepsychologist",
     "https://www.youtube.com/@SeharThePsychologist",
     "https://www.linkedin.com/in/sehar-waheed",
-    "https://spp.umt.edu.pk/happinesscenter/Meet-Our-Team.aspx",
+    umtPage,
   ],
+};
+const profilePageJson = {
+  "@context": "https://schema.org",
+  "@type": "ProfilePage",
+  "url": `${siteOrigin}/team/sehar`,
+  "dateModified": reviewedISO,
+  "mainEntity": { "@id": `${siteOrigin}/team/sehar#person` },
 };
 const breadcrumbJson = {
   "@context": "https://schema.org",
@@ -39,161 +57,70 @@ const breadcrumbJson = {
     { "@type": "ListItem", "position": 3, "name": "Sehar Waheed", "item": `${siteOrigin}/team/sehar` },
   ],
 };
+
+const facts = [
+  { label: 'Education', value: 'M.S. Clinical Psychology', sub: 'University of Central Punjab' },
+  { label: 'Distinction', value: 'Gold Medalist', sub: 'B.S. Psychology, COMSATS University' },
+  { label: 'Current role', value: 'Clinical Psychologist / Counsellor', },
+  { label: 'Membership', value: 'APA Member', sub: 'American Psychological Association' },
+];
+
+const services = [
+  { label: 'Therapy', href: '/services/therapy' },
+  { label: 'Corporate wellbeing', href: '/services/corporate' },
+  { label: 'Psychology tutoring', href: '/services/tutoring' },
+];
+
+const more = [
+  {
+    title: 'Clinical training & experience',
+    items: [
+      'Research Associate &amp; Campus Counsellor — University of Central Punjab',
+      'Trainee Clinical Psychologist — Focus Rehab (supervised addiction treatment) and LISCA',
+    ],
+  },
+  {
+    title: 'Teaching',
+    items: ['Visiting Lecturer — COMSATS, FAST, and Lahore Leads University'],
+  },
+  {
+    title: 'Publications',
+    items: [
+      'Waheed, S. (2023). Unspecified Somatic Symptom and Related Disorder: Case Study and Treatment. Insight Medical Publishing.',
+      'Fatima, S., Waheed, S., Daud, S., Daud, S., &amp; Aslam, S. (2022). Gratitude, Self-Regulation, and Academic Motivation During COVID-19 in University Students. <em>Webology</em>.',
+    ],
+  },
+];
 ---
 <Layout
   title="Sehar Waheed"
   fullTitle="Sehar Waheed, Clinical Psychologist | The Psychology Square"
-  description="Meet Sehar Waheed, Co-CEO of The Psychology Square and Clinical Psychologist from Lahore, a relationship counseling & crisis intervention expert."
+  description="Meet Sehar Waheed, Co-CEO of The Psychology Square and Clinical Psychologist in Lahore, specializing in campus counseling, group therapy, and substance use."
   image="/images/sehar.jpg"
 >
   <script type="application/ld+json" set:html={JSON.stringify(personJson)} />
+  <script type="application/ld+json" set:html={JSON.stringify(profilePageJson)} />
   <script type="application/ld+json" set:html={JSON.stringify(breadcrumbJson)} />
 
-  <section class="profile-hero">
-    <div class="wrap">
-      <nav class="breadcrumbs" aria-label="Breadcrumb">
-        <a href="/">Home</a>
-        <span class="crumb-sep">/</span>
-        <a href="/team">Team</a>
-        <span class="crumb-sep">/</span>
-        <span class="crumb-current">Sehar Waheed</span>
-      </nav>
-      <div class="profile-hero-inner">
-        <div class="avatar">
-          <img src="/images/sehar.jpg" alt="Sehar Waheed" loading="lazy" onerror="this.classList.add('img-error')">
-          <span class="avatar-fallback">SW</span>
-        </div>
-		<div>
-		<h1>Sehar Waheed</h1>
-		<span class="role"><strong>Co-CEO &middot; Clinical Psychologist &amp; Counselor</strong></span>
-		<br>
-		<span class="role">
-        <a href="mailto:sehar@thepsychologysquare.com">sehar@thepsychologysquare.com</a>
-		</span>
-		</div>
-        <div class="social-links" aria-label="Social media profiles">
-      <a href="https://www.instagram.com/seharthepsychologist" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
-      </a>
-      <a href="https://www.tiktok.com/@seharthepsychologist" target="_blank" rel="noopener noreferrer" aria-label="TikTok">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"></path></svg>
-      </a>
-      <a href="https://www.youtube.com/@SeharThePsychologist" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"></path><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon></svg>
-      </a>
-      <a href="https://www.linkedin.com/in/sehar-waheed" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
-      </a>
-    </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="section profile-about">
-    <div class="wrap" style="max-width: 720px;">
-      <p class="profile-lede">
-        Sehar Waheed's work sits at the intersection of clinical care and community — years spent not just in the therapy room, but building the wellbeing infrastructure around it, from campus counseling programs to crisis-response training.
-      </p>
-      <p>
-        A Gold Medalist in her B.S. in Psychology from COMSATS University, she went on to complete an M.S. in Clinical Psychology at the University of Central Punjab. She currently serves as Clinical Psychologist / Clinical Counsellor at a UMT, Lahore.
-      </p>
-      <p>
-        Her clinical background includes campus counseling and research work at the University of Central Punjab, and supervised addiction-treatment experience at Focus Rehab. She also teaches as a visiting lecturer in psychology at COMSATS, FAST, and Lahore Leads University, and is a Member of the American Psychological Association.
-      </p>
-    </div>
-  </section>
-
-  <section class="section section--alt">
-    <div class="wrap" style="max-width: 720px;">
-      <p class="eyebrow" style="margin-bottom: 14px;">Specializes In</p>
-      <div class="category-pills">
-        {specialties.map((s) => <span class="topic-pill">{s}</span>)}
-      </div>
-      <p style="color: var(--ink-700); font-size: 15px; line-height: 1.7; margin-top: 20px;">
-        Sehar sees clients directly through our <a href="/services/therapy">therapy</a> service, leads <a href="/services/corporate">corporate wellbeing</a> training, and teaches through <a href="/services/tutoring">psychology tutoring</a>.
-      </p>
-    </div>
-  </section>
-
-  <section class="section">
-    <div class="wrap profile-grid">
-      <div>
-        <h2 class="profile-h2">Credentials</h2>
-        <ul class="credential-list">
-          <li>M.S. Clinical Psychology — University of Central Punjab</li>
-          <li>B.S. Psychology, Gold Medalist — COMSATS University</li>
-          <li>Member, American Psychological Association (APA)</li>
-        </ul>
-      </div>
-      <div>
-        <h2 class="profile-h2">Experience Highlights</h2>
-        <ul class="credential-list">
-          <li>Clinical Psychologist / Counsellor, Happiness Center, UMT (2026–present)</li>
-          <li>Research Associate &amp; Campus Counsellor, University of Central Punjab</li>
-          <li>Trainee Clinical Psychologist — Focus Rehab &amp; LISCA</li>
-          <li>Visiting Lecturer — COMSATS, FAST, and Lahore Leads University</li>
-        </ul>
-      </div>
-    </div>
-  </section>
-
-  <section class="section section--alt">
-    <div class="wrap" style="max-width: 720px;">
-      <h2 class="profile-h2">Selected Publications</h2>
-      <ul class="credential-list">
-        <li>Fatima, S., Waheed, S., Daud, S., Daud, S., &amp; Aslam, S. (2022). Gratitude, Self-Regulation, and Academic Motivation During COVID-19 in University Students. <em>Webology</em>.</li>
-        <li>Waheed, S. (2023). Unspecified Somatic Symptom and Related Disorder: Case Study and Treatment. Insight Medical Publishing.</li>
-      </ul>
-    </div>
-  </section>
-
-  <section class="section">
-    <div class="wrap">
-      <div class="request-cta-banner">
-        <p>Ready to talk to Sehar?</p>
-        <div style="display:flex; gap:10px; flex-wrap:wrap;">
-          <a href="/book" class="btn btn--primary">Book Now</a>
-          <a href="mailto:sehar@thepsychologysquare.com" class="btn btn--primary">Email</a>
-        </div>
-      </div>
-    </div>
-  </section>
-
+  <TeamProfile
+    name="Sehar Waheed"
+    firstName="Sehar"
+    initials="SW"
+    image="/images/sehar.jpg"
+    role="Co-CEO · Clinical Psychologist & Counselor"
+    emails={['sehar@thepsychologysquare.com']}
+    socials={[
+      { name: 'instagram', url: 'https://www.instagram.com/seharthepsychologist' },
+      { name: 'tiktok', url: 'https://www.tiktok.com/@seharthepsychologist' },
+      { name: 'youtube', url: 'https://www.youtube.com/@SeharThePsychologist' },
+      { name: 'linkedin', url: 'https://www.linkedin.com/in/sehar-waheed' },
+    ]}
+    facts={facts}
+    lede="Sehar Waheed's work sits at the intersection of clinical care and community — from the therapy room to campus counseling programs and crisis-response training."
+    about="She has campus counseling and research experience at the University of Central Punjab, completed supervised addiction-treatment training, and teaches psychology as a visiting lecturer."
+    focus={specialties}
+    services={services}
+    more={more}
+    reviewed={reviewed}
+  />
 </Layout>
-
-<style>
-  .breadcrumbs{
-    font-family: var(--font-mono); font-size: 12px; color: rgba(248,249,246,0.6);
-    margin-bottom: 28px; display:flex; flex-wrap:wrap; gap:6px; align-items:center;
-  }
-  .breadcrumbs a:hover{ color: var(--gold-300); }
-  .crumb-sep{ color: rgba(248,249,246,0.3); }
-  .crumb-current{ color: rgba(248,249,246,0.85); }
-
-  .profile-lede{
-    font-family: var(--font-display);
-    font-size: 22px;
-    line-height: 1.5;
-    color: var(--ink-900);
-    margin-bottom: 24px;
-  }
-  .profile-about p{ font-size: 16px; line-height: 1.75; color: var(--ink-700); margin-bottom: 18px; }
-
-  .category-pills{ display:flex; flex-wrap:wrap; gap:10px; }
-  .topic-pill{
-    font-family: var(--font-mono); font-size: 12.5px; letter-spacing: 0.04em; text-transform: uppercase;
-    color: var(--navy-700); border: 1px solid var(--line); padding: 9px 16px; border-radius: 999px;
-    background: var(--paper-0);
-  }
-
-  .profile-h2{ font-size: 15px; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.08em; color: var(--sage-500); margin-bottom: 18px; }
-  .profile-grid{ display:grid; grid-template-columns: 1fr 1fr; gap: 48px; }
-  .credential-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:14px; }
-  .credential-list li{ font-size: 14.5px; color: var(--ink-700); line-height: 1.6; padding-top: 14px; border-top: 1px solid var(--line); }
-  .credential-list li:first-child{ border-top: none; padding-top: 0; }
-
-  @media (max-width: 700px){
-    .profile-grid{ grid-template-columns: 1fr; gap: 40px; }
-    .profile-lede{ font-size: 19px; }
-  }
-</style>
