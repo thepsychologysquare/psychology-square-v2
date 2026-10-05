@@ -45,7 +45,7 @@ const socialLabel: Record<Social['name'], string> = {
 ---
 
 <section class="profile-hero tp-hero">
-  <div class="wrap">
+  <div class="wrap wrap-profile">
     <nav class="breadcrumbs" aria-label="Breadcrumb">
       <a href="/">Home</a>
       <span class="crumb-sep">/</span>
@@ -231,7 +231,7 @@ const socialLabel: Record<Social['name'], string> = {
   .tp-fact-sub a:hover{ color: var(--gold-500); }
 
   /* ---- About ---- */
-  .tp-about{ padding-top: 44px; }
+  .tp-about{ padding-top: 20px; }
   .tp-narrow{ max-width: 720px; }
   .tp-lede{
     font-family: var(--font-display); font-size: 24px; line-height: 1.45;
@@ -317,6 +317,7 @@ const socialLabel: Record<Social['name'], string> = {
   }
   @media (max-width: 480px){
     .tp-facts-grid{ grid-template-columns: 1fr; }
-	.wrap {margin-top: 85px;}
+	.wrap-profile {margin-top: 85px;}
+	
   }
 </style>
