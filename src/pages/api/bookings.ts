@@ -99,7 +99,8 @@ export const POST: APIRoute = async ({ request }) => {
     await env.SCREENSHOTS.put(screenshotKey, await screenshot.arrayBuffer(), {
       httpMetadata: { contentType: screenshot.type },
     });
-  } catch {
+  } catch (err) {
+    console.error('screenshot upload failed', err);
     await env.DB.prepare(`UPDATE availability_slots SET status = 'open' WHERE id = ?`).bind(slotId).run();
     return jsonError('Could not save your screenshot. Please try again.', 500);
   }
@@ -128,7 +129,8 @@ export const POST: APIRoute = async ({ request }) => {
       slotId,
       mode
     ).run();
-  } catch {
+  } catch (err) {
+    console.error('booking insert failed', err);
     await env.SCREENSHOTS.delete(screenshotKey).catch(() => {});
     await env.DB.prepare(`UPDATE availability_slots SET status = 'open' WHERE id = ?`).bind(slotId).run();
     return jsonError('Could not save your booking. Please try again.', 500);
