@@ -1,17 +1,20 @@
 ---
-title: "Facial Processing Differences in Autism"
-description: "Explore recent neuroimaging findings on facial processing differences in autism, challenging outdated assumptions about neurodivergent perception."
-image: "https://images.unsplash.com/photo-1654414884104-c6fc9a27ed35?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wxMDMwMjQ0fDB8MXxzZWFyY2h8MXx8Y2hpbGQlMjBsb29raW5nJTIwYXdheSUyMGV5ZSUyMHRyYWNraW5nJTIwc2NyZWVufGVufDB8fHx8MTc5NDgwMzY5MXww&ixlib=rb-4.1.0&q=80&w=400"
-imageAlt: "a young child is looking at a tablet"
-imageCredit: "Shashank Verma"
-imageCreditUrl: "https://unsplash.com/@heyshashank?utm_source=the_psychology_square&utm_medium=referral"
-imageSourceUrl: "https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral"
+title: "Autism and Facial Processing: How the Autistic Brain Processes Faces
+  Differently"
+description: Explore recent neuroimaging findings on facial processing
+  differences in autism, challenging outdated assumptions about neurodivergent
+  perception.
+image: https://images.unsplash.com/photo-1654414884104-c6fc9a27ed35?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wxMDMwMjQ0fDB8MXxzZWFyY2h8MXx8Y2hpbGQlMjBsb29raW5nJTIwYXdheSUyMGV5ZSUyMHRyYWNraW5nJTIwc2NyZWVufGVufDB8fHx8MTc5NDgwMzY5MXww&ixlib=rb-4.1.0&q=80&w=400
+imageAlt: a young child is looking at a tablet
 category: neuroscience
-tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
-publishDate: 2026-11-16T04:35:05.215Z
-draft: true
+draft: false
+imageCredit: Shashank Verma
+tags: []
+imageSourceUrl: https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral
+imageCreditUrl: https://unsplash.com/@heyshashank?utm_source=the_psychology_square&utm_medium=referral
+publishDate: 2026-11-16T12:35:00.000+05:00
 ---
 <script type="application/ld+json">
 {
