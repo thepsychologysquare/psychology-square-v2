@@ -1,17 +1,20 @@
 ---
-title: "Early Brain Atrophy Preceding Alzheimer's"
-description: "Explore how early brain atrophy in specific regions can signal preclinical Alzheimer's disease years before measurable memory loss and cognitive symptoms."
-image: "https://images.unsplash.com/photo-1758691462519-99076ad0d485?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wxMDMwMjQ0fDB8MXxzZWFyY2h8NHx8YnJhaW4lMjBzY2FuJTIwZWxkZXJseSUyMHBlcnNvbnxlbnwwfHx8fDE3OTQ4MDM2OTF8MA&ixlib=rb-4.1.0&q=80&w=400"
-imageAlt: "Doctor shows medical scan to elderly patient"
-imageCredit: "Vitaly Gariev"
-imageCreditUrl: "https://unsplash.com/@silverkblack?utm_source=the_psychology_square&utm_medium=referral"
-imageSourceUrl: "https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral"
+title: "Early Brain Atrophy and Alzheimer’s: Brain Changes That Begin Years
+  Before Symptoms"
+description: Explore how early brain atrophy in specific regions can signal
+  preclinical Alzheimer's disease years before measurable memory loss and
+  cognitive symptoms.
+image: https://images.unsplash.com/photo-1758691462519-99076ad0d485?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wxMDMwMjQ0fDB8MXxzZWFyY2h8NHx8YnJhaW4lMjBzY2FuJTIwZWxkZXJseSUyMHBlcnNvbnxlbnwwfHx8fDE3OTQ4MDM2OTF8MA&ixlib=rb-4.1.0&q=80&w=400
+imageAlt: Doctor shows medical scan to elderly patient
 category: memory
-tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
-publishDate: 2026-11-16T04:35:05.163Z
-draft: true
+draft: false
+imageCredit: Vitaly Gariev
+tags: []
+imageSourceUrl: https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral
+imageCreditUrl: https://unsplash.com/@silverkblack?utm_source=the_psychology_square&utm_medium=referral
+publishDate: 2026-11-16T12:34:00.000+05:00
 ---
 <script type="application/ld+json">
 {
