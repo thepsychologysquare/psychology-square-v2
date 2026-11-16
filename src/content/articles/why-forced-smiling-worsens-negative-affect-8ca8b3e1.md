@@ -1,17 +1,20 @@
 ---
-title: "Why Forced Smiling Worsens Negative Affect"
-description: "Discover why forced smiling can backfire, increasing emotional dissonance and psychological fatigue rather than improving your authentic mood."
-image: "https://images.unsplash.com/photo-1574093274609-066b5edd0697?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wxMDMwMjQ0fDB8MXxzZWFyY2h8MXx8cGVyc29uJTIwbG9va2luZyUyMG1pcnJvciUyMGV4aGF1c3RlZCUyMHdvcmtlcnxlbnwwfHx8fDE3OTQ4MDM2OTF8MA&ixlib=rb-4.1.0&q=80&w=400"
-imageAlt: "woman wearing black shirt on mirror"
-imageCredit: "Julia Vivcharyk"
-imageCreditUrl: "https://unsplash.com/@jusfilm?utm_source=the_psychology_square&utm_medium=referral"
-imageSourceUrl: "https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral"
+title: "Why Forced Smiling Can Make You Feel Worse: The Psychology of Emotional
+  Dissonance"
+description: Discover why forced smiling can backfire, increasing emotional
+  dissonance and psychological fatigue rather than improving your authentic
+  mood.
+image: https://images.unsplash.com/photo-1574093274609-066b5edd0697?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wxMDMwMjQ0fDB8MXxzZWFyY2h8MXx8cGVyc29uJTIwbG9va2luZyUyMG1pcnJvciUyMGV4aGF1c3RlZCUyMHdvcmtlcnxlbnwwfHx8fDE3OTQ4MDM2OTF8MA&ixlib=rb-4.1.0&q=80&w=400
+imageAlt: woman wearing black shirt on mirror
 category: mental-health
-tags: []
 author: Muhammad Sohail
 reviewedBy: Sehar Waheed
-publishDate: 2026-11-16T04:35:05.211Z
-draft: true
+draft: false
+imageCredit: Julia Vivcharyk
+tags: []
+imageSourceUrl: https://unsplash.com/?utm_source=the_psychology_square&utm_medium=referral
+imageCreditUrl: https://unsplash.com/@jusfilm?utm_source=the_psychology_square&utm_medium=referral
+publishDate: 2026-11-16T12:35:00.000+05:00
 ---
 <script type="application/ld+json">
 {
