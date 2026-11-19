@@ -255,28 +255,64 @@ const coursesFaqJson = {
       </div>
 
       {sorted.length > 0 && (
-        <div class="filter-bar" id="filterBar">
-          <div class="filter-group" id="tierFilters">
-            <button type="button" class="filter-chip is-active" data-tier="all">All</button>
-            <button type="button" class="filter-chip" data-tier="free">Free</button>
-            <button type="button" class="filter-chip" data-tier="paid">Paid</button>
-          </div>
-          <span class="filter-divider" aria-hidden="true"></span>
-          <div class="filter-group" id="categoryFilters">
-            <button type="button" class="filter-chip is-active" data-category="all">All topics</button>
-            {categoriesInUse.map((cat) => (
-              <button type="button" class="filter-chip" data-category={cat}>{categoryMeta[cat] ?? cat}</button>
-            ))}
-          </div>
-          {enrolledSlugs.size > 0 && (
-            <>
-              <span class="filter-divider" aria-hidden="true"></span>
-              <div class="filter-group" id="enrollmentFilters">
-                <button type="button" class="filter-chip" data-enrollment="enrolled">My enrolled courses</button>
+        <>
+          <div class="toolbar">
+            <input type="text" id="search-input" class="search-input" placeholder="Search courses…" autocomplete="off" aria-label="Search courses" />
+
+            <details class="filter-dropdown" id="filter-dropdown">
+              <summary class="filter-toggle">
+                Filters <span class="filter-badge" id="filter-badge" hidden>0</span>
+              </summary>
+              <div class="filter-panel">
+                <div class="filter-group">
+                  <h3 class="filter-heading">Price</h3>
+                  <div class="checkbox-list" id="tier-filters">
+                    <label class="checkbox-row">
+                      <input type="checkbox" value="free" class="tier-checkbox" data-label="Free" />
+                      <span>Free</span>
+                    </label>
+                    <label class="checkbox-row">
+                      <input type="checkbox" value="paid" class="tier-checkbox" data-label="Paid" />
+                      <span>Paid</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="filter-group">
+                  <h3 class="filter-heading">Topic</h3>
+                  <div class="checkbox-list" id="category-filters">
+                    {categoriesInUse.map((cat) => (
+                      <label class="checkbox-row">
+                        <input type="checkbox" value={cat} class="category-checkbox" data-label={categoryMeta[cat] ?? cat} />
+                        <span>{categoryMeta[cat] ?? cat}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {enrolledSlugs.size > 0 && (
+                  <div class="filter-group">
+                    <h3 class="filter-heading">My courses</h3>
+                    <div class="checkbox-list">
+                      <label class="checkbox-row">
+                        <input type="checkbox" value="enrolled" id="enrolled-checkbox" data-label="My enrolled courses" />
+                        <span>My enrolled courses</span>
+                      </label>
+                    </div>
+                  </div>
+                )}
+
+                <div class="filter-panel-actions">
+                  <button type="button" id="clear-filters" class="clear-filters-btn">Clear all</button>
+                  <button type="button" class="btn btn--primary filter-done-btn" id="filter-done">Show results</button>
+                </div>
               </div>
-            </>
-          )}
-        </div>
+            </details>
+          </div>
+
+          <div class="active-chips" id="active-chips"></div>
+          <p class="results-count" id="results-count"></p>
+        </>
       )}
 
       <div class="courses-grid" id="coursesGrid">
@@ -288,6 +324,9 @@ const coursesFaqJson = {
             class="course-card"
             data-tier={course.data.isPaid ? 'paid' : 'free'}
             data-category={course.data.category}
+            data-title={course.data.title.toLowerCase()}
+            data-description={(course.data.description || '').toLowerCase()}
+            data-topic={(categoryMeta[course.data.category] ?? course.data.category).toLowerCase()}
             data-enrolled={enrolledSlugs.has(course.id) ? 'true' : 'false'}
           >
             <div class={`course-card__media ${course.data.image ? '' : placeholderFor(course.id)}`}>
@@ -326,7 +365,7 @@ const coursesFaqJson = {
           );
         })}
       </div>
-      <p class="filter-empty" id="filterEmptyMsg" hidden>No courses match those filters.</p>
+      <p class="filter-empty" id="filterEmptyMsg" hidden>No courses match your search or filters. Try clearing some, or search a different term.</p>
     </div>
   </section>
 
@@ -360,55 +399,133 @@ const coursesFaqJson = {
     });
   }
 
+  type FilterEntry = { kind: 'tier' | 'category' | 'enrolled'; value: string; label: string };
+
   const grid = document.getElementById('coursesGrid');
-  const cards = grid ? Array.from(grid.querySelectorAll<HTMLAnchorElement>('.course-card')) : [];
-  const tierFilters = document.getElementById('tierFilters');
-  const categoryFilters = document.getElementById('categoryFilters');
-  const enrollmentFilters = document.getElementById('enrollmentFilters');
+  const cards = grid ? Array.from(grid.querySelectorAll<HTMLElement>('.course-card')) : [];
+
+  const searchInput = document.getElementById('search-input') as HTMLInputElement | null;
+  const filterDropdown = document.getElementById('filter-dropdown') as HTMLDetailsElement | null;
+  const filterBadge = document.getElementById('filter-badge');
+  const tierCheckboxes = Array.from(document.querySelectorAll<HTMLInputElement>('.tier-checkbox'));
+  const categoryCheckboxes = Array.from(document.querySelectorAll<HTMLInputElement>('.category-checkbox'));
+  const enrolledCheckbox = document.getElementById('enrolled-checkbox') as HTMLInputElement | null;
+  const clearBtn = document.getElementById('clear-filters');
+  const doneBtn = document.getElementById('filter-done');
+  const resultsCount = document.getElementById('results-count');
   const emptyMsg = document.getElementById('filterEmptyMsg');
+  const activeChipsContainer = document.getElementById('active-chips');
 
-  let activeTier = 'all';
-  let activeCategory = 'all';
-  let enrolledOnly = false;
+  // Collapse long topic lists behind a "show more" toggle (same as Articles).
+  function setupShowMore(containerId: string, threshold = 8) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    const rows = Array.from(container.querySelectorAll('.checkbox-row'));
+    if (rows.length <= threshold) return;
+    rows.slice(threshold).forEach((row) => row.classList.add('is-extra'));
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'show-more-btn';
+    btn.textContent = `+ Show ${rows.length - threshold} more`;
+    btn.addEventListener('click', () => {
+      const nowShown = container.querySelectorAll('.checkbox-row.is-extra.is-shown').length === 0;
+      rows.slice(threshold).forEach((row) => row.classList.toggle('is-shown', nowShown));
+      btn.textContent = nowShown ? 'Show less' : `+ Show ${rows.length - threshold} more`;
+    });
+    container.after(btn);
+  }
+  setupShowMore('category-filters');
 
-  function applyFilters() {
-    let visibleCount = 0;
-    for (const card of cards) {
-      const matchesTier = activeTier === 'all' || card.dataset.tier === activeTier;
-      const matchesCategory = activeCategory === 'all' || card.dataset.category === activeCategory;
-      const matchesEnrollment = !enrolledOnly || card.dataset.enrolled === 'true';
-      const visible = matchesTier && matchesCategory && matchesEnrollment;
-      card.style.display = visible ? '' : 'none';
-      if (visible) visibleCount++;
-    }
-    if (emptyMsg) emptyMsg.hidden = visibleCount > 0;
+  function getActiveFilters(): FilterEntry[] {
+    const out: FilterEntry[] = [];
+    tierCheckboxes.filter((c) => c.checked).forEach((c) => out.push({ kind: 'tier', value: c.value, label: c.dataset.label || c.value }));
+    categoryCheckboxes.filter((c) => c.checked).forEach((c) => out.push({ kind: 'category', value: c.value, label: c.dataset.label || c.value }));
+    if (enrolledCheckbox?.checked) out.push({ kind: 'enrolled', value: 'enrolled', label: enrolledCheckbox.dataset.label || 'My enrolled courses' });
+    return out;
   }
 
-  tierFilters?.addEventListener('click', (e) => {
-    const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('.filter-chip');
-    if (!btn || !btn.dataset.tier) return;
-    tierFilters.querySelectorAll('.filter-chip').forEach((b) => b.classList.remove('is-active'));
-    btn.classList.add('is-active');
-    activeTier = btn.dataset.tier;
+  function uncheck(f: FilterEntry) {
+    if (f.kind === 'tier') tierCheckboxes.forEach((c) => { if (c.value === f.value) c.checked = false; });
+    else if (f.kind === 'category') categoryCheckboxes.forEach((c) => { if (c.value === f.value) c.checked = false; });
+    else if (enrolledCheckbox) enrolledCheckbox.checked = false;
+  }
+
+  function renderChips() {
+    const active = getActiveFilters();
+    if (activeChipsContainer) {
+      activeChipsContainer.innerHTML = '';
+      active.forEach((f) => {
+        const chip = document.createElement('span');
+        chip.className = 'active-chip';
+        chip.append(document.createTextNode(`${f.label} `));
+        const x = document.createElement('button');
+        x.type = 'button';
+        x.setAttribute('aria-label', `Remove filter: ${f.label}`);
+        x.textContent = '✕';
+        x.addEventListener('click', () => { uncheck(f); applyFilters(); });
+        chip.appendChild(x);
+        activeChipsContainer.appendChild(chip);
+      });
+    }
+    if (filterBadge) {
+      filterBadge.hidden = active.length === 0;
+      filterBadge.textContent = String(active.length);
+    }
+  }
+
+  function applyFilters() {
+    const query = (searchInput?.value || '').trim().toLowerCase();
+    const tiers = tierCheckboxes.filter((c) => c.checked).map((c) => c.value);
+    const categories = categoryCheckboxes.filter((c) => c.checked).map((c) => c.value);
+    const enrolledOnly = !!enrolledCheckbox?.checked;
+
+    let visibleCount = 0;
+    for (const card of cards) {
+      const haystack = `${card.dataset.title || ''} ${card.dataset.description || ''} ${card.dataset.topic || ''}`;
+      const matchesSearch = !query || haystack.includes(query);
+      const matchesTier = tiers.length === 0 || tiers.includes(card.dataset.tier || '');
+      const matchesCategory = categories.length === 0 || categories.includes(card.dataset.category || '');
+      const matchesEnrollment = !enrolledOnly || card.dataset.enrolled === 'true';
+      const show = matchesSearch && matchesTier && matchesCategory && matchesEnrollment;
+      card.classList.toggle('is-hidden', !show);
+      if (show) visibleCount++;
+    }
+
+    if (resultsCount) {
+      resultsCount.textContent = `Showing ${visibleCount} of ${cards.length} course${cards.length === 1 ? '' : 's'}`;
+    }
+    if (emptyMsg) emptyMsg.hidden = visibleCount > 0;
+    renderChips();
+  }
+
+  searchInput?.addEventListener('input', applyFilters);
+  tierCheckboxes.forEach((cb) => cb.addEventListener('change', applyFilters));
+  categoryCheckboxes.forEach((cb) => cb.addEventListener('change', applyFilters));
+  enrolledCheckbox?.addEventListener('change', applyFilters);
+
+  clearBtn?.addEventListener('click', () => {
+    if (searchInput) searchInput.value = '';
+    tierCheckboxes.forEach((cb) => (cb.checked = false));
+    categoryCheckboxes.forEach((cb) => (cb.checked = false));
+    if (enrolledCheckbox) enrolledCheckbox.checked = false;
     applyFilters();
   });
 
-  categoryFilters?.addEventListener('click', (e) => {
-    const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('.filter-chip');
-    if (!btn || !btn.dataset.category) return;
-    categoryFilters.querySelectorAll('.filter-chip').forEach((b) => b.classList.remove('is-active'));
-    btn.classList.add('is-active');
-    activeCategory = btn.dataset.category;
-    applyFilters();
+  doneBtn?.addEventListener('click', () => { if (filterDropdown) filterDropdown.open = false; });
+
+  document.addEventListener('click', (e) => {
+    if (filterDropdown?.open && !filterDropdown.contains(e.target as Node)) {
+      filterDropdown.open = false;
+    }
   });
 
-  enrollmentFilters?.addEventListener('click', (e) => {
-    const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('.filter-chip');
-    if (!btn || !btn.dataset.enrollment) return;
-    enrolledOnly = !btn.classList.contains('is-active');
-    btn.classList.toggle('is-active', enrolledOnly);
-    applyFilters();
-  });
+  // Deep link from the nav menu: /courses/?category=anxiety pre-selects that topic.
+  const presetCategory = new URLSearchParams(window.location.search).get('category');
+  if (presetCategory) {
+    categoryCheckboxes.forEach((cb) => { if (cb.value === presetCategory) cb.checked = true; });
+  }
+
+  applyFilters();
 </script>
 
 <style>
@@ -563,20 +680,77 @@ const coursesFaqJson = {
   .courses-faq-section h2{ font-family:var(--font-display); font-size:clamp(24px,3vw,30px); margin:8px 0 24px; }
   .faq-columns--single{ columns:1; }
 
-  .filter-bar{
-    display:flex; flex-wrap:wrap; align-items:center; gap:8px 14px; margin-bottom:32px;
+  .toolbar{ display:flex; gap:12px; position:relative; z-index:20; }
+  .search-input{
+    flex:1; font-family:var(--font-body); font-size:14.5px; padding:12px 16px;
+    border:1px solid var(--line); border-radius:3px; background:var(--paper-0); color:var(--ink-900);
   }
-  .filter-group{ display:flex; gap:8px; flex-wrap:wrap; }
-  .filter-divider{
-    width:1px; align-self:stretch; min-height:20px; background:var(--line);
+  .search-input:focus{ outline:2px solid var(--gold-500); outline-offset:1px; }
+
+  .filter-dropdown{ position:relative; }
+  .filter-toggle{
+    display:flex; align-items:center; gap:8px; font-family:var(--font-mono); font-size:13px;
+    letter-spacing:0.04em; text-transform:uppercase; color:var(--navy-950); background:var(--paper-0);
+    border:1px solid var(--line); padding:12px 20px; border-radius:3px; cursor:pointer;
+    white-space:nowrap; list-style:none; user-select:none; height:100%; box-sizing:border-box;
   }
-  .filter-chip{
-    font-family:var(--font-mono); font-size:12px; letter-spacing:0.05em; text-transform:uppercase;
-    padding:8px 14px; border:1px solid var(--line); border-radius:20px; background:transparent;
-    cursor:pointer; color:var(--ink-600); transition:border-color .15s ease, color .15s ease, background .15s ease;
+  .filter-toggle::-webkit-details-marker{ display:none; }
+  .filter-toggle:hover{ border-color:var(--gold-500); }
+  .filter-dropdown[open] .filter-toggle{ border-color:var(--navy-950); background:var(--navy-950); color:var(--paper-0); }
+  .filter-badge{
+    background:var(--gold-500); color:var(--navy-950); font-size:11px; font-weight:700;
+    border-radius:999px; padding:1px 7px; min-width:18px; text-align:center;
   }
-  .filter-chip:hover{ border-color:var(--gold-500); }
-  .filter-chip.is-active{ border-color:var(--gold-500); color:var(--ink-900); background:rgba(199,164,74,0.1); }
+  .filter-panel{
+    position:absolute; top:calc(100% + 8px); right:0; width:min(360px, calc(100vw - 64px));
+    max-height:60vh; overflow-y:auto; background:var(--paper-0); border:1px solid var(--line);
+    border-radius:4px; box-shadow:0 12px 32px rgba(19,26,34,0.14); padding:22px;
+    display:flex; flex-direction:column; gap:22px;
+  }
+  .filter-group{ display:flex; flex-direction:column; gap:10px; }
+  .filter-heading{
+    font-family:var(--font-mono); font-size:11.5px; letter-spacing:0.08em; text-transform:uppercase; color:var(--ink-600);
+  }
+  .checkbox-list{ display:flex; flex-direction:column; gap:10px; }
+  .checkbox-row{ display:flex; align-items:center; gap:9px; font-size:14px; color:var(--ink-900); cursor:pointer; }
+  .checkbox-row input{ accent-color:var(--gold-500); width:15px; height:15px; flex:none; }
+  .checkbox-row.is-extra{ display:none; }
+  .checkbox-row.is-extra.is-shown{ display:flex; }
+  :global(.show-more-btn){
+    font-family:var(--font-mono); font-size:12px; color:var(--sage-500); background:none; border:none;
+    text-align:left; padding:0; cursor:pointer; text-decoration:underline; text-underline-offset:3px;
+  }
+  .filter-panel-actions{
+    display:flex; justify-content:space-between; align-items:center; padding-top:6px; border-top:1px solid var(--line);
+  }
+  .clear-filters-btn{
+    font-family:var(--font-mono); font-size:12px; letter-spacing:0.04em; text-transform:uppercase;
+    color:var(--ink-600); background:none; border:none; text-decoration:underline; text-underline-offset:3px;
+    cursor:pointer; padding:0;
+  }
+  .clear-filters-btn:hover{ color:var(--gold-500); }
+  .filter-done-btn{ font-size:13px; padding:10px 20px; }
+
+  .active-chips{ display:flex; flex-wrap:wrap; gap:8px; margin-top:18px; }
+  .active-chips:empty{ margin-top:0; }
+  :global(.active-chip){
+    display:flex; align-items:center; gap:7px; font-family:var(--font-mono); font-size:12px; letter-spacing:0.02em;
+    color:var(--navy-950); background:var(--paper-50); border:1px solid var(--line);
+    padding:6px 10px 6px 14px; border-radius:999px;
+  }
+  :global(.active-chip button){
+    background:none; border:none; color:var(--ink-600); cursor:pointer; font-size:14px; line-height:1; padding:2px;
+  }
+  :global(.active-chip button:hover){ color:var(--gold-500); }
+  .results-count{ font-family:var(--font-mono); font-size:12.5px; color:var(--ink-600); margin:24px 0; }
+
+  .course-card.is-hidden{ display:none; }
+
+  @media (max-width:600px){
+    .toolbar{ flex-direction:column; }
+    .filter-panel{ right:0; left:0; width:auto; }
+  }
+
   .filter-empty{ color:var(--ink-600); padding:32px 0; text-align:center; }
 
   .courses-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:28px; }

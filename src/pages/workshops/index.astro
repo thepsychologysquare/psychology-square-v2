@@ -8,6 +8,10 @@ import { categoryLabelMap } from '../../lib/workshopCategories';
 const workshops = await listPublicWorkshops(env);
 const CATEGORY_LABELS = await categoryLabelMap(env);
 
+const categoriesInUse = [...new Set(workshops.map((w) => w.category))];
+const hasFree = workshops.some((w) => !w.price_pkr);
+const hasPaid = workshops.some((w) => w.price_pkr > 0);
+
 const INSTRUCTOR_NAMES: Record<string, string> = { sohail: 'Muhammad Sohail', sehar: 'Sehar Waheed' };
 ---
 <Layout
@@ -29,9 +33,68 @@ const INSTRUCTOR_NAMES: Record<string, string> = { sohail: 'Muhammad Sohail', se
         <p class="empty-state">No workshops are open right now — check back soon, or request one below.</p>
       )}
 
-      <div class="wk-grid">
+      {workshops.length > 0 && (
+        <>
+          <div class="toolbar">
+            <input type="text" id="search-input" class="search-input" placeholder="Search workshops…" autocomplete="off" aria-label="Search workshops" />
+
+            <details class="filter-dropdown" id="filter-dropdown">
+              <summary class="filter-toggle">
+                Filters <span class="filter-badge" id="filter-badge" hidden>0</span>
+              </summary>
+              <div class="filter-panel">
+                {hasFree && hasPaid && (
+                  <div class="filter-group">
+                    <h3 class="filter-heading">Price</h3>
+                    <div class="checkbox-list" id="tier-filters">
+                      <label class="checkbox-row">
+                        <input type="checkbox" value="free" class="tier-checkbox" data-label="Free" />
+                        <span>Free</span>
+                      </label>
+                      <label class="checkbox-row">
+                        <input type="checkbox" value="paid" class="tier-checkbox" data-label="Paid" />
+                        <span>Paid</span>
+                      </label>
+                    </div>
+                  </div>
+                )}
+
+                <div class="filter-group">
+                  <h3 class="filter-heading">Topic</h3>
+                  <div class="checkbox-list" id="category-filters">
+                    {categoriesInUse.map((cat) => (
+                      <label class="checkbox-row">
+                        <input type="checkbox" value={cat} class="category-checkbox" data-label={CATEGORY_LABELS[cat] || cat} />
+                        <span>{CATEGORY_LABELS[cat] || cat}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div class="filter-panel-actions">
+                  <button type="button" id="clear-filters" class="clear-filters-btn">Clear all</button>
+                  <button type="button" class="btn btn--primary filter-done-btn" id="filter-done">Show results</button>
+                </div>
+              </div>
+            </details>
+          </div>
+
+          <div class="active-chips" id="active-chips"></div>
+          <p class="results-count" id="results-count"></p>
+        </>
+      )}
+
+      <div class="wk-grid" id="workshopGrid">
         {workshops.map((w) => (
-            <a href={`/workshops/${w.slug}`} class="wk-card">
+            <a
+              href={`/workshops/${w.slug}`}
+              class="wk-card"
+              data-title={w.title.toLowerCase()}
+              data-description={(w.description || '').toLowerCase()}
+              data-topic={(CATEGORY_LABELS[w.category] || w.category).toLowerCase()}
+              data-category={w.category}
+              data-tier={w.price_pkr > 0 ? 'paid' : 'free'}
+            >
               {w.image && <img src={w.image} alt={w.image_alt || w.title} class="wk-card__image" loading="lazy" />}
               <div class="wk-card__body">
                 <div class="wk-card__top">
@@ -48,6 +111,8 @@ const INSTRUCTOR_NAMES: Record<string, string> = { sohail: 'Muhammad Sohail', se
             </a>
         ))}
       </div>
+
+      <p class="no-results" id="no-results" hidden>No workshops match your search or filters. Try clearing some, or search a different term.</p>
 
       <div class="request-cta-banner">
         <p>Don't see a workshop on the topic you need?</p>
@@ -89,6 +154,72 @@ const INSTRUCTOR_NAMES: Record<string, string> = { sohail: 'Muhammad Sohail', se
   .wk-section{ padding:56px 0 96px; }
   .empty-state{ text-align:center; padding:48px 24px; color:var(--ink-600); }
 
+  .toolbar{ display:flex; gap:12px; position:relative; z-index:20; }
+  .search-input{
+    flex:1; font-family:var(--font-body); font-size:14.5px; padding:12px 16px;
+    border:1px solid var(--line); border-radius:3px; background:var(--paper-0); color:var(--ink-900);
+  }
+  .search-input:focus{ outline:2px solid var(--gold-500); outline-offset:1px; }
+
+  .filter-dropdown{ position:relative; }
+  .filter-toggle{
+    display:flex; align-items:center; gap:8px; font-family:var(--font-mono); font-size:13px;
+    letter-spacing:0.04em; text-transform:uppercase; color:var(--navy-950); background:var(--paper-0);
+    border:1px solid var(--line); padding:12px 20px; border-radius:3px; cursor:pointer;
+    white-space:nowrap; list-style:none; user-select:none; height:100%; box-sizing:border-box;
+  }
+  .filter-toggle::-webkit-details-marker{ display:none; }
+  .filter-toggle:hover{ border-color:var(--gold-500); }
+  .filter-dropdown[open] .filter-toggle{ border-color:var(--navy-950); background:var(--navy-950); color:var(--paper-0); }
+  .filter-badge{
+    background:var(--gold-500); color:var(--navy-950); font-size:11px; font-weight:700;
+    border-radius:999px; padding:1px 7px; min-width:18px; text-align:center;
+  }
+  .filter-panel{
+    position:absolute; top:calc(100% + 8px); right:0; width:min(360px, calc(100vw - 64px));
+    max-height:60vh; overflow-y:auto; background:var(--paper-0); border:1px solid var(--line);
+    border-radius:4px; box-shadow:0 12px 32px rgba(19,26,34,0.14); padding:22px;
+    display:flex; flex-direction:column; gap:22px;
+  }
+  .filter-group{ display:flex; flex-direction:column; gap:10px; }
+  .filter-heading{
+    font-family:var(--font-mono); font-size:11.5px; letter-spacing:0.08em; text-transform:uppercase; color:var(--ink-600);
+  }
+  .checkbox-list{ display:flex; flex-direction:column; gap:10px; }
+  .checkbox-row{ display:flex; align-items:center; gap:9px; font-size:14px; color:var(--ink-900); cursor:pointer; }
+  .checkbox-row input{ accent-color:var(--gold-500); width:15px; height:15px; flex:none; }
+  .checkbox-row.is-extra{ display:none; }
+  .checkbox-row.is-extra.is-shown{ display:flex; }
+  :global(.show-more-btn){
+    font-family:var(--font-mono); font-size:12px; color:var(--sage-500); background:none; border:none;
+    text-align:left; padding:0; cursor:pointer; text-decoration:underline; text-underline-offset:3px;
+  }
+  .filter-panel-actions{
+    display:flex; justify-content:space-between; align-items:center; padding-top:6px; border-top:1px solid var(--line);
+  }
+  .clear-filters-btn{
+    font-family:var(--font-mono); font-size:12px; letter-spacing:0.04em; text-transform:uppercase;
+    color:var(--ink-600); background:none; border:none; text-decoration:underline; text-underline-offset:3px;
+    cursor:pointer; padding:0;
+  }
+  .clear-filters-btn:hover{ color:var(--gold-500); }
+  .filter-done-btn{ font-size:13px; padding:10px 20px; }
+
+  .active-chips{ display:flex; flex-wrap:wrap; gap:8px; margin-top:18px; }
+  .active-chips:empty{ margin-top:0; }
+  :global(.active-chip){
+    display:flex; align-items:center; gap:7px; font-family:var(--font-mono); font-size:12px; letter-spacing:0.02em;
+    color:var(--navy-950); background:var(--paper-50); border:1px solid var(--line);
+    padding:6px 10px 6px 14px; border-radius:999px;
+  }
+  :global(.active-chip button){
+    background:none; border:none; color:var(--ink-600); cursor:pointer; font-size:14px; line-height:1; padding:2px;
+  }
+  :global(.active-chip button:hover){ color:var(--gold-500); }
+  .results-count{ font-family:var(--font-mono); font-size:12.5px; color:var(--ink-600); margin:24px 0; }
+  .no-results{ color:var(--ink-600); padding:32px 0; text-align:center; }
+  .wk-card.is-hidden{ display:none; }
+
   .wk-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:24px; }
   .wk-card{
     display:flex; flex-direction:column; background:#fff; border:1px solid var(--line);
@@ -129,6 +260,8 @@ const INSTRUCTOR_NAMES: Record<string, string> = { sohail: 'Muhammad Sohail', se
 
   @media (max-width:640px){
     .request-cta-banner{ flex-direction:column; align-items:flex-start; }
+    .toolbar{ flex-direction:column; }
+    .filter-panel{ right:0; left:0; width:auto; }
   }
 </style>
 
@@ -139,4 +272,122 @@ const INSTRUCTOR_NAMES: Record<string, string> = { sohail: 'Muhammad Sohail', se
   openBtn?.addEventListener('click', () => overlay?.classList.add('is-open'));
   closeBtn?.addEventListener('click', () => overlay?.classList.remove('is-open'));
   overlay?.addEventListener('click', (e) => { if (e.target === overlay) overlay.classList.remove('is-open'); });
+
+  type FilterEntry = { kind: 'tier' | 'category'; value: string; label: string };
+
+  const cards = Array.from(document.querySelectorAll<HTMLElement>('#workshopGrid .wk-card'));
+  const searchInput = document.getElementById('search-input') as HTMLInputElement | null;
+  const filterDropdown = document.getElementById('filter-dropdown') as HTMLDetailsElement | null;
+  const filterBadge = document.getElementById('filter-badge');
+  const tierCheckboxes = Array.from(document.querySelectorAll<HTMLInputElement>('.tier-checkbox'));
+  const categoryCheckboxes = Array.from(document.querySelectorAll<HTMLInputElement>('.category-checkbox'));
+  const clearBtn = document.getElementById('clear-filters');
+  const doneBtn = document.getElementById('filter-done');
+  const resultsCount = document.getElementById('results-count');
+  const noResults = document.getElementById('no-results');
+  const activeChipsContainer = document.getElementById('active-chips');
+
+  function setupShowMore(containerId: string, threshold = 8) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    const rows = Array.from(container.querySelectorAll('.checkbox-row'));
+    if (rows.length <= threshold) return;
+    rows.slice(threshold).forEach((row) => row.classList.add('is-extra'));
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'show-more-btn';
+    btn.textContent = `+ Show ${rows.length - threshold} more`;
+    btn.addEventListener('click', () => {
+      const nowShown = container.querySelectorAll('.checkbox-row.is-extra.is-shown').length === 0;
+      rows.slice(threshold).forEach((row) => row.classList.toggle('is-shown', nowShown));
+      btn.textContent = nowShown ? 'Show less' : `+ Show ${rows.length - threshold} more`;
+    });
+    container.after(btn);
+  }
+  setupShowMore('category-filters');
+
+  function getActiveFilters(): FilterEntry[] {
+    const out: FilterEntry[] = [];
+    tierCheckboxes.filter((c) => c.checked).forEach((c) => out.push({ kind: 'tier', value: c.value, label: c.dataset.label || c.value }));
+    categoryCheckboxes.filter((c) => c.checked).forEach((c) => out.push({ kind: 'category', value: c.value, label: c.dataset.label || c.value }));
+    return out;
+  }
+
+  function uncheck(f: FilterEntry) {
+    const list = f.kind === 'tier' ? tierCheckboxes : categoryCheckboxes;
+    list.forEach((c) => { if (c.value === f.value) c.checked = false; });
+  }
+
+  function renderChips() {
+    const active = getActiveFilters();
+    if (activeChipsContainer) {
+      activeChipsContainer.innerHTML = '';
+      active.forEach((f) => {
+        const chip = document.createElement('span');
+        chip.className = 'active-chip';
+        chip.append(document.createTextNode(`${f.label} `));
+        const x = document.createElement('button');
+        x.type = 'button';
+        x.setAttribute('aria-label', `Remove filter: ${f.label}`);
+        x.textContent = '✕';
+        x.addEventListener('click', () => { uncheck(f); applyFilters(); });
+        chip.appendChild(x);
+        activeChipsContainer.appendChild(chip);
+      });
+    }
+    if (filterBadge) {
+      filterBadge.hidden = active.length === 0;
+      filterBadge.textContent = String(active.length);
+    }
+  }
+
+  function applyFilters() {
+    const query = (searchInput?.value || '').trim().toLowerCase();
+    const tiers = tierCheckboxes.filter((c) => c.checked).map((c) => c.value);
+    const categories = categoryCheckboxes.filter((c) => c.checked).map((c) => c.value);
+
+    let visibleCount = 0;
+    for (const card of cards) {
+      const haystack = `${card.dataset.title || ''} ${card.dataset.description || ''} ${card.dataset.topic || ''}`;
+      const show =
+        (!query || haystack.includes(query)) &&
+        (tiers.length === 0 || tiers.includes(card.dataset.tier || '')) &&
+        (categories.length === 0 || categories.includes(card.dataset.category || ''));
+      card.classList.toggle('is-hidden', !show);
+      if (show) visibleCount++;
+    }
+
+    if (resultsCount) {
+      resultsCount.textContent = `Showing ${visibleCount} of ${cards.length} workshop${cards.length === 1 ? '' : 's'}`;
+    }
+    if (noResults) noResults.hidden = cards.length === 0 || visibleCount > 0;
+    renderChips();
+  }
+
+  searchInput?.addEventListener('input', applyFilters);
+  tierCheckboxes.forEach((cb) => cb.addEventListener('change', applyFilters));
+  categoryCheckboxes.forEach((cb) => cb.addEventListener('change', applyFilters));
+
+  clearBtn?.addEventListener('click', () => {
+    if (searchInput) searchInput.value = '';
+    tierCheckboxes.forEach((cb) => (cb.checked = false));
+    categoryCheckboxes.forEach((cb) => (cb.checked = false));
+    applyFilters();
+  });
+
+  doneBtn?.addEventListener('click', () => { if (filterDropdown) filterDropdown.open = false; });
+
+  document.addEventListener('click', (e) => {
+    if (filterDropdown?.open && !filterDropdown.contains(e.target as Node)) {
+      filterDropdown.open = false;
+    }
+  });
+
+  // Deep link from the nav menu: /workshops/?category=anxiety pre-selects that topic.
+  const presetCategory = new URLSearchParams(window.location.search).get('category');
+  if (presetCategory) {
+    categoryCheckboxes.forEach((cb) => { if (cb.value === presetCategory) cb.checked = true; });
+  }
+
+  applyFilters();
 </script>

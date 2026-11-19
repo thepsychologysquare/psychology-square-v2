@@ -1,6 +1,6 @@
 ---
 import '../styles/global.css';
-import { Image } from 'astro:assets';
+import { Image, getImage } from 'astro:assets';
 import { getCollection } from 'astro:content';
 import ConsentBanner from '../components/ConsentBanner.astro';
 
@@ -78,6 +78,30 @@ const courseImages = import.meta.glob<{ default: ImageMetadata }>(
 function getCourseImage(slug: string) {
   const entry = Object.entries(courseImages).find(([path]) => path.includes(`/${slug}.`));
   return entry?.[1].default;
+}
+
+const workshopImages = import.meta.glob<{ default: ImageMetadata }>(
+  '/src/assets/workshops/*.{jpg,jpeg,png,webp}',
+  { eager: true }
+);
+function getWorkshopImage(slug: string) {
+  const entry = Object.entries(workshopImages).find(([path]) => path.includes(`/${slug}.`));
+  return entry?.[1].default;
+}
+
+// Courses / Workshops nav menus are filled in the browser from /api/nav-topics
+// (their topics live in D1, which prerendered pages can't read at build time).
+// They reuse the same per-topic photos as the Articles menu, so hand the
+// client a slug -> optimized image URL map.
+const navTopicImageUrls: Record<string, string> = {};
+for (const [path, mod] of Object.entries(topicImages)) {
+  const slug = path.split('/').pop()!.replace(/\.[^.]+$/, '');
+  try {
+    const optimized = await getImage({ src: mod.default, width: 360, format: 'webp', quality: 60 });
+    navTopicImageUrls[slug] = optimized.src;
+  } catch {
+    // skip — tile falls back to the gradient placeholder
+  }
 }
 
 // --- Nav content metadata ---
@@ -594,22 +618,62 @@ const navAllArticleCategories = navCategorySlugsInUse
           <a href="/courses" class="nav-trigger">Courses <span class="arrow-icon"></span></a>
           <div class="mega-panel mega-panel--grid">
             <div class="mega-panel-container">
-              <h2 class="mega-panel-heading">Courses</h2>
-              <div class="mega-panel-row-grid">
-                <a href="/courses" class="course-panel-card">
-                  <div class={`course-card-graphic ${getCourseImage('courses') ? '' : 'bg-placeholder-7'}`}>
-                    {getCourseImage('courses') ? (
-                      <Image src={getCourseImage('courses')!} alt="Browse All Courses" width={360} format="webp" quality={60} loading="lazy" style="width:100%; height:100%; object-fit:cover;" />
-                    ) : null}
-                  </div>
-                  <span class="course-card-name">Browse All Courses</span>
-                </a>
+              <h2 class="mega-panel-heading">Courses by Topic</h2>
+              <div class="topic-slider">
+                <button type="button" class="topic-slider-arrow topic-slider-arrow--prev" data-slider-prev aria-label="Scroll topics left">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                </button>
+                <div class="topic-slider-track" data-slider-track data-nav-topics="courses" data-nav-variant="desktop">
+                  <a href="/courses" class="course-panel-card topic-slider-item">
+                    <div class={`course-card-graphic ${getCourseImage('courses') ? '' : 'bg-placeholder-7'}`}>
+                      {getCourseImage('courses') ? (
+                        <Image src={getCourseImage('courses')!} alt="Browse All Courses" width={360} format="webp" quality={60} loading="lazy" style="width:100%; height:100%; object-fit:cover;" />
+                      ) : null}
+                    </div>
+                    <span class="course-card-name">Browse All Courses</span>
+                  </a>
+                </div>
+                <button type="button" class="topic-slider-arrow topic-slider-arrow--next" data-slider-next aria-label="Scroll topics right">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </button>
+              </div>
+              <div class="mega-row-footer">
+                <a href="/courses" class="mega-view-all-pill">View All Courses</a>
               </div>
             </div>
           </div>
         </div>
 
-        <div class="nav-item"><a href="/workshops" class="nav-link-standard">Workshops</a></div>
+        <!-- Workshops -->
+        <div class="nav-item">
+          <a href="/workshops" class="nav-trigger">Workshops <span class="arrow-icon"></span></a>
+          <div class="mega-panel mega-panel--grid">
+            <div class="mega-panel-container">
+              <h2 class="mega-panel-heading">Workshops by Topic</h2>
+              <div class="topic-slider">
+                <button type="button" class="topic-slider-arrow topic-slider-arrow--prev" data-slider-prev aria-label="Scroll topics left">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                </button>
+                <div class="topic-slider-track" data-slider-track data-nav-topics="workshops" data-nav-variant="desktop">
+                  <a href="/workshops" class="course-panel-card topic-slider-item">
+                    <div class={`course-card-graphic ${getWorkshopImage('workshops') ? '' : 'bg-placeholder-8'}`}>
+                      {getWorkshopImage('workshops') ? (
+                        <Image src={getWorkshopImage('workshops')!} alt="Browse All Workshops" width={360} format="webp" quality={60} loading="lazy" style="width:100%; height:100%; object-fit:cover;" />
+                      ) : null}
+                    </div>
+                    <span class="course-card-name">Browse All Workshops</span>
+                  </a>
+                </div>
+                <button type="button" class="topic-slider-arrow topic-slider-arrow--next" data-slider-next aria-label="Scroll topics right">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </button>
+              </div>
+              <div class="mega-row-footer">
+                <a href="/workshops" class="mega-view-all-pill">View All Workshops</a>
+              </div>
+            </div>
+          </div>
+        </div>
 
         <div class="nav-item"><a href="/contact" class="nav-link-standard">Contact</a></div>
 
@@ -796,22 +860,56 @@ const navAllArticleCategories = navCategorySlugsInUse
       <div class="mobile-nav-item mobile-accordion-item">
         <button class="mobile-accordion-trigger" type="button">Courses <span class="mobile-arrow-icon"></span></button>
         <div class="mobile-accordion-panel">
-          <div class="mobile-swipe-carousel">
-            <a href="/courses" class="mobile-carousel-card mobile-wide-card">
-              <div class={`mobile-carousel-thumb ${getCourseImage('courses') ? '' : 'bg-placeholder-7'}`} style="overflow:hidden;">
-                {getCourseImage('courses') ? (
-                  <Image src={getCourseImage('courses')!} alt="Browse All Courses" width={180} format="webp" quality={60} loading="lazy" style="width:100%; height:100%; object-fit:cover;" />
-                ) : null}
-              </div>
-              <span class="mobile-carousel-label">Browse All Courses</span>
-            </a>
+          <div class="topic-slider topic-slider--mobile">
+            <button type="button" class="topic-slider-arrow topic-slider-arrow--prev" data-slider-prev aria-label="Scroll topics left">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            </button>
+            <div class="topic-slider-track mobile-swipe-carousel" data-slider-track data-nav-topics="courses" data-nav-variant="mobile">
+              <a href="/courses" class="mobile-carousel-card topic-slider-item">
+                <div class={`mobile-carousel-thumb ${getCourseImage('courses') ? '' : 'bg-placeholder-7'}`} style="overflow:hidden;">
+                  {getCourseImage('courses') ? (
+                    <Image src={getCourseImage('courses')!} alt="Browse All Courses" width={180} format="webp" quality={60} loading="lazy" style="width:100%; height:100%; object-fit:cover;" />
+                  ) : null}
+                </div>
+                <span class="mobile-carousel-label">Browse All Courses</span>
+              </a>
+            </div>
+            <button type="button" class="topic-slider-arrow topic-slider-arrow--next" data-slider-next aria-label="Scroll topics right">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
+          </div>
+          <div class="mega-row-footer" style="padding-top: 12px;">
+            <a href="/courses" class="mega-view-all-pill" style="display: block; text-align: center;">View All Courses</a>
           </div>
         </div>
       </div>
 
-      <!-- Workshops -->
-      <div class="mobile-nav-item mobile-single-link">
-        <a href="/workshops" class="mobile-link-standard">Workshops</a>
+      <!-- Workshops Accordion -->
+      <div class="mobile-nav-item mobile-accordion-item">
+        <button class="mobile-accordion-trigger" type="button">Workshops <span class="mobile-arrow-icon"></span></button>
+        <div class="mobile-accordion-panel">
+          <div class="topic-slider topic-slider--mobile">
+            <button type="button" class="topic-slider-arrow topic-slider-arrow--prev" data-slider-prev aria-label="Scroll topics left">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            </button>
+            <div class="topic-slider-track mobile-swipe-carousel" data-slider-track data-nav-topics="workshops" data-nav-variant="mobile">
+              <a href="/workshops" class="mobile-carousel-card topic-slider-item">
+                <div class={`mobile-carousel-thumb ${getWorkshopImage('workshops') ? '' : 'bg-placeholder-8'}`} style="overflow:hidden;">
+                  {getWorkshopImage('workshops') ? (
+                    <Image src={getWorkshopImage('workshops')!} alt="Browse All Workshops" width={180} format="webp" quality={60} loading="lazy" style="width:100%; height:100%; object-fit:cover;" />
+                  ) : null}
+                </div>
+                <span class="mobile-carousel-label">Browse All Workshops</span>
+              </a>
+            </div>
+            <button type="button" class="topic-slider-arrow topic-slider-arrow--next" data-slider-next aria-label="Scroll topics right">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
+          </div>
+          <div class="mega-row-footer" style="padding-top: 12px;">
+            <a href="/workshops" class="mega-view-all-pill" style="display: block; text-align: center;">View All Workshops</a>
+          </div>
+        </div>
       </div>
 
       <!-- Contact -->
@@ -826,6 +924,8 @@ const navAllArticleCategories = navCategorySlugsInUse
     </div>
   </div>
 </div>
+
+<script type="application/json" id="nav-topic-images" set:html={JSON.stringify(navTopicImageUrls)} />
 
 <script>
   const hamburgerBtn = document.getElementById('hamburgerBtn');
@@ -862,6 +962,71 @@ const navAllArticleCategories = navCategorySlugsInUse
       });
     });
   }
+
+  // Fill the Courses / Workshops menus with the topics currently in use.
+  // Runs once per page load; the "Browse All" tile is already in the markup,
+  // so if the request fails the menu simply stays as it was.
+  (() => {
+    const tracks = document.querySelectorAll('[data-nav-topics]');
+    if (!tracks.length) return;
+
+    let topicImages: Record<string, string> = {};
+    try {
+      topicImages = JSON.parse(document.getElementById('nav-topic-images')?.textContent || '{}');
+    } catch {}
+
+    const hrefBase = { courses: '/courses/', workshops: '/workshops/' };
+    const cache: Record<string, Promise<any>> = {};
+    const load = (kind) => {
+      if (!cache[kind]) {
+        cache[kind] = fetch(`/api/nav-topics?kind=${kind}`)
+          .then((r) => (r.ok ? r.json() : { topics: [] }))
+          .then((d) => d.topics || [])
+          .catch(() => []);
+      }
+      return cache[kind];
+    };
+
+    const buildTile = (topic, kind, variant, index) => {
+      const mobile = variant === 'mobile';
+      const a = document.createElement('a');
+      a.href = `${hrefBase[kind]}?category=${encodeURIComponent(topic.slug)}`;
+      a.className = (mobile ? 'mobile-carousel-card' : 'course-panel-card') + ' topic-slider-item';
+
+      const thumb = document.createElement('div');
+      const imgSrc = topicImages[topic.slug] || topic.image;
+      thumb.className = mobile ? 'mobile-carousel-thumb' : 'course-card-graphic';
+      if (mobile) thumb.style.overflow = 'hidden';
+      if (imgSrc) {
+        const img = document.createElement('img');
+        img.src = imgSrc;
+        img.alt = topic.label;
+        img.loading = 'lazy';
+        img.decoding = 'async';
+        img.style.cssText = 'width:100%; height:100%; object-fit:cover;';
+        thumb.appendChild(img);
+      } else {
+        thumb.classList.add(`bg-placeholder-${(index % 9) + 1}`);
+      }
+
+      const label = document.createElement('span');
+      label.className = mobile ? 'mobile-carousel-label' : 'course-card-name';
+      label.textContent = topic.label;
+
+      a.appendChild(thumb);
+      a.appendChild(label);
+      return a;
+    };
+
+    tracks.forEach((track) => {
+      const kind = track.getAttribute('data-nav-topics');
+      const variant = track.getAttribute('data-nav-variant');
+      if (!kind || !hrefBase[kind]) return;
+      load(kind).then((topics) => {
+        topics.forEach((topic, i) => track.appendChild(buildTile(topic, kind, variant, i)));
+      });
+    });
+  })();
 
   document.querySelectorAll('.topic-slider').forEach((slider) => {
     const track = slider.querySelector('[data-slider-track]');
