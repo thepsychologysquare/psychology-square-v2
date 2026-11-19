@@ -1,0 +1,53 @@
+---
+export const prerender = false;
+import { env } from 'cloudflare:workers';
+import CategoryAZ from '../../components/CategoryAZ.astro';
+import { listCourses } from '../../lib/courses';
+import { courseCategoryLabelMap } from '../../lib/courseCategories';
+
+const topicImages = import.meta.glob<{ default: ImageMetadata }>(
+  '/src/assets/topics/*.{jpg,jpeg,png,webp}',
+  { eager: true }
+);
+function getTopicImage(slug: string) {
+  const entry = Object.entries(topicImages).find(([path]) => path.includes(`/${slug}.`));
+  return entry?.[1].default.src ?? null;
+}
+function titleCase(slug: string) {
+  return slug.split('-').map((w) => (w.length ? w.charAt(0).toUpperCase() + w.slice(1) : w)).join(' ');
+}
+
+const courses = await listCourses(env, { includeDrafts: false });
+const labels = await courseCategoryLabelMap(env);
+
+// Only topics with at least one published course, same as the nav menu.
+// Photo: src/assets/topics/<slug>.jpg if present, else the first course image in that topic.
+const bySlug = new Map<string, { image: string | null }>();
+for (const c of courses) {
+  const slug = c.data.category;
+  if (!slug) continue;
+  const existing = bySlug.get(slug);
+  if (!existing) bySlug.set(slug, { image: c.data.image || null });
+  else if (!existing.image && c.data.image) existing.image = c.data.image;
+}
+
+const categories = [...bySlug.entries()]
+  .map(([slug, info], i) => ({
+    slug,
+    label: labels[slug] || titleCase(slug),
+    href: `/courses/?category=${encodeURIComponent(slug)}`,
+    img: getTopicImage(slug) || info.image,
+    graphic: `bg-placeholder-${(i % 9) + 1}`,
+  }))
+  .sort((a, b) => a.label.localeCompare(b.label));
+---
+<CategoryAZ
+  title="Course Categories A-Z"
+  fullTitle="Psychology Course Topics A-Z | The Psychology Square"
+  description="Browse self-paced psychology courses by topic, each with a verifiable certificate on completion."
+  sectionName="Courses"
+  sectionHref="/courses"
+  heroSub="Every topic we teach, organized alphabetically so you can find the right course fast."
+  intro="The Psychology Square offers self-paced psychology courses across a growing set of topics, each ending with a quiz and a verifiable digital certificate. Pick a letter below or search by name, then open a topic to see every course we have on it."
+  categories={categories}
+/>

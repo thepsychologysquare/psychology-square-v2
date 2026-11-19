@@ -1,0 +1,53 @@
+---
+export const prerender = false;
+import { env } from 'cloudflare:workers';
+import CategoryAZ from '../../components/CategoryAZ.astro';
+import { listPublicWorkshops } from '../../lib/workshops';
+import { categoryLabelMap } from '../../lib/workshopCategories';
+
+const topicImages = import.meta.glob<{ default: ImageMetadata }>(
+  '/src/assets/topics/*.{jpg,jpeg,png,webp}',
+  { eager: true }
+);
+function getTopicImage(slug: string) {
+  const entry = Object.entries(topicImages).find(([path]) => path.includes(`/${slug}.`));
+  return entry?.[1].default.src ?? null;
+}
+function titleCase(slug: string) {
+  return slug.split('-').map((w) => (w.length ? w.charAt(0).toUpperCase() + w.slice(1) : w)).join(' ');
+}
+
+const workshops = await listPublicWorkshops(env);
+const labels = await categoryLabelMap(env);
+
+// Only topics with at least one open workshop, same as the nav menu.
+// Photo: src/assets/topics/<slug>.jpg if present, else the first workshop image in that topic.
+const bySlug = new Map<string, { image: string | null }>();
+for (const w of workshops) {
+  const slug = w.category;
+  if (!slug) continue;
+  const existing = bySlug.get(slug);
+  if (!existing) bySlug.set(slug, { image: w.image || null });
+  else if (!existing.image && w.image) existing.image = w.image;
+}
+
+const categories = [...bySlug.entries()]
+  .map(([slug, info], i) => ({
+    slug,
+    label: labels[slug] || titleCase(slug),
+    href: `/workshops/?category=${encodeURIComponent(slug)}`,
+    img: getTopicImage(slug) || info.image,
+    graphic: `bg-placeholder-${(i % 9) + 1}`,
+  }))
+  .sort((a, b) => a.label.localeCompare(b.label));
+---
+<CategoryAZ
+  title="Workshop Categories A-Z"
+  fullTitle="Psychology Workshop Topics A-Z | The Psychology Square"
+  description="Browse live online psychology workshops by topic, led by a clinical psychologist on Google Meet."
+  sectionName="Workshops"
+  sectionHref="/workshops"
+  heroSub="Every workshop topic we run, organized alphabetically so you can find a session fast."
+  intro="The Psychology Square runs live, small-group online workshops on Google Meet across a growing set of topics. Pick a letter below or search by name, then open a topic to see every workshop currently open on it."
+  categories={categories}
+/>
